@@ -1,0 +1,288 @@
+\documentclass{beamer}
+
+\usepackage{comment}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{xspace}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks=true,citecolor=blue,filecolor=blue,linkcolor=blue,
+urlcolor=blue,breaklinks=true}
+
+\definecolor{green}{RGB}{0,128,0}
+
+\def\EQ#1\EN{\begin{equation*}#1\end{equation*}}
+\def\BA#1\EA{\begin{align*}#1\end{align*}}
+\def\BS#1\ES{\begin{split*}#1\end{split*}}
+\newcommand{\bc}{\begin{center}}
+\newcommand{\ec}{\end{center}}
+\newcommand{\eq}{\ =\ }
+\newcommand{\degc}{$^\circ$C}
+
+\def\p{\partial}
+\def\qbs{\boldsymbol{q}}
+\def\Dbs{\boldsymbol{D}}
+\def\A{\mathcal A}
+\def\gC{\mathcal C}
+\def\gD{\mathcal D}
+\def\gL{\mathcal L}
+\def\M{\mathcal M}
+\def\P{\mathcal P}
+\def\Q{\mathcal Q}
+\def\gR{\mathcal R}
+\def\gS{\mathcal S}
+\def\X{\mathcal X}
+\def\bnabla{\boldsymbol{\nabla}}
+\def\bnu{\boldsymbol{\nu}}
+\renewcommand{\a}{{\alpha}}
+%\renewcommand{\a}{{}}
+\newcommand{\s}{{\sigma}}
+\newcommand{\bq}{\boldsymbol{q}}
+\newcommand{\bz}{\boldsymbol{z}}
+\def\bPsi{\boldsymbol{\Psi}}
+
+\def\Li{\textit{L}}
+\def\Fb{\textbf{f}}
+\def\Jb{\textbf{J}}
+\def\cb{\textbf{c}}
+
+\def\Dt{\Delta t}
+\def\tpdt{{t + \Delta t}}
+\def\bpsi{\boldsymbol{\psi}}
+\def\dbpsi{\delta \boldsymbol{\psi}}
+\def\bc{\textbf{c}}
+\def\dbc{\delta \textbf{c}}
+\def\arrows{\rightleftharpoons}
+
+\newcommand{\bGamma}{\boldsymbol{\Gamma}}
+\newcommand{\bOmega}{\boldsymbol{\Omega}}
+%\newcommand{\bPsi}{\boldsymbol{\Psi}}
+%\newcommand{\bpsi}{\boldsymbol{\psi}}
+\newcommand{\bO}{\boldsymbol{O}}
+%\newcommand{\bnu}{\boldsymbol{\nu}}
+\newcommand{\bdS}{\boldsymbol{dS}}
+\newcommand{\bg}{\boldsymbol{g}}
+\newcommand{\bk}{\boldsymbol{k}}
+%\newcommand{\bq}{\boldsymbol{q}}
+\newcommand{\br}{\boldsymbol{r}}
+\newcommand{\bR}{\boldsymbol{R}}
+\newcommand{\bS}{\boldsymbol{S}}
+\newcommand{\bu}{\boldsymbol{u}}
+\newcommand{\bv}{\boldsymbol{v}}
+%\newcommand{\bz}{\boldsymbol{z}}
+\newcommand{\pressure}{P}
+
+\def\water{H$_2$O}
+\def\calcium{Ca$^{2+}$}
+\def\copper{Cu$^{2+}$}
+\def\magnesium{Mg$^{2+}$}
+\def\sodium{Na$^+$}
+\def\potassium{K$^+$}
+\def\uranium{UO$_2^{2+}$}
+\def\hion{H$^+$}
+\def\hydroxide{0H$^-$}
+\def\bicarbonate{HCO$_3^-$}
+\def\carbonate{CO$_3^{2-}$}
+\def\cotwo{CO$_2$(aq)}
+\def\chloride{Cl$^-$}
+\def\fluoride{F$^-$}
+\def\phosphoricacid{HPO$_4^{2-}$}
+\def\nitrate{NO$_3^-$}
+\def\sulfate{SO$_4^{2-}$}
+\def\souotwooh{$>$SOUO$_2$OH}
+\def\sohuotwocothree{$>$SOHUO$_2$CO$_3$}
+\def\soh{$>$SOH}
+
+\newcommand{\pft}{PFLOTRAN\xspace}
+
+\newcommand\add[1]{{{\color{blue} #1}}}
+\newcommand\remove[1]{\sout{{\color{red} #1}}}
+\newcommand\codecomment[1]{{{\color{green} #1}}}
+\newcommand\redcolor[1]{{{\color{red} #1}}}
+\newcommand\bluecolor[1]{{{\color{blue} #1}}}
+\newcommand\greencolor[1]{{{\color{green} #1}}}
+\newcommand\magentacolor[1]{{{\color{magenta} #1}}}
+\newcommand\gehcomment[1]{{{\color{orange} #1}}}
+
+\def\aligntop#1{\vtop{\null\hbox{#1}}}
+
+\begin{comment}
+\tiny
+\scriptsize
+\footnotesize
+\small
+\normalsize
+\large
+\Large
+\LARGE
+\huge
+\Huge
+\end{comment}
+
+%\usetheme[height=7mm]{Rochester}  % No navigation bar
+\setbeamertemplate{blocks}[rounded][shadow=true]
+
+\setbeamersize{text margin left=4mm, text margin right=4mm}
+  % Do this so there isn't so much white space before bullet items! --RTM
+
+\beamertemplatenavigationsymbolsempty % to get rid of nav symbols
+%\setbeamertemplate{frames}{}
+
+
+\begin{document}
+\title[Alquimia]{Alquimia: an API for ASCEM geochemistry}
+\author[]{Ben Andre, Glenn Hammond, Carl Steefel}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Template}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\frame{\titlepage}
+%\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{The Alquimia Philosophy}
+\Large
+\begin{itemize}
+\item What Alquimia \bluecolor{is}:
+\begin{itemize}
+\Large
+\item A wrapper facilitating the use of existing, external
+      3$^\text{rd}$ party libraries
+\item Geochemical democracy
+\end{itemize}
+
+\vspace{1cm}
+\item What Alquimia \redcolor{is not}:
+\begin{itemize}
+\Large
+\item A geochemistry library
+\item Geochemical coercion
+\end{itemize}
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Alquimia Concept}
+Provide a uniform application programming interface (API) through which (solute) transport simulators may couple to third-party geochemical reaction libraries.  The API
+\begin{itemize}
+\item provides handles for
+\begin{itemize}
+\item reading and initializing the geochemical basis and associated reactions.
+\item integrating a time step at a single grid cell.
+\item extracting geochemical concentrations.
+\end{itemize}
+\item serves solely to pass information between transport and reaction components (i.e. it does not drive the geochemical solution procedure).
+\item more?
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{Timeline (FY13)}
+\begin{itemize}
+\item Alquimia interface
+\begin{itemize}
+\item Preliminary API - Nov
+\item Batch chemistry driver - Jan
+\item Process constraints with DB - Jan
+\item \emph{Tester} driven reactive transport - Feb \gehcomment{(The term \emph{Demo} may imply linkage to Phase III demos.)}
+\item Amanzi driven reactive transport - May
+\end{itemize}
+\item Geochemistry database
+\begin{itemize}
+\item With unexpected Akuna deliverables, no commitment until FY 14
+\end{itemize}
+
+\newpage
+
+\item Amanzi chemistry library
+\begin{itemize}
+\item Reaction step through Alquimia - Jan
+\item \gehcomment{Do we really want to support this non-native interface?}
+\item \gehcomment{Who is responsible for maintenance?}
+\end{itemize}
+\item CrunchFlow
+\begin{itemize}
+\item Bullets on implementation....
+\item Timeline to parallel \pft
+\end{itemize}
+\item \pft
+\begin{itemize}
+\item Regression test suite - Oct
+\item Isolation of \pft chemistry - Oct
+\item \pft chemsitry
+\begin{itemize}
+\item Reaction step - Dec
+\item Basis Management - Jan
+\item Interface to new geochemical database - FY14
+\end{itemize}
+\end{itemize}
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Alquimia: Required Functionality}
+\begin{itemize}
+\item Reading of geochemical reaction data
+\item Basis management (e.g. reading and swapping the basis)
+\item Constraint processing for geochemical conditions (e.g. boundary/initial conditions, source/sinks) with respect to the specified basis
+\item Speciation
+\item Reaction stepping in operator split mode
+\item Evaluation of local residual and Jacobian entries for grid cell
+\begin{itemize}
+\item Note that \emph{evaluation} does not construct the global Jacobian
+\end{itemize}
+\item Delivery of secondary variables (e.g. pH, reaction rates, mineral saturation, etc.) at the request of the client
+\item
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Division of Labor}
+\begin{tabular}{c|c|c}
+\aligntop{
+\begin{minipage}{0.3\textwidth}
+\textbf{Client}
+\begin{itemize}
+\small
+\item Implemented by developers of process kernel
+\item Manage global storage
+\item Loop through space
+\item Unpack and move data from mesh dependent storage into Alquimia data transfer containers
+\item Manage time stepping, sub-stepping, error handling etc.
+\end{itemize}
+\end{minipage}} &
+\aligntop{
+\begin{minipage}{0.3\textwidth}
+\textbf{Alquimia wrapper}
+\begin{itemize}
+\small
+\item Defines an engine independent API
+\item Provides data munging or delivers raw data
+\item \redcolor{No} geochemical calculations
+\end{itemize}
+\end{minipage}} &
+\aligntop{
+\begin{minipage}{0.3\textwidth}
+\textbf{Engine}
+\begin{itemize}
+\small
+\item Provides all geochemical calculations
+\end{itemize}
+\end{minipage}} \\
+\end{tabular}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
