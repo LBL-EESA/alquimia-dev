@@ -155,7 +155,7 @@ urlcolor=blue,breaklinks=true}
 \begin{itemize}
 \Large
 \item A wrapper facilitating the use of existing, external
-      3$^\text{rd}$ party libraries
+      geochemistry codes as 3$^\text{rd}$ party libraries
 \item Geochemical democracy
 \end{itemize}
 
@@ -163,7 +163,7 @@ urlcolor=blue,breaklinks=true}
 \item What Alquimia \redcolor{is not}:
 \begin{itemize}
 \Large
-\item A geochemistry library
+\item A geochemistry library implementation
 \item Geochemical coercion
 \end{itemize}
 \end{itemize}
@@ -256,7 +256,7 @@ Provide a uniform application programming interface (API) through which (solute)
 \textbf{Client}
 \begin{itemize}
 \small
-\item Implemented by developers of process kernel
+\item Process kernel implemented by developers of the transport code
 \item Manage global storage
 \item Loop through space
 \item Unpack and move data from mesh dependent storage into Alquimia data transfer containers
@@ -278,10 +278,34 @@ Provide a uniform application programming interface (API) through which (solute)
 \textbf{Engine}
 \begin{itemize}
 \small
-\item Provides all geochemical calculations
+\item Provides all geochemical functionality, i.e. basis
+  management, constraint processing, reaction stepping (OS or GI)
 \end{itemize}
 \end{minipage}} \\
 \end{tabular}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Constraint Processing}
+\begin{itemize}
+\item Domain scientist rarely want to define the IC/BC for a problem
+  purely in terms of total component concentrations.
+\item Often want to specify the system in variables that are
+  closer to observational data. for example:
+  \begin{itemize}
+    \item pH instead of Total $H^+$
+    \item aqueous $CO_2$ at equilibrium with the atmosphere
+    \item $Ca^{2+}$ in equilibrium with calcite
+    \item $Cl^-$ based on charge balance.
+  \end{itemize}
+\item What does this mean for state, transport and input processing?
+\item Initial and boundary conditions are no longer simple lists of
+  dirichlet conditions.
+\item ``Geochemical Conditions'' must be preprocessed by the
+  geochemistry engine to determine the appropriate dirichlet condition
+  to apply.
+\item ...
+\end{itemize}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
