@@ -154,7 +154,7 @@ urlcolor=blue,breaklinks=true}
 \item What Alquimia \bluecolor{is}:
 \begin{itemize}
 \Large
-\item A wrapper facilitating the use of existing, external
+\item A wrapper facilitating interfacing with existing, external
       geochemistry codes as 3$^\text{rd}$ party libraries
 \item Geochemical democracy
 \end{itemize}
@@ -174,14 +174,14 @@ urlcolor=blue,breaklinks=true}
 \begin{frame}{Alquimia Concept}
 Provide a uniform application programming interface (API) through which (solute) transport simulators may couple to third-party geochemical reaction libraries.  The API
 \begin{itemize}
-\item provides handles for
+\item Provides a common set of primitive data structures to which data structures from 3$^\text{rd}$ party libraries may be mapped.
+\item Provides common handles (routines) for
 \begin{itemize}
-\item reading and initializing the geochemical basis and associated reactions.
-\item integrating a time step at a single grid cell.
-\item extracting geochemical concentrations.
+\item Reading and initializing the geochemical basis and associated reactions.
+\item Integrating a time step at a single grid cell.
+\item Extracting geochemical concentrations.
 \end{itemize}
-\item serves solely to pass information between transport and reaction components (i.e. it does not drive the geochemical solution procedure).
-\item more?
+\item Serves solely to pass information between transport and reaction components (i.e. it does not drive the geochemical solution procedure).
 \end{itemize}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -193,9 +193,9 @@ Provide a uniform application programming interface (API) through which (solute)
 \begin{itemize}
 \item Preliminary API - Nov
 \item Batch chemistry driver - Jan
-\item Process constraints with DB - Jan
-\item \emph{Tester} driven reactive transport - Feb \gehcomment{(The term \emph{Demo} may imply linkage to Phase III demos.)}
-\item Amanzi driven reactive transport - May
+\item Process constraints with database - Feb
+\item Reactive transport driver - Mar
+\item Amanzi driven reactive transport - Jun
 \end{itemize}
 \item Geochemistry database
 \begin{itemize}
@@ -207,8 +207,8 @@ Provide a uniform application programming interface (API) through which (solute)
 \item Amanzi chemistry library
 \begin{itemize}
 \item Reaction step through Alquimia - Jan
-\item \gehcomment{Do we really want to support this non-native interface?}
-\item \gehcomment{Who is responsible for maintenance?}
+\item \gehcomment{Do we really want to support a non-native interface?}
+\item \gehcomment{Who is responsible for Amanzi chemistry maintenance?}
 \end{itemize}
 \item CrunchFlow
 \begin{itemize}
@@ -233,9 +233,11 @@ Provide a uniform application programming interface (API) through which (solute)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{Alquimia: Required Functionality}
 \begin{itemize}
+\item Handles for
+\begin{itemize}
 \item Reading of geochemical reaction data
 \item Basis management (e.g. reading and swapping the basis)
-\item Constraint processing for geochemical conditions (e.g. boundary/initial conditions, source/sinks) with respect to the specified basis
+\item Constraint processing for geochemical conditions (e.g. boundary/initial conditions, source/sinks) with respect to the desired basis
 \item Speciation
 \item Reaction stepping in operator split mode
 \item Evaluation of local residual and Jacobian entries for grid cell
@@ -243,7 +245,7 @@ Provide a uniform application programming interface (API) through which (solute)
 \item Note that \emph{evaluation} does not construct the global Jacobian
 \end{itemize}
 \item Delivery of secondary variables (e.g. pH, reaction rates, mineral saturation, etc.) at the request of the client
-\item
+\end{itemize}
 \end{itemize}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
