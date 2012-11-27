@@ -138,8 +138,8 @@ urlcolor=blue,breaklinks=true}
 \date{\today}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Template}
-\end{frame}
+%\begin{frame}{Template}
+%\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -154,9 +154,9 @@ urlcolor=blue,breaklinks=true}
 \item What Alquimia \bluecolor{is}:
 \begin{itemize}
 \Large
-\item A wrapper facilitating interfacing with existing, external
+\item An API and wrapper facilitating interfacing with existing, external
       geochemistry codes as 3$^\text{rd}$ party libraries
-\item Geochemical democracy
+%\item Geochemical democracy
 \end{itemize}
 
 \vspace{1cm}
@@ -164,7 +164,7 @@ urlcolor=blue,breaklinks=true}
 \begin{itemize}
 \Large
 \item A geochemistry library implementation
-\item Geochemical coercion
+%\item Geochemical coercion
 \end{itemize}
 \end{itemize}
 \end{frame}
@@ -191,38 +191,42 @@ Provide a uniform application programming interface (API) through which (solute)
 \begin{itemize}
 \item Alquimia interface
 \begin{itemize}
-\item Preliminary API - Nov
-\item Batch chemistry driver - Jan
-\item Process constraints with database - Feb
-\item Reactive transport driver - Mar
+\item Preliminary API (pseudocode) - Dec
+\item Batch chemistry driver \gehcomment{(includes basis swap...? What about CrunchFlow)} - Feb
+\item Process constraints with database - Mar
+\item Reactive transport driver (OS) - Apr
 \item Amanzi driven reactive transport - Jun
 \end{itemize}
 \item Geochemistry database
 \begin{itemize}
 \item With unexpected Akuna deliverables, no commitment until FY 14
 \end{itemize}
+\item Akuna interface
+\begin{itemize}
+\item Preliminary implementation - Mar
+\end{itemize}
 
 \newpage
 
 \item Amanzi chemistry library
 \begin{itemize}
-\item Reaction step through Alquimia - Jan
+\item Reaction step through Alquimia - Feb
 \item \gehcomment{Do we really want to support a non-native interface?}
 \item \gehcomment{Who is responsible for Amanzi chemistry maintenance?}
 \end{itemize}
-\item CrunchFlow
+\item CrunchFlow chemistry library
 \begin{itemize}
 \item Bullets on implementation....
-\item Timeline to parallel \pft
+\item Timeline???
 \end{itemize}
 \item \pft
 \begin{itemize}
-\item Regression test suite - Oct
-\item Isolation of \pft chemistry - Oct
-\item \pft chemsitry
+\item Regression test suite - Done
+\item Isolation of \pft chemistry - Done
+\item \pft chemistry library
 \begin{itemize}
-\item Reaction step - Dec
-\item Basis Management - Jan
+\item Develop Alquimia linkage - Jan
+\item Additional development/refactor as needed
 \item Interface to new geochemical database - FY14
 \end{itemize}
 \end{itemize}
@@ -240,10 +244,10 @@ Provide a uniform application programming interface (API) through which (solute)
 \item Constraint processing for geochemical conditions (e.g. boundary/initial conditions, source/sinks) with respect to the desired basis
 \item Speciation
 \item Reaction stepping in operator split mode
-\item Evaluation of local residual and Jacobian entries for grid cell
-\begin{itemize}
-\item Note that \emph{evaluation} does not construct the global Jacobian
-\end{itemize}
+%\item Evaluation of local residual and Jacobian entries for grid cell
+%\begin{itemize}
+%\item Note that \emph{evaluation} does not construct the global Jacobian
+%\end{itemize}
 \item Delivery of secondary variables (e.g. pH, reaction rates, mineral saturation, etc.) at the request of the client
 \end{itemize}
 \end{itemize}
@@ -281,7 +285,7 @@ Provide a uniform application programming interface (API) through which (solute)
 \begin{itemize}
 \small
 \item Provides all geochemical functionality, i.e. basis
-  management, constraint processing, reaction stepping (OS or GI)
+  management, constraint processing, reaction stepping
 \end{itemize}
 \end{minipage}} \\
 \end{tabular}
@@ -307,6 +311,19 @@ Provide a uniform application programming interface (API) through which (solute)
   geochemistry engine to determine the appropriate dirichlet condition
   to apply.
 \item ...
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\pft Geochemistry Flowchart}
+\begin{itemize}
+\item Initialization
+\item Read input deck
+\item Swap basis (read database, form reaction network)
+\item Equilibrate constraints
+\item Reaction step
+\item Speciate for output
 \end{itemize}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
