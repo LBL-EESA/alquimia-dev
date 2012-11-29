@@ -134,7 +134,7 @@ urlcolor=blue,breaklinks=true}
 
 \begin{document}
 \title[Alquimia]{Alquimia: an API for ASCEM geochemistry}
-\author[]{Ben Andre, Glenn Hammond, Carl Steefel}
+\author[]{Ben Andre, Glenn Hammond, Sergi Molins, Carl Steefel}
 \date{\today}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -192,7 +192,7 @@ Provide a uniform application programming interface (API) through which (solute)
 \item Alquimia interface
 \begin{itemize}
 \item Preliminary API (pseudocode) - Dec
-\item Batch chemistry driver \gehcomment{(includes basis swap...? What about CrunchFlow)} - Feb
+\item Batch chemistry driver - Feb
 \item Process constraints with database - Mar
 \item Reactive transport driver (OS) - Apr
 \item Amanzi driven reactive transport - Jun
@@ -211,8 +211,7 @@ Provide a uniform application programming interface (API) through which (solute)
 \item Amanzi chemistry library
 \begin{itemize}
 \item Reaction step through Alquimia - Feb
-\item \gehcomment{Do we really want to support a non-native interface?}
-\item \gehcomment{Who is responsible for Amanzi chemistry maintenance?}
+\item Existing functionality supported through FY13
 \end{itemize}
 \item CrunchFlow chemistry library
 \begin{itemize}
@@ -240,7 +239,7 @@ Provide a uniform application programming interface (API) through which (solute)
 \item Handles for
 \begin{itemize}
 \item Reading of geochemical reaction data
-\item Basis management (e.g. reading and swapping the basis)
+\item Basis management (e.g. reading and setting the basis)
 \item Constraint processing for geochemical conditions (e.g. boundary/initial conditions, source/sinks) with respect to the desired basis
 \item Speciation
 \item Reaction stepping in operator split mode
@@ -320,12 +319,114 @@ Provide a uniform application programming interface (API) through which (solute)
 \begin{itemize}
 \item Initialization
 \item Read input deck
-\item Swap basis (read database, form reaction network)
+\item Set basis (read database, form reaction network)
 \item Equilibrate constraints
 \item Reaction step
 \item Speciate for output
 \end{itemize}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim]{PFLOTRAN user-friendly input specification}
+\footnotesize
+\begin{tabular}{cc}
+%\aligntop{
+\begin{minipage}{0.5\textwidth}
+\begin{semiverbatim}
+:======== chemistry ========
+CHEMISTRY
+  PRIMARY_SPECIES
+    H+
+    HCO3-
+    Ca++
+  /
+  SECONDARY_SPECIES
+    OH-
+    CO3--
+    CO2(aq)
+    CaCO3(aq)
+    CaHCO3+
+    CaOH+
+  /
+  GAS_SPECIES
+    CO2(g)
+  /
+  ...
+\end{semiverbatim}
+\end{minipage}
+%}
+%\aligntop{
+\begin{minipage}{0.5\textwidth}
+\begin{semiverbatim}
+  ...
+  MINERALS
+    Calcite
+  /
+  MINERAL_KINETICS
+    Calcite
+      RATE_CONSTANT 1.d-6
+    /
+  /
+  DATABASE ./hanford.dat
+  LOG_FORMULATION
+:  OPERATOR_SPLITTING
+  ACTIVITY_COEFFICIENTS TIMESTEP
+  OUTPUT
+    PH
+    all
+  /
+END
+\end{semiverbatim}
+\end{minipage}
+%}
+\end{tabular}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim,allowframebreaks]{PFLOTRAN biogeochemical constraints}
+\footnotesize
+\begin{semiverbatim}
+
+
+
+\bluecolor{CONSTRAINT} copper_leaching_initial_condition
+  \bluecolor{CONCENTRATIONS}
+    Na+      5.0d-3   \bluecolor{T}               \magentacolor{! Total component concentration}
+    K+       2.5d-5   \bluecolor{M} Muscovite     \magentacolor{! Equilibration with mineral}
+    Ca++     6.5d-4   \bluecolor{M} Calcite
+    H+       8.d0     \bluecolor{P}               \magentacolor{! pH}
+    Cu++     6.4d-9   \bluecolor{M} Chrysocolla
+    Al+++    2.8d-17  \bluecolor{M} Kaolinite
+    Fe++     1.2d-23  \bluecolor{M} Goethite
+    SiO2(aq) 1.8d-4   \bluecolor{M} Chalcedony
+    HCO3-    -3.d0    \bluecolor{G} CO2(g)        \magentacolor{! Equilibration with CO2(g)}
+    SO4--    5.0d-4   \bluecolor{DATASET} Sulfate \magentacolor{! Dataset name `random_so4'}
+    Cl-      3.7d-3   \bluecolor{Z}               \magentacolor{! Charge balance}
+    O2(aq)   -0.7d0   \bluecolor{G} O2(g)
+  \bluecolor{/}
+  ...
+\end{semiverbatim}
+\newpage
+\begin{semiverbatim}
+  ...
+  \bluecolor{MINERALS}        \magentacolor{vol. frac.}    \magentacolor{spec. surf. area}
+    Alunite       0.d0          1.d0 cm^2/cm^3
+    Chrysocolla2  5.0d-3        1.d0 cm^2/cm^3
+    Goethite      2.5d-2        1.d0 cm^2/cm^3
+    Gypsum        0.d0          1.d0 cm^2/cm^3
+    Jarosite      0.d0          1.d0 cm^2/cm^3
+    Jurbanite     0.d0          1.d0 cm^2/cm^3
+    Kaolinite     5.0d-2        1.d0 cm^2/cm^3
+    Muscovite     5.0d-2        1.d0 cm^2/cm^3
+    SiO2(am)      0.d0          1.d0 cm^2/cm^3
+    Quartz        8.2d-1        1.d0 cm^2/cm^3
+  \bluecolor{/}
+\bluecolor{/}
+\end{semiverbatim}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}
