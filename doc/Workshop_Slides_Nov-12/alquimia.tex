@@ -187,53 +187,6 @@ Provide a uniform application programming interface (API) through which (solute)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[allowframebreaks]{Timeline (FY13)}
-\begin{itemize}
-\item Alquimia interface
-\begin{itemize}
-\item Preliminary API (pseudocode) - Dec
-\item Batch chemistry driver - Feb
-\item Process constraints with database - Mar
-\item Reactive transport driver (OS) - Apr
-\item Amanzi driven reactive transport - Jun
-\end{itemize}
-\item Geochemistry database
-\begin{itemize}
-\item With unexpected Akuna deliverables, no commitment until FY 14
-\end{itemize}
-\item Akuna interface
-\begin{itemize}
-\item Preliminary implementation - Mar
-\end{itemize}
-
-\newpage
-
-\item Amanzi chemistry library
-\begin{itemize}
-\item Reaction step through Alquimia - Feb
-\item Existing functionality supported through FY13
-\end{itemize}
-\item CrunchFlow chemistry library
-\begin{itemize}
-\item Bullets on implementation....
-\item Timeline???
-\end{itemize}
-\item \pft
-\begin{itemize}
-\item Regression test suite - Done
-\item Isolation of \pft chemistry - Done
-\item \pft chemistry library
-\begin{itemize}
-\item Develop Alquimia linkage - Jan
-\item Additional development/refactor as needed
-\item Interface to new geochemical database - FY14
-\end{itemize}
-\end{itemize}
-\end{itemize}
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{Alquimia: Required Functionality}
 \begin{itemize}
 \item Handles for
@@ -314,77 +267,6 @@ Provide a uniform application programming interface (API) through which (solute)
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{\pft Geochemistry Flowchart}
-\begin{itemize}
-\item Initialization
-\item Read input deck
-\item Set basis (read database, form reaction network)
-\item Equilibrate constraints
-\item Reaction step
-\item Speciate for output
-\end{itemize}
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile,containsverbatim]{PFLOTRAN user-friendly input specification}
-\footnotesize
-\begin{tabular}{cc}
-%\aligntop{
-\begin{minipage}{0.5\textwidth}
-\begin{semiverbatim}
-:======== chemistry ========
-CHEMISTRY
-  PRIMARY_SPECIES
-    H+
-    HCO3-
-    Ca++
-  /
-  SECONDARY_SPECIES
-    OH-
-    CO3--
-    CO2(aq)
-    CaCO3(aq)
-    CaHCO3+
-    CaOH+
-  /
-  GAS_SPECIES
-    CO2(g)
-  /
-  ...
-\end{semiverbatim}
-\end{minipage}
-%}
-%\aligntop{
-\begin{minipage}{0.5\textwidth}
-\begin{semiverbatim}
-  ...
-  MINERALS
-    Calcite
-  /
-  MINERAL_KINETICS
-    Calcite
-      RATE_CONSTANT 1.d-6
-    /
-  /
-  DATABASE ./hanford.dat
-  LOG_FORMULATION
-:  OPERATOR_SPLITTING
-  ACTIVITY_COEFFICIENTS TIMESTEP
-  OUTPUT
-    PH
-    all
-  /
-END
-\end{semiverbatim}
-\end{minipage}
-%}
-\end{tabular}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile,containsverbatim,allowframebreaks]{PFLOTRAN biogeochemical constraints}
 \footnotesize
@@ -426,6 +308,240 @@ END
   \bluecolor{/}
 \bluecolor{/}
 \end{semiverbatim}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{Timeline (FY13)}
+\begin{itemize}
+\item Alquimia interface
+\begin{itemize}
+\item Preliminary API (pseudocode) - Dec
+\item Batch chemistry driver - Feb
+\item Process constraints with database - Mar
+\item Reactive transport driver (OS) - Apr
+\item Amanzi driven reactive transport - Jun
+\end{itemize}
+\item Geochemistry database
+\begin{itemize}
+\item With unexpected Akuna deliverables, no commitment until FY 14
+\end{itemize}
+\item Akuna interface
+\begin{itemize}
+\item Preliminary implementation - Mar
+\end{itemize}
+
+\newpage
+
+\item Amanzi chemistry library
+\begin{itemize}
+\item Reaction step through Alquimia - Feb
+\item Existing functionality supported through FY13
+\end{itemize}
+\item CrunchFlow chemistry library
+\begin{itemize}
+\item Bullets on implementation....
+\item Timeline???
+\end{itemize}
+\item \pft
+\begin{itemize}
+\item Regression test suite - Done
+\item Isolation of \pft chemistry - Done
+\item \pft chemistry library
+\begin{itemize}
+\item Develop Alquimia linkage - Jan
+\item Additional development/refactor as needed
+\item Interface to new geochemical database - FY14
+\end{itemize}
+\end{itemize}
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\pft Geochemistry Flowchart}
+\begin{itemize}
+\item Initialization
+\item Read input deck
+\item Set basis (read database, form reaction network)
+\item Equilibrate constraints
+\item Reaction step
+\item Speciate for output
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim]{PFLOTRAN input specification example}
+\footnotesize
+\begin{tabular}{cc}
+%\aligntop{
+\begin{minipage}{0.5\textwidth}
+\begin{semiverbatim}
+\greencolor{:======== chemistry ========}
+\bluecolor{CHEMISTRY}
+  \bluecolor{PRIMARY_SPECIES}
+    H+
+    HCO3-
+    Ca++
+  \bluecolor{/}
+  \bluecolor{SECONDARY_SPECIES}
+    OH-
+    CO3--
+    CO2(aq)
+    CaCO3(aq)
+    CaHCO3+
+    CaOH+
+  \bluecolor{/}
+  \bluecolor{GAS_SPECIES}
+    CO2(g)
+  \bluecolor{/}
+  ...
+\end{semiverbatim}
+\end{minipage}
+%}
+%\aligntop{
+\begin{minipage}{0.5\textwidth}
+\begin{semiverbatim}
+  ...
+  \bluecolor{MINERALS}
+    Calcite
+  \bluecolor{/}
+  \bluecolor{MINERAL_KINETICS}
+    Calcite
+      \bluecolor{RATE_CONSTANT} 1.d-6
+    \bluecolor{/}
+  \bluecolor{/}
+  \bluecolor{DATABASE} ./hanford.dat
+  \bluecolor{LOG_FORMULATION}
+\greencolor{:  OPERATOR_SPLITTING}
+  \bluecolor{ACTIVITY_COEFFICIENTS TIMESTEP}
+  \bluecolor{OUTPUT}
+    PH
+    all
+  \bluecolor{/}
+\bluecolor{END}
+\end{semiverbatim}
+\end{minipage}
+%}
+\end{tabular}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim,allowframebreaks]{PFLOTRAN biogeochemical constraints: IFRC}
+\footnotesize
+\begin{semiverbatim}
+\bluecolor{CONSTRAINT} ifrc_initial_condition_SZ
+  \bluecolor{CONCENTRATIONS}
+    H+       7.3          \bluecolor{P}
+    Ca++     1.2d-3       \bluecolor{T}
+    Mg++     5.1d-4       \bluecolor{T}
+    UO2++    5.d-7        \bluecolor{T DATASET} Initial_U
+    K+       1.6d-4       \bluecolor{T}
+    Na+      1.0d-3       \bluecolor{Z}
+    HCO3-    2.6d-3       \bluecolor{T}
+    Cl-      7.0d-4       \bluecolor{T}
+    SO4--    6.4d-4       \bluecolor{T}
+    Tracer   1.e-7        \bluecolor{F}    
+  \bluecolor{/}
+  \bluecolor{MINERALS}
+    Calcite        \bluecolor{DATASET} Calcite_Vol_Frac 1.
+    Metatorbernite 0.0   1.
+  \bluecolor{/}
+\bluecolor{/}
+\end{semiverbatim}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim,allowframebreaks]{PFLOTRAN biogeochemistry OO Design}
+\scriptsize
+%\footnotesize
+\begin{semiverbatim}
+    \bluecolor{type}, \bluecolor{public} :: reaction_type
+      ...
+     \bluecolor{integer} :: neqcplx                     \greencolor{! # sec aq complexes}
+      \bluecolor{integer}, \bluecolor{pointer} :: eqcplxspecid(:,:)  \greencolor{! pri spec ids in cplx}
+      \bluecolor{real*8}, \bluecolor{pointer} :: eqcplxstoich(:,:)   \greencolor{! stoich of pri spec}
+      \bluecolor{real*8}, \bluecolor{pointer} :: eqcplx_lnK(:)       \greencolor{! nat log of equil coef}
+      ...
+    \bluecolor{end} reaction_type
+
+    \bluecolor{type}, \bluecolor{public} :: reactive_transport_auxvar_type
+      ...
+      \bluecolor{real*8}, \bluecolor{pointer} :: pri_molal(:)     \greencolor{! pri spec conc [m]}
+      \bluecolor{real*8}, \bluecolor{pointer} :: total(:,:)       \greencolor{! tot comp conc [M]}
+      \bluecolor{real*8}, \bluecolor{pointer} :: sec_molal(:)     \greencolor{! sec aq complex conc [m]}
+      \bluecolor{real*8}, \bluecolor{pointer} :: pri_act_coef(:)  \greencolor{! pri act coef}
+      \bluecolor{real*8}, \bluecolor{pointer} :: sec_act_coef(:)  \greencolor{! sec act coef}
+      ...
+    \bluecolor{end type} reactive_transport_auxvar_type
+\end{semiverbatim}
+
+\newpage
+
+
+
+\tiny
+\begin{semiverbatim}
+          \bluecolor{integer} :: i, icomp, icplx, ncomp, iphase
+          \bluecolor{real*8} :: ln_act(:), lnQK
+          \bluecolor{type}(reactive_transport_auxvar_type), \bluecolor{pointer} :: rt_axuvar
+          \bluecolor{type}(reaction_type), \bluecolor{pointer} :: reaction
+
+          ln_act(:) = \bluecolor{log}(rt_auxvar%pri_molal(:)) + &
+                      \bluecolor{log}(rt_auxvar%pri_act_coef(:))
+
+          \bluecolor{do} icplx = 1, reaction%neqcplx ! for each sec aq complex
+
+            \greencolor{! calculate secondary aqueous complex concentration}
+            lnQK = -reaction%eqcplx_lnK(icplx)
+            ncomp = reaction%eqcplxspecid(0,icplx)
+            \bluecolor{do} i = 1, ncomp
+              icomp = reaction%eqcplxspecid(i,icplx)
+              lnQK = lnQK + reaction%eqcplxstoich(i,icplx) * &
+                            ln_act(icomp)
+            \bluecolor{enddo}
+            rt_auxvar%sec_molal(icplx) = \bluecolor{exp}(lnQK) / &
+                               rt_auxvar%sec_act_coef(icplx)
+
+            \greencolor{! add complex to total component concentration}
+            \bluecolor{do} i = 1, ncomp
+              icomp = reaction%eqcplxspecid(i,icplx)
+              rt_auxvar%total(icomp,iphase) = &
+                                       rt_auxvar%total(icomp,iphase) + &
+                                       reaction%eqcplxstoich(i,icplx)* &
+                                       rt_auxvar%sec_molal(icplx)
+            \bluecolor{enddo}
+          \bluecolor{enddo}
+\end{semiverbatim}
+
+\newpage
+%\scriptsize
+\footnotesize
+\begin{semiverbatim}
+    \greencolor{! initialization of reaction network and basis}
+    \bluecolor{call} DatabaseRead(reaction,option)
+    \bluecolor{call} BasisInit(reaction,option)
+    ...
+
+    \greencolor{! equilibration of constraint and assignment to auxvar object}
+    \bluecolor{call} ReactionEquilibrateConstraint(rt_auxvar,global_auxvar, &
+                                       reaction, &
+                                       constraint_coupler, &
+                                       porosity, &
+                                       PETSC_FALSE,option)
+    ...
+    
+    \greencolor{! computing reaction contribution to residual and Jacobian}
+    \bluecolor{call} RReaction(residual,J,PETSC_FALSE, &
+                   rt_aux_vars(ghosted_id), &
+                   global_aux_vars(ghosted_id), &
+                   porosity(ghosted_id), &
+                   volume(local_id),reaction,option)                            
+\end{semiverbatim}                            
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
