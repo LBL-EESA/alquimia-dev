@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
 #include <stdexcept>
 
 #include "pflotran_alquimia_interface.h"
@@ -52,6 +53,11 @@ AlquimiaInterface* AlquimiaInterfaceFactory::Create(
             << "    '" << alquimia::strings::kCrunchFlow << "'\n"
             << "    '" << alquimia::strings::kCppChem << "'\n";
     throw std::runtime_error(message.str());
+  }
+
+  if (interface != NULL) {
+    std::cout << "AlquimiaInterfaceFactory::Create() : successfully created "
+              << engine_name << " interface.\n";
   }
 
   return interface;

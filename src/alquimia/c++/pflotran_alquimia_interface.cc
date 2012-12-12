@@ -1,6 +1,9 @@
 /* -*-  mode: c++; c-default-style: "google"; indent-tabs-mode: nil -*- */
 #include "pflotran_alquimia_interface.h"
 
+#include <iostream>
+#include <string>
+
 #include "pflotran_alquimia_interface.h"
 #include "alquimia_containers.h"
 
@@ -20,7 +23,8 @@ void PFloTranAlquimiaInterface::Setup(
     AlquimiaMetaData* meta_data,
     AlquimiaEngineStatus* status) {
   // call pflotran's init function
-  
+  std::cout << "PFloTranAlquimiaInterface::Setup() : dummy read '"
+            << input_file << "'\n";
   // get the size of data that pflotran expects to be passed
   int data_size = 1;
   SetupDataTransfer(data_size);

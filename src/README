@@ -1,0 +1,21 @@
+To build with a particular interface into alquimia, run make as:
+
+make PFLOTRAN_DIR=/path/to/pflotran all
+make CRUNCH_DIR=/path/to/crunch all
+make PFLOTRAN_DIR=/path/to/pflotran CRUNCH_DIR=/path/to/crunch all
+
+To build with debug symbols:
+
+make DEBUG=1 PFLOTRAN_DIR=${HOME}/projects/alquimia/pflotran-dev all
+
+You should see compiler lines that look like:
+
+$ make DEBUG=1 PFLOTRAN_DIR=${HOME}/projects/alquimia/pflotran-dev all
+g++ -DHAVE_PFLOTRAN -g -I.   -c -o alquimia_interface_factory.o alquimia_interface_factory.cc
+g++ -DHAVE_PFLOTRAN -g -I.   -c -o pflotran_alquimia_interface.o pflotran_alquimia_interface.cc
+...
+...
+
+
+Test the buildsystem by running "make clobber" to remove all object
+files, libraries and executables and start from scratch with make all.
