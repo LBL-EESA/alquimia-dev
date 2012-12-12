@@ -9,6 +9,7 @@
  ******************************************************************************/
 
 #include <vector>
+#include <map>
 #include <string>
 
 namespace alquimia {
@@ -65,6 +66,8 @@ struct AlquimiaGeochemicalConstraint {
 };
   
 typedef std::vector<AlquimiaGeochemicalConstraint> AlquimiaGeochemicalCondition;
+
+typedef std::map<std::string, AlquimiaGeochemicalCondition> AlquimiaConditions;
 
 struct OutputData {
   double pH;
