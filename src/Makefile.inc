@@ -17,4 +17,6 @@ ifdef CRUNCH_DIR
 #       LDFLAGS += -L$(CRUNCH_DIR)/src -lcrunch_chem
 endif
 
-
+ifdef DEBUG
+      CXXFLAGS += -g
+endif
