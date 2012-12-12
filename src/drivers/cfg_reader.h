@@ -19,6 +19,9 @@ struct SimulationParameters {
   std::string description;
   std::string engine;
   std::string engine_inputfile;
+  std::string initial_condition;
+  double delta_t;
+  int num_time_steps;
   std::string use_text_output;
   std::string output_time_units;
 };
@@ -44,6 +47,8 @@ class AlquimiaConfigReader {
  protected:
 
  private:
+  void GetLineCleaned(std::ifstream* input_file,
+                      std::string* line);
 
   void ParseSimulationSection(std::ifstream* input_file,
                               SimulationParameters* params);
@@ -53,10 +58,6 @@ class AlquimiaConfigReader {
   void ParseMaterialPropertySection(
       std::ifstream* input_file,
       alquimia::AlquimiaMaterialProperties* material_props);
-  
-  void ParseGeochemicalConditionsSection(
-      std::ifstream* input_file,
-      alquimia::AlquimiaConditions* geochemical_conditions);
   
   void ParseConditionSection(
       std::ifstream* input_file,
@@ -69,30 +70,35 @@ class AlquimiaConfigReader {
   void PrintGeochemicalConditions(
       const alquimia::AlquimiaConditions conditions);
 
+  static const std::string kEqual;
+  static const std::string kSpaces;
+
   static const std::string kSimulationSection;
-  static const std::string kDescriptionParam;
-  static const std::string kEngineParam;
-  static const std::string kEngineInputfileParam;
-  static const std::string kUseTextOutputParam;
-  static const std::string kOutputTimeUnitsParam;
+  static const std::string kDescriptionString;
+  static const std::string kEngineString;
+  static const std::string kEngineInputfileString;
+  static const std::string kICString;
+  static const std::string kDeltaTimeString;
+  static const std::string kNumTimeStepsString;
+  static const std::string kUseTextOutputString;
+  static const std::string kOutputTimeUnitsString;
   
   static const std::string kStateSection;
-  static const std::string kDensityParam;
-  static const std::string kSaturationParam;
-  static const std::string kPorosityParam;
-  static const std::string kTemperatureParam;
-  static const std::string kPressureParam;
+  static const std::string kDensityString;
+  static const std::string kSaturationString;
+  static const std::string kPorosityString;
+  static const std::string kTemperatureString;
+  static const std::string kPressureString;
   
   static const std::string kMaterialPropertiesSection;
-  static const std::string kVolumeParam;
-  static const std::string kIsothermKdParam;
-  static const std::string kFreundlichNParam;
-  static const std::string kLangmuirBParam;
+  static const std::string kVolumeString;
+  static const std::string kIsothermKdString;
+  static const std::string kFreundlichNString;
+  static const std::string kLangmuirBString;
   
   static const std::string kGeochemicalConditionsSection;
   static const std::string kNamedConditionSection;
-  static const std::string kNameParam;
-  //static const std::string kICParam;
+  static const std::string kNameString;
   
 };
 

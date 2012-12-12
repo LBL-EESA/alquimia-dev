@@ -13,30 +13,35 @@ namespace alquimia {
 namespace drivers {
 namespace utilities {
 
+const  std::string AlquimiaConfigReader::kEqual("=:");
+const  std::string AlquimiaConfigReader::kSpaces(" \t");
+
 const std::string AlquimiaConfigReader::kSimulationSection("simulation_parameters");
-const std::string AlquimiaConfigReader::kDescriptionParam("description");
-const std::string AlquimiaConfigReader::kEngineParam("engine");
-const std::string AlquimiaConfigReader::kEngineInputfileParam("engine_inputfile");
-const std::string AlquimiaConfigReader::kUseTextOutputParam("use_text_output");
-const std::string AlquimiaConfigReader::kOutputTimeUnitsParam("output_time_units");
+const std::string AlquimiaConfigReader::kDescriptionString("description");
+const std::string AlquimiaConfigReader::kEngineString("engine");
+const std::string AlquimiaConfigReader::kEngineInputfileString("engine_inputfile");
+const std::string AlquimiaConfigReader::kICString("initial_condition");
+const std::string AlquimiaConfigReader::kDeltaTimeString("delta_t");
+const std::string AlquimiaConfigReader::kNumTimeStepsString("num_time_steps");
+const std::string AlquimiaConfigReader::kUseTextOutputString("use_text_output");
+const std::string AlquimiaConfigReader::kOutputTimeUnitsString("output_time_units");
 
 const std::string AlquimiaConfigReader::kStateSection("state");
-const std::string AlquimiaConfigReader::kDensityParam("density");
-const std::string AlquimiaConfigReader::kSaturationParam("saturation");
-const std::string AlquimiaConfigReader::kPorosityParam("porosity");
-const std::string AlquimiaConfigReader::kTemperatureParam("temperature");
-const std::string AlquimiaConfigReader::kPressureParam("pressure");
+const std::string AlquimiaConfigReader::kDensityString("density");
+const std::string AlquimiaConfigReader::kSaturationString("saturation");
+const std::string AlquimiaConfigReader::kPorosityString("porosity");
+const std::string AlquimiaConfigReader::kTemperatureString("temperature");
+const std::string AlquimiaConfigReader::kPressureString("pressure");
 
 const std::string AlquimiaConfigReader::kMaterialPropertiesSection("material_properties");
-const std::string AlquimiaConfigReader::kVolumeParam("volume");
-const std::string AlquimiaConfigReader::kIsothermKdParam("isotherm_kd");
-const std::string AlquimiaConfigReader::kFreundlichNParam("freundlich_n");
-const std::string AlquimiaConfigReader::kLangmuirBParam("langmuir_b");
+const std::string AlquimiaConfigReader::kVolumeString("volume");
+const std::string AlquimiaConfigReader::kIsothermKdString("isotherm_kd");
+const std::string AlquimiaConfigReader::kFreundlichNString("freundlich_n");
+const std::string AlquimiaConfigReader::kLangmuirBString("langmuir_b");
 
 const std::string AlquimiaConfigReader::kGeochemicalConditionsSection("geochemical_conditions");
 const std::string AlquimiaConfigReader::kNamedConditionSection("condition");
-const std::string AlquimiaConfigReader::kNameParam("name");
-//const std::string AlquimiaConfigReader::kICParam("ic");
+const std::string AlquimiaConfigReader::kNameString("name");
 
 void AlquimiaConfigReader::ReadInputFile(
     const std::string& file_name,
@@ -67,13 +72,6 @@ void AlquimiaConfigReader::ReadInputFile(
     char next = input_file.peek();
     //std::cout << "ReadInputFile() : next = " << next << std::endl;
 
-    // TODO(bja): need to add windows line end check to all getline() calls!
-    // if ((raw_line.size() > 0) && (raw_line.at(raw_line.size() - 1) == '\r')) {
-    //   // getline only searches for \n line ends. windows files use \r\n
-    //   // check for a hanging \r and remove it if it is there
-    //   raw_line.resize(raw_line.size() - 1);
-    // }
-
     // char first = '\0';
     // if (raw_line.length() > 0) {
     //   first = raw_line[0];
@@ -93,7 +91,7 @@ void AlquimiaConfigReader::ReadInputFile(
 
     if (line_type == kSection) {
       std::string raw_line;
-      getline(input_file, raw_line);
+      GetLineCleaned(&input_file, &raw_line);
       //std::cout << raw_line << std::endl;
       size_t first = raw_line.find_first_not_of('[');
       size_t last = raw_line.find_last_of(']');
@@ -109,9 +107,6 @@ void AlquimiaConfigReader::ReadInputFile(
                                                     kMaterialPropertiesSection)) {
         ParseMaterialPropertySection(&input_file, material_props);
       } else if (util::CaseInsensitiveStringCompare(section_name,
-                                                    kGeochemicalConditionsSection)) {
-        ParseGeochemicalConditionsSection(&input_file, conditions);
-      } else if (util::CaseInsensitiveStringCompare(section_name,
                                                     kNamedConditionSection)) {
         ParseConditionSection(&input_file, conditions);
       } else {
@@ -123,14 +118,25 @@ void AlquimiaConfigReader::ReadInputFile(
   input_file.close();
 }  // end ReadInputFile()
 
+void AlquimiaConfigReader::GetLineCleaned(
+    std::ifstream* input_file,
+    std::string* line) {
+  namespace util = alquimia::drivers::utilities;
+  getline(*input_file, *line);
+  if ((line->size() > 0) && (line->at(line->size() - 1) == '\r')) {
+    // getline only searches for \n line ends. windows files use \r\n
+    // check for a hanging \r and remove it if it is there
+    line->resize(line->size() - 1);
+  }
+  util::RemoveLeadingAndTrailingWhitespace(line);
+}  // end GetLineCleaned()
+
 
 void AlquimiaConfigReader::ParseSimulationSection(
     std::ifstream* input_file,
     SimulationParameters* simulation)
 {
   namespace util = alquimia::drivers::utilities;
-  std::string equal("=:");
-  std::string spaces(" \t");
   std::string raw_line;
   bool new_section(false);
   while (!input_file->eof() && !new_section) {
@@ -139,11 +145,11 @@ void AlquimiaConfigReader::ParseSimulationSection(
       new_section = true;
     } else if (next == '#' || next == ' ') {
       // comment line, do nothing
-      getline(*input_file, raw_line);
+      GetLineCleaned(input_file, &raw_line);
     } else {
       // parameter line
-      getline(*input_file, raw_line);
-      util::StringTokenizer params(raw_line, equal);
+      GetLineCleaned(input_file, &raw_line);
+      util::StringTokenizer params(raw_line, kEqual);
       //std::cout << "\'" << raw_line << "\'" << std::endl;
       // if params.size() == 0 then we have a blank line
       if (params.size() == 2) {
@@ -152,18 +158,24 @@ void AlquimiaConfigReader::ParseSimulationSection(
         std::string value = params.at(1);
         util::RemoveLeadingAndTrailingWhitespace(&value);
         //std::cout << "Parsing ----->  '" << params.at(0) << "'" << std::endl;
-        if (util::CaseInsensitiveStringCompare(key, kDescriptionParam)) {
+        if (util::CaseInsensitiveStringCompare(key, kDescriptionString)) {
           // the description probably has spaces in it, so we want to use
           // the raw parameter value from params.at(1)
           simulation->description.assign(value);
-        } else if (util::CaseInsensitiveStringCompare(key, kEngineParam)) {
+        } else if (util::CaseInsensitiveStringCompare(key, kEngineString)) {
           simulation->engine.assign(value);
-        } else if (util::CaseInsensitiveStringCompare(key, kEngineInputfileParam)) {
+        } else if (util::CaseInsensitiveStringCompare(key, kEngineInputfileString)) {
           simulation->engine_inputfile.assign(value);
-        } else if (util::CaseInsensitiveStringCompare(key, kUseTextOutputParam)) {
+        } else if (util::CaseInsensitiveStringCompare(key, kDeltaTimeString)) {
+          simulation->delta_t = std::atof(value.c_str());
+        } else if (util::CaseInsensitiveStringCompare(key, kNumTimeStepsString)) {
+          simulation->num_time_steps = std::atoi(value.c_str());
+        } else if (util::CaseInsensitiveStringCompare(key, kUseTextOutputString)) {
           simulation->use_text_output.assign(value);
-        } else if (util::CaseInsensitiveStringCompare(key, kOutputTimeUnitsParam)) {
+        } else if (util::CaseInsensitiveStringCompare(key, kOutputTimeUnitsString)) {
           simulation->output_time_units.assign(value);
+        } else if (util::CaseInsensitiveStringCompare(key, kICString)) {
+          simulation->initial_condition.assign(value);
         }
       }
     }  // end else(parameter line)
@@ -176,8 +188,6 @@ void AlquimiaConfigReader::ParseStateSection(
     alquimia::AlquimiaState* state)
 {
   namespace util = alquimia::drivers::utilities;
-  std::string equal("=:");
-  std::string spaces(" \t");
   std::string raw_line;
   bool new_section(false);
   while (!input_file->eof() && !new_section) {
@@ -186,11 +196,11 @@ void AlquimiaConfigReader::ParseStateSection(
       new_section = true;
     } else if (next == '#' || next == ' ') {
       // comment line, do nothing
-      getline(*input_file, raw_line);
+      GetLineCleaned(input_file, &raw_line);
     } else {
       // parameter line
-      getline(*input_file, raw_line);
-      util::StringTokenizer params(raw_line, equal);
+      GetLineCleaned(input_file, &raw_line);
+      util::StringTokenizer params(raw_line, kEqual);
       //std::cout << "\'" << raw_line << "\'" << std::endl;
       // if param.size() == 0 then we have a blank line
       if (params.size() == 2) {
@@ -199,15 +209,15 @@ void AlquimiaConfigReader::ParseStateSection(
         std::string value(params.at(1));
         util::RemoveLeadingAndTrailingWhitespace(&value);
         //std::cout << "Parsing ----->  '" << param.at(0) << "'" << std::endl;
-        if (util::CaseInsensitiveStringCompare(key, kDensityParam)) {
+        if (util::CaseInsensitiveStringCompare(key, kDensityString)) {
           state->water_density = std::atof(value.c_str());
-        } else if (util::CaseInsensitiveStringCompare(key, kSaturationParam)) {
+        } else if (util::CaseInsensitiveStringCompare(key, kSaturationString)) {
           state->saturation = std::atof(value.c_str());
-        } else if (util::CaseInsensitiveStringCompare(key, kPorosityParam)) {
+        } else if (util::CaseInsensitiveStringCompare(key, kPorosityString)) {
           state->porosity = std::atof(value.c_str());
-        } else if (util::CaseInsensitiveStringCompare(key, kTemperatureParam)) {
+        } else if (util::CaseInsensitiveStringCompare(key, kTemperatureString)) {
           state->temperature = std::atof(value.c_str());
-        } else if (util::CaseInsensitiveStringCompare(key, kPressureParam)) {
+        } else if (util::CaseInsensitiveStringCompare(key, kPressureString)) {
           state->aqueous_pressure = std::atof(value.c_str());
         }
       }
@@ -220,8 +230,6 @@ void AlquimiaConfigReader::ParseMaterialPropertySection(
     alquimia::AlquimiaMaterialProperties* material_props)
 {
   namespace util = alquimia::drivers::utilities;
-  std::string equal("=:");
-  std::string spaces(" \t");
   std::string raw_line;
   bool new_section(false);
   while (!input_file->eof() && !new_section) {
@@ -230,11 +238,11 @@ void AlquimiaConfigReader::ParseMaterialPropertySection(
       new_section = true;
     } else if (next == '#' || next == ' ') {
       // comment line, do nothing
-      getline(*input_file, raw_line);
+      GetLineCleaned(input_file, &raw_line);
     } else {
       // parameter line
-      getline(*input_file, raw_line);
-      util::StringTokenizer params(raw_line, equal);
+      GetLineCleaned(input_file, &raw_line);
+      util::StringTokenizer params(raw_line, kEqual);
       //std::cout << "\'" << raw_line << "\'" << std::endl;
       // if params.size() == 0 then we have a blank line
       if (params.size() == 2) {
@@ -243,7 +251,7 @@ void AlquimiaConfigReader::ParseMaterialPropertySection(
         std::string value = params.at(1);
         util::RemoveLeadingAndTrailingWhitespace(&value);
         // single valued parameters go first
-        if (util::CaseInsensitiveStringCompare(key, kVolumeParam)) {
+        if (util::CaseInsensitiveStringCompare(key, kVolumeString)) {
           material_props->volume = std::atof(value.c_str());
         } else {
           // now we deal with vector parameters.
@@ -253,18 +261,18 @@ void AlquimiaConfigReader::ParseMaterialPropertySection(
           util::StringTokenizer vec_values(value, ",");
           for (util::StringTokenizer::iterator s = vec_values.begin();
                s != vec_values.end(); ++s) {
-            util::StringTokenizer data(*s, spaces);
+            util::StringTokenizer data(*s, kSpaces);
             std::string species(data.at(0));
             util::RemoveLeadingAndTrailingWhitespace(&key);
             std::string value_str(data.at(1));
             util::RemoveLeadingAndTrailingWhitespace(&value_str);
             double species_value(std::atof(value_str.c_str()));
             //std::cout << "Parsing ----->  " << key << " : " << species << std::endl;
-            if (util::CaseInsensitiveStringCompare(key, kIsothermKdParam)) {
+            if (util::CaseInsensitiveStringCompare(key, kIsothermKdString)) {
               material_props->isotherm_kd.push_back(species_value);
-            } else if (util::CaseInsensitiveStringCompare(key, kFreundlichNParam)) {
+            } else if (util::CaseInsensitiveStringCompare(key, kFreundlichNString)) {
               material_props->freundlich_n.push_back(species_value);
-            } else if (util::CaseInsensitiveStringCompare(key, kLangmuirBParam)) {
+            } else if (util::CaseInsensitiveStringCompare(key, kLangmuirBString)) {
               material_props->langmuir_b.push_back(species_value);
             }
           }  // end for(s)
@@ -274,47 +282,11 @@ void AlquimiaConfigReader::ParseMaterialPropertySection(
   }  // end while(input_file)
 }  // end ParseMaterialPropertiesSection();
 
-void AlquimiaConfigReader::ParseGeochemicalConditionsSection(
-    std::ifstream* input_file,
-    alquimia::AlquimiaConditions* geochemical_conditions)
-{
-  namespace util = alquimia::drivers::utilities;
-  std::string equal("=:");
-  std::string spaces(" \t");
-  std::string raw_line;
-  bool new_section(false);
-  while (!input_file->eof() && !new_section) {
-    char next = input_file->peek();
-    if (next == '[') {
-      new_section = true;
-    } else if (next == '#' || next == ' ') {
-      // comment line, do nothing
-      getline(*input_file, raw_line);
-    } else {
-      // parameter line
-      getline(*input_file, raw_line);
-      util::StringTokenizer params(raw_line, equal);
-      //std::cout << "\'" << raw_line << "\'" << std::endl;
-      // if params.size() == 0 then we have a blank line
-      if (params.size() > 0) {
-        std::string key = params.at(0);
-        util::RemoveLeadingAndTrailingWhitespace(&key);
-        // we ignore the values here
-        //std::string value = params.at(1);
-        //util::RemoveLeadingAndTrailingWhitespace(&value);
-        (*geochemical_conditions)[key] = alquimia::AlquimiaGeochemicalCondition();
-      }
-    }  // end else(parameter line)
-  }  // end while(input_file)
-}  // end ParseGeochemicalConditionsSection();
-
 void AlquimiaConfigReader::ParseConditionSection(
     std::ifstream* input_file,
     alquimia::AlquimiaConditions* geochemical_conditions)
 {
   namespace util = alquimia::drivers::utilities;
-  std::string equal("=:");
-  std::string spaces(" \t");
   std::string condition_name("");
   std::string raw_line;
   bool new_section(false);
@@ -324,11 +296,11 @@ void AlquimiaConfigReader::ParseConditionSection(
       new_section = true;
     } else if (next == '#' || next == ' ') {
       // comment line, do nothing
-      getline(*input_file, raw_line);
+      GetLineCleaned(input_file, &raw_line);
     } else {
       // parameter line
-      getline(*input_file, raw_line);
-      util::StringTokenizer params(raw_line, equal);
+      GetLineCleaned(input_file, &raw_line);
+      util::StringTokenizer params(raw_line, kEqual);
       //std::cout << "\'" << raw_line << "\'" << std::endl;
       // if params.size() == 0 then we have a blank line
       if (params.size() == 2) {
@@ -337,8 +309,9 @@ void AlquimiaConfigReader::ParseConditionSection(
         std::string value = params.at(1);
         util::RemoveLeadingAndTrailingWhitespace(&value);
         // single valued parameters go first
-        if (util::CaseInsensitiveStringCompare(key, kNameParam)) {
+        if (util::CaseInsensitiveStringCompare(key, kNameString)) {
           condition_name = value;
+          (*geochemical_conditions)[condition_name] = alquimia::AlquimiaGeochemicalCondition();
         } else {
           // now we deal with vector parameters.
 
@@ -346,7 +319,7 @@ void AlquimiaConfigReader::ParseConditionSection(
           // somehow....
           alquimia::AlquimiaGeochemicalConstraint constraint;
           constraint.primary_species = key;
-          util::StringTokenizer constraint_data(value, spaces);
+          util::StringTokenizer constraint_data(value, kSpaces);
           constraint.value = constraint_data.at(0);
           constraint.constraint_type = constraint_data.at(1);
           if (constraint_data.size() > 2) {
@@ -382,6 +355,9 @@ void AlquimiaConfigReader::PrintSimulationParameters(
   std::cout << "    description : " << sim_params.description << std::endl;
   std::cout << "    engine : " << sim_params.engine << std::endl;
   std::cout << "    engine inputfile : " << sim_params.engine_inputfile << std::endl;
+  std::cout << "    delta t : " << sim_params.delta_t << std::endl;
+  std::cout << "    num times steps : " << sim_params.num_time_steps << std::endl;
+  std::cout << "    initial condition : " << sim_params.initial_condition << std::endl;
   std::cout << "    text output : " << sim_params.use_text_output << std::endl;
   std::cout << "    output time units : " << sim_params.output_time_units << std::endl;
   std::cout << std::endl;
@@ -438,29 +414,29 @@ void AlquimiaConfigReader::WriteTemplateFile(const std::string& file_name)
     abort();
   }
   template_file << "[" << kSimulationSection << "]" << std::endl;
-  template_file << kDescriptionParam << " = " << std::endl;
-  template_file << kEngineParam << " = " << std::endl;
-  template_file << kEngineInputfileParam << " = " << std::endl;
+  template_file << kDescriptionString << " = " << std::endl;
+  template_file << kEngineString << " = " << std::endl;
+  template_file << kEngineInputfileString << " = " << std::endl;
+  template_file << kICString << " = " << std::endl;
+  template_file << kDeltaTimeString << " = " << std::endl;
+  template_file << kNumTimeStepsString << " = " << std::endl;
   template_file << std::endl;
 
   template_file << "[" << kStateSection << "]" << std::endl;
-  template_file << kDensityParam << " = " << std::endl;
-  template_file << kSaturationParam << " = " << std::endl;
-  template_file << kPorosityParam << " = " << std::endl;
-  template_file << kTemperatureParam << " = " << std::endl;
-  template_file << kPressureParam << " = " << std::endl;
+  template_file << kDensityString << " = " << std::endl;
+  template_file << kSaturationString << " = " << std::endl;
+  template_file << kPorosityString << " = " << std::endl;
+  template_file << kTemperatureString << " = " << std::endl;
+  template_file << kPressureString << " = " << std::endl;
   template_file << std::endl;
 
   template_file << "[" << kMaterialPropertiesSection << "]" << std::endl;
-  template_file << kVolumeParam << " = " << std::endl;
-  template_file << kIsothermKdParam << " = [species_name value, ...]" << std::endl;
-  template_file << kFreundlichNParam << " = [species_name value, ...]" << std::endl;
-  template_file << kLangmuirBParam << " = [species_name value, ...]" << std::endl;
+  template_file << kVolumeString << " = " << std::endl;
+  template_file << kIsothermKdString << " = [species_name value, ...]" << std::endl;
+  template_file << kFreundlichNString << " = [species_name value, ...]" << std::endl;
+  template_file << kLangmuirBString << " = [species_name value, ...]" << std::endl;
   template_file << std::endl;
 
-  template_file << "[" << kGeochemicalConditionsSection << "]" << std::endl;
-  template_file << "condition_name = " << std::endl;
-  template_file << std::endl;
   template_file << "[condition]" << std::endl;
   template_file << "name = condition_name" << std::endl;
   template_file << "species_name = value type association"<< std::endl;
