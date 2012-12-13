@@ -10,6 +10,16 @@
 
 #include "alquimia_interface.h"
 
+extern "C" {
+  void crunchalquimia_setup_ (char* input_filename,
+                              AlquimiaMetaData_C* meta_data,
+                              AlquimiaSizes_C* sizes) ;
+  void crunchalquimia_processconstraint_ () ;
+  void crunchalquimia_reactionstepoperatorsplit_ () ;
+  void crunchalquimia_getauxiliaryoutput_ () ;
+  void crunchalquimia_getenginefunctionality_ (AlquimiaMetaData_C* metadata) ;
+}
+
 namespace alquimia {
 
 class CrunchAlquimiaInterface : public AlquimiaInterface {
@@ -18,19 +28,20 @@ class CrunchAlquimiaInterface : public AlquimiaInterface {
   virtual ~CrunchAlquimiaInterface();
 
   void Setup(const std::string& input_file,
-             AlquimiaMetaData* meta_data,
-             AlquimiaEngineStatus* status);
+             AlquimiaMetaData_C* meta_data,
+             AlquimiaSizes_C* sizes);
 
-  void ProcessConstraint(const AlquimiaGeochemicalCondition& condition,
-                         AlquimiaState* state);
+  void ProcessCondition(const AlquimiaGeochemicalCondition_C& condition,
+                         AlquimiaState_C* state);
 
-  void ReactionStepOperatorSplit(const double delta_t,
-                                 const AlquimiaAuxiliaryData& aux_data,
-                                 const AlquimiaMaterialProperties& material_props,
-                                 AlquimiaState* state,
-                                 AlquimiaEngineStatus* status);
+  void ReactionStepOperatorSplit(
+      const double delta_t,
+      const AlquimiaAuxiliaryData_C& aux_data,
+      const AlquimiaMaterialProperties_C& material_props,
+      AlquimiaState_C* state,
+      AlquimiaEngineStatus_C* status);
 
-  void GetAuxiliaryOutput(AlquimiaAuxiliaryData* aux_data);
+  void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data);
 
 
  protected:

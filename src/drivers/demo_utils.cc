@@ -1,5 +1,5 @@
 /* -*-  mode: c++; c-default-style: "google"; indent-tabs-mode: nil -*- */
-#include "cc_demo_utils.h"
+#include "demo_utils.h"
 
 #include <cmath>
 
