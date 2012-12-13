@@ -2,47 +2,37 @@
 WORKSPACE_PATH := $(shell expr $(PWD) : '\(.*\/src\)/.*' \| $(PWD))
 include $(WORKSPACE_PATH)/Makefile.inc 
 
-HEADERS = \
-	../alquimia_containers.h \
-	alquimia_strings.h \
-	alquimia_interface_factory.h \
-	alquimia_interface.h
+HEADERS = 
 
-SRCS = \
-	alquimia_interface_factory.cc 
+SRCS = 
 
 ifdef PFLOTRAN_DIR
-	HEADERS += pflotran_alquimia_interface.h
-	SRCS += pflotran_alquimia_interface.cc
+	HEADERS += pflotran_alquimia.h90
+	SRCS += pflotran_alquimia.F90
 endif
 
 ifdef CRUNCH_DIR
-	HEADERS += crunch_alquimia_interface.h
-	SRCS += crunch_alquimia_interface.cc 
+	HEADERS += crunch_alquimia.h90
+	SRCS += crunch_alquimia.F90
 endif
 
 OBJS = \
-	$(SRCS:%.cc=%.o)
+	$(SRCS:%.F90=%.o)
 
-LIBRARY = libalquimia_c++.a
-
-INCLUDES = -I../ -I.
-
-CXXFLAGS += $(INCLUDES)
+LIBRARY = libalquimia_fortran.a
 
 #
 # Generic rules to generate object files.
 #
-% : %.cc $(HEADERS)
-	$(CXX) $(CXXFLAGS) -o $@ $<
+%.o : %.F90 $(HEADERS)
+	$(FC) $(FCFLAGS) -c -o $@ $<
 
+all : $(LIBRARY)
 
 #
 # library
 #
-all : $(LIBRARY)
-
-libalquimia_c++.a : $(HEADERS) $(OBJS) $(DEPEND_LIBS)
+libalquimia_fortran.a : $(HEADERS) $(OBJS) $(DEPEND_LIBS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 

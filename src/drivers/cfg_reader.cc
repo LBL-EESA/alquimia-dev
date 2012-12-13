@@ -1,13 +1,15 @@
 /* -*-  mode: c++; c-default-style: "google"; indent-tabs-mode: nil -*- */
 #include "cfg_reader.h"
 
+#include <cstdlib>
+
 #include <string>
 #include <fstream>
 #include <iostream>
 
 #include "alquimia_containers.h"
 
-#include "cc_demo_utils.h"
+#include "demo_utils.h"
 #include "string_tokenizer.h"
 namespace alquimia {
 namespace drivers {
@@ -45,10 +47,10 @@ const std::string AlquimiaConfigReader::kNameString("name");
 
 void AlquimiaConfigReader::ReadInputFile(
     const std::string& file_name,
-    SimulationParameters* simulation_params,
-    alquimia::AlquimiaState* state,
-    alquimia::AlquimiaMaterialProperties* material_props,
-    alquimia::AlquimiaConditions* conditions)
+    DemoSimulation* simulation_params,
+    DemoState* state,
+    DemoMaterialProperties* material_props,
+    DemoConditions* conditions)
 {
   namespace util = alquimia::drivers::utilities;
   std::ifstream input_file(file_name.c_str());
@@ -134,7 +136,7 @@ void AlquimiaConfigReader::GetLineCleaned(
 
 void AlquimiaConfigReader::ParseSimulationSection(
     std::ifstream* input_file,
-    SimulationParameters* simulation)
+    DemoSimulation* simulation)
 {
   namespace util = alquimia::drivers::utilities;
   std::string raw_line;
@@ -185,7 +187,7 @@ void AlquimiaConfigReader::ParseSimulationSection(
 
 void AlquimiaConfigReader::ParseStateSection(
     std::ifstream* input_file,
-    alquimia::AlquimiaState* state)
+    DemoState* state)
 {
   namespace util = alquimia::drivers::utilities;
   std::string raw_line;
@@ -227,7 +229,7 @@ void AlquimiaConfigReader::ParseStateSection(
 
 void AlquimiaConfigReader::ParseMaterialPropertySection(
     std::ifstream* input_file,
-    alquimia::AlquimiaMaterialProperties* material_props)
+    DemoMaterialProperties* material_props)
 {
   namespace util = alquimia::drivers::utilities;
   std::string raw_line;
@@ -284,7 +286,7 @@ void AlquimiaConfigReader::ParseMaterialPropertySection(
 
 void AlquimiaConfigReader::ParseConditionSection(
     std::ifstream* input_file,
-    alquimia::AlquimiaConditions* geochemical_conditions)
+    DemoConditions* geochemical_conditions)
 {
   namespace util = alquimia::drivers::utilities;
   std::string condition_name("");
@@ -311,13 +313,13 @@ void AlquimiaConfigReader::ParseConditionSection(
         // single valued parameters go first
         if (util::CaseInsensitiveStringCompare(key, kNameString)) {
           condition_name = value;
-          (*geochemical_conditions)[condition_name] = alquimia::AlquimiaGeochemicalCondition();
+          (*geochemical_conditions)[condition_name] = DemoGeochemicalCondition();
         } else {
           // now we deal with vector parameters.
 
           // TODO(bja): can we check or deal with the order/species names
           // somehow....
-          alquimia::AlquimiaGeochemicalConstraint constraint;
+          DemoGeochemicalConstraint constraint;
           constraint.primary_species = key;
           util::StringTokenizer constraint_data(value, kSpaces);
           constraint.value = constraint_data.at(0);
@@ -334,10 +336,10 @@ void AlquimiaConfigReader::ParseConditionSection(
 
 
 void AlquimiaConfigReader::PrintInput(
-    const SimulationParameters& params,
-    const alquimia::AlquimiaState& state,
-    const alquimia::AlquimiaMaterialProperties& material_props,
-    const alquimia::AlquimiaConditions& conditions)
+    const DemoSimulation& params,
+    const DemoState& state,
+    const DemoMaterialProperties& material_props,
+    const DemoConditions& conditions)
 {
   std::cout << "- Input File ---------------------------------------------------------\n";
   PrintSimulationParameters(params);
@@ -349,7 +351,7 @@ void AlquimiaConfigReader::PrintInput(
 
 
 void AlquimiaConfigReader::PrintSimulationParameters(
-    const SimulationParameters& sim_params)
+    const DemoSimulation& sim_params)
 {
   std::cout << "  -- Simulation parameters :" << std::endl;
   std::cout << "    description : " << sim_params.description << std::endl;
@@ -364,7 +366,7 @@ void AlquimiaConfigReader::PrintSimulationParameters(
 }  // end PrintSimulationParameters()
 
 void AlquimiaConfigReader::PrintStateParameters(
-    const alquimia::AlquimiaState& state)
+    const DemoState& state)
 {
   std::cout << "  -- State :" << std::endl;
   std::cout << "    density : " << state.water_density << std::endl;
@@ -376,7 +378,7 @@ void AlquimiaConfigReader::PrintStateParameters(
 }  // end PrintStateParameters()
 
 void AlquimiaConfigReader::PrintMaterialPropertyParameters(
-    const alquimia::AlquimiaMaterialProperties& material_props)
+    const DemoMaterialProperties& material_props)
 {
   namespace util = alquimia::drivers::utilities;
   std::cout << "  -- Material Properties :" << std::endl;
@@ -388,13 +390,13 @@ void AlquimiaConfigReader::PrintMaterialPropertyParameters(
 }  // end PrintMaterialPropertyParameters()
 
 void AlquimiaConfigReader::PrintGeochemicalConditions(
-    const alquimia::AlquimiaConditions conditions)
+    const DemoConditions conditions)
 {
   std::cout << "  -- Geochemical Conditions :" << std::endl;
-  for (alquimia::AlquimiaConditions::const_iterator c = conditions.begin();
+  for (DemoConditions::const_iterator c = conditions.begin();
        c != conditions.end(); ++c) {
     std::cout << "    " << c->first << " : " << std::endl;
-    for (alquimia::AlquimiaGeochemicalCondition::const_iterator g = c->second.begin();
+    for (DemoGeochemicalCondition::const_iterator g = c->second.begin();
          g != c->second.end(); ++g) {
       std::cout << "        " << g->primary_species << std::endl;
       std::cout << "            type : " << g->constraint_type << std::endl;

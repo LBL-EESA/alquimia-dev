@@ -10,7 +10,20 @@
 
 #include "alquimia_interface.h"
 
+#include "alquimia_containers.h"
+
+extern "C" {
+  void pflotranalquimia_setup_ (char* input_filename,
+                                AlquimiaMetaData_C* meta_data,
+                                AlquimiaSizes_C* sizes) ;
+  void pflotranalquimia_processconstraint_ () ;
+  void pflotranalquimia_reactionstepoperatorsplit_ () ;
+  void pflotranalquimia_getauxiliaryoutput_ () ;
+  void pflotranalquimia_getenginefunctionality_ (AlquimiaMetaData_C* metadata) ;
+}
+
 namespace alquimia {
+
 
 class PFloTranAlquimiaInterface : public AlquimiaInterface {
  public:
@@ -18,47 +31,26 @@ class PFloTranAlquimiaInterface : public AlquimiaInterface {
   virtual ~PFloTranAlquimiaInterface();
 
   void Setup(const std::string& input_file,
-             AlquimiaMetaData* meta_data,
-             AlquimiaEngineStatus* status);
+             AlquimiaMetaData_C* meta_data,
+             AlquimiaSizes_C* sizes);
 
-  void ProcessConstraint(const AlquimiaGeochemicalCondition& condition,
-                         AlquimiaState* state);
+  void ProcessCondition(const AlquimiaGeochemicalCondition_C& condition,
+                         AlquimiaState_C* state);
 
-  void ReactionStepOperatorSplit(const double delta_t,
-                                 const AlquimiaAuxiliaryData& aux_data,
-                                 const AlquimiaMaterialProperties& material_props,
-                                 AlquimiaState* state,
-                                 AlquimiaEngineStatus* status);
+  void ReactionStepOperatorSplit(
+      const double delta_t,
+      const AlquimiaAuxiliaryData_C& aux_data,
+      const AlquimiaMaterialProperties_C& material_props,
+      AlquimiaState_C* state,
+      AlquimiaEngineStatus_C* status);
 
-  void GetAuxiliaryOutput(AlquimiaAuxiliaryData* aux_data);
+  void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data);
 
 
  protected:
 
  private:
-  void SetupDataTransfer(const int data_size);
-  // NOTE(bja): probably need multiple munge data functions in each
-  // direction, i.e. MungeOperatorSplittingDataAlquimiaToPflotran,
-  // MungeGlobalImplicitDataAlquimiaToPflotran,
-  // MungeConstraintDataAlquimiaToPflotran, etc
-  void MungeDataAlquimiaToPflotran(
-      const AlquimiaAuxiliaryData& aux_data,
-      const AlquimiaMaterialProperties& material_props,
-      const AlquimiaState& aux_data);
-  void MungeDataPflotranToAlquimia(
-      AlquimiaAuxiliaryData* aux_data,
-      AlquimiaState* aux_data);
 
-  // NOTE(bja): will probably require multiple data transfer vectors...
-  int data_transfer_size(void) {
-    return data_transfer_size_;
-  }
-  void data_transfer_size(const int data_size) {
-    data_transfer_size_ = data_size;
-  }
-
-  int data_transfer_size_;
-  double* pflotran_data_;
 };
 
 }  // namespace alquimia

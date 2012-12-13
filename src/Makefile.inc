@@ -19,4 +19,5 @@ endif
 
 ifdef DEBUG
       CXXFLAGS += -g
+      FCFLAGS += -g
 endif
