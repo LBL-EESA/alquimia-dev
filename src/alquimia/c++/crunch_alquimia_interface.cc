@@ -19,28 +19,28 @@ CrunchAlquimiaInterface::~CrunchAlquimiaInterface() {
 
 void CrunchAlquimiaInterface::Setup(
     const std::string& input_file,
-    AlquimiaMetaData* meta_data,
-    AlquimiaEngineStatus* status) {
+    AlquimiaMetaData_C* meta_data,
+    AlquimiaSizes_C* sizes) {
 
 }  // end Setup()
 
-void CrunchAlquimiaInterface::ProcessConstraint(
-    const AlquimiaGeochemicalCondition& condition,
-    AlquimiaState* state) {
+void CrunchAlquimiaInterface::ProcessCondition(
+    const AlquimiaGeochemicalCondition_C& condition,
+    AlquimiaState_C* state) {
 
-}  // end ProcessConstraint()
+}  // end ProcessCondition()
 
 void CrunchAlquimiaInterface::ReactionStepOperatorSplit(
     const double delta_t,
-    const AlquimiaAuxiliaryData& aux_data,
-    const AlquimiaMaterialProperties& material_props,
-    AlquimiaState* state,
-    AlquimiaEngineStatus* status) {
+    const AlquimiaAuxiliaryData_C& aux_data,
+    const AlquimiaMaterialProperties_C& material_props,
+    AlquimiaState_C* state,
+    AlquimiaEngineStatus_C* status) {
 
 }  // end ReactionStepOperatorSplit()
 
 void CrunchAlquimiaInterface::GetAuxiliaryOutput(
-    AlquimiaAuxiliaryData* aux_data) {
+    AlquimiaAuxiliaryData_C* aux_data) {
 
 }  // end GetAuxiliaryOutput()
 

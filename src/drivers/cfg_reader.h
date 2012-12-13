@@ -1,30 +1,18 @@
 /* -*-  mode: c++; c-default-style: "google"; indent-tabs-mode: nil -*- */
-#ifndef ALQUIMIA_DRIVERS_CFG_READER_H__H_
+#ifndef ALQUIMIA_DRIVERS_CFG_READER_H_
 #define ALQUIMIA_DRIVERS_CFG_READER_H_
 
 /*******************************************************************************
  **
- ** C++ definition of the alquimia interface as an abstract base class
+ ** Simple config style input file reader
  **
  ******************************************************************************/
 
-#include "alquimia_containers.h"
+#include "demo_containers.h"
 
-// Base class defining the alquimia interface
 namespace alquimia {
 namespace drivers {
 namespace utilities {
-
-struct SimulationParameters {
-  std::string description;
-  std::string engine;
-  std::string engine_inputfile;
-  std::string initial_condition;
-  double delta_t;
-  int num_time_steps;
-  std::string use_text_output;
-  std::string output_time_units;
-};
 
 class AlquimiaConfigReader {
  public:
@@ -32,15 +20,15 @@ class AlquimiaConfigReader {
   virtual ~AlquimiaConfigReader() {};
 
   void ReadInputFile(const std::string& file_name,
-                     SimulationParameters* simulation_params,
-                     alquimia::AlquimiaState* state,
-                     alquimia::AlquimiaMaterialProperties* material_props,
-                     alquimia::AlquimiaConditions* conditions);
+                     DemoSimulation* simulation_params,
+                     DemoState* state,
+                     DemoMaterialProperties* material_props,
+                     DemoConditions* conditions);
 
-  void PrintInput(const SimulationParameters& params,
-                  const alquimia::AlquimiaState& state,
-                  const alquimia::AlquimiaMaterialProperties& material_props,
-                  const alquimia::AlquimiaConditions& conditions);
+  void PrintInput(const DemoSimulation& params,
+                  const DemoState& state,
+                  const DemoMaterialProperties& material_props,
+                  const DemoConditions& conditions);
   
   void WriteTemplateFile(const std::string& file_name);
 
@@ -51,24 +39,24 @@ class AlquimiaConfigReader {
                       std::string* line);
 
   void ParseSimulationSection(std::ifstream* input_file,
-                              SimulationParameters* params);
+                              DemoSimulation* params);
   
   void ParseStateSection(std::ifstream* input_file,
-                         alquimia::AlquimiaState* state);
+                         DemoState* state);
   void ParseMaterialPropertySection(
       std::ifstream* input_file,
-      alquimia::AlquimiaMaterialProperties* material_props);
+      DemoMaterialProperties* material_props);
   
   void ParseConditionSection(
       std::ifstream* input_file,
-      alquimia::AlquimiaConditions* geochemical_conditions);
+      DemoConditions* geochemical_conditions);
   
-  void PrintSimulationParameters(const SimulationParameters& params);
-  void PrintStateParameters(const alquimia::AlquimiaState& state);
+  void PrintSimulationParameters(const DemoSimulation& params);
+  void PrintStateParameters(const DemoState& state);
   void PrintMaterialPropertyParameters(
-      const alquimia::AlquimiaMaterialProperties& material_props);
+      const DemoMaterialProperties& material_props);
   void PrintGeochemicalConditions(
-      const alquimia::AlquimiaConditions conditions);
+      const DemoConditions conditions);
 
   static const std::string kEqual;
   static const std::string kSpaces;

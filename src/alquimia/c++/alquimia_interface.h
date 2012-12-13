@@ -8,6 +8,8 @@
  **
  ******************************************************************************/
 
+#include <string>
+
 #include "alquimia_containers.h"
 
 // Base class defining the alquimia interface
@@ -21,24 +23,25 @@ class AlquimiaInterface {
   // read data files/structures, initialize memory, basis management
   // (includes reading database, swapping basis, etc.)
   virtual void Setup(const std::string& input_file,
-                     AlquimiaMetaData* meta_data,
-                     AlquimiaEngineStatus* status) = 0;
+                     AlquimiaMetaData_C* meta_data,
+                     AlquimiaSizes_C* sizes) = 0;
 
   // constrain processing for boundary/initial constraints. Called
   // once for each IC/BC.
-  virtual void ProcessConstraint(const AlquimiaGeochemicalCondition& condition,
-                                 AlquimiaState* state) = 0;
+  virtual void ProcessCondition(const AlquimiaGeochemicalCondition_C& condition,
+                                 AlquimiaState_C* state) = 0;
 
   // take one (or more?) reaction steps in operator split mode
-  virtual void ReactionStepOperatorSplit(const double delta_t,
-                                         const AlquimiaAuxiliaryData& aux_data,
-                                         const AlquimiaMaterialProperties& material_props,
-                                         AlquimiaState* state,
-                                         AlquimiaEngineStatus* status) = 0;
+  virtual void ReactionStepOperatorSplit(
+      const double delta_t,
+      const AlquimiaAuxiliaryData_C& aux_data,
+      const AlquimiaMaterialProperties_C& material_props,
+      AlquimiaState_C* state,
+      AlquimiaEngineStatus_C* status) = 0;
 
   // Access to user selected geochemical data for output, i.e. pH,
   // mineral SI, reaction rates
-  virtual void GetAuxiliaryOutput(AlquimiaAuxiliaryData* aux_data) = 0;
+  virtual void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data) = 0;
 
  protected:
 

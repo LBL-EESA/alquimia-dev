@@ -1,8 +1,8 @@
 /* -*-  mode: c++; c-default-style: "google"; indent-tabs-mode: nil -*- */
-#include "cc_batch_chem.h"
+#include "batch_chem.h"
 
 #ifdef WINDOWS
-#include "xgetopt.hh"
+#include "xgetopt.h"
 #else
 #include <unistd.h>
 #endif
@@ -22,8 +22,9 @@
 #include "alquimia_containers.h"
 #include "alquimia_strings.h"
 
-#include "cc_demo_utils.h"
 #include "cfg_reader.h"
+#include "demo_containers.h"
+#include "demo_utils.h"
 #include "string_tokenizer.h"
 
 int main(int argc, char** argv) {
@@ -52,20 +53,18 @@ int main(int argc, char** argv) {
     exit(EXIT_SUCCESS);
   }
 
-  util::SimulationParameters simulation_params;
-  alquimia::AlquimiaState state;
-  alquimia::AlquimiaMaterialProperties material_props;
-  alquimia::AlquimiaConditions conditions;
-  alquimia::AlquimiaMetaData meta_data;
-  alquimia::AlquimiaEngineStatus status;
+  util::DemoSimulation demo_simulation;
+  util::DemoState demo_state;
+  util::DemoMaterialProperties demo_material_props;
+  util::DemoConditions demo_conditions;
 
   if (!input_file_name.empty()) {
     cfg_reader.ReadInputFile(input_file_name,
-                             &simulation_params, &state, 
-                             &material_props, &conditions);
+                             &demo_simulation, &demo_state, 
+                             &demo_material_props, &demo_conditions);
     if (debug_batch_driver) {
-      cfg_reader.PrintInput(simulation_params, state, 
-                            material_props, conditions);
+      cfg_reader.PrintInput(demo_simulation, demo_state, 
+                            demo_material_props, demo_conditions);
     }
   }
 
@@ -73,21 +72,29 @@ int main(int argc, char** argv) {
   double time_units_conversion = 1.0;
   char time_units = 's';
   std::fstream text_output;
-  if (simulation_params.use_text_output.size() > 0) {
-    SetupTextOutput(simulation_params.use_text_output,
-                    simulation_params.output_time_units,
+  if (demo_simulation.use_text_output.size() > 0) {
+    SetupTextOutput(demo_simulation.use_text_output,
+                    demo_simulation.output_time_units,
                     input_file_name,
                     &text_output, &time_units, &time_units_conversion);
   }
 
   alquimia::AlquimiaInterface* chem = NULL;
+  AlquimiaSizes_C sizes;
+  AlquimiaState_C state;
+  AlquimiaMaterialProperties_C material_props;
+  AlquimiaAuxiliaryData_C aux_data;
+  AlquimiaEngineStatus_C status;
+  AlquimiaMetaData_C meta_data;
+  AlquimiaGeochemicalCondition_C conditions;
+  AlquimiaOutputData_C output_data;
 
   try {
     alquimia::AlquimiaInterfaceFactory aif;
-    chem = aif.Create(simulation_params.engine);
+    chem = aif.Create(demo_simulation.engine);
 
-    chem->Setup(simulation_params.engine_inputfile,
-                &meta_data, &status);
+    chem->Setup(demo_simulation.engine_inputfile,
+                &meta_data, &sizes);
 
     // process the constraints
 
@@ -267,7 +274,7 @@ void WriteTextOutputHeader(std::fstream* text_output, const char time_units,
 }  // end WriteTextOutputHeader()
 
 void WriteTextOutput(std::fstream* text_output, const double time, 
-                     const alquimia::AlquimiaState& state) {
+                     const AlquimiaState_C& state) {
   if (text_output->is_open()) {
     // std::string seperator(" , ");
     // *text_output << std::scientific << std::setprecision(6) << std::setw(15) << time;

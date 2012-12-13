@@ -6,97 +6,102 @@ include $(WORKSPACE_PATH)/Makefile.inc
 
 # demo drives = always in debug mode!
 CXXFLAGS += -g
+# TODO(bja): need to make this generic!
+LDFLAGS +=  -L/opt/local/lib/gcc46 -lgfortran
 
 #
 # generic to include alquimia library
 #
 INCLUDES = -I. \
+	-I../alquimia \
 	-I../alquimia/c++
 
 CXXFLAGS += $(INCLUDES)
 
 LIBS = \
-	-L../alquimia/c++ -lalquimia_c++
+	-L../alquimia/c++ -lalquimia_c++ \
+	-L../alquimia/fortran -lalquimia_fortran
 
 DEPEND_LIBS += \
-	../alquimia/c++/libalquimia_c++.a
+	../alquimia/c++/libalquimia_c++.a \
+	../alquimia/fortran/libalquimia_fortran.a 
 
 #
-# libdemoutils_c++.a
+# libdemoutils.a
 #
-SRCS_CCDEMOUTIL = \
-	cc_demo_utils.cc \
+SRCS_DEMOUTIL = \
+	demo_utils.cc \
 	cfg_reader.cc \
 	string_tokenizer.cc
 
-OBJS_CCDEMOUTIL = \
-	$(SRCS_CCDEMOUTIL:%.cc=%.o)
+OBJS_DEMOUTIL = \
+	$(SRCS_DEMOUTIL:%.cc=%.o)
 
-HEADERS_CCDEMOUTIL = \
-	cc_demo_utils.h \
+HEADERS_DEMOUTIL = \
 	cfg_reader.h \
+	demo_containers.h \
+	demo_utils.h \
 	string_tokenizer.h
 
-LIBRARIES_CCDEMOUTIL = libdemoutils_c++.a
+LIBRARIES_DEMOUTIL = libdemoutils.a
 
 #
 # C++ batch_chem demo driver
 #
-SRCS_CCBATCH = \
-	cc_batch_chem.cc
+SRCS_BATCH = \
+	batch_chem.cc
 
-OBJS_CCBATCH = \
-	$(SRCS_CCBATCH:%.cc=%.o)
+OBJS_BATCH = \
+	$(SRCS_BATCH:%.cc=%.o)
 
-HEADERS_CCBATCH = \
-	cc_batch_chem.h
+HEADERS_BATCH = \
+	batch_chem.h
 
-EXECUTABLES_CCBATCH = \
-	cc_batch_chem
+EXECUTABLES_BATCH = \
+	batch_chem
 
-LIBS_CCBATCH = $(LIBS) \
-	-L. -ldemoutils_c++
+LIBS_BATCH = $(LIBS) \
+	-L. -ldemoutils
 
-DEPEND_LIBS_CCBATCH = $(DEPEND_LIBS) \
-	$(LIBRARIES_CCDEMOUTIL)
+DEPEND_LIBS_BATCH = $(DEPEND_LIBS) \
+	$(LIBRARIES_DEMOUTIL)
 
 #
-# test_main
+# test_alquimia_interface_factory
 #
 SRCS_TEST = \
-	test_main.cc
+	test_alquimia_interface_factory.cc
 
 OBJS_TEST = \
 	$(SRCS_TEST:%.cc=%.o)
 
 EXECUTABLES_TEST = \
-	test_main
+	test_alquimia_interface_factory
 
 #
 # Generic rules to generate object files.
 #
-% : %.cc
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $<
+%.o : %.cc
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all : test_main cc_batch_chem
+all : test_alquimia_interface_factory batch_chem
 
 #
 # demo utils library
 #
-libdemoutils_c++.a : $(HEADERS_CCDEMOUTIL) $(OBJS_CCDEMOUTIL)
-	$(AR) $(ARFLAGS) $@ $(OBJS_CCDEMOUTIL)
+libdemoutils.a : $(HEADERS_DEMOUTIL) $(OBJS_DEMOUTIL)
+	$(AR) $(ARFLAGS) $@ $(OBJS_DEMOUTIL)
 
 #
 # batch_chem_cc
 #
-cc_batch_chem : $(HEADERS_CCBATCH) $(OBJS_CCBATCH) $(DEPEND_LIBS_CCBATCH)
-	echo $(HEADERS_CCBATCH) $(OBJS_CCBATCH) $(DEPEND_LIBS_CCBATCH)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS_CCBATCH) $(LIBS_CCBATCH) $(LDFLAGS)
+batch_chem : $(HEADERS_BATCH) $(OBJS_BATCH) $(DEPEND_LIBS_BATCH)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS_BATCH) $(LIBS_BATCH) $(LDFLAGS)
 
 #
 # test program
 #
-test_main : $(OBJS_TEST) $(DEPEND_LIBS)
+test_alquimia_interface_factory : $(OBJS_TEST) $(DEPEND_LIBS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS_TEST) $(LIBS) $(LDFLAGS)
 
 #
@@ -114,8 +119,8 @@ clean : $(SUBDIRS)
 #
 clobber : clean $(SUBDIRS)
 	rm -f .Makedepend *.o *.il \
-		$(EXECUTABLES_TEST) $(EXECUTABLES_CCBATCH) \
-		$(LIBRARIES_CCDEMOUTIL)
+		$(EXECUTABLES_TEST) $(EXECUTABLES_BATCH) \
+		$(LIBRARIES_DEMOUTIL)
 
 #
 # FORCE - Null rule to force things to happen.

@@ -28,7 +28,7 @@ void WriteTextOutputHeader(std::fstream* text_output,
 
 void WriteTextOutput(std::fstream* text_output,
                      const double time,
-                     const alquimia::AlquimiaState& state);
+                     const AlquimiaState_C& state);
 
 
 #endif  /* ALQUIMIA_DRIVERS_CC_BATCH_CHEM_H_ */

@@ -1,0 +1,35 @@
+use, intrinsic :: iso_c_binding
+  
+type, bind(c) :: alquimia_sizes_f
+   integer (c_int) :: num_primary
+   integer (c_int) :: num_kinetic_minerals
+   integer (c_int) :: num_aqueous_complexes
+   integer (c_int) :: num_surface_sites
+   integer (c_int) :: num_ion_exchange_sites
+end type alquimia_sizes_f
+
+type, bind(c) :: alquimia_state_f
+   real (c_double) :: density_water
+   real (c_double) :: saturation
+   real (c_double) :: porosity
+   real (c_double) :: temperature
+   real (c_double) :: aqueous_pressure
+   type (c_ptr) :: total_primary_species
+   type (c_ptr) :: total_sorbed
+   type (c_ptr) :: free_ion
+end type alquimia_state_f
+
+type, bind(c) :: alquimia_engine_status_f
+   integer (c_int) :: num_rhs_evaluations
+   integer (c_int) :: num_jacobian_evaluations
+   integer (c_int) :: num_newton_iterations
+   logical (c_bool) :: converged
+end type alquimia_engine_status_f
+  
+type, bind(c) :: alquimia_metadata_f
+   logical (c_bool) :: thread_safe
+   logical (c_bool) :: temperature_dependent
+   logical (c_bool) :: pressure_dependent
+   logical (c_bool) :: porosity_update
+end type alquimia_metadata_f
+  
