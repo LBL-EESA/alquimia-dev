@@ -1,4 +1,6 @@
 use, intrinsic :: iso_c_binding
+
+implicit none
   
 type, bind(c) :: alquimia_sizes_f
    integer (c_int) :: num_primary
