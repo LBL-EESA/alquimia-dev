@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     exit(error);
   }
 
-  util::AlquimiaConfigReader cfg_reader;
+  util::DemoConfigReader cfg_reader;
 
   if (!template_file_name.empty()) {
     cfg_reader.WriteTemplateFile(template_file_name);
