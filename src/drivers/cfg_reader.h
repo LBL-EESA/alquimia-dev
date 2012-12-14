@@ -14,10 +14,10 @@ namespace alquimia {
 namespace drivers {
 namespace utilities {
 
-class AlquimiaConfigReader {
+class DemoConfigReader {
  public:
-  AlquimiaConfigReader() {};
-  virtual ~AlquimiaConfigReader() {};
+  DemoConfigReader() {};
+  virtual ~DemoConfigReader() {};
 
   void ReadInputFile(const std::string& file_name,
                      DemoSimulation* simulation_params,
