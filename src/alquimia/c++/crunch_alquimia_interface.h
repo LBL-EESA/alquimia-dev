@@ -43,6 +43,8 @@ class CrunchAlquimiaInterface : public AlquimiaInterface {
 
   void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data);
 
+  void GetEngineMetaData(AlquimiaSizes_C* sizes,
+                         AlquimiaMetaData_C* meta_data);
 
  protected:
 

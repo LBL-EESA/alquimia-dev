@@ -322,7 +322,7 @@ void DemoConfigReader::ParseConditionSection(
           DemoGeochemicalConstraint constraint;
           constraint.primary_species = key;
           util::StringTokenizer constraint_data(value, kSpaces);
-          constraint.value = constraint_data.at(0);
+          constraint.value = std::atof(constraint_data.at(0).c_str());
           constraint.constraint_type = constraint_data.at(1);
           if (constraint_data.size() > 2) {
             constraint.associated_species = constraint_data.at(2);
@@ -334,77 +334,6 @@ void DemoConfigReader::ParseConditionSection(
   }  // end while(input_file)
 }  // end ParseConditionSection();
 
-
-void DemoConfigReader::PrintInput(
-    const DemoSimulation& params,
-    const DemoState& state,
-    const DemoMaterialProperties& material_props,
-    const DemoConditions& conditions)
-{
-  std::cout << "- Input File ---------------------------------------------------------\n";
-  PrintSimulationParameters(params);
-  PrintStateParameters(state);
-  PrintMaterialPropertyParameters(material_props);
-  PrintGeochemicalConditions(conditions);
-  std::cout << "--------------------------------------------------------- Input File -\n";
-}  // end PrintInput()
-
-
-void DemoConfigReader::PrintSimulationParameters(
-    const DemoSimulation& sim_params)
-{
-  std::cout << "  -- Simulation parameters :" << std::endl;
-  std::cout << "    description : " << sim_params.description << std::endl;
-  std::cout << "    engine : " << sim_params.engine << std::endl;
-  std::cout << "    engine inputfile : " << sim_params.engine_inputfile << std::endl;
-  std::cout << "    delta t : " << sim_params.delta_t << std::endl;
-  std::cout << "    num times steps : " << sim_params.num_time_steps << std::endl;
-  std::cout << "    initial condition : " << sim_params.initial_condition << std::endl;
-  std::cout << "    text output : " << sim_params.use_text_output << std::endl;
-  std::cout << "    output time units : " << sim_params.output_time_units << std::endl;
-  std::cout << std::endl;
-}  // end PrintSimulationParameters()
-
-void DemoConfigReader::PrintStateParameters(
-    const DemoState& state)
-{
-  std::cout << "  -- State :" << std::endl;
-  std::cout << "    density : " << state.water_density << std::endl;
-  std::cout << "    saturation : " << state.saturation << std::endl;
-  std::cout << "    porosity : " << state.porosity << std::endl;
-  std::cout << "    temperature : " << state.temperature << std::endl;
-  std::cout << "    pressure : " << state.aqueous_pressure << std::endl;
-  std::cout << std::endl;
-}  // end PrintStateParameters()
-
-void DemoConfigReader::PrintMaterialPropertyParameters(
-    const DemoMaterialProperties& material_props)
-{
-  namespace util = alquimia::drivers::utilities;
-  std::cout << "  -- Material Properties :" << std::endl;
-  std::cout << "    volume : " << material_props.volume << std::endl;
-  util::PrintVector("    isotherm_kd", material_props.isotherm_kd);
-  util::PrintVector("    freundlich_n", material_props.freundlich_n);
-  util::PrintVector("    langmuir_b", material_props.langmuir_b);
-  std::cout << std::endl;
-}  // end PrintMaterialPropertyParameters()
-
-void DemoConfigReader::PrintGeochemicalConditions(
-    const DemoConditions conditions)
-{
-  std::cout << "  -- Geochemical Conditions :" << std::endl;
-  for (DemoConditions::const_iterator c = conditions.begin();
-       c != conditions.end(); ++c) {
-    std::cout << "    " << c->first << " : " << std::endl;
-    for (DemoGeochemicalCondition::const_iterator g = c->second.begin();
-         g != c->second.end(); ++g) {
-      std::cout << "        " << g->primary_species << std::endl;
-      std::cout << "            type : " << g->constraint_type << std::endl;
-      std::cout << "            associated : " << g->associated_species << std::endl;
-      std::cout << "            value : " << g->value << std::endl;
-    }
-  }
-}  // end PrintGeochemicalConditions()
 
 void DemoConfigReader::WriteTemplateFile(const std::string& file_name)
 {

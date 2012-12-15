@@ -22,29 +22,17 @@ PFloTranAlquimiaInterface::~PFloTranAlquimiaInterface() {
 
 void PFloTranAlquimiaInterface::Setup(
     const std::string& input_file,
-    AlquimiaMetaData_C* meta_data,
     AlquimiaSizes_C* sizes) {
-  // call pflotran 's init function
   std::cout << "PFloTranAlquimiaInterface::Setup() :  '"
             << input_file << "'\n";
+  // copy the c++ string into a c-style char* that can be passed to fortran
   char* inputfile = new char [input_file.size() + 1];
   strcpy(inputfile, input_file.c_str());
-  pflotranalquimia_setup_(inputfile, meta_data, sizes);
+
+  // call pflotran's init function
+  pflotranalquimia_setup_(inputfile, sizes);
+
   delete inputfile;
-  std::cout << "PFloTranAlquimiaInterface::Setup() :\n";
-  std::cout << "  sizes :\n"
-            << "    num primary species : " << sizes->num_primary << "\n"
-            << "    num kinetic minerals : " << sizes->num_kinetic_minerals << "\n"
-            << "    num aqueous complexes : " << sizes->num_aqueous_complexes << "\n"
-            << "    num surface sites : " << sizes->num_surface_sites << "\n"
-            << "    num ion exchange sites : " << sizes->num_ion_exchange_sites << "\n";
-
-  std::cout << "  meta data :\n"
-            << "    thread_safe : " << meta_data->thread_safe << "\n"
-            << "    temperature_dependent : " << meta_data->temperature_dependent << "\n"
-            << "    pressure_dependent : " << meta_data->pressure_dependent << "\n"
-            << "    porosity_update  : " << meta_data->porosity_update << "\n";
-
 }  // end Setup()
 
 void PFloTranAlquimiaInterface::ProcessCondition(
@@ -66,6 +54,13 @@ void PFloTranAlquimiaInterface::GetAuxiliaryOutput(
     AlquimiaAuxiliaryData_C* aux_data) {
 
 }  // end GetAuxiliaryOutput()
+
+void PFloTranAlquimiaInterface::GetEngineMetaData(
+    AlquimiaSizes_C* sizes,
+    AlquimiaMetaData_C* meta_data) {
+  std::cout << "PFloTranAlquimiaInterface::GetEngineMetaData() :\n";
+  pflotranalquimia_getenginemetadata_(sizes, meta_data);
+}  // end GetEngineMetaData()
 
 }  //  namespace alquimia
 

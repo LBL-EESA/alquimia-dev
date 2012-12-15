@@ -1,3 +1,5 @@
+#define ALQUIMIA_MAX_STRING_LENGTH 256
+
 use, intrinsic :: iso_c_binding
 
 implicit none
@@ -33,5 +35,7 @@ type, bind(c) :: alquimia_metadata_f
    logical (c_bool) :: temperature_dependent
    logical (c_bool) :: pressure_dependent
    logical (c_bool) :: porosity_update
+   type (c_ptr) :: primary_indices
+   type (c_ptr) :: primary_names
 end type alquimia_metadata_f
   
