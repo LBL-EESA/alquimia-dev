@@ -23,7 +23,6 @@ class AlquimiaInterface {
   // read data files/structures, initialize memory, basis management
   // (includes reading database, swapping basis, etc.)
   virtual void Setup(const std::string& input_file,
-                     AlquimiaMetaData_C* meta_data,
                      AlquimiaSizes_C* sizes) = 0;
 
   // constrain processing for boundary/initial constraints. Called
@@ -42,6 +41,9 @@ class AlquimiaInterface {
   // Access to user selected geochemical data for output, i.e. pH,
   // mineral SI, reaction rates
   virtual void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data) = 0;
+
+  virtual void GetEngineMetaData(AlquimiaSizes_C* sizes,
+                                 AlquimiaMetaData_C* meta_data) = 0;
 
  protected:
 

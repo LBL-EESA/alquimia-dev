@@ -25,11 +25,6 @@ class DemoConfigReader {
                      DemoMaterialProperties* material_props,
                      DemoConditions* conditions);
 
-  void PrintInput(const DemoSimulation& params,
-                  const DemoState& state,
-                  const DemoMaterialProperties& material_props,
-                  const DemoConditions& conditions);
-  
   void WriteTemplateFile(const std::string& file_name);
 
  protected:
@@ -51,13 +46,6 @@ class DemoConfigReader {
       std::ifstream* input_file,
       DemoConditions* geochemical_conditions);
   
-  void PrintSimulationParameters(const DemoSimulation& params);
-  void PrintStateParameters(const DemoState& state);
-  void PrintMaterialPropertyParameters(
-      const DemoMaterialProperties& material_props);
-  void PrintGeochemicalConditions(
-      const DemoConditions conditions);
-
   static const std::string kEqual;
   static const std::string kSpaces;
 
