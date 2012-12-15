@@ -14,12 +14,12 @@
 
 extern "C" {
   void pflotranalquimia_setup_ (char* input_filename,
-                                AlquimiaMetaData_C* meta_data,
                                 AlquimiaSizes_C* sizes) ;
   void pflotranalquimia_processconstraint_ () ;
   void pflotranalquimia_reactionstepoperatorsplit_ () ;
   void pflotranalquimia_getauxiliaryoutput_ () ;
-  void pflotranalquimia_getenginefunctionality_ (AlquimiaMetaData_C* metadata) ;
+  void pflotranalquimia_getenginemetadata_ (AlquimiaSizes_C* sizes,
+                                            AlquimiaMetaData_C* metadata) ;
 }
 
 namespace alquimia {
@@ -31,7 +31,6 @@ class PFloTranAlquimiaInterface : public AlquimiaInterface {
   virtual ~PFloTranAlquimiaInterface();
 
   void Setup(const std::string& input_file,
-             AlquimiaMetaData_C* meta_data,
              AlquimiaSizes_C* sizes);
 
   void ProcessCondition(const AlquimiaGeochemicalCondition_C& condition,
@@ -46,6 +45,9 @@ class PFloTranAlquimiaInterface : public AlquimiaInterface {
 
   void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data);
 
+
+  void GetEngineMetaData(AlquimiaSizes_C* sizes,
+                         AlquimiaMetaData_C* meta_data);
 
  protected:
 

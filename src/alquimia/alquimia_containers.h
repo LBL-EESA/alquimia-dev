@@ -13,6 +13,8 @@
 
 #include <stdbool.h>
 
+#define ALQUIMIA_MAX_STRING_LENGTH 256
+
 struct AlquimiaSizes_C {
   int num_primary;
   int num_kinetic_minerals;
@@ -62,6 +64,8 @@ struct AlquimiaMetaData_C {
   bool temperature_dependent;
   bool pressure_dependent;
   bool porosity_update;
+  int* primary_indices;
+  char** primary_names;
   //char** auxiliary_output_names;
 };
 
@@ -69,10 +73,11 @@ struct AlquimiaGeochemicalConstraint_C {
   char* primary_species;
   char* constraint_type;
   char* associated_species;
-  char* value;
+  double value;
 };
 
 /* A geochemical condition is an array of geochemical constraints */
+/* How is this going to work in the C/Fortran interface? */
 typedef AlquimiaGeochemicalConstraint_C* AlquimiaGeochemicalCondition_C;
 
 struct AlquimiaOutputData_C {

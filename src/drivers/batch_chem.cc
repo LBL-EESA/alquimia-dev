@@ -6,6 +6,7 @@
 #else
 #include <unistd.h>
 #endif
+
 #include <cstdlib>
 #include <cctype>
 
@@ -63,8 +64,12 @@ int main(int argc, char** argv) {
                              &demo_simulation, &demo_state, 
                              &demo_material_props, &demo_conditions);
     if (debug_batch_driver) {
-      cfg_reader.PrintInput(demo_simulation, demo_state, 
-                            demo_material_props, demo_conditions);
+      std::cout << "- Input File ---------------------------------------------------------\n";
+      demo_simulation.Print();
+      demo_state.Print();
+      demo_material_props.Print();
+      PrintGeochemicalConditions(demo_conditions);
+      std::cout << "--------------------------------------------------------- Input File -\n";
     }
   }
 
@@ -80,24 +85,48 @@ int main(int argc, char** argv) {
   }
 
   alquimia::AlquimiaInterface* chem = NULL;
-  AlquimiaSizes_C sizes;
-  AlquimiaState_C state;
-  AlquimiaMaterialProperties_C material_props;
-  AlquimiaAuxiliaryData_C aux_data;
-  AlquimiaEngineStatus_C status;
-  AlquimiaMetaData_C meta_data;
-  AlquimiaGeochemicalCondition_C conditions;
-  AlquimiaOutputData_C output_data;
+  AlquimiaSizes_C alquimia_sizes;
+  AlquimiaState_C alquimia_state;
+  AlquimiaMaterialProperties_C alquimia_material_props;
+  AlquimiaAuxiliaryData_C alquimia_aux_data;
+  AlquimiaEngineStatus_C alquimia_status;
+  AlquimiaMetaData_C alquimia_meta_data;
+  AlquimiaGeochemicalCondition_C alquimia_conditions;
+  AlquimiaOutputData_C alquimia_output_data;
 
   try {
     alquimia::AlquimiaInterfaceFactory aif;
     chem = aif.Create(demo_simulation.engine);
 
-    chem->Setup(demo_simulation.engine_inputfile,
-                &meta_data, &sizes);
+    chem->Setup(demo_simulation.engine_inputfile, &alquimia_sizes);
+    if (true) {
+      PrintAlquimiaSizes(alquimia_sizes);
+    }
 
-    // process the constraints
+    SetupAlquimiaMetaData(alquimia_sizes, &alquimia_meta_data);
+    PrintAlquimiaMetaData(alquimia_sizes, alquimia_meta_data);
+    chem->GetEngineMetaData(&alquimia_sizes, &alquimia_meta_data);
+    if (true) {
+      PrintAlquimiaMetaData(alquimia_sizes, alquimia_meta_data);
+    }
 
+    std::cout << "-- Setting up alquimia state container...\n";
+    SetupAlquimiaState(demo_state, alquimia_sizes, &alquimia_state);
+    PrintAlquimiaState(alquimia_sizes, alquimia_state);
+
+    // process the geochemical conditions
+    AllocateAlquimiaGeochemicalConditions(demo_conditions.size(),
+                                          &alquimia_conditions);
+    for (util::DemoConditions::iterator condition = demo_conditions.begin();
+         condition != demo_conditions.end(); ++condition) {
+      std::cout << "    " << condition->first << " : " << std::endl;
+      for (util::DemoGeochemicalCondition::const_iterator g = condition->second.begin();
+           g != condition->second.end(); ++g) {
+        g->Print();
+      }
+      
+      //chem->ProcessCondition();
+    }
     // reaction step loop
 
   } catch (const std::runtime_error& rt_error) {
@@ -105,6 +134,9 @@ int main(int argc, char** argv) {
     error = EXIT_FAILURE;
   } catch (const std::logic_error& lg_error) {
     std::cout << lg_error.what();
+    error = EXIT_FAILURE;
+  } catch (const std::exception& e) {
+    std::cout << e.what();
     error = EXIT_FAILURE;
   }
 
@@ -116,6 +148,9 @@ int main(int argc, char** argv) {
 
   text_output.close();
   // cleanup memory
+  FreeAlquimiaMetaData(alquimia_sizes, &alquimia_meta_data);
+  FreeAlquimiaState(&alquimia_state);
+  FreeAlquimiaGeochemicalConditions(&alquimia_conditions);
   delete chem;
   
   return error;
@@ -289,3 +324,220 @@ void WriteTextOutput(std::fstream* text_output, const double time,
 }  // end WriteTextOutput()
 
 
+void PrintGeochemicalConditions(
+    const alquimia::drivers::utilities::DemoConditions& conditions)
+{
+  namespace util = alquimia::drivers::utilities;
+  std::cout << "  -- Geochemical Conditions :" << std::endl;
+  for (util::DemoConditions::const_iterator c = conditions.begin();
+       c != conditions.end(); ++c) {
+    std::cout << "    " << c->first << " : " << std::endl;
+    for (util::DemoGeochemicalCondition::const_iterator g = c->second.begin();
+         g != c->second.end(); ++g) {
+      g->Print();
+    }
+  }
+}  // end PrintGeochemicalConditions()
+
+/*******************************************************************************
+ **
+ **  Demo-specific helper rountines for setting up alquimia structs
+ **
+ *******************************************************************************/
+void SetupAlquimiaState(
+    const alquimia::drivers::utilities::DemoState& demo_state,
+    const AlquimiaSizes_C& alquimia_sizes,
+    AlquimiaState_C* alquimia_state) {
+  alquimia_state->water_density = demo_state.water_density;
+  alquimia_state->saturation = demo_state.saturation;
+  alquimia_state->porosity = demo_state.porosity;
+  alquimia_state->temperature = demo_state.temperature;
+  alquimia_state->aqueous_pressure = demo_state.aqueous_pressure;
+  AllocateAlquimiaState(alquimia_sizes, alquimia_state);
+  
+}  // end SetupAlquimiaState()
+
+
+void SetupAlquimiaMetaData(
+    const AlquimiaSizes_C& alquimia_sizes,
+    AlquimiaMetaData_C* alquimia_meta_data) {
+  alquimia_meta_data->thread_safe = false;
+  alquimia_meta_data->temperature_dependent = false;
+  alquimia_meta_data->pressure_dependent = false;
+  alquimia_meta_data->porosity_update = false;
+  AllocateAlquimiaMetaData(alquimia_sizes, alquimia_meta_data);
+  
+}  // end SetupAlquimiaState()
+
+
+/*******************************************************************************
+ **
+ **  Helper routines that may eventually be part of alquimia library
+ **
+ *******************************************************************************/
+
+void AllocateAlquimiaState(const AlquimiaSizes_C& sizes,
+                           AlquimiaState_C* state) {
+  state->total_primary = NULL;
+  state->total_sorbed = NULL;
+  state->free_ion = NULL;
+  state->mineral_volume_fraction = NULL;
+  state->mineral_specific_surface_area = NULL;
+  state->cation_exchange_capacity = NULL;
+  state->surface_site_density = NULL;
+  //state-> = NULL;
+
+  if (sizes.num_primary > 0) {
+    state->total_primary = (double*) calloc(sizes.num_primary, sizeof(double));
+    if (NULL == state->total_primary) {
+      // TODO(bja): error handling
+    }
+    state->free_ion = (double*) calloc(sizes.num_primary, sizeof(double));
+    if (NULL == state->free_ion) {
+      // TODO(bja): error handling
+    }
+  }
+
+  if (sizes.num_kinetic_minerals > 0) {
+    state->mineral_volume_fraction = (double*) calloc(
+        sizes.num_kinetic_minerals, sizeof(double));
+    if (NULL == state->mineral_volume_fraction) {
+      // TODO(bja): error handling
+    }
+    state->mineral_specific_surface_area = (double*) calloc(
+        sizes.num_kinetic_minerals, sizeof(double));
+    if (NULL == state->mineral_specific_surface_area) {
+      // TODO(bja): error handling
+    }
+  }
+}  // end AllocateAlquimiaState()
+
+void FreeAlquimiaState(AlquimiaState_C* state) {
+  if (state != NULL) {
+    free(state->total_primary);
+    free(state->free_ion);
+    free(state->mineral_volume_fraction);
+    free(state->mineral_specific_surface_area);
+  }
+  state->total_primary = NULL;
+  state->free_ion = NULL;
+  state->mineral_volume_fraction = NULL;
+  state->mineral_specific_surface_area = NULL;
+}  // end FreeAlquimiaState()
+
+void AllocateAlquimiaMetaData(const AlquimiaSizes_C& sizes,
+                           AlquimiaMetaData_C* meta_data) {
+  meta_data->primary_indices = NULL;
+  meta_data->primary_names = NULL;
+  //meta_data-> = NULL;
+
+  if (sizes.num_primary > 0) {
+    meta_data->primary_indices = (int*) calloc(sizes.num_primary, sizeof(int));
+    if (NULL == meta_data->primary_indices) {
+      // TODO(bja): error handling
+    }
+    meta_data->primary_names = (char**) calloc(sizes.num_primary, sizeof(char*));
+    if (NULL == meta_data->primary_names) {
+      // TODO(bja): error handling
+    }
+    for (int i = 0; i < sizes.num_primary; ++i) {
+      meta_data->primary_names[i] = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+      if (NULL == meta_data->primary_names[i]) {
+        // TODO(bja): error handling
+      }
+    }
+  }
+}  // end AllocateAlquimiaMetaData()
+
+void FreeAlquimiaMetaData(const AlquimiaSizes_C& sizes,
+                          AlquimiaMetaData_C* meta_data) {
+  if (meta_data != NULL) {
+    free(meta_data->primary_indices);
+    for (int i = 0; i < sizes.num_primary; ++i) {
+      free(meta_data->primary_names[i]);
+    }
+    free(meta_data->primary_names);
+  }
+  meta_data->primary_indices = NULL;
+  meta_data->primary_names = NULL;
+}  // end FreeAlquimiaMetaData()
+
+
+
+void AllocateAlquimiaGeochemicalConditions(
+    const int num_conditions,
+    AlquimiaGeochemicalCondition_C* conditions) {
+  conditions = NULL;
+  if (num_conditions > 0) {
+  }
+}  // end AllocateAlquimiaGeochemicalConditions()
+
+void FreeAlquimiaGeochemicalConditions(
+    AlquimiaGeochemicalCondition_C* condition) {
+  free(condition);
+  condition = NULL;
+}  // end FreeAlquimiaState()
+
+void PrintAlquimiaSizes(const AlquimiaSizes_C& sizes) {
+  std::cout << "  sizes :\n"
+            << "    num primary species : " << sizes.num_primary << "\n"
+            << "    num kinetic minerals : " << sizes.num_kinetic_minerals << "\n"
+            << "    num aqueous complexes : " << sizes.num_aqueous_complexes << "\n"
+            << "    num surface sites : " << sizes.num_surface_sites << "\n"
+            << "    num ion exchange sites : " << sizes.num_ion_exchange_sites << "\n";
+}  // end PrintAlquimiaSizes()
+
+void PrintAlquimiaMetaData(const AlquimiaSizes_C& sizes,
+                           const AlquimiaMetaData_C& meta_data) {
+  std::cout << "  meta data :\n"
+            << "    thread_safe : " << meta_data.thread_safe << "\n"
+            << "    temperature_dependent : " << meta_data.temperature_dependent << "\n"
+            << "    pressure_dependent : " << meta_data.pressure_dependent << "\n"
+            << "    porosity_update  : " << meta_data.porosity_update << "\n";
+  std::cout << "    primary indices (" << meta_data.primary_indices << ") (" 
+            << sizes.num_primary << ") :\n      ";
+  for (int i = 0; i < sizes.num_primary; ++i) {
+    std::cout << meta_data.primary_indices[i] << ", ";
+  }
+  std::cout << "\n";
+  std::cout << "    primary names (" << meta_data.primary_names << ") (" 
+            << sizes.num_primary << ") :\n      ";
+  for (int i = 0; i < sizes.num_primary; ++i) {
+    std::cout << meta_data.primary_names[i] << ", ";
+  }
+  std::cout << "\n";
+}  // end PrintAlquimiaMetaData()
+
+void PrintAlquimiaState(const AlquimiaSizes_C& sizes,
+                        const AlquimiaState_C& state) {
+  std::cout << "  state:\n"
+            << "    water density : " << state.water_density << "\n"
+            << "    saturation : " << state.saturation << "\n"
+            << "    porosity : " << state.porosity << "\n"
+            << "    temperature : " << state.temperature << "\n"
+            << "    aqueous_pressure : " << state.aqueous_pressure << "\n";
+
+  std::cout << "    total_primary (" << sizes.num_primary << "):\n      ";
+  for (int i = 0; i < sizes.num_primary; ++i) {
+    std::cout << state.total_primary[i] << ", ";
+  }
+  std::cout << "\n";
+
+  std::cout << "    free_ion (" << sizes.num_primary << "):\n      ";
+  for (int i = 0; i < sizes.num_primary; ++i) {
+    std::cout << state.free_ion[i] << ", ";
+  }
+  std::cout << "\n";
+
+  std::cout << "    mineral volume fractions (" << sizes.num_kinetic_minerals << "):\n      ";
+  for (int i = 0; i < sizes.num_kinetic_minerals; ++i) {
+    std::cout << state.mineral_volume_fraction[i] << ", ";
+  }
+  std::cout << "\n";
+
+  std::cout << "    mineral specific surface area (" << sizes.num_kinetic_minerals << "):\n      ";
+  for (int i = 0; i < sizes.num_kinetic_minerals; ++i) {
+    std::cout << state.mineral_specific_surface_area[i] << ", ";
+  }
+  std::cout << "\n";
+}
