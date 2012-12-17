@@ -20,6 +20,8 @@ extern "C" {
   void pflotranalquimia_getauxiliaryoutput_ () ;
   void pflotranalquimia_getenginemetadata_ (AlquimiaSizes_C* sizes,
                                             AlquimiaMetaData_C* metadata) ;
+  void pflotranalquimia_getprimarynamefromindex_(
+      int* primary_index, char* primary_name);
 }
 
 namespace alquimia {
