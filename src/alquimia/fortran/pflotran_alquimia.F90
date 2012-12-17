@@ -79,6 +79,7 @@ subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata)
   metadata%temperature_dependent = .false.
   metadata%pressure_dependent = .false.
   metadata%porosity_update = .true.
+  metadata%index_base = 1
 
   ! associate indices with the C memory
   if (c_associated(metadata%primary_indices)) then
@@ -92,41 +93,62 @@ subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata)
      print *, "f primary indices not associated"
   end if
 
-  primary_indices(1) = 2
-  primary_indices(2) = 1
+  primary_indices(1) = 1
+  primary_indices(2) = 2
   primary_indices(3) = 3
 
-  ! associate 'names' with the C array of pointers to pointers
-  if (c_associated(metadata%primary_names)) then
-     call c_f_pointer(metadata%primary_names, names, (/sizes%num_primary/))
-  else
-     print *, "c names not associated"
-  endif
+!
+! NOTE(bja): I can't figure out how to get arrays of strings passed
+! back and forth between C and fortran. For now we'll just require C
+! to loop through each string and call GetPrimaryNameFromIndex...
+!
 
-  if (.not. associated(names)) then
-     print *, "f names not associated"
-  end if
-
-  do i=1,sizes%num_primary
-     ! now associate names(i) pointer to an array of chars with a string?
-     if (c_associated(names(i))) then
-        call c_f_pointer(names(i), name, (/ALQUIMIA_MAX_STRING_LENGTH/))
-     else
-        print *, "c name not associated"        
-     end if
-     if (.not. associated(name)) then
-        print *, "f name not associated"
-     end if
-     write(f_name, "(a,i1,a)"),"species_", i, C_NULL_CHAR
-     name = trim(f_name)
-     print *, trim(f_name), "==", name(:)
-  end do
+!!$  ! associate 'names' with the C array of pointers to pointers
+!!$  if (c_associated(metadata%primary_names)) then
+!!$     call c_f_pointer(metadata%primary_names, names, (/sizes%num_primary/))
+!!$  else
+!!$     print *, "c names not associated"
+!!$  endif
+!!$
+!!$  if (.not. associated(names)) then
+!!$     print *, "f names not associated"
+!!$  end if
+!!$
+!!$  do i=1,sizes%num_primary
+!!$     ! now associate names(i) pointer to an array of chars with a string?
+!!$     if (c_associated(names(i))) then
+!!$        call c_f_pointer(names(i), name, (/ALQUIMIA_MAX_STRING_LENGTH/))
+!!$     else
+!!$        print *, "c name not associated"        
+!!$     end if
+!!$     if (.not. associated(name)) then
+!!$        print *, "f name not associated"
+!!$     end if
+!!$     write(f_name, "(a,i1,a)"),"species_", i, C_NULL_CHAR
+!!$     name = trim(f_name)
+!!$     print *, trim(f_name), "==", name(:)
+!!$  end do
 
   call PFloTranAlquimia_PrintMetaData(sizes, metadata)
 
 end subroutine PFloTranAlquimia_GetEngineMetaData
 
-
+subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(primary_index, primary_name)
+#include "pflotran_alquimia.h90"
+  integer (c_int), intent(in) :: primary_index
+  character(kind=c_char), dimension(*), intent(out) :: primary_name 
+  character (len=5) :: names(3) = (/character(len=5) :: "H+   ","Ca++ ", "HCO3-"/)
+  integer(4) :: i
+  character (len=5) :: name
+  print *, "Fortran GetPrimaryNameFromIndex() :"
+  print *, "primary index = ", primary_index
+  ! NOTE(bja): should be possible to do this w/o character by character copying?
+  name = names(primary_index)
+  do i = 1, 5
+     primary_name(i:i) = name(i:i)
+  end do
+  primary_name(6:6) = C_NULL_CHAR
+end subroutine PFloTranAlquimia_GetPrimaryNameFromIndex
 
 ! **************************************************************************** !
 !
@@ -165,6 +187,7 @@ subroutine PFloTranAlquimia_PrintMetadata(sizes, metadata)
   print *, "  temperature dependent : ", metadata%temperature_dependent
   print *, "  pressure dependent : ", metadata%pressure_dependent
   print *, "  porosity update : ", metadata%porosity_update
+  print *, "  index base : ", metadata%index_base
   print *, "  primary indices : "
   call c_f_pointer(metadata%primary_indices, indices, (/sizes%num_primary/))
   do i=1, sizes%num_primary

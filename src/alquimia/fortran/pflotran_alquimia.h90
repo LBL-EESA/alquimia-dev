@@ -35,6 +35,7 @@ type, bind(c) :: alquimia_metadata_f
    logical (c_bool) :: temperature_dependent
    logical (c_bool) :: pressure_dependent
    logical (c_bool) :: porosity_update
+   integer (c_int) :: index_base
    type (c_ptr) :: primary_indices
    type (c_ptr) :: primary_names
 end type alquimia_metadata_f

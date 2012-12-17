@@ -64,6 +64,7 @@ struct AlquimiaMetaData_C {
   bool temperature_dependent;
   bool pressure_dependent;
   bool porosity_update;
+  int index_base;
   int* primary_indices;
   char** primary_names;
   //char** auxiliary_output_names;
