@@ -60,6 +60,12 @@ void PFloTranAlquimiaInterface::GetEngineMetaData(
     AlquimiaMetaData_C* meta_data) {
   std::cout << "PFloTranAlquimiaInterface::GetEngineMetaData() :\n";
   pflotranalquimia_getenginemetadata_(sizes, meta_data);
+  // NOTE(bja): the indices in meta_data.primary_indices already have
+  // the engine base, so we don't need to do any conversions!
+  for (int i = 0; i < sizes->num_primary; ++i) {
+    pflotranalquimia_getprimarynamefromindex_(
+        &(meta_data->primary_indices[i]), meta_data->primary_names[i]);
+  }
 }  // end GetEngineMetaData()
 
 }  //  namespace alquimia
