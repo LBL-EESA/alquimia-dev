@@ -31,7 +31,8 @@ class CrunchAlquimiaInterface : public AlquimiaInterface {
              AlquimiaMetaData_C* meta_data,
              AlquimiaSizes_C* sizes);
 
-  void ProcessCondition(const AlquimiaGeochemicalCondition_C& condition,
+  void ProcessCondition(AlquimiaGeochemicalCondition_C* condition,
+                        AlquimiaSizes_C* sizes,
                          AlquimiaState_C* state);
 
   void ReactionStepOperatorSplit(

@@ -54,17 +54,36 @@ void AllocateAlquimiaMetaData(const AlquimiaSizes_C& sizes,
 void FreeAlquimiaMetaData(const AlquimiaSizes_C& sizes,
                           AlquimiaMetaData_C* metda_data);
 
-void AllocateAlquimiaGeochemicalConditions(
-    const int num_conditions,
-    AlquimiaGeochemicalCondition_C* conditions);
+void AllocateAlquimiaGeochemicalConditionList(int num_conditions,
+    AlquimiaGeochemicalConditionList_C* condition_list);
 
-void FreeAlquimiaGeochemicalConditions(
-    AlquimiaGeochemicalCondition_C* conditions);
+void AllocateAlquimiaGeochemicalCondition(char* name, int num_constraints,
+    AlquimiaGeochemicalCondition_C* condition);
+
+void AllocateAlquimiaGeochemicalConstraint(
+    AlquimiaGeochemicalConstraint_C* constraint);
+
+void FreeAlquimiaGeochemicalConditionList(
+    AlquimiaGeochemicalConditionList_C* conditions);
+
+void FreeAlquimiaGeochemicalCondition(
+    AlquimiaGeochemicalCondition_C* condition);
+
+void FreeAlquimiaGeochemicalConstraint(
+    AlquimiaGeochemicalConstraint_C* constraint);
 
 void PrintAlquimiaSizes(const AlquimiaSizes_C& sizes);
 void PrintAlquimiaMetaData(const AlquimiaSizes_C& sizes,
                            const AlquimiaMetaData_C& meta_data);
 void PrintAlquimiaState(const AlquimiaSizes_C& sizes,
                         const AlquimiaState_C& state);
+
+
+void PrintAlquimiaGeochemicalConditionList(
+    AlquimiaGeochemicalConditionList_C* condition_list);
+void PrintAlquimiaGeochemicalCondition(
+    AlquimiaGeochemicalCondition_C* condition);
+void PrintAlquimiaGeochemicalConstraint(
+    AlquimiaGeochemicalConstraint_C* constraint);
 
 #endif  /* ALQUIMIA_DRIVERS_CC_BATCH_CHEM_H_ */

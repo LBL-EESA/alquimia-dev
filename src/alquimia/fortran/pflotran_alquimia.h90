@@ -40,3 +40,15 @@ type, bind(c) :: alquimia_metadata_f
    type (c_ptr) :: primary_names
 end type alquimia_metadata_f
   
+type, bind(c) :: alquimia_constraint_f
+   type (c_ptr) :: primary_species
+   type (c_ptr) :: constraint_type
+   type (c_ptr) :: associated_species
+   real (c_double) :: value
+end type alquimia_constraint_f
+
+type, bind(c) :: alquimia_condition_f
+   integer (c_int) :: num_constraints
+   type (c_ptr) :: name
+   type (c_ptr) :: constraints
+end type alquimia_condition_f
