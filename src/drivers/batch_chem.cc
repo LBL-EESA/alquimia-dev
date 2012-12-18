@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 #include <cctype>
+#include <cstring>
 
 #include <sstream>
 #include <iostream>
@@ -91,7 +92,7 @@ int main(int argc, char** argv) {
   AlquimiaAuxiliaryData_C alquimia_aux_data;
   AlquimiaEngineStatus_C alquimia_status;
   AlquimiaMetaData_C alquimia_meta_data;
-  AlquimiaGeochemicalCondition_C alquimia_conditions;
+  AlquimiaGeochemicalConditionList_C alquimia_conditions;
   AlquimiaOutputData_C alquimia_output_data;
 
   try {
@@ -114,19 +115,51 @@ int main(int argc, char** argv) {
     SetupAlquimiaState(demo_state, alquimia_sizes, &alquimia_state);
     PrintAlquimiaState(alquimia_sizes, alquimia_state);
 
-    // process the geochemical conditions
-    AllocateAlquimiaGeochemicalConditions(demo_conditions.size(),
-                                          &alquimia_conditions);
-    for (util::DemoConditions::iterator condition = demo_conditions.begin();
-         condition != demo_conditions.end(); ++condition) {
-      std::cout << "    " << condition->first << " : " << std::endl;
-      for (util::DemoGeochemicalCondition::const_iterator g = condition->second.begin();
-           g != condition->second.end(); ++g) {
-        g->Print();
+    // copy the geochemical conditions
+    AllocateAlquimiaGeochemicalConditionList(demo_conditions.size(),
+                                             &alquimia_conditions);
+    util::DemoConditions::const_iterator demo_cond;
+    int i_cond;
+    for (demo_cond = demo_conditions.begin(), i_cond = 0;
+         i_cond < demo_conditions.size(); ++i_cond, ++demo_cond) {
+      std::cout << "    " << demo_cond->first << " : " << i_cond << std::endl;
+      AlquimiaGeochemicalCondition_C* condition = 
+          &(alquimia_conditions.conditions[i_cond]);
+      // std::string.c_str() returns a const char*, so we need to copy
+      // it to our own memory.
+      char* condition_name = new char [demo_cond->first.size() + 1];
+      strcpy(condition_name, demo_cond->first.c_str());
+      AllocateAlquimiaGeochemicalCondition(condition_name,
+                                           demo_cond->second.size(),
+                                           condition);
+      delete condition_name;
+      for (int i_const = 0; i_const < demo_cond->second.size(); ++i_const) {
+        std::cout << "    " << demo_cond->first << " : " << i_cond << " : "
+                  << i_const << std::endl;
+        AlquimiaGeochemicalConstraint_C* constraint = 
+            &(alquimia_conditions.conditions[i_cond].constraints[i_const]);
+        AllocateAlquimiaGeochemicalConstraint(constraint);
+        // copy demo constraint to alquimia constraint
+        std::strncpy(constraint->primary_species,
+                     demo_cond->second[i_const].primary_species.c_str(),
+                     sizeof(constraint->primary_species));
+        std::strncpy(constraint->constraint_type,
+                     demo_cond->second[i_const].constraint_type.c_str(),
+                     sizeof(constraint->constraint_type));
+        std::strncpy(constraint->associated_species,
+                     demo_cond->second[i_const].associated_species.c_str(),
+                     sizeof(constraint->associated_species));
+        constraint->value = demo_cond->second[i_const].value;
       }
-      
-      //chem->ProcessCondition();
     }
+    PrintAlquimiaGeochemicalConditionList(&alquimia_conditions);
+    for (int i = 0; i < alquimia_conditions.num_conditions; ++i) {
+      chem->ProcessCondition(&(alquimia_conditions.conditions[i]),
+                             &alquimia_sizes,
+                             &alquimia_state);
+    }
+    //chem->ProcessCondition();
+
     // reaction step loop
 
   } catch (const std::runtime_error& rt_error) {
@@ -150,7 +183,7 @@ int main(int argc, char** argv) {
   // cleanup memory
   FreeAlquimiaMetaData(alquimia_sizes, &alquimia_meta_data);
   FreeAlquimiaState(&alquimia_state);
-  FreeAlquimiaGeochemicalConditions(&alquimia_conditions);
+  FreeAlquimiaGeochemicalConditionList(&alquimia_conditions);
   delete chem;
   
   return error;
@@ -464,19 +497,71 @@ void FreeAlquimiaMetaData(const AlquimiaSizes_C& sizes,
 
 
 
-void AllocateAlquimiaGeochemicalConditions(
-    const int num_conditions,
-    AlquimiaGeochemicalCondition_C* conditions) {
-  conditions = NULL;
-  if (num_conditions > 0) {
-  }
-}  // end AllocateAlquimiaGeochemicalConditions()
+void AllocateAlquimiaGeochemicalConditionList(int num_conditions,
+    AlquimiaGeochemicalConditionList_C* condition_list) {
+  // NOTE: we are only allocating pointers to N conditions here, not
+  // the actual conditions themselves.
+  std::cout << "AllocateAlquimiaGeochemicalConditionList() : " 
+            << num_conditions << std::endl;
+  condition_list->num_conditions = num_conditions;
 
-void FreeAlquimiaGeochemicalConditions(
+  condition_list->conditions = NULL;
+  if (condition_list->num_conditions > 0) {
+    condition_list->conditions = (AlquimiaGeochemicalCondition_C*)
+        calloc(condition_list->num_conditions, sizeof(AlquimiaGeochemicalCondition_C));
+  }
+}  // end AllocateAlquimiaGeochemicalConditionList()
+
+void AllocateAlquimiaGeochemicalCondition(char* name, int num_constraints,
     AlquimiaGeochemicalCondition_C* condition) {
-  free(condition);
-  condition = NULL;
-}  // end FreeAlquimiaState()
+  // NOTE: we are only allocating pointers to N constraints here, not
+  // the actual condstraints themselves.
+  condition->num_constraints = num_constraints;
+
+  condition->name = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+  std::strncpy(condition->name, name, sizeof(condition->name));
+
+  condition->constraints = NULL;
+  if (condition->num_constraints > 0) {
+    condition->constraints = (AlquimiaGeochemicalConstraint_C*)
+        calloc(condition->num_constraints, sizeof(AlquimiaGeochemicalConstraint_C));
+  }
+}  // end AllocateAlquimiaGeochemicalCondition()
+
+void AllocateAlquimiaGeochemicalConstraint(
+    AlquimiaGeochemicalConstraint_C* constraint){
+  constraint->primary_species = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+  constraint->constraint_type = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+  constraint->associated_species = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+  constraint->value = 0.0;
+}  // end AllocateAlquimiaGeochemicalConstraint()
+
+void FreeAlquimiaGeochemicalConditionList(
+    AlquimiaGeochemicalConditionList_C* condition_list) {
+  for (int i = 0; i < condition_list->num_conditions; ++i) {
+    FreeAlquimiaGeochemicalCondition(&(condition_list->conditions[i]));
+  }
+  free(condition_list->conditions);
+  condition_list->conditions = NULL;
+}  // end FreeAlquimiaGeochemicalConditionList()
+
+void FreeAlquimiaGeochemicalCondition(
+    AlquimiaGeochemicalCondition_C* condition) {
+  for (int i = 0; i < condition->num_constraints; ++i) {
+    FreeAlquimiaGeochemicalConstraint(&(condition->constraints[i]));
+  }
+  free(condition->constraints);
+  condition->constraints = NULL;
+}  // end FreeAlquimiaGeochemicalCondition()
+
+void FreeAlquimiaGeochemicalConstraint(AlquimiaGeochemicalConstraint_C* constraint) {
+  free(constraint->primary_species);
+  constraint->primary_species = NULL;
+  free(constraint->constraint_type);
+  constraint->constraint_type = NULL;
+  free(constraint->associated_species);
+  constraint->associated_species = NULL;
+}  // end FreeAlquimiaGeochemicalCondition()
 
 void PrintAlquimiaSizes(const AlquimiaSizes_C& sizes) {
   std::cout << "  sizes :\n"
@@ -541,3 +626,30 @@ void PrintAlquimiaState(const AlquimiaSizes_C& sizes,
   }
   std::cout << "\n";
 }
+
+void PrintAlquimiaGeochemicalConditionList(
+    AlquimiaGeochemicalConditionList_C* condition_list) {
+  std::cout << "AlquimiaGeochemicalConditionList : " << std::endl;
+  for (int i = 0; i < condition_list->num_conditions; ++i) {
+    PrintAlquimiaGeochemicalCondition(&(condition_list->conditions[i]));
+    std::cout << std::endl;
+  }
+}  //  PrintAlquimiaGeochemicalConditionList()
+
+void PrintAlquimiaGeochemicalCondition(
+    AlquimiaGeochemicalCondition_C* condition) {
+  std::cout << "  AlquimiaGeochemicalCondition : " << condition->name << std::endl;
+  for (int i = 0; i < condition->num_constraints; ++i) {
+    PrintAlquimiaGeochemicalConstraint(&(condition->constraints[i]));
+    std::cout << std::endl;
+  }
+}  //  PrintAlquimiaGeochemicalCondition()
+
+void PrintAlquimiaGeochemicalConstraint(
+    AlquimiaGeochemicalConstraint_C* constraint) {
+  std::cout << "    AlquimiaGeochemicalConstraint : " << std::endl;
+  std::cout << "      primary species : " << constraint->primary_species << std::endl;
+  std::cout << "      constraint type : " << constraint->constraint_type << std::endl;
+  std::cout << "      associated species : " << constraint->associated_species << std::endl;
+  std::cout << "      value : " << constraint->value << std::endl;
+}  //  PrintAlquimiaGeochemicalConstraint()

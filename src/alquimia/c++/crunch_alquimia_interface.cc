@@ -25,7 +25,8 @@ void CrunchAlquimiaInterface::Setup(
 }  // end Setup()
 
 void CrunchAlquimiaInterface::ProcessCondition(
-    const AlquimiaGeochemicalCondition_C& condition,
+    AlquimiaGeochemicalCondition_C* condition,
+    AlquimiaSizes_C* sizes,
     AlquimiaState_C* state) {
 
 }  // end ProcessCondition()
