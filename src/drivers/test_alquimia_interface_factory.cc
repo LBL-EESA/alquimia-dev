@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
     std::string engine_name(alquimia::strings::kPFloTran);
     alquimia::AlquimiaInterface* interface = aif.Create(engine_name);
     std::cout << "Successfully created '" << engine_name << "' interface!" << std::endl;
+    delete interface;
   } catch (std::exception& e) {
     std::cout << e.what() << std::endl;
 
@@ -28,6 +29,7 @@ int main(int argc, char* argv[])
     std::string engine_name(alquimia::strings::kCrunchFlow);
     alquimia::AlquimiaInterface* interface = aif.Create(engine_name);
     std::cout << "Successfully created '" << engine_name << "' interface!" << std::endl;
+    delete interface;
   } catch (std::exception& e) {
     std::cout << e.what() << std::endl;
 
@@ -37,6 +39,7 @@ int main(int argc, char* argv[])
     std::string engine_name("foo");
     alquimia::AlquimiaInterface* interface = aif.Create(engine_name);
     std::cout << "Successfully created '" << engine_name << "' interface!" << std::endl;
+    delete interface;
   } catch (std::exception& e) {
     std::cout << e.what() << std::endl;
 

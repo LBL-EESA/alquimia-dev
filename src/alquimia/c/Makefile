@@ -24,7 +24,7 @@ CXXFLAGS += $(INCLUDES)
 # Generic rules to generate object files.
 #
 %.o : %.c $(HEADERS)
-	$(CC) $(CCFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 
 #
