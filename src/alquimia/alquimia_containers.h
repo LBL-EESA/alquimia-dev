@@ -79,7 +79,16 @@ struct AlquimiaGeochemicalConstraint_C {
 
 /* A geochemical condition is an array of geochemical constraints */
 /* How is this going to work in the C/Fortran interface? */
-typedef AlquimiaGeochemicalConstraint_C* AlquimiaGeochemicalCondition_C;
+struct AlquimiaGeochemicalCondition_C {
+  int num_constraints;
+  char* name;
+  AlquimiaGeochemicalConstraint_C* constraints;
+};
+
+struct AlquimiaGeochemicalConditionList_C {
+  int num_conditions;
+  AlquimiaGeochemicalCondition_C* conditions;
+};
 
 struct AlquimiaOutputData_C {
   double pH;

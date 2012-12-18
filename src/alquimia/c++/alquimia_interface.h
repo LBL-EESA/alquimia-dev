@@ -27,8 +27,9 @@ class AlquimiaInterface {
 
   // constrain processing for boundary/initial constraints. Called
   // once for each IC/BC.
-  virtual void ProcessCondition(const AlquimiaGeochemicalCondition_C& condition,
-                                 AlquimiaState_C* state) = 0;
+  virtual void ProcessCondition(AlquimiaGeochemicalCondition_C* condition,
+                                AlquimiaSizes_C* sizes,
+                                AlquimiaState_C* state) = 0;
 
   // take one (or more?) reaction steps in operator split mode
   virtual void ReactionStepOperatorSplit(

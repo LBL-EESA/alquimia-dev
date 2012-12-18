@@ -36,9 +36,12 @@ void PFloTranAlquimiaInterface::Setup(
 }  // end Setup()
 
 void PFloTranAlquimiaInterface::ProcessCondition(
-    const AlquimiaGeochemicalCondition_C& condition,
+    AlquimiaGeochemicalCondition_C* condition,
+    AlquimiaSizes_C* sizes,
     AlquimiaState_C* state) {
-
+  std::cout << "PFloTranAlquimiaInterface::ProcessCondition() : " << std::endl;
+  std::cout << "  Processing '" << condition->name << "'" << std::endl;
+  pflotranalquimia_processcondition_(condition, sizes, state);
 }  // end ProcessCondition()
 
 void PFloTranAlquimiaInterface::ReactionStepOperatorSplit(

@@ -34,11 +34,13 @@ end subroutine PFloTranAlquimia_Setup
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_ProcessCondition()
+subroutine PFloTranAlquimia_ProcessCondition(condition, sizes, state)
 
 #include "pflotran_alquimia.h90"
-
-  print *, "Fortran process constraint."
+  type (alquimia_condition_f), intent(in) :: condition
+  type (alquimia_sizes_f), intent(in) :: sizes
+  type (alquimia_state_f), intent(inout) :: state
+  print *, "Fortran process constraint : ", condition%name
 end subroutine PFloTranAlquimia_ProcessCondition
 
 
