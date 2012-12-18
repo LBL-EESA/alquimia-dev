@@ -33,6 +33,7 @@ DEPEND_LIBS += \
 #
 SRCS_DEMOUTIL = \
 	demo_utils.cc \
+	demo_containers.cc \
 	cfg_reader.cc \
 	string_tokenizer.cc
 
@@ -40,9 +41,9 @@ OBJS_DEMOUTIL = \
 	$(SRCS_DEMOUTIL:%.cc=%.o)
 
 HEADERS_DEMOUTIL = \
-	cfg_reader.h \
-	demo_containers.h \
 	demo_utils.h \
+	demo_containers.h \
+	cfg_reader.h \
 	string_tokenizer.h
 
 LIBRARIES_DEMOUTIL = libdemoutils.a

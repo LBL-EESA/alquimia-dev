@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
       demo_simulation.Print();
       demo_state.Print();
       demo_material_props.Print();
-      PrintGeochemicalConditions(demo_conditions);
+      util::PrintGeochemicalConditions(demo_conditions);
       std::cout << "--------------------------------------------------------- Input File -\n";
     }
   }
@@ -93,12 +93,12 @@ int main(int argc, char** argv) {
   alquimia::AlquimiaInterface* chem = NULL;
   AlquimiaSizes_C alquimia_sizes;
   AlquimiaState_C alquimia_state;
-  AlquimiaMaterialProperties_C alquimia_material_props;
-  AlquimiaAuxiliaryData_C alquimia_aux_data;
-  AlquimiaEngineStatus_C alquimia_status;
   AlquimiaMetaData_C alquimia_meta_data;
   AlquimiaGeochemicalConditionList_C alquimia_conditions;
-  AlquimiaOutputData_C alquimia_output_data;
+  //AlquimiaMaterialProperties_C alquimia_material_props;
+  //AlquimiaAuxiliaryData_C alquimia_aux_data;
+  //AlquimiaEngineStatus_C alquimia_status;
+  //AlquimiaOutputData_C alquimia_output_data;
 
   try {
     alquimia::AlquimiaInterfaceFactory aif;
@@ -116,47 +116,12 @@ int main(int argc, char** argv) {
       PrintAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
     }
 
-    std::cout << "-- Setting up alquimia state container...\n";
+    std::cout << "\n-- Setting up alquimia state container...\n";
     SetupAlquimiaState(demo_state, alquimia_sizes, &alquimia_state);
     PrintAlquimiaState(&alquimia_sizes, &alquimia_state);
 
-    // copy the geochemical conditions
-    AllocateAlquimiaGeochemicalConditionList(demo_conditions.size(),
-                                             &alquimia_conditions);
-    util::DemoConditions::const_iterator demo_cond;
-    int i_cond;
-    for (demo_cond = demo_conditions.begin(), i_cond = 0;
-         i_cond < demo_conditions.size(); ++i_cond, ++demo_cond) {
-      std::cout << "    " << demo_cond->first << " : " << i_cond << std::endl;
-      AlquimiaGeochemicalCondition_C* condition = 
-          &(alquimia_conditions.conditions[i_cond]);
-      // std::string.c_str() returns a const char*, so we need to copy
-      // it to our own memory.
-      char* condition_name = new char [demo_cond->first.size() + 1];
-      strcpy(condition_name, demo_cond->first.c_str());
-      AllocateAlquimiaGeochemicalCondition(condition_name,
-                                           demo_cond->second.size(),
-                                           condition);
-      delete condition_name;
-      for (int i_const = 0; i_const < demo_cond->second.size(); ++i_const) {
-        std::cout << "    " << demo_cond->first << " : " << i_cond << " : "
-                  << i_const << std::endl;
-        AlquimiaGeochemicalConstraint_C* constraint = 
-            &(alquimia_conditions.conditions[i_cond].constraints[i_const]);
-        AllocateAlquimiaGeochemicalConstraint(constraint);
-        // copy demo constraint to alquimia constraint
-        std::strncpy(constraint->primary_species,
-                     demo_cond->second[i_const].primary_species.c_str(),
-                     sizeof(constraint->primary_species));
-        std::strncpy(constraint->constraint_type,
-                     demo_cond->second[i_const].constraint_type.c_str(),
-                     sizeof(constraint->constraint_type));
-        std::strncpy(constraint->associated_species,
-                     demo_cond->second[i_const].associated_species.c_str(),
-                     sizeof(constraint->associated_species));
-        constraint->value = demo_cond->second[i_const].value;
-      }
-    }
+    std::cout << "\n-- Setting up alqumia conditions...\n";
+    SetupAlquimiaConditions(demo_conditions, &alquimia_conditions);
     PrintAlquimiaGeochemicalConditionList(&alquimia_conditions);
     for (int i = 0; i < alquimia_conditions.num_conditions; ++i) {
       chem->ProcessCondition(&(alquimia_conditions.conditions[i]),
@@ -362,21 +327,6 @@ void WriteTextOutput(std::fstream* text_output, const double time,
 }  // end WriteTextOutput()
 
 
-void PrintGeochemicalConditions(
-    const alquimia::drivers::utilities::DemoConditions& conditions)
-{
-  namespace util = alquimia::drivers::utilities;
-  std::cout << "  -- Geochemical Conditions :" << std::endl;
-  for (util::DemoConditions::const_iterator c = conditions.begin();
-       c != conditions.end(); ++c) {
-    std::cout << "    " << c->first << " : " << std::endl;
-    for (util::DemoGeochemicalCondition::const_iterator g = c->second.begin();
-         g != c->second.end(); ++g) {
-      g->Print();
-    }
-  }
-}  // end PrintGeochemicalConditions()
-
 /*******************************************************************************
  **
  **  Demo-specific helper rountines for setting up alquimia structs
@@ -408,4 +358,46 @@ void SetupAlquimiaMetaData(
 }  // end SetupAlquimiaState()
 
 
-
+void SetupAlquimiaConditions(
+    const alquimia::drivers::utilities::DemoConditions& demo_conditions,
+    AlquimiaGeochemicalConditionList_C* alquimia_conditions) {
+  namespace util = alquimia::drivers::utilities;
+  
+  // copy the geochemical conditions
+  AllocateAlquimiaGeochemicalConditionList(demo_conditions.size(),
+                                           alquimia_conditions);
+  util::DemoConditions::const_iterator demo_cond;
+  unsigned int i_cond;
+  for (demo_cond = demo_conditions.begin(), i_cond = 0;
+       i_cond < demo_conditions.size(); ++i_cond, ++demo_cond) {
+    std::cout << "    " << demo_cond->first << " : " << i_cond << std::endl;
+    AlquimiaGeochemicalCondition_C* condition = 
+        &(alquimia_conditions->conditions[i_cond]);
+    // std::string.c_str() returns a const char*, so we need to copy
+    // it to our own memory.
+    char* condition_name = new char [demo_cond->first.size() + 1];
+    strcpy(condition_name, demo_cond->first.c_str());
+    AllocateAlquimiaGeochemicalCondition(condition_name,
+                                         demo_cond->second.size(),
+                                         condition);
+    delete condition_name;
+    for (unsigned int i_const = 0; i_const < demo_cond->second.size(); ++i_const) {
+      std::cout << "    " << demo_cond->first << " : " << i_cond << " : "
+                << i_const << std::endl;
+      AlquimiaGeochemicalConstraint_C* constraint = 
+          &(alquimia_conditions->conditions[i_cond].constraints[i_const]);
+      AllocateAlquimiaGeochemicalConstraint(constraint);
+      // copy demo constraint to alquimia constraint
+      std::strncpy(constraint->primary_species,
+                   demo_cond->second[i_const].primary_species.c_str(),
+                   sizeof(constraint->primary_species));
+      std::strncpy(constraint->constraint_type,
+                   demo_cond->second[i_const].constraint_type.c_str(),
+                   sizeof(constraint->constraint_type));
+      std::strncpy(constraint->associated_species,
+                   demo_cond->second[i_const].associated_species.c_str(),
+                   sizeof(constraint->associated_species));
+      constraint->value = demo_cond->second[i_const].value;
+    }
+  }
+}  // end SetupAlquimiaConditions()

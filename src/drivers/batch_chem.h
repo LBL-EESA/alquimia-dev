@@ -32,10 +32,6 @@ void WriteTextOutput(std::fstream* text_output,
                      const double time,
                      const AlquimiaState_C& state);
 
-void PrintGeochemicalConditions(
-    const alquimia::drivers::utilities::DemoConditions& conditions);
-
-
 void SetupAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
     const AlquimiaSizes_C& alquimia_sizes,
@@ -44,5 +40,10 @@ void SetupAlquimiaState(
 void SetupAlquimiaMetaData(
     const AlquimiaSizes_C& alquimia_sizes,
     AlquimiaMetaData_C* alquimia_meta_data);
+
+void SetupAlquimiaConditions(
+    const alquimia::drivers::utilities::DemoConditions& demo_conditions,
+    AlquimiaGeochemicalConditionList_C* alquimia_conditions);
+
 
 #endif  /* ALQUIMIA_DRIVERS_CC_BATCH_CHEM_H_ */
