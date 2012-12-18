@@ -13,18 +13,20 @@ LDFLAGS +=  -L/opt/local/lib/gcc46 -lgfortran
 # generic to include alquimia library
 #
 INCLUDES = -I. \
-	-I../alquimia \
+	-I../alquimia/c \
 	-I../alquimia/c++
 
 CXXFLAGS += $(INCLUDES)
 
 LIBS = \
 	-L../alquimia/c++ -lalquimia_c++ \
-	-L../alquimia/fortran -lalquimia_fortran
+	-L../alquimia/fortran -lalquimia_fortran \
+	-L../alquimia/c -lalquimia_c
 
 DEPEND_LIBS += \
 	../alquimia/c++/libalquimia_c++.a \
-	../alquimia/fortran/libalquimia_fortran.a 
+	../alquimia/fortran/libalquimia_fortran.a \
+	../alquimia/c/libalquimia_c.a 
 
 #
 # libdemoutils.a
