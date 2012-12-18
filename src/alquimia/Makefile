@@ -3,9 +3,9 @@
 #
 
 SUBDIRS = \
+	c \
 	fortran \
 	c++
-#	c \
 
 # MAKECMDGOALS is the make option: make 'clobber' or 'all'
 TARGET = $(MAKECMDGOALS)
