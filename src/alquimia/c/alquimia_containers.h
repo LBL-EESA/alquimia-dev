@@ -82,12 +82,12 @@ struct AlquimiaGeochemicalConstraint_C {
 struct AlquimiaGeochemicalCondition_C {
   int num_constraints;
   char* name;
-  AlquimiaGeochemicalConstraint_C* constraints;
+  struct AlquimiaGeochemicalConstraint_C* constraints;
 };
 
 struct AlquimiaGeochemicalConditionList_C {
   int num_conditions;
-  AlquimiaGeochemicalCondition_C* conditions;
+  struct AlquimiaGeochemicalCondition_C* conditions;
 };
 
 struct AlquimiaOutputData_C {
