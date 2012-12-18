@@ -1,6 +1,11 @@
 #
 # setup the external library dependancies
 #
+
+CFLAGS += -Wall
+CXXFLAGS += -Wall
+FCFLAGS += -Wall
+
 DEPEND_LIBS = 
 
 ifdef PFLOTRAN_DIR
@@ -18,6 +23,7 @@ ifdef CRUNCH_DIR
 endif
 
 ifdef DEBUG
+      CFLAGS += -g
       CXXFLAGS += -g
       FCFLAGS += -g
 endif
