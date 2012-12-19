@@ -19,11 +19,9 @@
 #include <string>
 #include <stdexcept>
 
-extern "C" {
 #include "alquimia_memory.h"
 #include "alquimia_util.h"
 #include "alquimia_containers.h"
-}
 
 #include "alquimia_interface_factory.h"
 #include "alquimia_interface.h"

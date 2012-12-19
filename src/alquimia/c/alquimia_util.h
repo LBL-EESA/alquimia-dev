@@ -4,6 +4,10 @@
 
 #include "alquimia_containers.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 void PrintAlquimiaSizes(const struct AlquimiaSizes_C* sizes);
 void PrintAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
                            const struct AlquimiaMetaData_C* meta_data);
@@ -17,5 +21,9 @@ void PrintAlquimiaGeochemicalCondition(
     const struct AlquimiaGeochemicalCondition_C* condition);
 void PrintAlquimiaGeochemicalConstraint(
     const struct AlquimiaGeochemicalConstraint_C* constraint);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif  /* ALQUIMIA_C_UTIL_H_ */
