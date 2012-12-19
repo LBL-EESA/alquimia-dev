@@ -15,6 +15,10 @@
 
 #define ALQUIMIA_MAX_STRING_LENGTH 256
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct AlquimiaSizes_C {
   int num_primary;
   int num_kinetic_minerals;
@@ -95,5 +99,9 @@ struct AlquimiaOutputData_C {
   double* mineral_saturation_index;  // [-]
   double* mineral_reaction_rate;  // [?]
 };
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif  // ALQUIMIA_CONTAINERS_H_

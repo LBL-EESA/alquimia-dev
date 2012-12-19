@@ -4,6 +4,10 @@
 
 #include "alquimia_containers.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* State */
 void AllocateAlquimiaState(const struct AlquimiaSizes_C* sizes,
                            struct AlquimiaState_C* state);
@@ -38,5 +42,9 @@ void FreeAlquimiaGeochemicalCondition(
 void FreeAlquimiaGeochemicalConstraint(
     struct AlquimiaGeochemicalConstraint_C* constraint);
 
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif  /* ALQUIMIA_C_MEMORY_H_ */
