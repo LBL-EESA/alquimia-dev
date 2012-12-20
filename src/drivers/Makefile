@@ -7,7 +7,9 @@ include $(WORKSPACE_PATH)/Makefile.inc
 # demo drives = always in debug mode!
 CXXFLAGS += -g
 # TODO(bja): need to make this generic!
-LDFLAGS +=  -L/opt/local/lib/gcc46 -lgfortran
+#LDFLAGS +=  -L/opt/local/lib/gcc46 -lgfortran
+# NOTE(bja): seems to work without specifying the search path...
+LDFLAGS +=  -lgfortran
 
 #
 # generic to include alquimia library
