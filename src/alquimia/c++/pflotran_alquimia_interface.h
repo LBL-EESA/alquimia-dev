@@ -13,16 +13,16 @@
 #include "alquimia_containers.h"
 
 extern "C" {
-  void pflotranalquimia_setup_ (char* input_filename,
-                                AlquimiaSizes_C* sizes) ;
-  void pflotranalquimia_processcondition_ (AlquimiaGeochemicalCondition_C* condition,
-                                           AlquimiaSizes_C* sizes,
-                                           AlquimiaState_C* state);
-  void pflotranalquimia_reactionstepoperatorsplit_ () ;
-  void pflotranalquimia_getauxiliaryoutput_ () ;
-  void pflotranalquimia_getenginemetadata_ (AlquimiaSizes_C* sizes,
-                                            AlquimiaMetaData_C* metadata) ;
-  void pflotranalquimia_getprimarynamefromindex_(
+  void pflotranalquimia_setup(char* input_filename,
+                              AlquimiaSizes_C* sizes) ;
+  void pflotranalquimia_processcondition(AlquimiaGeochemicalCondition_C* condition,
+                                         AlquimiaSizes_C* sizes,
+                                         AlquimiaState_C* state);
+  void pflotranalquimia_reactionstepoperatorsplit() ;
+  void pflotranalquimia_getauxiliaryoutput() ;
+  void pflotranalquimia_getenginemetadata(AlquimiaSizes_C* sizes,
+                                          AlquimiaMetaData_C* metadata) ;
+  void pflotranalquimia_getprimarynamefromindex(
       int* primary_index, char* primary_name);
 }
 

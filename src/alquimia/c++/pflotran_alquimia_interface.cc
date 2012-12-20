@@ -30,7 +30,7 @@ void PFloTranAlquimiaInterface::Setup(
   strcpy(inputfile, input_file.c_str());
 
   // call pflotran's init function
-  pflotranalquimia_setup_(inputfile, sizes);
+  pflotranalquimia_setup(inputfile, sizes);
 
   delete inputfile;
 }  // end Setup()
@@ -41,7 +41,7 @@ void PFloTranAlquimiaInterface::ProcessCondition(
     AlquimiaState_C* state) {
   std::cout << "PFloTranAlquimiaInterface::ProcessCondition() : " << std::endl;
   std::cout << "  Processing '" << condition->name << "'" << std::endl;
-  pflotranalquimia_processcondition_(condition, sizes, state);
+  pflotranalquimia_processcondition(condition, sizes, state);
 }  // end ProcessCondition()
 
 void PFloTranAlquimiaInterface::ReactionStepOperatorSplit(
@@ -62,11 +62,11 @@ void PFloTranAlquimiaInterface::GetEngineMetaData(
     AlquimiaSizes_C* sizes,
     AlquimiaMetaData_C* meta_data) {
   std::cout << "PFloTranAlquimiaInterface::GetEngineMetaData() :\n";
-  pflotranalquimia_getenginemetadata_(sizes, meta_data);
+  pflotranalquimia_getenginemetadata(sizes, meta_data);
   // NOTE(bja): the indices in meta_data.primary_indices already have
   // the engine base, so we don't need to do any conversions!
   for (int i = 0; i < sizes->num_primary; ++i) {
-    pflotranalquimia_getprimarynamefromindex_(
+    pflotranalquimia_getprimarynamefromindex(
         &(meta_data->primary_indices[i]), meta_data->primary_names[i]);
   }
 }  // end GetEngineMetaData()
