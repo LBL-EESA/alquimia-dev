@@ -1,7 +1,7 @@
-CXX = g++-mp-4.6
-CXXFLAGS = -g
-FC = gfortran-mp-4.6
-FCFLAGS = -g
+CXX = g++-mp-4.7
+CXXFLAGS = -g -Wall
+FC = gfortran-mp-4.7
+FCFLAGS = -g -Wall
 
 EXECUTABLES = \
 	struct-derived \
