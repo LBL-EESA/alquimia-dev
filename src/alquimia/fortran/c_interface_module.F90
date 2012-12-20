@@ -388,19 +388,19 @@ contains
     end if
   end function C_strlen_safe
 
-  function C_string_value(C_string) result(F_string)
-    type(C_ptr), intent(in) :: C_string
-    character(len=C_strlen_safe(C_string)) :: F_string
-    character(len=1,kind=C_char), dimension(:), pointer :: p_chars
-    integer :: i, length
-    length = len(F_string)
-    if (length/=0) then
-      call C_F_pointer(C_string,p_chars,[length])
-      forall (i=1:length)
-        F_string(i:i) = p_chars(i)
-      end forall
-    end if
-  end function C_string_value
+!!$  function C_string_value(C_string) result(F_string)
+!!$    type(C_ptr), intent(in) :: C_string
+!!$    character(len=C_strlen_safe(C_string)) :: F_string
+!!$    character(len=1,kind=C_char), dimension(:), pointer :: p_chars
+!!$    integer :: i, length
+!!$    length = len(F_string)
+!!$    if (length/=0) then
+!!$      call C_F_pointer(C_string,p_chars,[length])
+!!$      forall (i=1:length)
+!!$        F_string(i:i) = p_chars(i)
+!!$      end forall
+!!$    end if
+!!$  end function C_string_value
 
 ! Copy a Fortran string to a C string passed by char-array reference.
 ! If the length is not passed, the C string must be at least: len(F_string)+1
