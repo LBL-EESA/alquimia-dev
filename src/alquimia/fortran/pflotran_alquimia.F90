@@ -5,7 +5,7 @@
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_Setup(input_filename, sizes)
+subroutine PFloTranAlquimia_Setup(input_filename, sizes) bind(C)
 
 #include "pflotran_alquimia.h90"
 
@@ -34,7 +34,7 @@ end subroutine PFloTranAlquimia_Setup
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_ProcessCondition(condition, sizes, state)
+subroutine PFloTranAlquimia_ProcessCondition(condition, sizes, state) bind(C)
 
 #include "pflotran_alquimia.h90"
   type (alquimia_condition_f), intent(in) :: condition
@@ -45,7 +45,7 @@ end subroutine PFloTranAlquimia_ProcessCondition
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_ReactionStepOperatorSplit()
+subroutine PFloTranAlquimia_ReactionStepOperatorSplit() bind(C)
 
 #include "pflotran_alquimia.h90"
 
@@ -54,7 +54,7 @@ end subroutine PFloTranAlquimia_ReactionStepOperatorSplit
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_GetAuxiliaryOutput()
+subroutine PFloTranAlquimia_GetAuxiliaryOutput() bind(C)
 
 #include "pflotran_alquimia.h90"
 
@@ -63,7 +63,7 @@ end subroutine PFloTranAlquimia_GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata)
+subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata) bind(C)
 
 #include "pflotran_alquimia.h90"
 
@@ -135,7 +135,7 @@ subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata)
 
 end subroutine PFloTranAlquimia_GetEngineMetaData
 
-subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(primary_index, primary_name)
+subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(primary_index, primary_name) bind(C)
 #include "pflotran_alquimia.h90"
   integer (c_int), intent(in) :: primary_index
   character(kind=c_char), dimension(*), intent(out) :: primary_name 
@@ -204,7 +204,7 @@ end subroutine PFloTranAlquimia_PrintMetadata
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_PrintStatus(status)
+subroutine PFloTranAlquimia_PrintStatus(status) bind(C)
 
 #include "pflotran_alquimia.h90"
 
