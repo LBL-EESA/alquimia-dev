@@ -35,6 +35,8 @@ type, bind(c) :: alquimia_metadata_f
    logical (c_bool) :: temperature_dependent
    logical (c_bool) :: pressure_dependent
    logical (c_bool) :: porosity_update
+   logical (c_bool) :: operator_splitting
+   logical (c_bool) :: global_implicit
    integer (c_int) :: index_base
    type (c_ptr) :: primary_indices
    type (c_ptr) :: primary_names
@@ -48,7 +50,7 @@ type, bind(c) :: alquimia_constraint_f
 end type alquimia_constraint_f
 
 type, bind(c) :: alquimia_condition_f
-   integer (c_int) :: num_constraints
    type (c_ptr) :: name
+   integer (c_int) :: num_constraints
    type (c_ptr) :: constraints
 end type alquimia_condition_f
