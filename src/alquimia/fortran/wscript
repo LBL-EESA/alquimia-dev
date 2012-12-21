@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+def build(ctx):
+    srcs = ['c_interface_module.F90']
+    hdrs = ['alquimia_containers.h90']
+
+    if ctx.options.pflotran:
+        srcs.append('pflotran_alquimia.F90')
+
+    ctx(
+        features = 'fc fcstlib',
+        source = srcs,
+        includes_nodes = '.',
+        target = 'alquimia_fortran')
+
+    ctx.install_files("${PREFIX}/include", hdrs)
+    ctx.install_files("${PREFIX}/lib", ['libalquimia_fortran.a'])

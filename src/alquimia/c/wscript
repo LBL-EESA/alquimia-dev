@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+def build(ctx):
+    src = ['alquimia_util.c',
+           'alquimia_memory.c']
+    hdrs = ['alquimia_containers.h',
+            'alquimia_memory.h',
+            'alquimia_util.h']
+    ctx.stlib(
+        features = 'c cstlib',
+        source = src,
+        target = 'alquimia_c')
+
+    ctx.install_files("${PREFIX}/include", hdrs)
+    ctx.install_files("${PREFIX}/lib", ['libalquimia_c.a'])

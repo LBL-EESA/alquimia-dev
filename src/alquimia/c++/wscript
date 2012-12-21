@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+def build(ctx):
+    srcs = ['alquimia_interface_factory.cc']
+
+    hdrs = ['alquimia_interface.h']
+
+    if ctx.options.pflotran:
+        srcs.append('pflotran_alquimia_interface.cc')
+        hdrs.append('pflotran_alquimia_interface.h')
+
+    ctx.stlib(
+        features = 'cxx cxxstlib',
+        source = srcs, 
+        includes = ['../c'],
+        target = 'alquimia_c++')
+
+    ctx.install_files("${PREFIX}/include", hdrs)
+    ctx.install_files("${PREFIX}/lib", ['libalquimia_c++.a'])
