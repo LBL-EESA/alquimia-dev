@@ -14,6 +14,7 @@ do any geochemical calculations.
 
 
 To build alquimia using the waf based buildsystem run something like the following:
+
     cd ${ALQUIMIA_DIR}/
     export PFLOTRAN_DIR=/path/to/pflotran-dev
     CC=/opt/local/bin/gcc-mp-4.7 CXX=/opt/local/bin/g++-mp-4.7  FC=/opt/local/bin/gfortran-mp-4.7 ./waf --prefix ./install --pflotran=${PFLOTRAN_DIR} uninstall distclean configure build install 
