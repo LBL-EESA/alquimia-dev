@@ -17,6 +17,6 @@ To build alquimia using the waf based buildsystem run something like the followi
 
     cd ${ALQUIMIA_DIR}/
     export PFLOTRAN_DIR=/path/to/pflotran-dev
-    CC=/opt/local/bin/gcc-mp-4.7 CXX=/opt/local/bin/g++-mp-4.7  FC=/opt/local/bin/gfortran-mp-4.7 ./waf --prefix ./install --pflotran=${PFLOTRAN_DIR} uninstall distclean configure build install 
+    CC=/opt/local/bin/gcc-mp-4.7 CXX=/opt/local/bin/g++-mp-4.7  FC=/opt/local/bin/gfortran-mp-4.7 ./waf --prefix ./install --pflotran=${PFLOTRAN_DIR} distclean configure build install
     cd ${ALQUIMIA_DIR}/examples
     ../install/bin/batch_chem -i batch-test-1.cfg -d
