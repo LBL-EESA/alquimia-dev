@@ -7,7 +7,7 @@
 ! **************************************************************************** !
 subroutine PFloTranAlquimia_Setup(input_filename, sizes) bind(C)
 
-#include "pflotran_alquimia.h90"
+#include "alquimia_containers.h90"
 
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (alquimia_sizes_f), intent(inout) :: sizes
@@ -36,18 +36,44 @@ end subroutine PFloTranAlquimia_Setup
 ! **************************************************************************** !
 subroutine PFloTranAlquimia_ProcessCondition(condition, sizes, state) bind(C)
 
-#include "pflotran_alquimia.h90"
+  use c_interface_module
+
+#include "alquimia_containers.h90"
+
   type (alquimia_condition_f), intent(in) :: condition
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_state_f), intent(inout) :: state
-  print *, "Fortran process constraint : ", condition%name
+  type (alquimia_constraint_f), pointer :: local_constraints(:)
+  type (alquimia_constraint_f), pointer :: constraint
+  character (ALQUIMIA_MAX_STRING_LENGTH) :: name
+  character (ALQUIMIA_MAX_STRING_LENGTH) :: constraint_type
+  character (ALQUIMIA_MAX_STRING_LENGTH) :: associated_species
+  real (c_double) :: constraint_value
+  integer :: i
+
+  print *, "Fortran process condition : "
+  call  c_f_string(condition%name, name)
+  print *, "  condition name : ", trim(name)
+  write (*, '(a i3)') "     num constraints : ", condition%num_constraints
+  call c_f_pointer(condition%constraints, local_constraints, (/condition%num_constraints/))
+  do i = 1, condition%num_constraints
+     !call c_f_pointer(local_constraints(i), constraint)
+     call c_f_string(local_constraints(i)%primary_species, name)
+     call c_f_string(local_constraints(i)%constraint_type, constraint_type)
+     call c_f_string(local_constraints(i)%associated_species, associated_species)
+     constraint_value = local_constraints(i)%value
+     write (*, '(a a a)', advance='no') "        ", trim(name), " : "
+     write (*, '(a a a)', advance='no') trim(constraint_type), " ", trim(associated_species)
+     write (*, '(a f6.2)') " ", constraint_value
+  end do
+  
 end subroutine PFloTranAlquimia_ProcessCondition
 
 
 ! **************************************************************************** !
 subroutine PFloTranAlquimia_ReactionStepOperatorSplit() bind(C)
 
-#include "pflotran_alquimia.h90"
+#include "alquimia_containers.h90"
 
   print *, "Fortran reaction step operator split."
 end subroutine PFloTranAlquimia_ReactionStepOperatorSplit
@@ -56,7 +82,7 @@ end subroutine PFloTranAlquimia_ReactionStepOperatorSplit
 ! **************************************************************************** !
 subroutine PFloTranAlquimia_GetAuxiliaryOutput() bind(C)
 
-#include "pflotran_alquimia.h90"
+#include "alquimia_containers.h90"
 
   print *, "Fortran get auxiliary output."
 end subroutine PFloTranAlquimia_GetAuxiliaryOutput
@@ -65,7 +91,7 @@ end subroutine PFloTranAlquimia_GetAuxiliaryOutput
 ! **************************************************************************** !
 subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata) bind(C)
 
-#include "pflotran_alquimia.h90"
+#include "alquimia_containers.h90"
 
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_metadata_f), intent(out) :: metadata
@@ -81,6 +107,8 @@ subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata) bind(C)
   metadata%temperature_dependent = .false.
   metadata%pressure_dependent = .false.
   metadata%porosity_update = .true.
+  metadata%operator_splitting = .true.
+  metadata%global_implicit = .false.
   metadata%index_base = 1
 
   ! associate indices with the C memory
@@ -101,8 +129,9 @@ subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata) bind(C)
 
 !
 ! NOTE(bja): I can't figure out how to get arrays of strings passed
-! back and forth between C and fortran. For now we'll just require C
-! to loop through each string and call GetPrimaryNameFromIndex...
+! back and forth between C and fortran. Actually I don't understand
+! arrays of strings in fortran. For now we'll just require C to loop
+! through each string and call GetPrimaryNameFromIndex...
 !
 
 !!$  ! associate 'names' with the C array of pointers to pointers
@@ -136,7 +165,7 @@ subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata) bind(C)
 end subroutine PFloTranAlquimia_GetEngineMetaData
 
 subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(primary_index, primary_name) bind(C)
-#include "pflotran_alquimia.h90"
+#include "alquimia_containers.h90"
   integer (c_int), intent(in) :: primary_index
   character(kind=c_char), dimension(*), intent(out) :: primary_name 
   character (len=5) :: names(3) = (/character(len=5) :: "H+   ","Ca++ ", "HCO3-"/)
@@ -161,7 +190,7 @@ end subroutine PFloTranAlquimia_GetPrimaryNameFromIndex
 ! **************************************************************************** !
 subroutine PFloTranAlquimia_PrintSizes(sizes)
 
-#include "pflotran_alquimia.h90"
+#include "alquimia_containers.h90"
 
   type (alquimia_sizes_f), intent(in) :: sizes
   print *, "size : "
@@ -176,7 +205,7 @@ end subroutine PFloTranAlquimia_PrintSizes
 ! **************************************************************************** !
 subroutine PFloTranAlquimia_PrintMetadata(sizes, metadata)
 
-#include "pflotran_alquimia.h90"
+#include "alquimia_containers.h90"
 
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_metadata_f), intent(in) :: metadata
@@ -206,7 +235,7 @@ end subroutine PFloTranAlquimia_PrintMetadata
 ! **************************************************************************** !
 subroutine PFloTranAlquimia_PrintStatus(status) bind(C)
 
-#include "pflotran_alquimia.h90"
+#include "alquimia_containers.h90"
 
   type (alquimia_engine_status_f), intent(in) :: status
   print *, "status : "

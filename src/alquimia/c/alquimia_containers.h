@@ -68,6 +68,8 @@ struct AlquimiaMetaData_C {
   bool temperature_dependent;
   bool pressure_dependent;
   bool porosity_update;
+  bool operator_splitting;
+  bool global_implicit;
   int index_base;
   int* primary_indices;
   char** primary_names;
@@ -84,8 +86,8 @@ struct AlquimiaGeochemicalConstraint_C {
 /* A geochemical condition is an array of geochemical constraints */
 /* How is this going to work in the C/Fortran interface? */
 struct AlquimiaGeochemicalCondition_C {
-  int num_constraints;
   char* name;
+  int num_constraints;
   struct AlquimiaGeochemicalConstraint_C* constraints;
 };
 
