@@ -13,7 +13,7 @@
 
 #include <stdbool.h>
 
-#define ALQUIMIA_MAX_STRING_LENGTH 256
+#define ALQUIMIA_MAX_STRING_LENGTH 512
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,6 +64,7 @@ struct AlquimiaEngineStatus_C {
 };
 
 struct AlquimiaMetaData_C {
+  void* internal_state;
   bool thread_safe;
   bool temperature_dependent;
   bool pressure_dependent;

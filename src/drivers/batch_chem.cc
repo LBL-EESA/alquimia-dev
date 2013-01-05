@@ -19,6 +19,10 @@
 #include <string>
 #include <stdexcept>
 
+#include <mpi.h>
+
+#include <petscsys.h>
+
 #include "alquimia_memory.h"
 #include "alquimia_util.h"
 #include "alquimia_containers.h"
@@ -50,6 +54,10 @@ int main(int argc, char** argv) {
   if (error != EXIT_SUCCESS) {
     exit(error);
   }
+
+  int ierr;
+  char help[] = "petsc help string";
+  PetscInitialize(&argc, &argv, (char*)0, help);
 
   util::DemoConfigReader cfg_reader;
 
@@ -108,7 +116,6 @@ int main(int argc, char** argv) {
     }
 
     SetupAlquimiaMetaData(alquimia_sizes, &alquimia_meta_data);
-    PrintAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
     chem->GetEngineMetaData(&alquimia_sizes, &alquimia_meta_data);
     if (true) {
       PrintAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
@@ -153,6 +160,8 @@ int main(int argc, char** argv) {
   FreeAlquimiaState(&alquimia_state);
   FreeAlquimiaGeochemicalConditionList(&alquimia_conditions);
   delete chem;
+
+  ierr = PetscFinalize();
   
   return error;
 }  // end main()

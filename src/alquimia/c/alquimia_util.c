@@ -37,6 +37,7 @@ void PrintAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
           metadata->temperature_dependent);
   fprintf(stdout, "    pressure_dependent : %d\n", metadata->pressure_dependent);
   fprintf(stdout, "    porosity_update  : %d\n", metadata->porosity_update);
+  fprintf(stdout, "    index base : %d\n", metadata->index_base);
   fprintf(stdout, "    primary indices (%d) (%p) :\n      ",
           sizes->num_primary, metadata->primary_indices);
   for (i = 0; i < sizes->num_primary; ++i) {
