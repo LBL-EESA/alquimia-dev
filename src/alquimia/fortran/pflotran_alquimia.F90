@@ -2,14 +2,28 @@
 !
 ! Alquimia inteface
 !
+! Notes:
+!
+!  * (bja) 2012-12 - different fortran compilers use different name
+!    mangling conventions for fortran modules:
+!
+!    gfortran : ___modulename_module_MOD_procedurename_
+!
+!    intel : _modulename_mp_procedurename_
+!
+!    as a consequence we can't put the alquimia interface into a
+!    module unless we muddy the calling side using the preprocessor to
+!    contol the function names. It doesn't seem worth it at this
+!    time...
+!
 ! **************************************************************************** !
 
 module LocalState
   ! This is the data structure that stores the persistent data for
   ! pflotran, (e.g. reaction network).
   !
-  ! We pass it back to c as a void pointer, they store it and pass it
-  ! back to us so we don't have to a global variable.
+  ! We pass it back and forth with c as a void pointer so we don't
+  ! have to a global variable.
   !
   ! It is NOT part of the alquimia interface, and the driver code
   ! should not use or depend on it!
@@ -22,9 +36,8 @@ module LocalState
   use Input_module
 
   type :: pflotran_internal_state
-     ! NOTE(bja): not sure if these should be c pointers, or fortran
-     ! pointers.... Since the c side shouldn't be touching this,
-     ! stuff, use fortran
+     ! NOTE(bja): these are fortran pointers, so this struct can not
+     ! be unpacked on the c side!
      type (reaction_type), pointer :: reaction
      type (input_type), pointer :: input
      type (option_type), pointer :: option
@@ -321,6 +334,7 @@ subroutine PFloTranAlquimia_GetEngineMetaData(pft_internal_state, &
 
 end subroutine PFloTranAlquimia_GetEngineMetaData
 
+! **************************************************************************** !
 subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(pft_internal_state, &
   primary_index, primary_name) bind(C)
 
