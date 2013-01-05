@@ -148,7 +148,11 @@ void AllocateAlquimiaGeochemicalCondition(
   condition->num_constraints = num_constraints;
 
   condition->name = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
-  strncpy(condition->name, name, sizeof(condition->name));
+  int max_copy_length = ALQUIMIA_MAX_STRING_LENGTH;
+  if (strlen(name) < ALQUIMIA_MAX_STRING_LENGTH) {
+    max_copy_length = strlen(name);
+  }
+  strncpy(condition->name, name, max_copy_length);
 
   condition->constraints = NULL;
   if (condition->num_constraints > 0) {

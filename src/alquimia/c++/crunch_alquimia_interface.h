@@ -28,7 +28,6 @@ class CrunchAlquimiaInterface : public AlquimiaInterface {
   virtual ~CrunchAlquimiaInterface();
 
   void Setup(const std::string& input_file,
-             AlquimiaMetaData_C* meta_data,
              AlquimiaSizes_C* sizes);
 
   void ProcessCondition(AlquimiaGeochemicalCondition_C* condition,
