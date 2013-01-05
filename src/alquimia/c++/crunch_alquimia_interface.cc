@@ -19,7 +19,6 @@ CrunchAlquimiaInterface::~CrunchAlquimiaInterface() {
 
 void CrunchAlquimiaInterface::Setup(
     const std::string& input_file,
-    AlquimiaMetaData_C* meta_data,
     AlquimiaSizes_C* sizes) {
 
 }  // end Setup()
