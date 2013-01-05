@@ -29,8 +29,12 @@ void PFloTranAlquimiaInterface::Setup(
   char* inputfile = new char [input_file.size() + 1];
   strcpy(inputfile, input_file.c_str());
 
-  // call pflotran's init function
-  pflotranalquimia_setup(inputfile, sizes);
+  // NOTE(bja): this is required to prevent crashing, but I'm not
+  // entirely sure why it's necessary, and is creating a memory leak?
+  pft_internal_state_ = new void*;
+
+  // initialize pflotran
+  pflotranalquimia_setup(pft_internal_state_, inputfile, sizes);
 
   delete inputfile;
 }  // end Setup()
@@ -41,7 +45,7 @@ void PFloTranAlquimiaInterface::ProcessCondition(
     AlquimiaState_C* state) {
   std::cout << "PFloTranAlquimiaInterface::ProcessCondition() : " << std::endl;
   std::cout << "  Processing '" << condition->name << "'" << std::endl;
-  pflotranalquimia_processcondition(condition, sizes, state);
+  pflotranalquimia_processcondition(pft_internal_state_, condition, sizes, state);
 }  // end ProcessCondition()
 
 void PFloTranAlquimiaInterface::ReactionStepOperatorSplit(
@@ -66,11 +70,16 @@ void PFloTranAlquimiaInterface::GetEngineMetaData(
     AlquimiaSizes_C* sizes,
     AlquimiaMetaData_C* meta_data) {
   std::cout << "PFloTranAlquimiaInterface::GetEngineMetaData() :\n";
-  pflotranalquimia_getenginemetadata(sizes, meta_data);
+  pflotranalquimia_getenginemetadata(pft_internal_state_, sizes, meta_data);
+
+  // NOTE(bja) : can't get arrays of strings to pass gracefully
+  // between c and fortran, so for now we loop through and request the
+  // names one at a time
+
   // NOTE(bja): the indices in meta_data.primary_indices already have
   // the engine base, so we don't need to do any conversions!
   for (int i = 0; i < sizes->num_primary; ++i) {
-    pflotranalquimia_getprimarynamefromindex(
+    pflotranalquimia_getprimarynamefromindex(pft_internal_state_,
         &(meta_data->primary_indices[i]), meta_data->primary_names[i]);
   }
 }  // end GetEngineMetaData()

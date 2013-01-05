@@ -79,6 +79,9 @@ void FreeAlquimiaState(struct AlquimiaState_C* state) {
 void AllocateAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
                               struct AlquimiaMetaData_C* meta_data) {
   int i;
+
+  meta_data->internal_state = NULL;
+
   meta_data->primary_indices = NULL;
   meta_data->primary_names = NULL;
   //meta_data-> = NULL;
@@ -113,6 +116,10 @@ void FreeAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
   }
   meta_data->primary_indices = NULL;
   meta_data->primary_names = NULL;
+
+  // NOTE(bja): meta_data->internal_state is not our memory, but is allocated by
+  // the engine, we rely on them to clean it up!
+
 }  // end FreeAlquimiaMetaData()
 
 
