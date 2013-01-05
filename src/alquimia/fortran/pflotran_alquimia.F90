@@ -4,45 +4,197 @@
 !
 ! **************************************************************************** !
 
+module LocalState
+  ! This is the data structure that stores the persistent data for
+  ! pflotran, (e.g. reaction network).
+  !
+  ! We pass it back to c as a void pointer, they store it and pass it
+  ! back to us so we don't have to a global variable.
+  !
+  ! It is NOT part of the alquimia interface, and the driver code
+  ! should not use or depend on it!
+
+
+  use Reaction_Aux_module
+  use Reactive_Transport_Aux_module
+  use Global_Aux_module
+  use Option_module
+  use Input_module
+
+  type :: pflotran_internal_state
+     ! NOTE(bja): not sure if these should be c pointers, or fortran
+     ! pointers.... Since the c side shouldn't be touching this,
+     ! stuff, use fortran
+     type (reaction_type), pointer :: reaction
+     type (input_type), pointer :: input
+     type (option_type), pointer :: option
+     type (global_auxvar_type), pointer :: global_auxvars
+     type (reactive_transport_auxvar_type), pointer :: rt_auxvars
+  end type pflotran_internal_state
+end module LocalState
+
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_Setup(input_filename, sizes) bind(C)
+subroutine PFloTranAlquimia_Setup(pft_internal_state, input_filename, sizes) bind(C)
+
+  use c_interface_module
+
+  ! pflotran
+  use Reaction_module
+  use Reaction_Aux_module
+  use Reactive_Transport_Aux_module
+  use Global_Aux_module
+  use Database_module
+  use Option_module
+  use Input_module
+
+  use LocalState
 
 #include "alquimia_containers.h90"
 
+#include "definitions.h"
+#include "finclude/petsclog.h"
+
+  ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (alquimia_sizes_f), intent(inout) :: sizes
+  type (c_ptr), intent(inout) :: pft_internal_state
+
+  type(pflotran_internal_state), pointer :: internal_state
+
+  ! local variables
+  PetscErrorCode :: ierr
+  PetscBool :: option_found
+  character(len=ALQUIMIA_MAX_STRING_LENGTH) :: string
+  character(len=ALQUIMIA_MAX_STRING_LENGTH) :: filename_out
+  type(reaction_type), pointer :: reaction
+  type(option_type), pointer :: option
+  type(input_type), pointer :: input
+  type(global_auxvar_type), pointer :: global_auxvars
+  type(reactive_transport_auxvar_type), pointer :: rt_auxvars
+
   integer :: len
   integer :: i
 
   print *, "PFloTranAlquimia_Setup() : "
-  len = 0
-  do 
-     if (input_filename(len+1) == C_NULL_CHAR) exit
-     len = len + 1
-  end do
-  
-  print *, "Reading : ", (input_filename(i), i=1,len)
 
-  sizes%num_primary = 3
-  sizes%num_kinetic_minerals = 1
-  sizes%num_aqueous_complexes = 6
-  sizes%num_surface_sites = 0
-  sizes%num_ion_exchange_sites = 0
-  call PFloTranAlquimia_PrintSizes(sizes)
+  ! setup pflotran's option object, including mpi
+  option => OptionCreate()
+  option%fid_out = OUT_UNIT
+
+  option%global_comm = MPI_COMM_WORLD
+  call MPI_Comm_rank(MPI_COMM_WORLD, option%global_rank, ierr)
+  call MPI_Comm_size(MPI_COMM_WORLD, option%global_commsize, ierr)
+  call MPI_Comm_group(MPI_COMM_WORLD, option%global_group, ierr)
+  option%mycomm = option%global_comm
+  option%myrank = option%global_rank
+  option%mycommsize = option%global_commsize
+  option%mygroup = option%global_group
+
+  ! set the pflotran input file name
+  call c_f_string(input_filename,   option%input_filename)
+  print *, "  Reading : ", trim(option%input_filename)
+
+  input => InputCreate(IN_UNIT, option%input_filename, option)
+
+  filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
+                 '.out'
+
+  if (option%myrank == option%io_rank .and. option%print_to_file) then
+    open(option%fid_out, file=filename_out, action="write", status="unknown")
+  endif
+
+  !
+  ! initialize chemistry
+  !
+
+  ! first pass through the input file to check for a CHEMISTRY block
+  string = "CHEMISTRY"
+  call InputFindStringInFile(input, option, string)
+  if (.not.InputError(input)) then
+    ! found a chemistry block, initialize the chemistry.
+
+    ! NOTE(bja): ReactionInit() only does a first pass through the
+    ! input file to check for a select items
+    call ReactionInit(reaction, input, option)
+    ! rewind the input file to prepare for the second pass
+    call InputFindStringInFile(input, option, string)
+    ! the second pass through the input file to read the remaining blocks
+    call ReactionReadPass2(reaction, input, option)
+    
+    if (reaction%use_full_geochemistry) then
+       call DatabaseRead(reaction, option)
+       call BasisInit(reaction, option)    
+    else
+      ! NOTE(bja): do we need this for the batch chemistry driver?
+
+      ! turn off activity coefficients since the database has not been read
+      reaction%act_coef_update_frequency = ACT_COEF_FREQUENCY_OFF
+      allocate(reaction%primary_species_print(option%ntrandof))
+      reaction%primary_species_print = PETSC_TRUE
+    endif
+  endif
+
+  !
+  ! create the storage containers
+  !
+  ! NOTE(bja) : batch chem --> one cell
+
+  ! global_auxvars --> cell by cell temperature, pressure, saturation, density
+  allocate(global_auxvars)
+  call GlobalAuxVarInit(global_auxvars, option)
+
+  ! rt_auxvars --> cell by cell chemistry data
+  allocate(rt_auxvars)
+  call RTAuxVarInit(rt_auxvars, reaction, option)
+
+  ! assign default state values
+  global_auxvars%pres = option%reference_pressure
+  global_auxvars%temp = option%reference_temperature
+  global_auxvars%den_kg = option%reference_water_density
+  global_auxvars%sat = option%reference_saturation  
+
+  !
+  ! Grab info that the driver needs to finish initializing
+  !
+  sizes%num_primary = reaction%ncomp
+  sizes%num_kinetic_minerals = reaction%mineral%nkinmnrl
+  sizes%num_aqueous_complexes = reaction%neqcplx
+  sizes%num_surface_sites = -1
+  sizes%num_ion_exchange_sites = reaction%neqionxrxn
+
+  !call PFloTranAlquimia_PrintSizes(sizes)
+
+  !
+  ! save pflotran's persistent data to a struct so the driver can
+  ! store it for us
+  !
+  allocate(internal_state)
+  internal_state%reaction => reaction
+  internal_state%option => option
+  internal_state%input => input
+  internal_state%global_auxvars => global_auxvars
+  internal_state%rt_auxvars => rt_auxvars
+  if (.not. c_associated(pft_internal_state)) then
+     print *, "pft internal state is null"
+  endif
+  pft_internal_state = c_loc(internal_state)
 
 end subroutine PFloTranAlquimia_Setup
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_ProcessCondition(condition, sizes, state) bind(C)
+subroutine PFloTranAlquimia_ProcessCondition(pft_internal_state, condition, &
+     sizes, state) bind(C)
 
   use c_interface_module
+  use LocalState
 
 #include "alquimia_containers.h90"
 
   type (alquimia_condition_f), intent(in) :: condition
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_state_f), intent(inout) :: state
+
   type (alquimia_constraint_f), pointer :: local_constraints(:)
   type (alquimia_constraint_f), pointer :: constraint
   character (ALQUIMIA_MAX_STRING_LENGTH) :: name
@@ -50,6 +202,12 @@ subroutine PFloTranAlquimia_ProcessCondition(condition, sizes, state) bind(C)
   character (ALQUIMIA_MAX_STRING_LENGTH) :: associated_species
   real (c_double) :: constraint_value
   integer :: i
+
+  type (c_ptr), intent(inout) :: pft_internal_state
+
+  type(pflotran_internal_state), pointer :: internal_state
+
+  call c_f_pointer(pft_internal_state, internal_state)
 
   print *, "Fortran process condition : "
   call  c_f_string(condition%name, name)
@@ -66,54 +224,77 @@ subroutine PFloTranAlquimia_ProcessCondition(condition, sizes, state) bind(C)
      write (*, '(a a a)', advance='no') trim(constraint_type), " ", trim(associated_species)
      write (*, '(a f6.2)') " ", constraint_value
   end do
-  
+
 end subroutine PFloTranAlquimia_ProcessCondition
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_ReactionStepOperatorSplit() bind(C)
+subroutine PFloTranAlquimia_ReactionStepOperatorSplit(pft_internal_state) bind(C)
+
+  use LocalState
 
 #include "alquimia_containers.h90"
+
+  type (c_ptr), intent(inout) :: pft_internal_state
+
+  type(pflotran_internal_state), pointer :: internal_state
+
+  call c_f_pointer(pft_internal_state, internal_state)
 
   print *, "Fortran reaction step operator split."
 end subroutine PFloTranAlquimia_ReactionStepOperatorSplit
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_GetAuxiliaryOutput() bind(C)
+subroutine PFloTranAlquimia_GetAuxiliaryOutput(pft_internal_state) bind(C)
+
+  use LocalState
 
 #include "alquimia_containers.h90"
+
+  type (c_ptr), intent(inout) :: pft_internal_state
+
+  type(pflotran_internal_state), pointer :: internal_state
+
+  call c_f_pointer(pft_internal_state, internal_state)
 
   print *, "Fortran get auxiliary output."
 end subroutine PFloTranAlquimia_GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata) bind(C)
+subroutine PFloTranAlquimia_GetEngineMetaData(pft_internal_state, &
+     sizes, metadata) bind(C)
+
+  use LocalState
 
 #include "alquimia_containers.h90"
 
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_metadata_f), intent(out) :: metadata
   integer (c_int), pointer :: primary_indices(:)
-  type (c_ptr), pointer :: names(:)
-  character (kind=c_char), pointer :: name
-  character (len=256) :: f_name
-  integer :: i
+  integer :: i, num_primary
+  type (c_ptr), intent(inout) :: pft_internal_state
+  type(pflotran_internal_state), pointer :: internal_state
 
-  print *, "Fortran get engine metadata."
+  !print *, "Fortran get engine metadata."
 
+  call c_f_pointer(pft_internal_state, internal_state)
+
+  num_primary = internal_state%reaction%ncomp
+
+  ! TODO(bja) : can we extract this from pflotran without hardcoding?
   metadata%thread_safe = .true.
-  metadata%temperature_dependent = .false.
-  metadata%pressure_dependent = .false.
-  metadata%porosity_update = .true.
+  metadata%temperature_dependent = .true.
+  metadata%pressure_dependent = .true.
+  metadata%porosity_update = internal_state%reaction%update_porosity
   metadata%operator_splitting = .true.
   metadata%global_implicit = .false.
   metadata%index_base = 1
 
   ! associate indices with the C memory
   if (c_associated(metadata%primary_indices)) then
-     call c_f_pointer(metadata%primary_indices, primary_indices, (/sizes%num_primary/))
+     call c_f_pointer(metadata%primary_indices, primary_indices, (/num_primary/))
   else
      ! error...
      print *, "c primary indicies not associated"
@@ -123,9 +304,11 @@ subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata) bind(C)
      print *, "f primary indices not associated"
   end if
 
-  primary_indices(1) = 1
-  primary_indices(2) = 2
-  primary_indices(3) = 3
+  ! NOTE(bja) : if the order in reaction%primary_species_names always
+  ! is not correct we need to modifiy this...
+  do i=1, num_primary
+     primary_indices(i) = i
+  enddo
 
 !
 ! NOTE(bja): I can't figure out how to get arrays of strings passed
@@ -134,51 +317,34 @@ subroutine PFloTranAlquimia_GetEngineMetaData(sizes, metadata) bind(C)
 ! through each string and call GetPrimaryNameFromIndex...
 !
 
-!!$  ! associate 'names' with the C array of pointers to pointers
-!!$  if (c_associated(metadata%primary_names)) then
-!!$     call c_f_pointer(metadata%primary_names, names, (/sizes%num_primary/))
-!!$  else
-!!$     print *, "c names not associated"
-!!$  endif
-!!$
-!!$  if (.not. associated(names)) then
-!!$     print *, "f names not associated"
-!!$  end if
-!!$
-!!$  do i=1,sizes%num_primary
-!!$     ! now associate names(i) pointer to an array of chars with a string?
-!!$     if (c_associated(names(i))) then
-!!$        call c_f_pointer(names(i), name, (/ALQUIMIA_MAX_STRING_LENGTH/))
-!!$     else
-!!$        print *, "c name not associated"        
-!!$     end if
-!!$     if (.not. associated(name)) then
-!!$        print *, "f name not associated"
-!!$     end if
-!!$     write(f_name, "(a,i1,a)"),"species_", i, C_NULL_CHAR
-!!$     name = trim(f_name)
-!!$     print *, trim(f_name), "==", name(:)
-!!$  end do
-
-  call PFloTranAlquimia_PrintMetaData(sizes, metadata)
+  !call PFloTranAlquimia_PrintMetaData(sizes, metadata)
 
 end subroutine PFloTranAlquimia_GetEngineMetaData
 
-subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(primary_index, primary_name) bind(C)
+subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(pft_internal_state, &
+  primary_index, primary_name) bind(C)
+
+  use c_interface_module
+  use LocalState
+
 #include "alquimia_containers.h90"
+
   integer (c_int), intent(in) :: primary_index
-  character(kind=c_char), dimension(*), intent(out) :: primary_name 
-  character (len=5) :: names(3) = (/character(len=5) :: "H+   ","Ca++ ", "HCO3-"/)
-  integer(4) :: i
-  character (len=5) :: name
-  print *, "Fortran GetPrimaryNameFromIndex() :"
-  print *, "primary index = ", primary_index
-  ! NOTE(bja): should be possible to do this w/o character by character copying?
-  name = names(primary_index)
-  do i = 1, 5
-     primary_name(i:i) = name(i:i)
-  end do
-  primary_name(6:6) = C_NULL_CHAR
+  character(kind=c_char), dimension(*), intent(out) :: primary_name
+  character (len=ALQUIMIA_MAX_WORD_LENGTH), pointer :: primary_list(:)
+  type (c_ptr), intent(inout) :: pft_internal_state
+  type(pflotran_internal_state), pointer :: internal_state
+
+  call c_f_pointer(pft_internal_state, internal_state)
+
+  primary_list => internal_state%reaction%primary_species_names
+
+  !print *, "Fortran GetPrimaryNameFromIndex() :"
+  !print *, "primary index = ", primary_index
+
+  call f_c_string_chars(trim(primary_list(primary_index)), &
+       primary_name, ALQUIMIA_MAX_STRING_LENGTH)
+
 end subroutine PFloTranAlquimia_GetPrimaryNameFromIndex
 
 ! **************************************************************************** !
