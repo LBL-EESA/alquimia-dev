@@ -50,12 +50,16 @@ void PFloTranAlquimiaInterface::ReactionStepOperatorSplit(
     const AlquimiaMaterialProperties_C& material_props,
     AlquimiaState_C* state,
     AlquimiaEngineStatus_C* status) {
-
+  static_cast<void>(delta_t);
+  static_cast<void>(aux_data);
+  static_cast<void>(material_props);
+  static_cast<void>(state);
+  static_cast<void>(status);
 }  // end ReactionStepOperatorSplit()
 
 void PFloTranAlquimiaInterface::GetAuxiliaryOutput(
     AlquimiaAuxiliaryData_C* aux_data) {
-
+  static_cast<void>(aux_data);
 }  // end GetAuxiliaryOutput()
 
 void PFloTranAlquimiaInterface::GetEngineMetaData(

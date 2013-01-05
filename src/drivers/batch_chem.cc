@@ -311,6 +311,8 @@ void WriteTextOutputHeader(std::fstream* text_output, const char time_units,
 
 void WriteTextOutput(std::fstream* text_output, const double time, 
                      const AlquimiaState_C& state) {
+  static_cast<void>(time);
+  static_cast<void>(state);
   if (text_output->is_open()) {
     // std::string seperator(" , ");
     // *text_output << std::scientific << std::setprecision(6) << std::setw(15) << time;
@@ -386,15 +388,32 @@ void SetupAlquimiaConditions(
           &(alquimia_conditions->conditions[i_cond].constraints[i_const]);
       AllocateAlquimiaGeochemicalConstraint(constraint);
       // copy demo constraint to alquimia constraint
+      int max_copy_length = ALQUIMIA_MAX_STRING_LENGTH;
+      if (strlen(demo_cond->second[i_const].primary_species.c_str()) < 
+          ALQUIMIA_MAX_STRING_LENGTH) {
+        max_copy_length = strlen(demo_cond->second[i_const].primary_species.c_str());
+      }
       std::strncpy(constraint->primary_species,
                    demo_cond->second[i_const].primary_species.c_str(),
-                   sizeof(constraint->primary_species));
+                   max_copy_length);
+
+      max_copy_length = ALQUIMIA_MAX_STRING_LENGTH;
+      if (strlen(demo_cond->second[i_const].constraint_type.c_str()) < 
+          ALQUIMIA_MAX_STRING_LENGTH) {
+        max_copy_length = strlen(demo_cond->second[i_const].constraint_type.c_str());
+      }
       std::strncpy(constraint->constraint_type,
                    demo_cond->second[i_const].constraint_type.c_str(),
-                   sizeof(constraint->constraint_type));
+                   max_copy_length);
+
+      max_copy_length = ALQUIMIA_MAX_STRING_LENGTH;
+      if (strlen(demo_cond->second[i_const].associated_species.c_str()) < 
+          ALQUIMIA_MAX_STRING_LENGTH) {
+        max_copy_length = strlen(demo_cond->second[i_const].associated_species.c_str());
+      }
       std::strncpy(constraint->associated_species,
                    demo_cond->second[i_const].associated_species.c_str(),
-                   sizeof(constraint->associated_species));
+                   max_copy_length);
       constraint->value = demo_cond->second[i_const].value;
     }
   }
