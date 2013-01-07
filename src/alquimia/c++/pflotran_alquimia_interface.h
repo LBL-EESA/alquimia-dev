@@ -61,7 +61,7 @@ class PFloTranAlquimiaInterface : public AlquimiaInterface {
  protected:
 
  private:
-  void* pft_internal_state_;
+
 };
 
 }  // namespace alquimia
