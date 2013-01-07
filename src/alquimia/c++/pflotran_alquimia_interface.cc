@@ -31,11 +31,11 @@ void PFloTranAlquimiaInterface::Setup(
 
   // NOTE(bja): this is required to prevent crashing, but I'm not
   // entirely sure why it's necessary, and is creating a memory leak?
-  pft_internal_state_ = new void*;
+  void* pft_internal_state = new void*;
 
   // initialize pflotran
-  pflotranalquimia_setup(pft_internal_state_, inputfile, sizes);
-
+  pflotranalquimia_setup(pft_internal_state, inputfile, sizes);
+  set_internal_state(pft_internal_state);
   delete inputfile;
 }  // end Setup()
 
@@ -45,7 +45,7 @@ void PFloTranAlquimiaInterface::ProcessCondition(
     AlquimiaState_C* state) {
   std::cout << "PFloTranAlquimiaInterface::ProcessCondition() : " << std::endl;
   std::cout << "  Processing '" << condition->name << "'" << std::endl;
-  pflotranalquimia_processcondition(pft_internal_state_, condition, sizes, state);
+  pflotranalquimia_processcondition(internal_state(), condition, sizes, state);
 }  // end ProcessCondition()
 
 void PFloTranAlquimiaInterface::ReactionStepOperatorSplit(
@@ -70,7 +70,7 @@ void PFloTranAlquimiaInterface::GetEngineMetaData(
     AlquimiaSizes_C* sizes,
     AlquimiaMetaData_C* meta_data) {
   std::cout << "PFloTranAlquimiaInterface::GetEngineMetaData() :\n";
-  pflotranalquimia_getenginemetadata(pft_internal_state_, sizes, meta_data);
+  pflotranalquimia_getenginemetadata(internal_state(), sizes, meta_data);
 
   // NOTE(bja) : can't get arrays of strings to pass gracefully
   // between c and fortran, so for now we loop through and request the
@@ -79,7 +79,7 @@ void PFloTranAlquimiaInterface::GetEngineMetaData(
   // NOTE(bja): the indices in meta_data.primary_indices already have
   // the engine base, so we don't need to do any conversions!
   for (int i = 0; i < sizes->num_primary; ++i) {
-    pflotranalquimia_getprimarynamefromindex(pft_internal_state_,
+    pflotranalquimia_getprimarynamefromindex(internal_state(),
         &(meta_data->primary_indices[i]), meta_data->primary_names[i]);
   }
 }  // end GetEngineMetaData()

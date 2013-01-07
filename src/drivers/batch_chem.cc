@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
     exit(error);
   }
 
+  // we use petsc to initialize mpi
   int ierr;
   char help[] = "petsc help string";
   PetscInitialize(&argc, &argv, (char*)0, help);
