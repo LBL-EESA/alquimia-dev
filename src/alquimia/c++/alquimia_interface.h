@@ -47,8 +47,16 @@ class AlquimiaInterface {
                                  AlquimiaMetaData_C* meta_data) = 0;
 
  protected:
+  void* internal_state(void) {
+    return internal_state_;
+  };
+
+  void set_internal_state(void* internal_state) {
+    internal_state_ = internal_state;
+  }
 
  private:
+  void* internal_state_;
 
 };
 
