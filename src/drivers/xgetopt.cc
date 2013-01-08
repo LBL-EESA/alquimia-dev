@@ -32,7 +32,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
-#include "xgetopt.hh"
+#include "xgetopt.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
