@@ -3,7 +3,8 @@
 def build(ctx):
     srcs = ['alquimia_interface_factory.cc']
 
-    hdrs = ['alquimia_interface.h']
+    hdrs = ['alquimia_interface.h',
+            'alquimia_interface_factory.h']
 
     if ctx.options.pflotran:
         srcs.append('pflotran_alquimia_interface.cc')
