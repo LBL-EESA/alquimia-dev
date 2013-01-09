@@ -47,7 +47,7 @@ module LocalState
 end module LocalState
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_Setup(pft_internal_state, input_filename, sizes) bind(C)
+subroutine PFloTran_Alquimia_Setup(pft_internal_state, input_filename, sizes) bind(C)
 
   use c_interface_module
 
@@ -88,7 +88,7 @@ subroutine PFloTranAlquimia_Setup(pft_internal_state, input_filename, sizes) bin
   integer :: len
   integer :: i
 
-  print *, "PFloTranAlquimia_Setup() : "
+  print *, "PFloTran_Alquimia_Setup() : "
 
   ! setup pflotran's option object, including mpi
   option => OptionCreate()
@@ -175,7 +175,7 @@ subroutine PFloTranAlquimia_Setup(pft_internal_state, input_filename, sizes) bin
   sizes%num_surface_sites = -1
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
 
-  !call PFloTranAlquimia_PrintSizes(sizes)
+  !call PFloTran_Alquimia_PrintSizes(sizes)
 
   !
   ! save pflotran's persistent data to a struct so the driver can
@@ -192,11 +192,11 @@ subroutine PFloTranAlquimia_Setup(pft_internal_state, input_filename, sizes) bin
   endif
   pft_internal_state = c_loc(internal_state)
 
-end subroutine PFloTranAlquimia_Setup
+end subroutine PFloTran_Alquimia_Setup
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_ProcessCondition(pft_internal_state, condition, &
+subroutine PFloTran_Alquimia_ProcessCondition(pft_internal_state, condition, &
      sizes, state) bind(C)
 
   use c_interface_module
@@ -222,7 +222,7 @@ subroutine PFloTranAlquimia_ProcessCondition(pft_internal_state, condition, &
 
   call c_f_pointer(pft_internal_state, internal_state)
 
-  print *, "Fortran process condition : "
+  print *, "PFloTran_Alquimia_ProcessCondition() : "
   call  c_f_string(condition%name, name)
   print *, "  condition name : ", trim(name)
   write (*, '(a i3)') "     num constraints : ", condition%num_constraints
@@ -238,11 +238,11 @@ subroutine PFloTranAlquimia_ProcessCondition(pft_internal_state, condition, &
      write (*, '(a f6.2)') " ", constraint_value
   end do
 
-end subroutine PFloTranAlquimia_ProcessCondition
+end subroutine PFloTran_Alquimia_ProcessCondition
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_ReactionStepOperatorSplit(pft_internal_state) bind(C)
+subroutine PFloTran_Alquimia_ReactionStepOperatorSplit(pft_internal_state) bind(C)
 
   use LocalState
 
@@ -254,12 +254,12 @@ subroutine PFloTranAlquimia_ReactionStepOperatorSplit(pft_internal_state) bind(C
 
   call c_f_pointer(pft_internal_state, internal_state)
 
-  print *, "Fortran reaction step operator split."
-end subroutine PFloTranAlquimia_ReactionStepOperatorSplit
+  print *, "PFloTran_Alquimia_ReactionStepOperatorSplit() :"
+end subroutine PFloTran_Alquimia_ReactionStepOperatorSplit
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_GetAuxiliaryOutput(pft_internal_state) bind(C)
+subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_internal_state) bind(C)
 
   use LocalState
 
@@ -271,12 +271,12 @@ subroutine PFloTranAlquimia_GetAuxiliaryOutput(pft_internal_state) bind(C)
 
   call c_f_pointer(pft_internal_state, internal_state)
 
-  print *, "Fortran get auxiliary output."
-end subroutine PFloTranAlquimia_GetAuxiliaryOutput
+  print *, "PFloTran_Alquimia_GetAuxiliaryOutput() :"
+end subroutine PFloTran_Alquimia_GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_GetEngineMetaData(pft_internal_state, &
+subroutine PFloTran_Alquimia_GetEngineMetaData(pft_internal_state, &
      sizes, metadata) bind(C)
 
   use LocalState
@@ -290,7 +290,7 @@ subroutine PFloTranAlquimia_GetEngineMetaData(pft_internal_state, &
   type (c_ptr), intent(inout) :: pft_internal_state
   type(pflotran_internal_state), pointer :: internal_state
 
-  !print *, "Fortran get engine metadata."
+  !print *, "PFloTran_Alquimia_GetEngineMetadata() :"
 
   call c_f_pointer(pft_internal_state, internal_state)
 
@@ -330,12 +330,12 @@ subroutine PFloTranAlquimia_GetEngineMetaData(pft_internal_state, &
 ! through each string and call GetPrimaryNameFromIndex...
 !
 
-  !call PFloTranAlquimia_PrintMetaData(sizes, metadata)
+  !call PFloTran_Alquimia_PrintMetaData(sizes, metadata)
 
-end subroutine PFloTranAlquimia_GetEngineMetaData
+end subroutine PFloTran_Alquimia_GetEngineMetaData
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(pft_internal_state, &
+subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_internal_state, &
   primary_index, primary_name) bind(C)
 
   use c_interface_module
@@ -353,13 +353,13 @@ subroutine PFloTranAlquimia_GetPrimaryNameFromIndex(pft_internal_state, &
 
   primary_list => internal_state%reaction%primary_species_names
 
-  !print *, "Fortran GetPrimaryNameFromIndex() :"
+  !print *, "PFloTran_Alquimia_GetPrimaryNameFromIndex() :"
   !print *, "primary index = ", primary_index
 
   call f_c_string_chars(trim(primary_list(primary_index)), &
        primary_name, ALQUIMIA_MAX_STRING_LENGTH)
 
-end subroutine PFloTranAlquimia_GetPrimaryNameFromIndex
+end subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex
 
 ! **************************************************************************** !
 !
@@ -368,7 +368,7 @@ end subroutine PFloTranAlquimia_GetPrimaryNameFromIndex
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_PrintSizes(sizes)
+subroutine PFloTran_Alquimia_PrintSizes(sizes)
 
 #include "alquimia_containers.h90"
 
@@ -379,11 +379,11 @@ subroutine PFloTranAlquimia_PrintSizes(sizes)
   print *, "  num aqueous complexes : ", sizes%num_aqueous_complexes
   print *, "  num surface sites : ", sizes%num_surface_sites
   print *, "  num ion exchange sites : ", sizes%num_ion_exchange_sites
-end subroutine PFloTranAlquimia_PrintSizes
+end subroutine PFloTran_Alquimia_PrintSizes
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_PrintMetadata(sizes, metadata)
+subroutine PFloTran_Alquimia_PrintMetadata(sizes, metadata)
 
 #include "alquimia_containers.h90"
 
@@ -409,11 +409,11 @@ subroutine PFloTranAlquimia_PrintMetadata(sizes, metadata)
      call c_f_pointer(names(i), name, 256)
      print *, names
   end do
-end subroutine PFloTranAlquimia_PrintMetadata
+end subroutine PFloTran_Alquimia_PrintMetadata
 
 
 ! **************************************************************************** !
-subroutine PFloTranAlquimia_PrintStatus(status) bind(C)
+subroutine PFloTran_Alquimia_PrintStatus(status) bind(C)
 
 #include "alquimia_containers.h90"
 
@@ -424,4 +424,4 @@ subroutine PFloTranAlquimia_PrintStatus(status) bind(C)
   print *, "  num newton iterations : ", status%num_newton_iterations
   print *, "  converged  : ", status%converged
 
-end subroutine PFloTranAlquimia_PrintStatus
+end subroutine PFloTran_Alquimia_PrintStatus
