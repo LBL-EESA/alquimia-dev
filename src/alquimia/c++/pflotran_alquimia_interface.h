@@ -13,21 +13,21 @@
 #include "alquimia_containers.h"
 
 extern "C" {
-  void pflotranalquimia_setup(void* pft_internal_state,
-                              char* input_filename,
-                              AlquimiaSizes_C* sizes) ;
-  void pflotranalquimia_processcondition(void* pft_internal_state,
-                                         AlquimiaGeochemicalCondition_C* condition,
-                                         AlquimiaSizes_C* sizes,
-                                         AlquimiaState_C* state);
-  void pflotranalquimia_reactionstepoperatorsplit(void* pft_internal_state) ;
-  void pflotranalquimia_getauxiliaryoutput(void* pft_internal_state) ;
-  void pflotranalquimia_getenginemetadata(void* pft_internal_state,
+  void pflotran_alquimia_setup(void* pft_internal_state,
+                               char* input_filename,
+                               AlquimiaSizes_C* sizes) ;
+  void pflotran_alquimia_processcondition(void* pft_internal_state,
+                                          AlquimiaGeochemicalCondition_C* condition,
                                           AlquimiaSizes_C* sizes,
-                                          AlquimiaMetaData_C* metadata) ;
-  void pflotranalquimia_getprimarynamefromindex(void* pft_internal_state,
-                                                int* primary_index,
-                                                char* primary_name);
+                                          AlquimiaState_C* state);
+  void pflotran_alquimia_reactionstepoperatorsplit(void* pft_internal_state) ;
+  void pflotran_alquimia_getauxiliaryoutput(void* pft_internal_state) ;
+  void pflotran_alquimia_getenginemetadata(void* pft_internal_state,
+                                           AlquimiaSizes_C* sizes,
+                                           AlquimiaMetaData_C* metadata) ;
+  void pflotran_alquimia_getprimarynamefromindex(void* pft_internal_state,
+                                                 int* primary_index,
+                                                 char* primary_name);
 }
 
 namespace alquimia {
