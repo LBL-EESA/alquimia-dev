@@ -17,7 +17,7 @@ PFloTranAlquimiaInterface::PFloTranAlquimiaInterface()
 }  // end PFloTranAlquimiaInterface()
 
 PFloTranAlquimiaInterface::~PFloTranAlquimiaInterface() {
-
+  pflotran_alquimia_shutdown(internal_state());
 }  // end ~PFloTranAlquimiaInterface()
 
 void PFloTranAlquimiaInterface::Setup(

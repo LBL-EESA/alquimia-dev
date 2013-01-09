@@ -16,6 +16,7 @@ extern "C" {
   void pflotran_alquimia_setup(void* pft_internal_state,
                                char* input_filename,
                                AlquimiaSizes_C* sizes) ;
+  void pflotran_alquimia_shutdown(void* pft_internal_state);
   void pflotran_alquimia_processcondition(void* pft_internal_state,
                                           AlquimiaGeochemicalCondition_C* condition,
                                           AlquimiaSizes_C* sizes,
