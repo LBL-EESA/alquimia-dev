@@ -64,7 +64,6 @@ struct AlquimiaEngineStatus_C {
 };
 
 struct AlquimiaMetaData_C {
-  void* internal_state;
   bool thread_safe;
   bool temperature_dependent;
   bool pressure_dependent;
