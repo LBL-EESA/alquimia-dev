@@ -27,6 +27,14 @@ class DemoConfigReader {
 
   void WriteTemplateFile(const std::string& file_name);
 
+  void set_debug(const bool debug) {
+    debug_ = debug;
+  }
+
+  bool debug(void) const {
+    return debug_;
+  }
+
  protected:
 
  private:
@@ -75,6 +83,8 @@ class DemoConfigReader {
   static const std::string kGeochemicalConditionsSection;
   static const std::string kNamedConditionSection;
   static const std::string kNameString;
+
+  bool debug_;
   
 };
 

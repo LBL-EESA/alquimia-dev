@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
   util::DemoConditions demo_conditions;
 
   if (!input_file_name.empty()) {
+    cfg_reader.set_debug(false);
     cfg_reader.ReadInputFile(input_file_name,
                              &demo_simulation, &demo_state, 
                              &demo_material_props, &demo_conditions);
