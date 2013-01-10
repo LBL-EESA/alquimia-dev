@@ -289,20 +289,31 @@ void DemoConfigReader::ParseConditionSection(
     std::ifstream* input_file,
     DemoConditions* geochemical_conditions)
 {
+  if (debug()) {
+    std::cout << "DemoConfigReader::ParseConditionSection() " << std::endl;
+  }
   namespace util = alquimia::drivers::utilities;
   std::string condition_name("");
   std::string raw_line;
   bool new_section(false);
   while (!input_file->eof() && !new_section) {
     char next = input_file->peek();
+    if (debug()) {
+      std::cout << "--> next : '" << next << "'" << std::endl;
+    }
     if (next == '[') {
       new_section = true;
-    } else if (next == '#' || next == ' ') {
+    } else if (next == '#' || next == ' ' || next == '\n') {
       // comment line, do nothing
       GetLineCleaned(input_file, &raw_line);
+    } else if (next == EOF) {
+      // end of file, do nothing
     } else {
       // parameter line
       GetLineCleaned(input_file, &raw_line);
+      if (debug()) {
+        std::cout << "  --> raw line : " << raw_line << std::endl;
+      }
       util::StringTokenizer params(raw_line, kEqual);
       //std::cout << "\'" << raw_line << "\'" << std::endl;
       // if params.size() == 0 then we have a blank line
