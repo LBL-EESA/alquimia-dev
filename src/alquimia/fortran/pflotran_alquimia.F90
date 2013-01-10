@@ -28,7 +28,6 @@ module LocalState
   ! It is NOT part of the alquimia interface, and the driver code
   ! should not use or depend on it!
 
-
   use Constraint_module
   use Reaction_Aux_module
   use Reactive_Transport_Aux_module
@@ -40,7 +39,6 @@ module LocalState
      ! NOTE(bja): these are fortran pointers, so this struct can not
      ! be unpacked on the c side!
      type (reaction_type), pointer :: reaction
-     type (input_type), pointer :: input
      type (option_type), pointer :: option
      type (global_auxvar_type), pointer :: global_auxvars
      type (reactive_transport_auxvar_type), pointer :: rt_auxvars
@@ -88,11 +86,13 @@ subroutine PFloTran_Alquimia_Setup(pft_internal_state, input_filename, sizes) bi
   type(input_type), pointer :: input
   type(global_auxvar_type), pointer :: global_auxvars
   type(reactive_transport_auxvar_type), pointer :: rt_auxvars
+  type(tran_constraint_list_type), pointer :: transport_constraints
+  type(tran_constraint_coupler_type), pointer :: constraint_coupler 
 
   integer :: len
   integer :: i
 
-  print *, "PFloTran_Alquimia_Setup() : "
+  write (*, '(a)') "PFloTran_Alquimia_Setup() : "
 
   ! setup pflotran's option object, including mpi
   option => OptionCreate()
@@ -132,7 +132,7 @@ subroutine PFloTran_Alquimia_Setup(pft_internal_state, input_filename, sizes) bi
   call BatchChemInitializeReactions(option, input, reaction)
 
   !
-  ! create the storage containers
+  ! create the various storage containers pflotran will need later
   !
   ! NOTE(bja) : batch chem --> one cell
 
@@ -152,6 +152,39 @@ subroutine PFloTran_Alquimia_Setup(pft_internal_state, input_filename, sizes) bi
   global_auxvars%den_kg = option%reference_water_density
   global_auxvars%sat = option%reference_saturation  
 
+  ! NOTE(bja) : constraint coupler is only needed for printing the
+  ! processed constraints to pflotran.out. But destroying the coupler
+  ! destroys the auxvars as well, so we need to keep it around long
+  ! term.
+  allocate(constraint_coupler)
+  constraint_coupler => TranConstraintCouplerCreate(option)
+
+  !
+  ! Read the constraints so we can finish using the input file.
+  !
+  call BatchChemReadConstraints(option, input, reaction, &
+     global_auxvars, rt_auxvars, transport_constraints)
+
+  ! close the input file because we don't need it any more
+  call InputDestroy(input)
+
+  !
+  ! save pflotran's persistent data to a struct so the driver can
+  ! store it for us
+  !
+  allocate(internal_state)
+  internal_state%reaction => reaction
+  internal_state%option => option
+  internal_state%global_auxvars => global_auxvars
+  internal_state%rt_auxvars => rt_auxvars
+  internal_state%constraint_coupler => constraint_coupler
+  internal_state%transport_constraints => transport_constraints
+
+  if (.not. c_associated(pft_internal_state)) then
+     print *, "pft internal state is null"
+  endif
+  pft_internal_state = c_loc(internal_state)
+
   !
   ! Grab sizes info that the driver needs to finish initializing
   !
@@ -161,22 +194,9 @@ subroutine PFloTran_Alquimia_Setup(pft_internal_state, input_filename, sizes) bi
   sizes%num_surface_sites = -1
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
 
-  !call PFloTran_Alquimia_PrintSizes(sizes)
+  call PFloTran_Alquimia_PrintSizes(sizes)
 
-  !
-  ! save pflotran's persistent data to a struct so the driver can
-  ! store it for us
-  !
-  allocate(internal_state)
-  internal_state%reaction => reaction
-  internal_state%option => option
-  internal_state%input => input
-  internal_state%global_auxvars => global_auxvars
-  internal_state%rt_auxvars => rt_auxvars
-  if (.not. c_associated(pft_internal_state)) then
-     print *, "pft internal state is null"
-  endif
-  pft_internal_state = c_loc(internal_state)
+  write (*, '(a)') "PFloTran_Alquimia_Setup() : successful."
 
 end subroutine PFloTran_Alquimia_Setup
 
@@ -202,7 +222,6 @@ subroutine PFloTran_Alquimia_Shutdown(pft_internal_state) bind(c)
   !call RTAuxVarDestroy(internal_state%rt_auxvars)
   !call GlobalAuxVarDestroy(internal_state%global_auxvars)
   call ReactionDestroy(internal_state%reaction)
-  call InputDestroy(internal_state%input)
   call OptionDestroy(internal_state%option)
 
 end subroutine PFloTran_Alquimia_Shutdown
@@ -213,9 +232,17 @@ subroutine PFloTran_Alquimia_ProcessCondition(pft_internal_state, condition, &
      sizes, state) bind(C)
 
   use c_interface_module
+
+  use String_module
+  use Constraint_module
+
+  use BatchChem
   use LocalState
 
 #include "alquimia_containers.h90"
+
+#include "definitions.h"
+#include "finclude/petsclog.h"
 
   type (alquimia_condition_f), intent(in) :: condition
   type (alquimia_sizes_f), intent(in) :: sizes
@@ -229,27 +256,38 @@ subroutine PFloTran_Alquimia_ProcessCondition(pft_internal_state, condition, &
   real (c_double) :: constraint_value
   PetscReal :: porosity
   integer :: i
+  type(tran_constraint_type), pointer :: tran_constraint
 
   type (c_ptr), intent(inout) :: pft_internal_state
-
   type(pflotran_internal_state), pointer :: internal_state
 
   call c_f_pointer(pft_internal_state, internal_state)
 
   write (*, '(a)') "PFloTran_Alquimia_ProcessCondition() : "
 
-  ! copy the state info into pflotran's auxvars
+  ! copy the driver's state info into pflotran's auxvars
   internal_state%global_auxvars%den_kg = state%density_water
   internal_state%global_auxvars%sat = state%saturation
   porosity = state%porosity
   internal_state%global_auxvars%temp = state%temperature
   internal_state%global_auxvars%pres = state%aqueous_pressure
 
+  !
   ! process the condition
+  !
   call  c_f_string(condition%name, name)
   write (*, '(a a)') "processing : ", trim(name)
+
   if (condition%num_constraints > 0) then
-     ! the driver is supplying the constraint data
+     ! the driver is supplying the constraint data, so we need to
+     ! construct an object in pflotran's internal format.
+     tran_constraint => TranConstraintCreate(internal_state%option)
+     ! TODO(bja) : manual setup goes here...
+     tran_constraint%name = trim(name)
+     tran_constraint%requires_equilibration = PETSC_TRUE
+
+     call TranConstraintAddToList(tran_constraint, internal_state%transport_constraints)
+     ! TODO(bja) : the rest of this if block eventually goes away....
      write (*, '(a)') "NOTE: driver supplied conditions are not implemeted."
      write (*, '(a a)') "  echoing condition: ", trim(name)
      write (*, '(a i3)') "     num constraints : ", condition%num_constraints
@@ -268,6 +306,44 @@ subroutine PFloTran_Alquimia_ProcessCondition(pft_internal_state, condition, &
      ! the driver just supplied a name, so we check for a constraint
      ! with that name in the pflotran input file and use that.
      write (*, '(a a)') "Looking for pflotran constraint : ", trim(name)
+     tran_constraint => internal_state%transport_constraints%first
+     do
+        if (associated(tran_constraint)) then
+           ! check the name of this constraint
+           if (StringCompareIgnoreCase(tran_constraint%name, name)) then
+              ! found the constraint we are looking for, bail from the
+              ! loop with the current pointer
+              exit
+           else
+              ! check the next constraint
+              tran_constraint => tran_constraint%next
+           end if
+        else
+           ! end of the list (or empty list) without out finding a match.
+           write (*, '(a a)') "Could not find pflotran constraint : ", trim(name)
+           ! TODO(bja) : else report an error to the driver
+           exit
+        end if
+     end do
+  end if
+
+  if (associated(tran_constraint)) then
+     ! tran_constraint should be valid. Now we can ask pflotran to
+     ! process it...
+     call BatchChemProcessConstraint( &
+          internal_state%option, &
+          internal_state%reaction, &
+          internal_state%global_auxvars, &
+          internal_state%rt_auxvars, &
+          tran_constraint, &
+          internal_state%constraint_coupler)
+     ! now repack the processed constraint data into the alquimia
+     ! struct for the driver.
+     call BatchChemCopyAuxVarsToState( &
+          internal_state%reaction, &
+          internal_state%global_auxvars, &
+          internal_state%rt_auxvars, &
+          state)
   end if
 
 end subroutine PFloTran_Alquimia_ProcessCondition
