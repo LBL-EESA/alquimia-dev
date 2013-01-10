@@ -134,8 +134,8 @@ int main(int argc, char** argv) {
       chem->ProcessCondition(&(alquimia_conditions.conditions[i]),
                              &alquimia_sizes,
                              &alquimia_state);
+      PrintAlquimiaState(&alquimia_sizes, &alquimia_state);
     }
-    //chem->ProcessCondition();
 
     // reaction step loop
 

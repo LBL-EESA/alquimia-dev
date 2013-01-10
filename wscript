@@ -175,6 +175,8 @@ def configure(ctx):
 
     # TODO(bja): require mpi compilers...
 
+    # TODO(bja): use debug by default, turn off via cmdline flag
+
     #
     # check the c compilers
     #
@@ -192,7 +194,7 @@ def configure(ctx):
     ctx.check_cc(header_name='mpi.h')
     ctx.check_cc(lib='mpi')
     ctx.check_cc(function_name='MPI_Init', header_name='mpi.h')
-    ctx.env['CFLAGS'] = ['-Wall', '-W', '-Wunused']
+    ctx.env['CFLAGS'] = ['-Wall', '-W', '-Wunused', '-g']
 
     #
     # check the c++ compilers
@@ -215,7 +217,7 @@ def configure(ctx):
     ctx.check_cxx(lib='mpi')
     ctx.check_cxx(function_name='MPI_Init', header_name='mpi.h')
     #ctx.check_cxx(header_name='')
-    ctx.env['CXXFLAGS'] = ['-Wall', '-W']
+    ctx.env['CXXFLAGS'] = ['-Wall', '-W', '-g']
 
     #
     # check the fortran compiler
@@ -224,7 +226,7 @@ def configure(ctx):
     if ctx.env.FC_NAME == 'IFORT':
         ctx.env['FCFLAGS'] = ['-warn']
     elif ctx.env.FC_NAME == 'GFORTRAN':
-        ctx.env['FCFLAGS'] = ['-Wall', '-W', '-Wno-unused-parameter']
+        ctx.env['FCFLAGS'] = ['-Wall', '-W', '-Wno-unused-parameter', '-g']
 
     ctx.check_fortran()
     ctx.check_fortran_verbose_flag()

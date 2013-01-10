@@ -80,8 +80,6 @@ void AllocateAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
                               struct AlquimiaMetaData_C* meta_data) {
   int i;
 
-  meta_data->internal_state = NULL;
-
   meta_data->primary_indices = NULL;
   meta_data->primary_names = NULL;
   //meta_data-> = NULL;
