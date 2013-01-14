@@ -6,7 +6,8 @@ def build(ctx):
 
     if ctx.options.pflotran:
         srcs.append('pflotran_alquimia.F90')
-        srcs.append('pflotran_batch_chem.F90')
+        #srcs.append('ice.F90')
+        srcs.append('pflotran_alquimia_interface.F90')
 
     ctx(
         features = 'fc fcstlib',

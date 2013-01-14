@@ -1,10 +1,6 @@
 #define ALQUIMIA_MAX_STRING_LENGTH 512
 #define ALQUIMIA_MAX_WORD_LENGTH 32
 
-use, intrinsic :: iso_c_binding
-
-implicit none
-  
 type, bind(c) :: alquimia_sizes_f
    integer (c_int) :: num_primary
    integer (c_int) :: num_kinetic_minerals
