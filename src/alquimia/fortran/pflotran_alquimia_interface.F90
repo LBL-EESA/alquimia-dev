@@ -149,6 +149,8 @@ subroutine Setup(pft_internal_state, input_filename, sizes)
   ! manual initialization...
   !
   option%nphase = 1
+  option%liquid_phase = 1
+  option%reference_water_density = 998.2
 
 
   !
@@ -172,8 +174,6 @@ subroutine Setup(pft_internal_state, input_filename, sizes)
   ! assign default state values, not really needed?
   global_auxvars%pres = option%reference_pressure
   global_auxvars%temp = option%reference_temperature
-  ! global_auxvars%den_kg = option%reference_water_density
-  ! NOTE(bja): option%ref_density = 0.0, so we set it manually.
   global_auxvars%den_kg = option%reference_water_density
   global_auxvars%sat = option%reference_saturation  
 
