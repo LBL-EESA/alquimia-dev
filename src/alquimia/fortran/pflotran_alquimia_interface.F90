@@ -2,7 +2,18 @@
 !
 ! PFloTran Alquimia Inteface module
 !
+! Author: Benjamin Andre
+!
 ! Notes:
+!
+!  * Public function call signatures, including intent, are dictated
+!    by the alquimia API.
+!
+!  * alquimia data structures defined in alquimia_containers.h90 are
+!    dictated by the alquimia API.
+!
+!  * All function calls involving pflotran native data structures must
+!    be private!
 !
 !  * (bja) 2012-12 - different fortran compilers use different name
 !    mangling conventions for fortran modules:
@@ -19,14 +30,12 @@
 
 module PFloTranAlquimiaInterface_module
 
-  use, intrinsic :: iso_c_binding
-
-  use Constraint_module
+  ! pflotran modules
+  use Option_module
   use Reaction_Aux_module
   use Reactive_Transport_Aux_module
   use Global_Aux_module
-  use Option_module
-  use Input_module
+  use Constraint_module
 
   implicit none
 
@@ -37,8 +46,6 @@ module PFloTranAlquimiaInterface_module
        GetAuxiliaryOutput, &
        GetEngineMetaData, &
        GetPrimaryNameFromIndex
-
-#include "alquimia_containers.h90"
 
   private :: InitializePFloTranReactions, &
        ReadPFloTranConstraints, &
@@ -58,10 +65,10 @@ module PFloTranAlquimiaInterface_module
      !
      ! NOTE(bja): these are fortran pointers, so this struct can not
      ! be unpacked on the c side!
-     type (reaction_type), pointer :: reaction
      type (option_type), pointer :: option
-     type (global_auxvar_type), pointer :: global_auxvars
+     type (reaction_type), pointer :: reaction
      type (reactive_transport_auxvar_type), pointer :: rt_auxvars
+     type (global_auxvar_type), pointer :: global_auxvars
      type(tran_constraint_list_type), pointer :: transport_constraints
      type(tran_constraint_coupler_type), pointer :: constraint_coupler 
   end type pflotran_internal_state
@@ -75,6 +82,19 @@ contains
 !
 ! **************************************************************************** !
 
+! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::Setup
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * Function signature is dictated by the alquimia API.
+!
+!  * Assumes that MPI_Init() and / or PetscInitialize() have already
+!    been called by the driver
+!
 ! **************************************************************************** !
 subroutine Setup(pft_internal_state, input_filename, sizes)
 
@@ -95,13 +115,12 @@ subroutine Setup(pft_internal_state, input_filename, sizes)
 #include "finclude/petsclog.h"
 
   ! function parameters
+  type (c_ptr), intent(inout) :: pft_internal_state
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (alquimia_sizes_f), intent(inout) :: sizes
-  type (c_ptr), intent(inout) :: pft_internal_state
-
-  type(pflotran_internal_state), pointer :: internal_state
 
   ! local variables
+  type(pflotran_internal_state), pointer :: internal_state
   PetscErrorCode :: ierr
   PetscBool :: option_found
   character(len=ALQUIMIA_MAX_STRING_LENGTH) :: string
@@ -134,7 +153,7 @@ subroutine Setup(pft_internal_state, input_filename, sizes)
 
   ! set the pflotran input file name
   call c_f_string(input_filename,   option%input_filename)
-  print *, "  Reading : ", trim(option%input_filename)
+  write (*, '(a a)') "  Reading : ", trim(option%input_filename)
 
   input => InputCreate(IN_UNIT, option%input_filename, option)
 
@@ -198,15 +217,15 @@ subroutine Setup(pft_internal_state, input_filename, sizes)
   ! store it for us
   !
   allocate(internal_state)
-  internal_state%reaction => reaction
   internal_state%option => option
-  internal_state%global_auxvars => global_auxvars
+  internal_state%reaction => reaction
   internal_state%rt_auxvars => rt_auxvars
+  internal_state%global_auxvars => global_auxvars
   internal_state%constraint_coupler => constraint_coupler
   internal_state%transport_constraints => transport_constraints
 
   if (.not. c_associated(pft_internal_state)) then
-     print *, "pft internal state is null"
+     write (*, '(a)') "pft internal state is null"
   endif
   pft_internal_state = c_loc(internal_state)
 
@@ -227,16 +246,29 @@ end subroutine Setup
 
 
 ! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::Shutdown
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * Function signature is dictated by the alquimia API.
+!
+! **************************************************************************** !
 subroutine Shutdown(pft_internal_state)
 
   use c_interface_module
 
 #include "alquimia_containers.h90"
 
+  ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
+
+  ! local variables
   type(pflotran_internal_state), pointer :: internal_state
 
-  print *, "PFloTran_Alquimia_Shutdown() : "
+  write (*, '(a)') "PFloTran_Alquimia_Shutdown() : "
 
   call c_f_pointer(pft_internal_state, internal_state)
 
@@ -252,6 +284,16 @@ end subroutine Shutdown
 
 
 ! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::ProcessCondition
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * Function signature is dictated by the alquimia API.
+!
+! **************************************************************************** !
 subroutine ProcessCondition(pft_internal_state, condition, &
      sizes, state)
 
@@ -265,10 +307,13 @@ subroutine ProcessCondition(pft_internal_state, condition, &
 #include "definitions.h"
 #include "finclude/petsclog.h"
 
+  ! function parameters
+  type (c_ptr), intent(inout) :: pft_internal_state
   type (alquimia_condition_f), intent(in) :: condition
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_state_f), intent(inout) :: state
 
+  ! local variables
   type (alquimia_constraint_f), pointer :: local_constraints(:)
   type (alquimia_constraint_f), pointer :: constraint
   character (ALQUIMIA_MAX_STRING_LENGTH) :: name
@@ -278,13 +323,11 @@ subroutine ProcessCondition(pft_internal_state, condition, &
   PetscReal :: porosity
   integer :: i
   type(tran_constraint_type), pointer :: tran_constraint
-
-  type (c_ptr), intent(inout) :: pft_internal_state
   type(pflotran_internal_state), pointer :: internal_state
 
-  call c_f_pointer(pft_internal_state, internal_state)
-
   write (*, '(a)') "PFloTran_Alquimia_ProcessCondition() : "
+
+  call c_f_pointer(pft_internal_state, internal_state)
 
   ! copy the driver's state info into pflotran's auxvars
   internal_state%global_auxvars%den_kg = state%density_water
@@ -303,9 +346,9 @@ subroutine ProcessCondition(pft_internal_state, condition, &
      ! the driver is supplying the constraint data, so we need to
      ! construct an object in pflotran's internal format.
      tran_constraint => TranConstraintCreate(internal_state%option)
-     ! TODO(bja) : manual setup goes here...
      tran_constraint%name = trim(name)
      tran_constraint%requires_equilibration = PETSC_TRUE
+     ! TODO(bja) : remaining manual setup goes here...
 
      call TranConstraintAddToList(tran_constraint, internal_state%transport_constraints)
      ! TODO(bja) : the rest of this if block eventually goes away....
@@ -371,73 +414,116 @@ end subroutine ProcessCondition
 
 
 ! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::ReactionStepOperatorSplit
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * Function signature is dictated by the alquimia API.
+!
+! **************************************************************************** !
 subroutine ReactionStepOperatorSplit(pft_internal_state)
+
+  use, intrinsic :: iso_c_binding
 
 #include "alquimia_containers.h90"
 
+  ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
 
+  ! local variables
   type(pflotran_internal_state), pointer :: internal_state
 
   call c_f_pointer(pft_internal_state, internal_state)
 
-  print *, "PFloTran_Alquimia_ReactionStepOperatorSplit() :"
+  write (*, '(a)') "PFloTran_Alquimia_ReactionStepOperatorSplit() :"
 end subroutine ReactionStepOperatorSplit
 
 
 ! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::GetAuxiliaryOutput
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * Function signature is dictated by the alquimia API.
+!
+! **************************************************************************** !
 subroutine GetAuxiliaryOutput(pft_internal_state)
+
+  use, intrinsic :: iso_c_binding
 
 #include "alquimia_containers.h90"
 
+  ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
 
+  ! local variables
   type(pflotran_internal_state), pointer :: internal_state
 
   call c_f_pointer(pft_internal_state, internal_state)
 
-  print *, "PFloTran_Alquimia_GetAuxiliaryOutput() :"
+  write (*, '(a)') "PFloTran_Alquimia_GetAuxiliaryOutput() :"
 end subroutine GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::GetEngineMetaData
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * Function signature is dictated by the alquimia API.
+!
+! **************************************************************************** !
 subroutine GetEngineMetaData(pft_internal_state, &
-     sizes, metadata)
+     sizes, meta_data)
+
+  use, intrinsic :: iso_c_binding
 
 #include "alquimia_containers.h90"
 
+  ! function parameters
+  type (c_ptr), intent(inout) :: pft_internal_state
   type (alquimia_sizes_f), intent(in) :: sizes
-  type (alquimia_metadata_f), intent(out) :: metadata
+  type (alquimia_meta_data_f), intent(out) :: meta_data
+
+  ! local variables
   integer (c_int), pointer :: primary_indices(:)
   integer :: i, num_primary
-  type (c_ptr), intent(inout) :: pft_internal_state
   type(pflotran_internal_state), pointer :: internal_state
 
-  !print *, "PFloTran_Alquimia_GetEngineMetadata() :"
+  !write (*, '(a)') "PFloTran_Alquimia_GetEngineMetaData() :"
 
   call c_f_pointer(pft_internal_state, internal_state)
 
   num_primary = internal_state%reaction%ncomp
 
   ! TODO(bja) : can we extract this from pflotran without hardcoding?
-  metadata%thread_safe = .true.
-  metadata%temperature_dependent = .true.
-  metadata%pressure_dependent = .true.
-  metadata%porosity_update = internal_state%reaction%update_porosity
-  metadata%operator_splitting = .true.
-  metadata%global_implicit = .false.
-  metadata%index_base = 1
+  meta_data%thread_safe = .true.
+  meta_data%temperature_dependent = .true.
+  meta_data%pressure_dependent = .true.
+  meta_data%porosity_update = internal_state%reaction%update_porosity
+  meta_data%operator_splitting = .true.
+  meta_data%global_implicit = .false.
+  meta_data%index_base = 1
 
   ! associate indices with the C memory
-  if (c_associated(metadata%primary_indices)) then
-     call c_f_pointer(metadata%primary_indices, primary_indices, (/num_primary/))
+  if (c_associated(meta_data%primary_indices)) then
+     call c_f_pointer(meta_data%primary_indices, primary_indices, (/num_primary/))
   else
      ! error...
-     print *, "c primary indicies not associated"
+     write (*, '(a)') "c primary indicies not associated"
   end if
   if (.not. associated(primary_indices)) then
      ! error
-     print *, "f primary indices not associated"
+     write (*, '(a)') "f primary indices not associated"
   end if
 
   ! NOTE(bja) : if the order in reaction%primary_species_names always
@@ -453,10 +539,23 @@ subroutine GetEngineMetaData(pft_internal_state, &
 ! through each string and call GetPrimaryNameFromIndex...
 !
 
-  !call PFloTran_Alquimia_PrintMetaData(sizes, metadata)
+  ! NOTE(bja) : meta_data%primary_names() is empty for this call!
+  !call PrintMetaData(sizes, meta_data)
 
 end subroutine GetEngineMetaData
 
+! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::GetPrimaryNameFromIndex
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * not officially part of the alquimia API. Eventually this should
+!    go away once we have passing arrays of strings from C to fortran
+!    and back
+!
 ! **************************************************************************** !
 subroutine GetPrimaryNameFromIndex(pft_internal_state, &
   primary_index, primary_name)
@@ -465,18 +564,21 @@ subroutine GetPrimaryNameFromIndex(pft_internal_state, &
 
 #include "alquimia_containers.h90"
 
+  ! function parameters
+  type (c_ptr), intent(inout) :: pft_internal_state
   integer (c_int), intent(in) :: primary_index
   character(kind=c_char), dimension(*), intent(out) :: primary_name
+
+  ! local variables
   character (len=ALQUIMIA_MAX_WORD_LENGTH), pointer :: primary_list(:)
-  type (c_ptr), intent(inout) :: pft_internal_state
   type(pflotran_internal_state), pointer :: internal_state
 
   call c_f_pointer(pft_internal_state, internal_state)
 
   primary_list => internal_state%reaction%primary_species_names
 
-  !print *, "PFloTran_Alquimia_GetPrimaryNameFromIndex() :"
-  !print *, "primary index = ", primary_index
+  !write (*, '(a)') "PFloTran_Alquimia_GetPrimaryNameFromIndex() :"
+  !write (*, '(a)') "primary index = ", primary_index
 
   call f_c_string_chars(trim(primary_list(primary_index)), &
        primary_name, ALQUIMIA_MAX_STRING_LENGTH)
@@ -490,6 +592,17 @@ end subroutine GetPrimaryNameFromIndex
 !
 ! **************************************************************************** !
 
+! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::InitializePFloTranReactions
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * 
+!
+! **************************************************************************** !
 subroutine InitializePFloTranReactions(option, input, reaction)
 
   use Reaction_module
@@ -504,9 +617,12 @@ subroutine InitializePFloTranReactions(option, input, reaction)
 #include "definitions.h"
 #include "finclude/petsclog.h"
 
+  ! function parameters
   type(option_type), pointer :: option
   type(input_type), pointer :: input
   type(reaction_type), pointer :: reaction
+
+  ! local variables
   character(len=MAXSTRINGLENGTH) :: string
 
   ! check for a chemistry block in the  input file
@@ -542,15 +658,19 @@ subroutine InitializePFloTranReactions(option, input, reaction)
 
 end subroutine InitializePFloTranReactions
 
-! **************************************************************************** !
-!
-! ReadPFloTranConstraints
-!
-! We are just reading the data from the input file. No processing is
-! done here because we don't know yet if we are using these.
-!
-! **************************************************************************** !
 
+! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::ReadPFloTranConstraints
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * We are just reading the data from the input file. No processing
+!    is done here because we don't know yet if we are using these.
+!
+! **************************************************************************** !
 subroutine ReadPFloTranConstraints(option, input, reaction, &
      global_auxvars, rt_auxvars, transport_constraints)
 
@@ -569,6 +689,7 @@ subroutine ReadPFloTranConstraints(option, input, reaction, &
 #include "definitions.h"
 #include "finclude/petsclog.h"
 
+  ! function parameters
   type(option_type), pointer, intent(in) :: option
   type(input_type), pointer, intent(inout) :: input
   type(reaction_type), pointer, intent(inout) :: reaction
@@ -576,6 +697,7 @@ subroutine ReadPFloTranConstraints(option, input, reaction, &
   type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvars
   type(tran_constraint_list_type), pointer, intent(inout) :: transport_constraints
 
+  ! local variables
   character(len=MAXSTRINGLENGTH) :: string
   character(len=MAXWORDLENGTH) :: card
   character(len=MAXWORDLENGTH) :: word
@@ -618,6 +740,17 @@ subroutine ReadPFloTranConstraints(option, input, reaction, &
 
 end subroutine ReadPFloTranConstraints
 
+! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::ProcessPFloTranConstraint
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * 
+!
+! **************************************************************************** !
 subroutine ProcessPFloTranConstraint(option, reaction, &
      global_auxvars, rt_auxvars, tran_constraint, constraint_coupler)
   use Reaction_module
@@ -634,16 +767,18 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
 #include "definitions.h"
 #include "finclude/petsclog.h"
 
+  ! function parameters
   type(option_type), pointer, intent(in) :: option
   type(reaction_type), pointer :: reaction
-  character(len=MAXSTRINGLENGTH) :: string
   type(global_auxvar_type), pointer :: global_auxvars
   type(reactive_transport_auxvar_type), pointer :: rt_auxvars
-
-  character(len=MAXWORDLENGTH) :: card
-  character(len=MAXWORDLENGTH) :: word
   type(tran_constraint_type), pointer :: tran_constraint
   type(tran_constraint_coupler_type), pointer :: constraint_coupler 
+
+  ! local variables
+  character(len=MAXSTRINGLENGTH) :: string
+  character(len=MAXWORDLENGTH) :: card
+  character(len=MAXWORDLENGTH) :: word
   PetscBool :: use_prev_soln_as_guess
   PetscInt :: num_iterations
 
@@ -698,8 +833,20 @@ end subroutine ProcessPFloTranConstraint
 
 
 ! **************************************************************************** !
+!
+! PFloTranAlquimiaInterface::CopyAuxVarsToState
+!
+! Author: Benjamin Andre
+!
+! Notes:
+!
+!  * 
+!
+! **************************************************************************** !
 subroutine CopyAuxVarsToState(reaction, &
      global_auxvars, rt_auxvars, state)
+
+  use, intrinsic :: iso_c_binding
 
   use Reaction_aux_module
   use Reactive_Transport_Aux_module
@@ -707,10 +854,13 @@ subroutine CopyAuxVarsToState(reaction, &
 
 #include "alquimia_containers.h90"
 
+  ! function parameters
+  type(reaction_type), pointer :: reaction
   type(global_auxvar_type), pointer :: global_auxvars
   type(reactive_transport_auxvar_type), pointer :: rt_auxvars
-  type(reaction_type), pointer :: reaction
   type (alquimia_state_f), intent(inout) :: state
+
+  ! local variables
   real (c_double), pointer :: larray(:)
   integer :: i, phase_index
 
@@ -742,59 +892,75 @@ end subroutine CopyAuxVarsToState
 ! **************************************************************************** !
 subroutine PrintSizes(sizes)
 
+  use, intrinsic :: iso_c_binding
+
 #include "alquimia_containers.h90"
 
+  ! function parameters
   type (alquimia_sizes_f), intent(in) :: sizes
-  print *, "size : "
-  print *, "  num primary : ", sizes%num_primary
-  print *, "  num kinetics minerals : ", sizes%num_kinetic_minerals
-  print *, "  num aqueous complexes : ", sizes%num_aqueous_complexes
-  print *, "  num surface sites : ", sizes%num_surface_sites
-  print *, "  num ion exchange sites : ", sizes%num_ion_exchange_sites
+
+  write (*, '(a)') "size : "
+  write (*, '(a i4)') "  num primary : ", sizes%num_primary
+  write (*, '(a i4)') "  num kinetics minerals : ", sizes%num_kinetic_minerals
+  write (*, '(a i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
+  write (*, '(a i4)') "  num surface sites : ", sizes%num_surface_sites
+  write (*, '(a i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
 end subroutine PrintSizes
 
 
 ! **************************************************************************** !
-subroutine PrintMetadata(sizes, metadata)
+subroutine PrintMetaData(sizes, meta_data)
+
+  use, intrinsic :: iso_c_binding
+
+  use c_interface_module
 
 #include "alquimia_containers.h90"
 
+  ! function parameters
   type (alquimia_sizes_f), intent(in) :: sizes
-  type (alquimia_metadata_f), intent(in) :: metadata
+  type (alquimia_meta_data_f), intent(in) :: meta_data
+
+  ! local variables
   integer (c_int), pointer :: indices(:)
   type (c_ptr), pointer :: names(:)
-  character (c_char), pointer :: name
+  character(len=ALQUIMIA_MAX_STRING_LENGTH) :: name
   integer (c_int) :: i
-  print *, "metadata : "
-  print *, "  thread safe : ", metadata%thread_safe
-  print *, "  temperature dependent : ", metadata%temperature_dependent
-  print *, "  pressure dependent : ", metadata%pressure_dependent
-  print *, "  porosity update : ", metadata%porosity_update
-  print *, "  index base : ", metadata%index_base
-  print *, "  primary indices : "
-  call c_f_pointer(metadata%primary_indices, indices, (/sizes%num_primary/))
+
+  write (*, '(a)') "meta_data : "
+  write (*, '(a L)') "  thread safe : ", meta_data%thread_safe
+  write (*, '(a L)') "  temperature dependent : ", meta_data%temperature_dependent
+  write (*, '(a L)') "  pressure dependent : ", meta_data%pressure_dependent
+  write (*, '(a L)') "  porosity update : ", meta_data%porosity_update
+  write (*, '(a i4)') "  index base : ", meta_data%index_base
+  write (*, '(a)') "  primary indices : "
+  call c_f_pointer(meta_data%primary_indices, indices, (/sizes%num_primary/))
   do i=1, sizes%num_primary
-     print *, indices(i)
+     write (*, '(i4)') indices(i)
   end do
-  call c_f_pointer(metadata%primary_names, names, (/sizes%num_primary/))
+  call c_f_pointer(meta_data%primary_names, names, (/sizes%num_primary/))
   do i=1, sizes%num_primary
-     call c_f_pointer(names(i), name, 256)
-     print *, names
+     call c_f_string_ptr(names(i), name)
+     write (*, '(a)') trim(name)
   end do
-end subroutine PrintMetadata
+end subroutine PrintMetaData
 
 
 ! **************************************************************************** !
 subroutine PrintStatus(status)
 
+  use, intrinsic :: iso_c_binding
+
 #include "alquimia_containers.h90"
 
+  ! function parameters
   type (alquimia_engine_status_f), intent(in) :: status
-  print *, "status : "
-  print *, "  num rhs evaluation  : ", status%num_rhs_evaluations
-  print *, "  num jacobian evaluations : ", status%num_jacobian_evaluations
-  print *, "  num newton iterations : ", status%num_newton_iterations
-  print *, "  converged  : ", status%converged
+
+  write (*, '(a)') "status : "
+  write (*, '(a)') "  num rhs evaluation  : ", status%num_rhs_evaluations
+  write (*, '(a)') "  num jacobian evaluations : ", status%num_jacobian_evaluations
+  write (*, '(a)') "  num newton iterations : ", status%num_newton_iterations
+  write (*, '(a)') "  converged  : ", status%converged
 
 end subroutine PrintStatus
 
