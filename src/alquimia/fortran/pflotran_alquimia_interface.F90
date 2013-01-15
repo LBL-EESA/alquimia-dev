@@ -861,24 +861,43 @@ subroutine CopyAuxVarsToState(reaction, &
   type (alquimia_state_f), intent(inout) :: state
 
   ! local variables
-  real (c_double), pointer :: larray(:)
+  real (c_double), pointer :: local_array(:)
   integer :: i, phase_index
 
   phase_index = 1
 
-  call c_f_pointer(state%total_primary, larray, (/reaction%naqcomp/))
+  !
+  ! aqueous species
+  !
+  call c_f_pointer(state%total_primary, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-        larray(i) = rt_auxvars%total(i, phase_index)
+        local_array(i) = rt_auxvars%total(i, phase_index)
   end do
 
-  call c_f_pointer(state%free_ion, larray, (/reaction%naqcomp/))
+  call c_f_pointer(state%free_ion, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-        larray(i) = rt_auxvars%pri_molal(i)
+        local_array(i) = rt_auxvars%pri_molal(i)
   end do
 
-  call c_f_pointer(state%total_sorbed, larray, (/reaction%neqsorb/))
+  !
+  ! sorbed
+  !
+  call c_f_pointer(state%total_sorbed, local_array, (/reaction%neqsorb/))
   do i = 1, reaction%neqsorb
-        larray(i) = rt_auxvars%total_sorb_eq(i)
+        local_array(i) = rt_auxvars%total_sorb_eq(i)
+  end do
+
+  !
+  ! minerals
+  !
+  call c_f_pointer(state%mineral_volume_fraction, local_array, (/reaction%mineral%nkinmnrl/))
+  do i = 1, reaction%mineral%nkinmnrl
+        local_array(i) = rt_auxvars%mnrl_volfrac(i)
+  end do
+
+  call c_f_pointer(state%mineral_specific_surface_area, local_array, (/reaction%mineral%nkinmnrl/))
+  do i = 1, reaction%mineral%nkinmnrl
+        local_array(i) = rt_auxvars%mnrl_area(i)
   end do
 
 end subroutine CopyAuxVarsToState
