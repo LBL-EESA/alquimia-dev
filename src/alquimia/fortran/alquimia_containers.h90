@@ -27,7 +27,7 @@ type, bind(c) :: alquimia_engine_status_f
    logical (c_bool) :: converged
 end type alquimia_engine_status_f
   
-type, bind(c) :: alquimia_metadata_f
+type, bind(c) :: alquimia_meta_data_f
    logical (c_bool) :: thread_safe
    logical (c_bool) :: temperature_dependent
    logical (c_bool) :: pressure_dependent
@@ -37,7 +37,7 @@ type, bind(c) :: alquimia_metadata_f
    integer (c_int) :: index_base
    type (c_ptr) :: primary_indices
    type (c_ptr) :: primary_names
-end type alquimia_metadata_f
+end type alquimia_meta_data_f
   
 type, bind(c) :: alquimia_constraint_f
    type (c_ptr) :: primary_species

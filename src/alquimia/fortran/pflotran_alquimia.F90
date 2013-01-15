@@ -2,7 +2,14 @@
 !
 ! PFloTran Alquimia Inteface Wrappers
 !
+! Author: Benjamin Andre
+!
 ! Notes:
+!
+!  * Function call signatures are dictated by the alquimia API!
+!
+!  * alquimia data structures defined in alquimia_containers.h90 are
+!    dictated by the alquimia API.
 !
 !  * (bja) 2012-12 - different fortran compilers use different name
 !    mangling conventions for fortran modules:
@@ -12,7 +19,7 @@
 !    intel : _modulename_mp_procedurename_
 !
 !    as a consequence we can't put the alquimia interface into a
-!    module unless and call it directly from C/C++. Instead we use
+!    module and call it directly from C/C++. Instead we use
 !    some simple wrapper functions.
 !
 ! **************************************************************************** !
@@ -24,6 +31,8 @@ subroutine PFloTran_Alquimia_Setup(pft_internal_state, input_filename, sizes) bi
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+#include "alquimia_containers.h90"
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
@@ -42,6 +51,8 @@ subroutine PFloTran_Alquimia_Shutdown(pft_internal_state) bind(c)
 
   use PFloTranAlquimiaInterface_module
 
+#include "alquimia_containers.h90"
+
   ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
 
@@ -57,6 +68,8 @@ subroutine PFloTran_Alquimia_ProcessCondition(pft_internal_state, condition, &
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
@@ -76,6 +89,8 @@ subroutine PFloTran_Alquimia_ReactionStepOperatorSplit(pft_internal_state) bind(
 
   use PFloTranAlquimiaInterface_module
 
+#include "alquimia_containers.h90"
+
   ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
 
@@ -90,6 +105,8 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_internal_state) bind(C)
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
@@ -107,10 +124,12 @@ subroutine PFloTran_Alquimia_GetEngineMetaData(pft_internal_state, &
 
   use PFloTranAlquimiaInterface_module
 
+#include "alquimia_containers.h90"
+
   ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
   type (alquimia_sizes_f), intent(in) :: sizes
-  type (alquimia_metadata_f), intent(out) :: meta_data
+  type (alquimia_meta_data_f), intent(out) :: meta_data
 
   call GetEngineMetaData(pft_internal_state, sizes, meta_data)
 
@@ -123,6 +142,8 @@ subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_internal_state, &
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_internal_state
