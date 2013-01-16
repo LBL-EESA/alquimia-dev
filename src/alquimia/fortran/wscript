@@ -5,8 +5,8 @@ def build(ctx):
     hdrs = ['alquimia_containers.h90']
 
     if ctx.options.pflotran:
-        srcs.append('pflotran_alquimia.F90')
         srcs.append('pflotran_alquimia_interface.F90')
+        srcs.append('pflotran_alquimia_wrappers.F90')
 
     ctx(
         features = 'fc fcstlib',
