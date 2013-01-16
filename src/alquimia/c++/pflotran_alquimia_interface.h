@@ -13,20 +13,27 @@
 #include "alquimia_containers.h"
 
 extern "C" {
-  void pflotran_alquimia_setup(void* pft_internal_state,
-                               char* input_filename,
+  void pflotran_alquimia_setup(char* input_filename,
+                               void* pft_engine_state,
                                AlquimiaSizes_C* sizes) ;
-  void pflotran_alquimia_shutdown(void* pft_internal_state);
-  void pflotran_alquimia_processcondition(void* pft_internal_state,
+  void pflotran_alquimia_shutdown(void* pft_engine_state);
+  void pflotran_alquimia_processcondition(void* pft_engine_state,
                                           AlquimiaGeochemicalCondition_C* condition,
                                           AlquimiaSizes_C* sizes,
-                                          AlquimiaState_C* state);
-  void pflotran_alquimia_reactionstepoperatorsplit(void* pft_internal_state) ;
-  void pflotran_alquimia_getauxiliaryoutput(void* pft_internal_state) ;
-  void pflotran_alquimia_getenginemetadata(void* pft_internal_state,
+                                          AlquimiaState_C* state,
+                                          AlquimiaEngineStatus_C* status);
+  void pflotran_alquimia_reactionstepoperatorsplit(
+      void* pft_engine_state,
+      const double delta_t,
+      AlquimiaMaterialProperties_C* material_properties,
+      AlquimiaState_C* state,
+      AlquimiaAuxiliaryData_C* aux_data,
+      AlquimiaEngineStatus_C* status);
+  void pflotran_alquimia_getauxiliaryoutput(void* pft_engine_state) ;
+  void pflotran_alquimia_getenginemetadata(void* pft_engine_state,
                                            AlquimiaSizes_C* sizes,
                                            AlquimiaMetaData_C* metadata) ;
-  void pflotran_alquimia_getprimarynamefromindex(void* pft_internal_state,
+  void pflotran_alquimia_getprimarynamefromindex(void* pft_engine_state,
                                                  int* primary_index,
                                                  char* primary_name);
 }
@@ -44,13 +51,14 @@ class PFloTranAlquimiaInterface : public AlquimiaInterface {
 
   void ProcessCondition(AlquimiaGeochemicalCondition_C* condition,
                         AlquimiaSizes_C* sizes,
-                        AlquimiaState_C* state);
+                        AlquimiaState_C* state,
+                        AlquimiaEngineStatus_C* status);
 
   void ReactionStepOperatorSplit(
       const double delta_t,
-      const AlquimiaAuxiliaryData_C& aux_data,
-      const AlquimiaMaterialProperties_C& material_props,
+      AlquimiaMaterialProperties_C* material_props,
       AlquimiaState_C* state,
+      AlquimiaAuxiliaryData_C* aux_data,
       AlquimiaEngineStatus_C* status);
 
   void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data);
