@@ -26,7 +26,7 @@
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_Setup(pft_internal_state, input_filename, sizes) bind(C)
+subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, sizes) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -36,16 +36,16 @@ subroutine PFloTran_Alquimia_Setup(pft_internal_state, input_filename, sizes) bi
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
-  type (alquimia_sizes_f), intent(inout) :: sizes
-  type (c_ptr), intent(inout) :: pft_internal_state
+  type (c_ptr), intent(out) :: pft_engine_state
+  type (alquimia_sizes_f), intent(out) :: sizes
 
-  call Setup(pft_internal_state, input_filename, sizes)
+  call Setup(input_filename, pft_engine_state, sizes)
 
 end subroutine PFloTran_Alquimia_Setup
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_Shutdown(pft_internal_state) bind(c)
+subroutine PFloTran_Alquimia_Shutdown(pft_engine_state) bind(c)
 
   use, intrinsic :: iso_c_binding
 
@@ -54,16 +54,16 @@ subroutine PFloTran_Alquimia_Shutdown(pft_internal_state) bind(c)
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (c_ptr), intent(inout) :: pft_internal_state
+  type (c_ptr), intent(inout) :: pft_engine_state
 
-  call Shutdown(pft_internal_state)
+  call Shutdown(pft_engine_state)
 
 end subroutine PFloTran_Alquimia_Shutdown
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_ProcessCondition(pft_internal_state, condition, &
-     sizes, state) bind(C)
+subroutine PFloTran_Alquimia_ProcessCondition(pft_engine_state, condition, &
+     sizes, state, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -72,18 +72,20 @@ subroutine PFloTran_Alquimia_ProcessCondition(pft_internal_state, condition, &
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (c_ptr), intent(inout) :: pft_internal_state
+  type (c_ptr), intent(inout) :: pft_engine_state
   type (alquimia_condition_f), intent(in) :: condition
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_state_f), intent(inout) :: state
+  type (alquimia_engine_status_f), intent(out) :: status
 
-  call ProcessCondition(pft_internal_state, condition, sizes, state)
+  call ProcessCondition(pft_engine_state, condition, sizes, state, status)
 
 end subroutine PFloTran_Alquimia_ProcessCondition
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_ReactionStepOperatorSplit(pft_internal_state) bind(C)
+subroutine PFloTran_Alquimia_ReactionStepOperatorSplit(pft_engine_state, &
+     delta_t, material_properties, state, aux_data, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -92,15 +94,21 @@ subroutine PFloTran_Alquimia_ReactionStepOperatorSplit(pft_internal_state) bind(
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (c_ptr), intent(inout) :: pft_internal_state
+  type (c_ptr), intent(inout) :: pft_engine_state
+  real (c_double), intent(in) :: delta_t
+  type (alquimia_material_properties_f), intent(in) :: material_properties
+  type (alquimia_state_f), intent(inout) :: state
+  type (alquimia_auxiliary_data_f), intent(inout) :: aux_data
+  type (alquimia_engine_status_f), intent(out) :: status
 
-  call ReactionStepOperatorSplit(pft_internal_state)
+  call ReactionStepOperatorSplit(pft_engine_state, delta_t, &
+       material_properties, state, aux_data, status)
 
 end subroutine PFloTran_Alquimia_ReactionStepOperatorSplit
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_internal_state) bind(C)
+subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_engine_state) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -109,15 +117,15 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_internal_state) bind(C)
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (c_ptr), intent(inout) :: pft_internal_state
+  type (c_ptr), intent(inout) :: pft_engine_state
 
-  call GetAuxiliaryOutput(pft_internal_state)
+  call GetAuxiliaryOutput(pft_engine_state)
 
 end subroutine PFloTran_Alquimia_GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_GetEngineMetaData(pft_internal_state, &
+subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
      sizes, meta_data) bind(C)
 
   use, intrinsic :: iso_c_binding
@@ -127,16 +135,16 @@ subroutine PFloTran_Alquimia_GetEngineMetaData(pft_internal_state, &
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (c_ptr), intent(inout) :: pft_internal_state
+  type (c_ptr), intent(inout) :: pft_engine_state
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_meta_data_f), intent(out) :: meta_data
 
-  call GetEngineMetaData(pft_internal_state, sizes, meta_data)
+  call GetEngineMetaData(pft_engine_state, sizes, meta_data)
 
 end subroutine PFloTran_Alquimia_GetEngineMetaData
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_internal_state, &
+subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_engine_state, &
   primary_index, primary_name) bind(C)
 
   use, intrinsic :: iso_c_binding
@@ -146,11 +154,11 @@ subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_internal_state, &
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (c_ptr), intent(inout) :: pft_internal_state
+  type (c_ptr), intent(inout) :: pft_engine_state
   integer (c_int), intent(in) :: primary_index
   character(kind=c_char), dimension(*), intent(out) :: primary_name
 
-  call GetPrimaryNameFromIndex(pft_internal_state, primary_index, primary_name)
+  call GetPrimaryNameFromIndex(pft_engine_state, primary_index, primary_name)
 
 end subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex
 
