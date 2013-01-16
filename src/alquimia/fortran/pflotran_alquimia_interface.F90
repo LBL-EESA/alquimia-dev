@@ -83,20 +83,11 @@ contains
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::Setup
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * Function signature is dictated by the alquimia API.
-!
-!  * Assumes that MPI_Init() and / or PetscInitialize() have already
-!    been called by the driver
-!
-! **************************************************************************** !
 subroutine Setup(pft_internal_state, input_filename, sizes)
+!  NOTE: Function signature is dictated by the alquimia API.
+!
+!  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
+!    been called by the driver
 
   use c_interface_module
 
@@ -246,17 +237,8 @@ end subroutine Setup
 
 
 ! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::Shutdown
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * Function signature is dictated by the alquimia API.
-!
-! **************************************************************************** !
 subroutine Shutdown(pft_internal_state)
+!  NOTE: Function signature is dictated by the alquimia API.
 
   use c_interface_module
 
@@ -284,18 +266,8 @@ end subroutine Shutdown
 
 
 ! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::ProcessCondition
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * Function signature is dictated by the alquimia API.
-!
-! **************************************************************************** !
-subroutine ProcessCondition(pft_internal_state, condition, &
-     sizes, state)
+subroutine ProcessCondition(pft_internal_state, condition, sizes, state)
+!  NOTE: Function signature is dictated by the alquimia API.
 
   use c_interface_module
 
@@ -414,17 +386,8 @@ end subroutine ProcessCondition
 
 
 ! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::ReactionStepOperatorSplit
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * Function signature is dictated by the alquimia API.
-!
-! **************************************************************************** !
 subroutine ReactionStepOperatorSplit(pft_internal_state)
+!  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
 
@@ -442,18 +405,10 @@ subroutine ReactionStepOperatorSplit(pft_internal_state)
 end subroutine ReactionStepOperatorSplit
 
 
-! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::GetAuxiliaryOutput
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * Function signature is dictated by the alquimia API.
-!
+
 ! **************************************************************************** !
 subroutine GetAuxiliaryOutput(pft_internal_state)
+!  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
 
@@ -472,18 +427,8 @@ end subroutine GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::GetEngineMetaData
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * Function signature is dictated by the alquimia API.
-!
-! **************************************************************************** !
-subroutine GetEngineMetaData(pft_internal_state, &
-     sizes, meta_data)
+subroutine GetEngineMetaData(pft_internal_state, sizes, meta_data)
+!  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
 
@@ -544,21 +489,12 @@ subroutine GetEngineMetaData(pft_internal_state, &
 
 end subroutine GetEngineMetaData
 
+
 ! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::GetPrimaryNameFromIndex
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * not officially part of the alquimia API. Eventually this should
+subroutine GetPrimaryNameFromIndex(pft_internal_state, primary_index, primary_name)
+!  NOTE: not officially part of the alquimia API. Eventually this should
 !    go away once we have passing arrays of strings from C to fortran
 !    and back
-!
-! **************************************************************************** !
-subroutine GetPrimaryNameFromIndex(pft_internal_state, &
-  primary_index, primary_name)
 
   use c_interface_module
 
@@ -592,16 +528,6 @@ end subroutine GetPrimaryNameFromIndex
 !
 ! **************************************************************************** !
 
-! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::InitializePFloTranReactions
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * 
-!
 ! **************************************************************************** !
 subroutine InitializePFloTranReactions(option, input, reaction)
 
@@ -660,19 +586,10 @@ end subroutine InitializePFloTranReactions
 
 
 ! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::ReadPFloTranConstraints
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * We are just reading the data from the input file. No processing
-!    is done here because we don't know yet if we are using these.
-!
-! **************************************************************************** !
 subroutine ReadPFloTranConstraints(option, input, reaction, &
      global_auxvars, rt_auxvars, transport_constraints)
+!  NOTE: We are just reading the data from the input file. No processing
+!    is done here because we don't know yet if we are using these.
 
   use Reaction_module
   use Reaction_Aux_module
@@ -740,16 +657,6 @@ subroutine ReadPFloTranConstraints(option, input, reaction, &
 
 end subroutine ReadPFloTranConstraints
 
-! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::ProcessPFloTranConstraint
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * 
-!
 ! **************************************************************************** !
 subroutine ProcessPFloTranConstraint(option, reaction, &
      global_auxvars, rt_auxvars, tran_constraint, constraint_coupler)
@@ -832,16 +739,6 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
 end subroutine ProcessPFloTranConstraint
 
 
-! **************************************************************************** !
-!
-! PFloTranAlquimiaInterface::CopyAuxVarsToState
-!
-! Author: Benjamin Andre
-!
-! Notes:
-!
-!  * 
-!
 ! **************************************************************************** !
 subroutine CopyAuxVarsToState(reaction, &
      global_auxvars, rt_auxvars, state)
