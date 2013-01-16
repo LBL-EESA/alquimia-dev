@@ -37,6 +37,11 @@ void SetupAlquimiaState(
     const AlquimiaSizes_C& alquimia_sizes,
     AlquimiaState_C* alquimia_state);
 
+void SetupAlquimiaMaterialProperties(
+    const alquimia::drivers::utilities::DemoMaterialProperties& material_props,
+    const AlquimiaSizes_C& alquimia_sizes,
+    AlquimiaMaterialProperties_C* alquimia_material_props);
+
 void SetupAlquimiaMetaData(
     const AlquimiaSizes_C& alquimia_sizes,
     AlquimiaMetaData_C* alquimia_meta_data);
