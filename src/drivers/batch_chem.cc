@@ -140,11 +140,22 @@ int main(int argc, char** argv) {
     for (int i = 0; i < alquimia_conditions.num_conditions; ++i) {
       chem->ProcessCondition(&(alquimia_conditions.conditions[i]),
                              &alquimia_sizes,
-                             &alquimia_state);
+                             &alquimia_state,
+                             &alquimia_status);
       PrintAlquimiaState(&alquimia_sizes, &alquimia_state);
     }
 
-    // reaction step loop
+    int t;
+    double time;
+    for (t = 0, time = 0.0; t < demo_simulation.num_time_steps;
+         ++t, time += demo_simulation.delta_t) {
+      std::cout << "reaction step : " << t << "  time: "<< time << std::endl;
+      chem->ReactionStepOperatorSplit(demo_simulation.delta_t,
+                                      &alquimia_material_props,
+                                      &alquimia_state,
+                                      &alquimia_aux_data,
+                                      &alquimia_status);
+    }
 
   } catch (const std::runtime_error& rt_error) {
     std::cout << rt_error.what();

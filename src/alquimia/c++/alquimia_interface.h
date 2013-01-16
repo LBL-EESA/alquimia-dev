@@ -29,14 +29,15 @@ class AlquimiaInterface {
   // once for each IC/BC.
   virtual void ProcessCondition(AlquimiaGeochemicalCondition_C* condition,
                                 AlquimiaSizes_C* sizes,
-                                AlquimiaState_C* state) = 0;
+                                AlquimiaState_C* state,
+                                AlquimiaEngineStatus_C* status) = 0;
 
   // take one (or more?) reaction steps in operator split mode
   virtual void ReactionStepOperatorSplit(
       const double delta_t,
-      const AlquimiaAuxiliaryData_C& aux_data,
-      const AlquimiaMaterialProperties_C& material_props,
+      AlquimiaMaterialProperties_C* material_props,
       AlquimiaState_C* state,
+      AlquimiaAuxiliaryData_C* aux_data,
       AlquimiaEngineStatus_C* status) = 0;
 
   // Access to user selected geochemical data for output, i.e. pH,
@@ -47,16 +48,16 @@ class AlquimiaInterface {
                                  AlquimiaMetaData_C* meta_data) = 0;
 
  protected:
-  void* internal_state(void) {
-    return internal_state_;
+  void* engine_state(void) {
+    return engine_state_;
   };
 
-  void set_internal_state(void* internal_state) {
-    internal_state_ = internal_state;
+  void set_engine_state(void* engine_state) {
+    engine_state_ = engine_state;
   }
 
  private:
-  void* internal_state_;
+  void* engine_state_;
 
 };
 
