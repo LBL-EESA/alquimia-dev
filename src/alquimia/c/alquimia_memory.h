@@ -7,40 +7,52 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+  
+  /* State */
+  void AllocateAlquimiaState(const struct AlquimiaSizes_C* sizes,
+                             struct AlquimiaState_C* state);
 
-/* State */
-void AllocateAlquimiaState(const struct AlquimiaSizes_C* sizes,
-                           struct AlquimiaState_C* state);
+  void FreeAlquimiaState(struct AlquimiaState_C* state);
 
-void FreeAlquimiaState(struct AlquimiaState_C* state);
+  /* Auxiliary Data */ 
+  void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes_C* sizes,
+                                     struct AlquimiaAuxiliaryData_C* aux_data);
+  void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData_C* aux_data);
 
-/* MetaData */
-void AllocateAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
-                              struct AlquimiaMetaData_C* meta_data);
+  /* material properties */
+  void AllocateAlquimiaMaterialProperties(
+      const struct AlquimiaSizes_C* sizes,
+      struct AlquimiaMaterialProperties_C* material_props);
+  void FreeAlquimiaMaterialProperties(
+      struct AlquimiaMaterialProperties_C* material_props);
 
-void FreeAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
-                          struct AlquimiaMetaData_C* metda_data);
+  /* MetaData */
+  void AllocateAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
+                                struct AlquimiaMetaData_C* meta_data);
 
-/* Geochemical conditions/constraints */
-void AllocateAlquimiaGeochemicalConditionList(
-    const int num_conditions,
-    struct AlquimiaGeochemicalConditionList_C* condition_list);
+  void FreeAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
+                            struct AlquimiaMetaData_C* metda_data);
 
-void AllocateAlquimiaGeochemicalCondition(
-    const char* name, const int num_constraints,
-    struct AlquimiaGeochemicalCondition_C* condition);
+  /* Geochemical conditions/constraints */
+  void AllocateAlquimiaGeochemicalConditionList(
+      const int num_conditions,
+      struct AlquimiaGeochemicalConditionList_C* condition_list);
 
-void AllocateAlquimiaGeochemicalConstraint(
-    struct AlquimiaGeochemicalConstraint_C* constraint);
+  void AllocateAlquimiaGeochemicalCondition(
+      const char* name, const int num_constraints,
+      struct AlquimiaGeochemicalCondition_C* condition);
 
-void FreeAlquimiaGeochemicalConditionList(
-    struct AlquimiaGeochemicalConditionList_C* conditions);
+  void AllocateAlquimiaGeochemicalConstraint(
+      struct AlquimiaGeochemicalConstraint_C* constraint);
 
-void FreeAlquimiaGeochemicalCondition(
-    struct AlquimiaGeochemicalCondition_C* condition);
+  void FreeAlquimiaGeochemicalConditionList(
+      struct AlquimiaGeochemicalConditionList_C* conditions);
 
-void FreeAlquimiaGeochemicalConstraint(
-    struct AlquimiaGeochemicalConstraint_C* constraint);
+  void FreeAlquimiaGeochemicalCondition(
+      struct AlquimiaGeochemicalCondition_C* condition);
+
+  void FreeAlquimiaGeochemicalConstraint(
+      struct AlquimiaGeochemicalConstraint_C* constraint);
 
 
 #ifdef __cplusplus

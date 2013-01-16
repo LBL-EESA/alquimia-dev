@@ -24,6 +24,20 @@ type, bind(c) :: alquimia_state_f
    type (c_ptr) :: surface_site_density  ! [moles/m^3 bulk]
 end type alquimia_state_f
 
+type, bind(c) :: alquimia_material_properties_f
+  real (c_double) :: volume  ! [m^3]
+  type (c_ptr) :: isotherm_kd  ! [?]
+  type (c_ptr) :: freundlich_n  ! [?]
+  type (c_ptr) :: langmuir_b  ! [?]
+end type alquimia_material_properties_f
+
+type, bind(c) :: alquimia_auxiliary_data_f 
+  type (c_ptr) :: primary_activity_coeff  ! [-]
+  type (c_ptr) :: secondary_activity_coeff  ! [-]
+  type (c_ptr) :: ion_exchange_ref_cation_conc  ! [?]
+  type (c_ptr) :: surface_complex_free_site_conc  ! [?]
+end type alquimia_auxiliary_data_f
+
 type, bind(c) :: alquimia_engine_status_f
    integer (c_int) :: num_rhs_evaluations
    integer (c_int) :: num_jacobian_evaluations
