@@ -103,9 +103,9 @@ int main(int argc, char** argv) {
   AlquimiaState_C alquimia_state;
   AlquimiaMetaData_C alquimia_meta_data;
   AlquimiaGeochemicalConditionList_C alquimia_conditions;
-  //AlquimiaMaterialProperties_C alquimia_material_props;
-  //AlquimiaAuxiliaryData_C alquimia_aux_data;
-  //AlquimiaEngineStatus_C alquimia_status;
+  AlquimiaMaterialProperties_C alquimia_material_props;
+  AlquimiaAuxiliaryData_C alquimia_aux_data;
+  AlquimiaEngineStatus_C alquimia_status;
   //AlquimiaOutputData_C alquimia_output_data;
 
   try {
@@ -126,6 +126,13 @@ int main(int argc, char** argv) {
     std::cout << "\n-- Setting up alquimia state container...\n";
     SetupAlquimiaState(demo_state, alquimia_sizes, &alquimia_state);
     PrintAlquimiaState(&alquimia_sizes, &alquimia_state);
+
+    std::cout << "\n-- Setting up alquimia auxiliary data container...\n";
+    AllocateAlquimiaAuxiliaryData(&alquimia_sizes, &alquimia_aux_data);
+
+    std::cout << "\n-- Setting up alquimia material properties container...\n";
+    SetupAlquimiaMaterialProperties(demo_material_props,
+                                    alquimia_sizes, &alquimia_material_props);
 
     std::cout << "\n-- Setting up alqumia conditions...\n";
     SetupAlquimiaConditions(demo_conditions, &alquimia_conditions);
@@ -160,6 +167,8 @@ int main(int argc, char** argv) {
   // cleanup memory
   FreeAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
   FreeAlquimiaState(&alquimia_state);
+  FreeAlquimiaAuxiliaryData(&alquimia_aux_data);
+  FreeAlquimiaMaterialProperties(&alquimia_material_props);
   FreeAlquimiaGeochemicalConditionList(&alquimia_conditions);
   delete chem;
 
@@ -347,25 +356,32 @@ void SetupAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
     const AlquimiaSizes_C& alquimia_sizes,
     AlquimiaState_C* alquimia_state) {
+  AllocateAlquimiaState(&alquimia_sizes, alquimia_state);
   alquimia_state->water_density = demo_state.water_density;
   alquimia_state->saturation = demo_state.saturation;
   alquimia_state->porosity = demo_state.porosity;
   alquimia_state->temperature = demo_state.temperature;
   alquimia_state->aqueous_pressure = demo_state.aqueous_pressure;
-  AllocateAlquimiaState(&alquimia_sizes, alquimia_state);
-  
 }  // end SetupAlquimiaState()
+
+void SetupAlquimiaMaterialProperties(
+    const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
+    const AlquimiaSizes_C& alquimia_sizes,
+    AlquimiaMaterialProperties_C* alquimia_material_props) {
+  AllocateAlquimiaMaterialProperties(&alquimia_sizes, alquimia_material_props);
+  alquimia_material_props->volume = demo_material_props.volume;
+  // TODO(bja) : loop through and copy vector based material properties!
+}  // end SetupAlquimiaMaterialProperties()
 
 
 void SetupAlquimiaMetaData(
     const AlquimiaSizes_C& alquimia_sizes,
     AlquimiaMetaData_C* alquimia_meta_data) {
+  AllocateAlquimiaMetaData(&alquimia_sizes, alquimia_meta_data);
   alquimia_meta_data->thread_safe = false;
   alquimia_meta_data->temperature_dependent = false;
   alquimia_meta_data->pressure_dependent = false;
   alquimia_meta_data->porosity_update = false;
-  AllocateAlquimiaMetaData(&alquimia_sizes, alquimia_meta_data);
-  
 }  // end SetupAlquimiaState()
 
 
