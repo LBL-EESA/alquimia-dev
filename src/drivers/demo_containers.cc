@@ -17,11 +17,10 @@ void DemoSimulation::Print(void) const {
   std::cout << "    description : " << this->description << std::endl;
   std::cout << "    engine : " << this->engine << std::endl;
   std::cout << "    engine inputfile : " << this->engine_inputfile << std::endl;
-  std::cout << "    delta t : " << this->delta_t << std::endl;
+  std::cout << "    delta t : " << this->delta_t 
+            << " [" << this->time_units << "]" << std::endl;
   std::cout << "    num times steps : " << this->num_time_steps << std::endl;
   std::cout << "    initial condition : " << this->initial_condition << std::endl;
-  std::cout << "    text output : " << this->use_text_output << std::endl;
-  std::cout << "    output time units : " << this->output_time_units << std::endl;
   std::cout << std::endl;
 
 }  // end Print()

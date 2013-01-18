@@ -27,9 +27,7 @@ struct DemoSimulation {
   std::string initial_condition;
   double delta_t;
   int num_time_steps;
-  std::string use_text_output;
-  std::string output_time_units;
-
+  std::string time_units;
   void Print(void) const;
 };
 

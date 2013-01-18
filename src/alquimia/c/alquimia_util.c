@@ -87,7 +87,39 @@ void PrintAlquimiaState(const struct AlquimiaSizes_C* sizes,
     fprintf(stdout, "%e, ", state->mineral_specific_surface_area[i]);
   }
   fprintf(stdout, "\n");
-}
+}  // end PrintAlquimiaState()
+
+void PrintAlquimiaAuxiliaryData(const struct AlquimiaSizes_C* sizes,
+                        const struct AlquimiaAuxiliaryData_C* aux_data) {
+  int i;
+  fprintf(stdout, "  Alquimia Auxiliary Data:\n");
+  fprintf(stdout, "    primary activity coeff (%d) :\n    [ ", sizes->num_primary);
+  for (i = 0; i < sizes->num_primary; ++i) {
+    fprintf(stdout, "%e, ", aux_data->primary_activity_coeff[i]);
+  }
+  fprintf(stdout, "]\n");
+
+  fprintf(stdout, "    secondary activity coeff (%d) :\n    [ ",
+          sizes->num_aqueous_complexes);
+  for (i = 0; i < sizes->num_aqueous_complexes; ++i) {
+    fprintf(stdout, "%e, ", aux_data->secondary_activity_coeff[i]);
+  }
+  fprintf(stdout, "]\n");
+
+  fprintf(stdout, "    ion exchange ref cation conc (%d) :\n    [ ",
+          sizes->num_ion_exchange_sites);
+  for (i = 0; i < sizes->num_ion_exchange_sites; ++i) {
+    fprintf(stdout, "%e, ", aux_data->ion_exchange_ref_cation_conc[i]);
+  }
+  fprintf(stdout, "]\n");
+
+  fprintf(stdout, "    surface complex free site conc (%d) :\n    [ ",
+          sizes->num_surface_sites);
+  for (i = 0; i < sizes->num_surface_sites; ++i) {
+    fprintf(stdout, "%e, ", aux_data->surface_complex_free_site_conc[i]);
+  }
+  fprintf(stdout, "]\n");
+}  // end PrintAlquimiaAuxiliaryData()
 
 void PrintAlquimiaGeochemicalConditionList(
     const struct AlquimiaGeochemicalConditionList_C* condition_list) {
