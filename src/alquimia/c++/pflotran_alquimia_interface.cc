@@ -6,6 +6,7 @@
 #include <string>
 
 #include "alquimia_containers.h"
+#include "alquimia_util.h"
 
 #include "pflotran_alquimia_interface.h"
 
@@ -40,28 +41,32 @@ void PFloTranAlquimiaInterface::Setup(
   pflotran_alquimia_setup(inputfile, pft_engine_state, sizes);
   set_engine_state(pft_engine_state);
   delete inputfile;
+  sizes_ = sizes;
 }  // end Setup()
 
 /******************************************************************************/
 void PFloTranAlquimiaInterface::ProcessCondition(
     AlquimiaGeochemicalCondition_C* condition,
-    AlquimiaSizes_C* sizes,
-    AlquimiaState_C* state,
-    AlquimiaEngineStatus_C* status) {
-  std::cout << "PFloTranAlquimiaInterface::ProcessCondition() : " << std::endl;
-  std::cout << "  Processing '" << condition->name << "'" << std::endl;
-  pflotran_alquimia_processcondition(engine_state(), condition, sizes, state, status);
-}  // end ProcessCondition()
-
-/******************************************************************************/
-void PFloTranAlquimiaInterface::ReactionStepOperatorSplit(
-    const double delta_t,
     AlquimiaMaterialProperties_C* material_props,
     AlquimiaState_C* state,
     AlquimiaAuxiliaryData_C* aux_data,
     AlquimiaEngineStatus_C* status) {
+  //std::cout << "PFloTranAlquimiaInterface::ProcessCondition() : " << std::endl;
+  //std::cout << "  Processing '" << condition->name << "'" << std::endl;
+  pflotran_alquimia_processcondition(engine_state(), condition, material_props,
+                                     state, aux_data, status);
+}  // end ProcessCondition()
+
+/******************************************************************************/
+void PFloTranAlquimiaInterface::ReactionStepOperatorSplit(
+    double delta_t,
+    AlquimiaMaterialProperties_C* material_props,
+    AlquimiaState_C* state,
+    AlquimiaAuxiliaryData_C* aux_data,
+    AlquimiaEngineStatus_C* status) {
+
   pflotran_alquimia_reactionstepoperatorsplit(engine_state(),
-                                              delta_t,
+                                              &delta_t,
                                               material_props,
                                               state,
                                               aux_data,

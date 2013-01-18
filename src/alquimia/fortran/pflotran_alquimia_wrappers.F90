@@ -4,15 +4,8 @@
 !
 ! Author: Benjamin Andre
 !
-! Notes:
-!
-!  * Function call signatures are dictated by the alquimia API!
-!
-!  * alquimia data structures defined in alquimia_containers.h90 are
-!    dictated by the alquimia API.
-!
-!  * (bja) 2012-12 - different fortran compilers use different name
-!    mangling conventions for fortran modules:
+! Different fortran compilers use different name mangling conventions
+! for fortran modules:
 !
 !    gfortran : ___modulename_MOD_procedurename
 !
@@ -21,6 +14,13 @@
 !    as a consequence we can't put the alquimia interface into a
 !    module and call it directly from C/C++. Instead we use
 !    some simple wrapper functions.
+!
+! Notes:
+!
+!  * Function call signatures are dictated by the alquimia API!
+!
+!  * alquimia data structures defined in alquimia_containers.h90 are
+!    dictated by the alquimia API.
 !
 ! **************************************************************************** !
 
@@ -31,6 +31,8 @@ subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, sizes) bind
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+  implicit none
 
 #include "alquimia_containers.h90"
 
@@ -51,6 +53,8 @@ subroutine PFloTran_Alquimia_Shutdown(pft_engine_state) bind(c)
 
   use PFloTranAlquimiaInterface_module
 
+  implicit none
+
 #include "alquimia_containers.h90"
 
   ! function parameters
@@ -62,34 +66,54 @@ end subroutine PFloTran_Alquimia_Shutdown
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_ProcessCondition(pft_engine_state, condition, &
-     sizes, state, status) bind(C)
+subroutine PFloTran_Alquimia_ProcessCondition( &
+     pft_engine_state, &
+     condition, &
+     material_properties, &
+     state, &
+     aux_data, &
+     status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+  implicit none
 
 #include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
   type (alquimia_condition_f), intent(in) :: condition
-  type (alquimia_sizes_f), intent(in) :: sizes
+  type (alquimia_material_properties_f), intent(in) :: material_properties
   type (alquimia_state_f), intent(inout) :: state
+  type (alquimia_auxiliary_data_f), intent (inout) :: aux_data
   type (alquimia_engine_status_f), intent(out) :: status
 
-  call ProcessCondition(pft_engine_state, condition, sizes, state, status)
+  call ProcessCondition(pft_engine_state, condition, material_properties, &
+       state, aux_data, status)
+
+  write (*, '(a)') "PFloTran_Alquimia_ProcessCondition() :"
+  print *, "density water : ", state%density_water
+  print *, "temperature : ", state%temperature
 
 end subroutine PFloTran_Alquimia_ProcessCondition
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_ReactionStepOperatorSplit(pft_engine_state, &
-     delta_t, material_properties, state, aux_data, status) bind(C)
+subroutine PFloTran_Alquimia_ReactionStepOperatorSplit( &
+     pft_engine_state, &
+     delta_t, &
+     material_properties, &
+     state, &
+     aux_data, &
+     status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+  implicit none
 
 #include "alquimia_containers.h90"
 
@@ -114,6 +138,8 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_engine_state) bind(C)
 
   use PFloTranAlquimiaInterface_module
 
+  implicit none
+
 #include "alquimia_containers.h90"
 
   ! function parameters
@@ -131,6 +157,8 @@ subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+  implicit none
 
 #include "alquimia_containers.h90"
 
@@ -150,6 +178,8 @@ subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_engine_state, &
   use, intrinsic :: iso_c_binding
 
   use PFloTranAlquimiaInterface_module
+
+  implicit none
 
 #include "alquimia_containers.h90"
 
