@@ -33,6 +33,11 @@ extern "C" {
   void FreeAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
                             struct AlquimiaMetaData_C* metda_data);
 
+  /* Status */
+  void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus_C* status);
+
+  void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus_C* status);
+
   /* Geochemical conditions/constraints */
   void AllocateAlquimiaGeochemicalConditionList(
       const int num_conditions,

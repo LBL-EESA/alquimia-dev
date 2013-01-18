@@ -115,10 +115,14 @@ int main(int argc, char** argv) {
     alquimia::AlquimiaInterfaceFactory aif;
     chem = aif.Create(demo_simulation.engine);
 
+    // All alquimia function calls require a status object.
+    AllocateAlquimiaEngineStatus(&alquimia_status);
     // setup the engine and get the memory requirements
-    chem->Setup(demo_simulation.engine_inputfile, &alquimia_sizes);
-    if (true) {
+    chem->Setup(demo_simulation.engine_inputfile, &alquimia_sizes, &alquimia_status);
+    if (alquimia_status.error != 0) {
+      std::cout << alquimia_status.message << std::endl;
       PrintAlquimiaSizes(&alquimia_sizes);
+      return alquimia_status.error;
     }
 
     // allocate memory for alquimia data transfer containers.
@@ -126,6 +130,7 @@ int main(int argc, char** argv) {
     AllocateAlquimiaMaterialProperties(&alquimia_sizes, &alquimia_material_props);
     AllocateAlquimiaAuxiliaryData(&alquimia_sizes, &alquimia_aux_data);
     AllocateAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
+    AllocateAlquimiaEngineStatus(&alquimia_status);
     AllocateAlquimiaGeochemicalConditionList(demo_conditions.size(),
                                              &alquimia_conditions);
 
@@ -133,9 +138,11 @@ int main(int argc, char** argv) {
 
     // get the driver meta data (thread safe, temperature/pressure
     // dependent, species names, etc)
-    chem->GetEngineMetaData(&alquimia_sizes, &alquimia_meta_data);
-    if (true) {
+    chem->GetEngineMetaData(&alquimia_sizes, &alquimia_meta_data, &alquimia_status);
+    if (alquimia_status.error != 0) {
+      std::cout << alquimia_status.message << std::endl;
       PrintAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
+      return alquimia_status.error;
     }
 
     // finish initializing the driver, e.g. openmp for thread safe
@@ -170,9 +177,11 @@ int main(int argc, char** argv) {
                                &alquimia_state,
                                &alquimia_aux_data,
                                &alquimia_status);
-        if (false) {
+        if (alquimia_status.error != 0) {
+          std::cout << alquimia_status.message << std::endl;
           PrintAlquimiaState(&alquimia_sizes, &alquimia_state);
           PrintAlquimiaAuxiliaryData(&alquimia_sizes, &alquimia_aux_data);
+          return alquimia_status.error;
         }
       }
       // store the processed geochemical conditions in driver's memory
@@ -203,6 +212,12 @@ int main(int argc, char** argv) {
                                       &alquimia_state,
                                       &alquimia_aux_data,
                                       &alquimia_status);
+      if (alquimia_status.error != 0) {
+          std::cout << alquimia_status.message << std::endl;
+          PrintAlquimiaState(&alquimia_sizes, &alquimia_state);
+          PrintAlquimiaAuxiliaryData(&alquimia_sizes, &alquimia_aux_data);
+          return alquimia_status.error;
+      }
       double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
       WriteOutput(&text_output, out_time,
                   alquimia_sizes, alquimia_state);
@@ -228,6 +243,8 @@ int main(int argc, char** argv) {
 
   text_output.close();
   // cleanup memory
+  chem->Shutdown(&alquimia_status);
+  FreeAlquimiaEngineStatus(&alquimia_status);
   FreeAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
   FreeAlquimiaState(&alquimia_state);
   FreeAlquimiaAuxiliaryData(&alquimia_aux_data);

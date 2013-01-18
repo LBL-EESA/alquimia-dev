@@ -228,6 +228,31 @@ void FreeAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
 
 }  // end FreeAlquimiaMetaData()
 
+/*******************************************************************************
+ **
+ **  Engine Status
+ **
+ *******************************************************************************/
+
+void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus_C* status) {
+
+  status->message = NULL;
+  //status-> = NULL;
+
+  status->message = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(int));
+  if (NULL == status->message) {
+    // TODO(bja): error handling
+  }
+}  // end AllocateAlquimiaEngineStatus()
+
+void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus_C* status) {
+  if (status != NULL) {
+    free(status->message);
+  }
+  status->message = NULL;
+
+}  // end FreeAlquimiaEngineStatus()
+
 
 
 /*******************************************************************************
