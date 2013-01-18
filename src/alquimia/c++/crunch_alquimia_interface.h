@@ -31,12 +31,13 @@ class CrunchAlquimiaInterface : public AlquimiaInterface {
              AlquimiaSizes_C* sizes);
 
   void ProcessCondition(AlquimiaGeochemicalCondition_C* condition,
-                        AlquimiaSizes_C* sizes,
+                        AlquimiaMaterialProperties_C* material_props,
                         AlquimiaState_C* state,
+                        AlquimiaAuxiliaryData_C* aux_data,
                         AlquimiaEngineStatus_C* status);
 
   void ReactionStepOperatorSplit(
-      const double delta_t,
+      double delta_t,
       AlquimiaMaterialProperties_C* material_props,
       AlquimiaState_C* state,
       AlquimiaAuxiliaryData_C* aux_data,

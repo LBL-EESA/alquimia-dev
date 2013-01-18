@@ -15,27 +15,27 @@ type, bind(c) :: alquimia_state_f
    real (c_double) :: porosity
    real (c_double) :: temperature
    real (c_double) :: aqueous_pressure
-   type (c_ptr) :: total_primary   ! [molarity, moles/L]
-   type (c_ptr) :: total_sorbed  ! [moles/m^3 bulk]
-   type (c_ptr) :: free_ion  ! [molality, moles/kg_h2o]
-   type (c_ptr) :: mineral_volume_fraction  ! [-]
-   type (c_ptr) :: mineral_specific_surface_area  ! [m^2 mineral/m^3 bulk]
-   type (c_ptr) :: cation_exchange_capacity  ! [moles/m^3 bulk]
-   type (c_ptr) :: surface_site_density  ! [moles/m^3 bulk]
+   type (c_ptr) :: total_primary
+   type (c_ptr) :: total_sorbed
+   type (c_ptr) :: free_ion
+   type (c_ptr) :: mineral_volume_fraction
+   type (c_ptr) :: mineral_specific_surface_area
+   type (c_ptr) :: cation_exchange_capacity
+   type (c_ptr) :: surface_site_density
 end type alquimia_state_f
 
 type, bind(c) :: alquimia_material_properties_f
-  real (c_double) :: volume  ! [m^3]
-  type (c_ptr) :: isotherm_kd  ! [?]
-  type (c_ptr) :: freundlich_n  ! [?]
-  type (c_ptr) :: langmuir_b  ! [?]
+  real (c_double) :: volume
+  type (c_ptr) :: isotherm_kd
+  type (c_ptr) :: freundlich_n
+  type (c_ptr) :: langmuir_b
 end type alquimia_material_properties_f
 
 type, bind(c) :: alquimia_auxiliary_data_f 
-  type (c_ptr) :: primary_activity_coeff  ! [-]
-  type (c_ptr) :: secondary_activity_coeff  ! [-]
-  type (c_ptr) :: ion_exchange_ref_cation_conc  ! [?]
-  type (c_ptr) :: surface_complex_free_site_conc  ! [?]
+  type (c_ptr) :: primary_activity_coeff
+  type (c_ptr) :: secondary_activity_coeff
+  type (c_ptr) :: ion_exchange_ref_cation_conc
+  type (c_ptr) :: surface_complex_free_site_conc
 end type alquimia_auxiliary_data_f
 
 type, bind(c) :: alquimia_engine_status_f

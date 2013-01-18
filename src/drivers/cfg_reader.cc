@@ -27,7 +27,6 @@ const std::string DemoConfigReader::kICString("initial_condition");
 const std::string DemoConfigReader::kDeltaTimeString("delta_t");
 const std::string DemoConfigReader::kNumTimeStepsString("num_time_steps");
 const std::string DemoConfigReader::kUseTextOutputString("use_text_output");
-const std::string DemoConfigReader::kOutputTimeUnitsString("output_time_units");
 
 const std::string DemoConfigReader::kStateSection("state");
 const std::string DemoConfigReader::kDensityString("density");
@@ -170,15 +169,25 @@ void DemoConfigReader::ParseSimulationSection(
         } else if (util::CaseInsensitiveStringCompare(key, kEngineInputfileString)) {
           simulation->engine_inputfile.assign(value);
         } else if (util::CaseInsensitiveStringCompare(key, kDeltaTimeString)) {
-          simulation->delta_t = std::atof(value.c_str());
+          // delta_t = N.n units       units are optional, default to seconds 
+          util::StringTokenizer data(value, kSpaces);
+          std::string temp = data.at(0);
+          util::RemoveLeadingAndTrailingWhitespace(&temp);
+          simulation->delta_t = std::atof(temp.c_str());
+          // default units are seconds
+          simulation->time_units = 's';
+          if (data.size() > 1) {
+            temp = data.at(1);
+            util::RemoveLeadingAndTrailingWhitespace(&temp);
+            simulation->time_units = temp;
+          }
         } else if (util::CaseInsensitiveStringCompare(key, kNumTimeStepsString)) {
           simulation->num_time_steps = std::atoi(value.c_str());
-        } else if (util::CaseInsensitiveStringCompare(key, kUseTextOutputString)) {
-          simulation->use_text_output.assign(value);
-        } else if (util::CaseInsensitiveStringCompare(key, kOutputTimeUnitsString)) {
-          simulation->output_time_units.assign(value);
         } else if (util::CaseInsensitiveStringCompare(key, kICString)) {
           simulation->initial_condition.assign(value);
+        } else {
+          std::cout << "ParseSimulationSection() : skipping unknown parameter '" 
+                    << key << "'." << std::endl;
         }
       }
     }  // end else(parameter line)
