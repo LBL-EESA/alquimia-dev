@@ -14,10 +14,14 @@
 #include <stdbool.h>
 
 #define ALQUIMIA_MAX_STRING_LENGTH 512
+#define ALQUIMIA_MAX_WORD_LENGTH 32
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+enum alquimia_errors_t { ALQUIMIA_NO_ERROR = 0,
+                           ALQUIMIA_ERROR_ENGINE_INTEGRITY = 4577 };
 
 struct AlquimiaSizes_C {
   int num_primary;
@@ -57,10 +61,12 @@ struct AlquimiaAuxiliaryData_C {
 };
 
 struct AlquimiaEngineStatus_C {
+  int error;
+  char* message;
+  bool converged;
   int num_rhs_evaluations;
   int num_jacobian_evaluations;
   int num_newton_iterations;
-  bool converged;
 };
 
 struct AlquimiaMetaData_C {
