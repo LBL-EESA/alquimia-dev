@@ -28,7 +28,10 @@ class CrunchAlquimiaInterface : public AlquimiaInterface {
   virtual ~CrunchAlquimiaInterface();
 
   void Setup(const std::string& input_file,
-             AlquimiaSizes_C* sizes);
+             AlquimiaSizes_C* sizes,
+             AlquimiaEngineStatus_C* status);
+
+  void Shutdown(AlquimiaEngineStatus_C* status);
 
   void ProcessCondition(AlquimiaGeochemicalCondition_C* condition,
                         AlquimiaMaterialProperties_C* material_props,
@@ -43,10 +46,12 @@ class CrunchAlquimiaInterface : public AlquimiaInterface {
       AlquimiaAuxiliaryData_C* aux_data,
       AlquimiaEngineStatus_C* status);
 
-  void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data);
+  void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data,
+                          AlquimiaEngineStatus_C* status);
 
   void GetEngineMetaData(AlquimiaSizes_C* sizes,
-                         AlquimiaMetaData_C* meta_data);
+                         AlquimiaMetaData_C* meta_data,
+                         AlquimiaEngineStatus_C* status);
 
  protected:
 

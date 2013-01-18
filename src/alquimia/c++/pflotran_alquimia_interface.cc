@@ -20,13 +20,14 @@ PFloTranAlquimiaInterface::PFloTranAlquimiaInterface()
 
 /******************************************************************************/
 PFloTranAlquimiaInterface::~PFloTranAlquimiaInterface() {
-  pflotran_alquimia_shutdown(engine_state());
+
 }  // end ~PFloTranAlquimiaInterface()
 
 /******************************************************************************/
 void PFloTranAlquimiaInterface::Setup(
     const std::string& input_file,
-    AlquimiaSizes_C* sizes) {
+    AlquimiaSizes_C* sizes,
+    AlquimiaEngineStatus_C* status) {
   std::cout << "PFloTranAlquimiaInterface::Setup() :  '"
             << input_file << "'\n";
   // copy the c++ string into a c-style char* that can be passed to fortran
@@ -38,11 +39,16 @@ void PFloTranAlquimiaInterface::Setup(
   void* pft_engine_state = new void*;
 
   // initialize pflotran
-  pflotran_alquimia_setup(inputfile, pft_engine_state, sizes);
+  pflotran_alquimia_setup(inputfile, pft_engine_state, sizes, status);
   set_engine_state(pft_engine_state);
   delete inputfile;
   sizes_ = sizes;
 }  // end Setup()
+
+/******************************************************************************/
+void PFloTranAlquimiaInterface::Shutdown(AlquimiaEngineStatus_C* status) {
+  pflotran_alquimia_shutdown(engine_state(), status);
+}  // end Shutdown()
 
 /******************************************************************************/
 void PFloTranAlquimiaInterface::ProcessCondition(
@@ -75,16 +81,20 @@ void PFloTranAlquimiaInterface::ReactionStepOperatorSplit(
 
 /******************************************************************************/
 void PFloTranAlquimiaInterface::GetAuxiliaryOutput(
-    AlquimiaAuxiliaryData_C* aux_data) {
+    AlquimiaAuxiliaryData_C* aux_data,
+    AlquimiaEngineStatus_C* status) {
+  static_cast<void>(status);
   static_cast<void>(aux_data);
 }  // end GetAuxiliaryOutput()
 
 /******************************************************************************/
 void PFloTranAlquimiaInterface::GetEngineMetaData(
     AlquimiaSizes_C* sizes,
-    AlquimiaMetaData_C* meta_data) {
-  std::cout << "PFloTranAlquimiaInterface::GetEngineMetaData() :\n";
-  pflotran_alquimia_getenginemetadata(engine_state(), sizes, meta_data);
+    AlquimiaMetaData_C* meta_data,
+    AlquimiaEngineStatus_C* status) {
+  //std::cout << "PFloTranAlquimiaInterface::GetEngineMetaData() :\n";
+
+  pflotran_alquimia_getenginemetadata(engine_state(), sizes, meta_data, status);
 
   // NOTE(bja) : can't get arrays of strings to pass gracefully
   // between c and fortran, so for now we loop through and request the
@@ -93,8 +103,11 @@ void PFloTranAlquimiaInterface::GetEngineMetaData(
   // NOTE(bja): the indices in meta_data.primary_indices already have
   // the engine base, so we don't need to do any conversions!
   for (int i = 0; i < sizes->num_primary; ++i) {
-    pflotran_alquimia_getprimarynamefromindex(engine_state(),
-        &(meta_data->primary_indices[i]), meta_data->primary_names[i]);
+    pflotran_alquimia_getprimarynamefromindex(
+        engine_state(),
+        &(meta_data->primary_indices[i]), 
+        meta_data->primary_names[i],
+        status);
   }
 }  // end GetEngineMetaData()
 

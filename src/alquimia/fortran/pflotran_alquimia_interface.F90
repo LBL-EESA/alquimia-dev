@@ -53,6 +53,9 @@ module PFloTranAlquimiaInterface_module
        CopyAlquimiaToAuxVars, &
        CopyAuxVarsToAlquimia
 
+  integer(kind=8), private, parameter :: integrity_check_value = &
+       B'0100001001100101011011100100000101101110011001000111001001100101'
+
   type, private :: pflotran_engine_state
      ! This is the data structure that stores the persistent data for
      ! pflotran, (e.g. reaction network).
@@ -65,6 +68,7 @@ module PFloTranAlquimiaInterface_module
      !
      ! NOTE(bja): these are fortran pointers, so this struct can not
      ! be unpacked on the c side!
+     integer(kind=8) :: integrity_check
      type (option_type), pointer :: option
      type (reaction_type), pointer :: reaction
      type (reactive_transport_auxvar_type), pointer :: rt_auxvars
@@ -83,7 +87,7 @@ contains
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine Setup(input_filename, pft_engine_state, sizes)
+subroutine Setup(input_filename, pft_engine_state, sizes, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 !
 !  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
@@ -113,6 +117,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes)
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (c_ptr), intent(out) :: pft_engine_state
   type (alquimia_sizes_f), intent(out) :: sizes
+  type (alquimia_engine_status_f), intent(out) :: status
 
   ! local variables
   type(pflotran_engine_state), pointer :: engine_state
@@ -211,6 +216,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes)
   ! store it for us
   !
   allocate(engine_state)
+  engine_state%integrity_check = integrity_check_value
   engine_state%option => option
   engine_state%reaction => reaction
   engine_state%rt_auxvars => rt_auxvars
@@ -232,18 +238,22 @@ subroutine Setup(input_filename, pft_engine_state, sizes)
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
 
-  call PrintSizes(sizes)
+  !call PrintSizes(sizes)
 
-  write (*, '(a)') "PFloTran_Alquimia_Setup() : successful."
-
+  status%error = ALQUIMIA_NO_ERROR
+  call f_c_string_ptr("Alquimia::PFloTran::Setup() : successful.", &
+       status%message, ALQUIMIA_MAX_STRING_LENGTH)
+  
 end subroutine Setup
 
 
 ! **************************************************************************** !
-subroutine Shutdown(pft_engine_state)
+subroutine Shutdown(pft_engine_state, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
+
+  use c_interface_module
 
   implicit none
 
@@ -251,6 +261,7 @@ subroutine Shutdown(pft_engine_state)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
+  type (alquimia_engine_status_f), intent(out) :: status
 
   ! local variables
   type(pflotran_engine_state), pointer :: engine_state
@@ -258,6 +269,12 @@ subroutine Shutdown(pft_engine_state)
   write (*, '(a)') "PFloTran_Alquimia_Shutdown() : "
 
   call c_f_pointer(pft_engine_state, engine_state)
+  if (engine_state%integrity_check /= integrity_check_value) then
+     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+     return
+  end if
 
   call TranConstraintCouplerDestroy(engine_state%constraint_coupler)
   call TranConstraintDestroyList(engine_state%transport_constraints)
@@ -266,6 +283,8 @@ subroutine Shutdown(pft_engine_state)
   !call GlobalAuxVarDestroy(engine_state%global_auxvars)
   call ReactionDestroy(engine_state%reaction)
   call OptionDestroy(engine_state%option)
+
+  status%error = ALQUIMIA_NO_ERROR
 
 end subroutine Shutdown
 
@@ -312,6 +331,12 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   write (*, '(a)') "PFloTran_Alquimia_ProcessCondition() : "
 
   call c_f_pointer(pft_engine_state, engine_state)
+  if (engine_state%integrity_check /= integrity_check_value) then
+     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+     return
+  end if
 
   ! NOTE(bja): do NOT call CopyAlquimiaToAuxVars() here because most
   ! of that data is uninitialized in alquimia!
@@ -396,7 +421,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
           engine_state%rt_auxvars, &
           state, aux_data)
   end if
-
+  status%error = ALQUIMIA_NO_ERROR
 end subroutine ProcessCondition
 
 
@@ -406,6 +431,10 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
+
+  use c_interface_module
+
+  implicit none
 
 #include "alquimia_containers.h90"
 
@@ -422,6 +451,12 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   PetscReal :: porosity, volume
 
   call c_f_pointer(pft_engine_state, engine_state)
+  if (engine_state%integrity_check /= integrity_check_value) then
+     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+     return
+  end if
 
   !write (*, '(a)') "F_PFloTranAlquimiaInterface::ReactionStepOperatorSplit() :"
 
@@ -437,15 +472,19 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
        engine_state%rt_auxvars, &
        state, aux_data)
 
+  status%error = ALQUIMIA_NO_ERROR
+
 end subroutine ReactionStepOperatorSplit
 
 
 
 ! **************************************************************************** !
-subroutine GetAuxiliaryOutput(pft_engine_state)
+subroutine GetAuxiliaryOutput(pft_engine_state, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
+
+  use c_interface_module
 
   implicit none
 
@@ -453,21 +492,31 @@ subroutine GetAuxiliaryOutput(pft_engine_state)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
+  type (alquimia_engine_status_f), intent(out) :: status
 
   ! local variables
   type(pflotran_engine_state), pointer :: engine_state
 
   call c_f_pointer(pft_engine_state, engine_state)
+  if (engine_state%integrity_check /= integrity_check_value) then
+     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+     return
+  end if
 
   write (*, '(a)') "PFloTran_Alquimia_GetAuxiliaryOutput() :"
+  status%error = ALQUIMIA_NO_ERROR
 end subroutine GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data)
-!  NOTE: Function signature is dictated by the alquimia API.
+subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data, status)
+  !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
+
+  use c_interface_module
 
   implicit none
 
@@ -477,6 +526,7 @@ subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data)
   type (c_ptr), intent(inout) :: pft_engine_state
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_meta_data_f), intent(out) :: meta_data
+  type (alquimia_engine_status_f), intent(out) :: status
 
   ! local variables
   integer (c_int), pointer :: primary_indices(:)
@@ -486,6 +536,12 @@ subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data)
   !write (*, '(a)') "PFloTran_Alquimia_GetEngineMetaData() :"
 
   call c_f_pointer(pft_engine_state, engine_state)
+  if (engine_state%integrity_check /= integrity_check_value) then
+     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+     return
+  end if
 
   num_primary = engine_state%reaction%ncomp
 
@@ -516,24 +572,27 @@ subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data)
      primary_indices(i) = i
   enddo
 
-!
-! NOTE(bja): I can't figure out how to get arrays of strings passed
-! back and forth between C and fortran. Actually I don't understand
-! arrays of strings in fortran. For now we'll just require C to loop
-! through each string and call GetPrimaryNameFromIndex...
-!
+  !
+  ! NOTE(bja): I can't figure out how to get arrays of strings passed
+  ! back and forth between C and fortran. Actually I don't understand
+  ! arrays of strings in fortran. For now we'll just require C to loop
+  ! through each string and call GetPrimaryNameFromIndex...
+  !
 
   ! NOTE(bja) : meta_data%primary_names() is empty for this call!
   !call PrintMetaData(sizes, meta_data)
-
+  status%error = 0
 end subroutine GetEngineMetaData
 
 
 ! **************************************************************************** !
-subroutine GetPrimaryNameFromIndex(pft_engine_state, primary_index, primary_name)
+subroutine GetPrimaryNameFromIndex(pft_engine_state, &
+     primary_index, primary_name, status)
 !  NOTE: not officially part of the alquimia API. Eventually this should
 !    go away once we have passing arrays of strings from C to fortran
 !    and back
+
+  use, intrinsic :: iso_c_binding
 
   use c_interface_module
 
@@ -545,12 +604,19 @@ subroutine GetPrimaryNameFromIndex(pft_engine_state, primary_index, primary_name
   type (c_ptr), intent(inout) :: pft_engine_state
   integer (c_int), intent(in) :: primary_index
   character(kind=c_char), dimension(*), intent(out) :: primary_name
+  type (alquimia_engine_status_f), intent(out) :: status
 
   ! local variables
   character (len=ALQUIMIA_MAX_WORD_LENGTH), pointer :: primary_list(:)
   type(pflotran_engine_state), pointer :: engine_state
 
   call c_f_pointer(pft_engine_state, engine_state)
+  if (engine_state%integrity_check /= integrity_check_value) then
+     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+     return
+  end if
 
   primary_list => engine_state%reaction%primary_species_names
 
@@ -559,6 +625,8 @@ subroutine GetPrimaryNameFromIndex(pft_engine_state, primary_index, primary_name
 
   call f_c_string_chars(trim(primary_list(primary_index)), &
        primary_name, ALQUIMIA_MAX_STRING_LENGTH)
+
+  status%error = ALQUIMIA_NO_ERROR
 
 end subroutine GetPrimaryNameFromIndex
 
@@ -653,6 +721,7 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
   type(tran_constraint_list_type), pointer, intent(inout) :: transport_constraints
 
   ! local variables
+  PetscBool :: debug = PETSC_FALSE
   character(len=MAXSTRINGLENGTH) :: string
   character(len=MAXWORDLENGTH) :: card
   character(len=MAXWORDLENGTH) :: word
@@ -671,8 +740,10 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
     call StringToUpper(word)
     card = trim(word)
 
-    option%io_buffer = 'pflotran card:: ' // trim(card)
-    call printMsg(option)
+    if (debug) then
+       option%io_buffer = 'pflotran card:: ' // trim(card)
+       call printMsg(option)
+    end if
 
     select case(trim(card))
       case('CONSTRAINT')
@@ -683,7 +754,9 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
         tran_constraint => TranConstraintCreate(option)
         call InputReadWord(input, option, tran_constraint%name, PETSC_TRUE)
         call InputErrorMsg(input, option, 'constraint', 'name') 
-        call printMsg(option, tran_constraint%name)
+        if (debug) then
+           call printMsg(option, tran_constraint%name)
+        end if
         call TranConstraintRead(tran_constraint, reaction, input, option)
         call TranConstraintAddToList(tran_constraint, transport_constraints)
         nullify(tran_constraint)

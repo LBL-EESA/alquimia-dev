@@ -18,12 +18,15 @@ namespace alquimia {
 class AlquimiaInterface {
  public:
   AlquimiaInterface() {};
-  virtual ~AlquimiaInterface() {};
+  virtual ~AlquimiaInterface() { };  // delete engine_state_?
 
   // read data files/structures, initialize memory, basis management
   // (includes reading database, swapping basis, etc.)
   virtual void Setup(const std::string& input_file,
-                     AlquimiaSizes_C* sizes) = 0;
+                     AlquimiaSizes_C* sizes,
+                     AlquimiaEngineStatus_C* status) = 0;
+
+  virtual void Shutdown(AlquimiaEngineStatus_C* status) = 0;
 
   // constrain processing for boundary/initial constraints. Called
   // once for each IC/BC.
@@ -43,10 +46,12 @@ class AlquimiaInterface {
 
   // Access to user selected geochemical data for output, i.e. pH,
   // mineral SI, reaction rates
-  virtual void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data) = 0;
+  virtual void GetAuxiliaryOutput(AlquimiaAuxiliaryData_C* aux_data,
+                                  AlquimiaEngineStatus_C* status) = 0;
 
   virtual void GetEngineMetaData(AlquimiaSizes_C* sizes,
-                                 AlquimiaMetaData_C* meta_data) = 0;
+                                 AlquimiaMetaData_C* meta_data,
+                                 AlquimiaEngineStatus_C* status) = 0;
 
  protected:
   void* engine_state(void) {

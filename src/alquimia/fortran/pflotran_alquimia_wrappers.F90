@@ -26,7 +26,8 @@
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, sizes) bind(C)
+subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, &
+     sizes, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -40,14 +41,15 @@ subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, sizes) bind
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (c_ptr), intent(out) :: pft_engine_state
   type (alquimia_sizes_f), intent(out) :: sizes
+  type (alquimia_engine_status_f), intent(out) :: status
 
-  call Setup(input_filename, pft_engine_state, sizes)
+  call Setup(input_filename, pft_engine_state, sizes, status)
 
 end subroutine PFloTran_Alquimia_Setup
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_Shutdown(pft_engine_state) bind(c)
+subroutine PFloTran_Alquimia_Shutdown(pft_engine_state, status) bind(c)
 
   use, intrinsic :: iso_c_binding
 
@@ -59,8 +61,9 @@ subroutine PFloTran_Alquimia_Shutdown(pft_engine_state) bind(c)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
+  type (alquimia_engine_status_f), intent(out) :: status
 
-  call Shutdown(pft_engine_state)
+  call Shutdown(pft_engine_state, status)
 
 end subroutine PFloTran_Alquimia_Shutdown
 
@@ -92,10 +95,6 @@ subroutine PFloTran_Alquimia_ProcessCondition( &
 
   call ProcessCondition(pft_engine_state, condition, material_properties, &
        state, aux_data, status)
-
-  write (*, '(a)') "PFloTran_Alquimia_ProcessCondition() :"
-  print *, "density water : ", state%density_water
-  print *, "temperature : ", state%temperature
 
 end subroutine PFloTran_Alquimia_ProcessCondition
 
@@ -132,7 +131,7 @@ end subroutine PFloTran_Alquimia_ReactionStepOperatorSplit
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_engine_state) bind(C)
+subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_engine_state, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -144,15 +143,16 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_engine_state) bind(C)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
+  type (alquimia_engine_status_f), intent(out) :: status
 
-  call GetAuxiliaryOutput(pft_engine_state)
+  call GetAuxiliaryOutput(pft_engine_state, status)
 
 end subroutine PFloTran_Alquimia_GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
 subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
-     sizes, meta_data) bind(C)
+     sizes, meta_data, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -166,14 +166,15 @@ subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
   type (c_ptr), intent(inout) :: pft_engine_state
   type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_meta_data_f), intent(out) :: meta_data
+  type (alquimia_engine_status_f), intent(out) :: status
 
-  call GetEngineMetaData(pft_engine_state, sizes, meta_data)
+  call GetEngineMetaData(pft_engine_state, sizes, meta_data, status)
 
 end subroutine PFloTran_Alquimia_GetEngineMetaData
 
 ! **************************************************************************** !
 subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_engine_state, &
-  primary_index, primary_name) bind(C)
+  primary_index, primary_name, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -187,8 +188,9 @@ subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_engine_state, &
   type (c_ptr), intent(inout) :: pft_engine_state
   integer (c_int), intent(in) :: primary_index
   character(kind=c_char), dimension(*), intent(out) :: primary_name
+  type (alquimia_engine_status_f), intent(out) :: status
 
-  call GetPrimaryNameFromIndex(pft_engine_state, primary_index, primary_name)
+  call GetPrimaryNameFromIndex(pft_engine_state, primary_index, primary_name, status)
 
 end subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex
 
