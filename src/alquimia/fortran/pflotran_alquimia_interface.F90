@@ -224,9 +224,6 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   engine_state%constraint_coupler => constraint_coupler
   engine_state%transport_constraints => transport_constraints
 
-  if (.not. c_associated(pft_engine_state)) then
-     write (*, '(a)') "pft internal state is null"
-  endif
   pft_engine_state = c_loc(engine_state)
 
   !
@@ -266,7 +263,7 @@ subroutine Shutdown(pft_engine_state, status)
   ! local variables
   type(pflotran_engine_state), pointer :: engine_state
 
-  write (*, '(a)') "PFloTran_Alquimia_Shutdown() : "
+  !write (*, '(a)') "PFloTranAlquimiaInterface::Shutdown() : "
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
@@ -328,7 +325,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   type(tran_constraint_type), pointer :: tran_constraint
   type(pflotran_engine_state), pointer :: engine_state
 
-  write (*, '(a)') "PFloTran_Alquimia_ProcessCondition() : "
+  !write (*, '(a)') "PFloTranAlquimiaInterface::ProcessCondition() : "
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
