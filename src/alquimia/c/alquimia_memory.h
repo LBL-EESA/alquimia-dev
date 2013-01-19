@@ -8,6 +8,11 @@
 extern "C" {
 #endif /* __cplusplus */
   
+  /* Alquimia Interface */
+  void AllocateAlquimiaInterface(struct AlquimiaInterface* interface);
+
+  void FreeAlquimiaInterface(struct AlquimiaInterface* interface);
+
   /* State */
   void AllocateAlquimiaState(const struct AlquimiaSizes_C* sizes,
                              struct AlquimiaState_C* state);
