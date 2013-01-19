@@ -47,8 +47,8 @@ void FreeAlquimiaInterface(struct AlquimiaInterface* interface) {
  **
  *******************************************************************************/
 
-void AllocateAlquimiaState(const struct AlquimiaSizes_C* sizes,
-                           struct AlquimiaState_C* state) {
+void AllocateAlquimiaState(const struct AlquimiaSizes* sizes,
+                           struct AlquimiaState* state) {
   state->total_primary = NULL;
   state->total_sorbed = NULL;
   state->free_ion = NULL;
@@ -83,7 +83,7 @@ void AllocateAlquimiaState(const struct AlquimiaSizes_C* sizes,
   }
 }  // end AllocateAlquimiaState()
 
-void FreeAlquimiaState(struct AlquimiaState_C* state) {
+void FreeAlquimiaState(struct AlquimiaState* state) {
   if (state != NULL) {
     free(state->total_primary);
     free(state->free_ion);
@@ -102,8 +102,8 @@ void FreeAlquimiaState(struct AlquimiaState_C* state) {
  **
  *******************************************************************************/
 
-void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes_C* sizes,
-                                   struct AlquimiaAuxiliaryData_C* aux_data) {
+void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes* sizes,
+                                   struct AlquimiaAuxiliaryData* aux_data) {
   aux_data->primary_activity_coeff = NULL;
   aux_data->secondary_activity_coeff = NULL;
   aux_data->ion_exchange_ref_cation_conc = NULL;
@@ -142,7 +142,7 @@ void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes_C* sizes,
   }
 }  // end AllocateAlquimiaAuxiliaryData()
 
-void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData_C* aux_data) {
+void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
   if (aux_data != NULL) {
     free(aux_data->primary_activity_coeff);
     free(aux_data->secondary_activity_coeff);
@@ -162,8 +162,8 @@ void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData_C* aux_data) {
  *******************************************************************************/
 
 void AllocateAlquimiaMaterialProperties(
-    const struct AlquimiaSizes_C* sizes,
-    struct AlquimiaMaterialProperties_C* material_props) {
+    const struct AlquimiaSizes* sizes,
+    struct AlquimiaMaterialProperties* material_props) {
   /* NOTE(bja) : need to be smarter about how we allocate memory for
      isotherms. (1) Only allocate if isotherms are used in chemistry, and
      (2) only allocate for the primary species that are being sorbed. */
@@ -193,7 +193,7 @@ void AllocateAlquimiaMaterialProperties(
 }  // end AllocateAlquimiaMaterialProperties()
 
 void FreeAlquimiaMaterialProperties(
-    struct AlquimiaMaterialProperties_C* material_props) {
+    struct AlquimiaMaterialProperties* material_props) {
   if (material_props != NULL) {
     free(material_props->isotherm_kd);
     free(material_props->freundlich_n);
@@ -210,8 +210,8 @@ void FreeAlquimiaMaterialProperties(
  **
  *******************************************************************************/
 
-void AllocateAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
-                              struct AlquimiaMetaData_C* meta_data) {
+void AllocateAlquimiaMetaData(const struct AlquimiaSizes* sizes,
+                              struct AlquimiaMetaData* meta_data) {
   int i;
 
   meta_data->primary_indices = NULL;
@@ -236,8 +236,8 @@ void AllocateAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
   }
 }  // end AllocateAlquimiaMetaData()
 
-void FreeAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
-                          struct AlquimiaMetaData_C* meta_data) {
+void FreeAlquimiaMetaData(const struct AlquimiaSizes* sizes,
+                          struct AlquimiaMetaData* meta_data) {
   int i;
   if (meta_data != NULL) {
     free(meta_data->primary_indices);
@@ -260,7 +260,7 @@ void FreeAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
  **
  *******************************************************************************/
 
-void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus_C* status) {
+void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
 
   status->message = NULL;
   //status-> = NULL;
@@ -271,7 +271,7 @@ void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus_C* status) {
   }
 }  // end AllocateAlquimiaEngineStatus()
 
-void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus_C* status) {
+void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
   if (status != NULL) {
     free(status->message);
   }
@@ -289,7 +289,7 @@ void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus_C* status) {
 
 void AllocateAlquimiaGeochemicalConditionList(
     const int num_conditions,
-    struct AlquimiaGeochemicalConditionList_C* condition_list) {
+    struct AlquimiaGeochemicalConditionList* condition_list) {
   // NOTE: we are only allocating pointers to N conditions here, not
   // the actual conditions themselves.
   fprintf(stdout, " AllocateAlquimiaGeochemicalConditionList() : %d\n",
@@ -298,15 +298,15 @@ void AllocateAlquimiaGeochemicalConditionList(
 
   condition_list->conditions = NULL;
   if (condition_list->num_conditions > 0) {
-    condition_list->conditions = (struct AlquimiaGeochemicalCondition_C*)
+    condition_list->conditions = (struct AlquimiaGeochemicalCondition*)
         calloc(condition_list->num_conditions, 
-               sizeof(struct AlquimiaGeochemicalCondition_C));
+               sizeof(struct AlquimiaGeochemicalCondition));
   }
 }  // end AllocateAlquimiaGeochemicalConditionList()
 
 void AllocateAlquimiaGeochemicalCondition(
     const char* name, const int num_constraints,
-    struct AlquimiaGeochemicalCondition_C* condition) {
+    struct AlquimiaGeochemicalCondition* condition) {
   // NOTE: we are only allocating pointers to N constraints here, not
   // the actual condstraints themselves.
   condition->num_constraints = num_constraints;
@@ -320,14 +320,14 @@ void AllocateAlquimiaGeochemicalCondition(
 
   condition->constraints = NULL;
   if (condition->num_constraints > 0) {
-    condition->constraints = (struct AlquimiaGeochemicalConstraint_C*)
+    condition->constraints = (struct AlquimiaGeochemicalConstraint*)
         calloc(condition->num_constraints, 
-               sizeof(struct AlquimiaGeochemicalConstraint_C));
+               sizeof(struct AlquimiaGeochemicalConstraint));
   }
 }  // end AllocateAlquimiaGeochemicalCondition()
 
 void AllocateAlquimiaGeochemicalConstraint(
-    struct AlquimiaGeochemicalConstraint_C* constraint){
+    struct AlquimiaGeochemicalConstraint* constraint){
   constraint->primary_species =
       (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
   constraint->constraint_type =
@@ -338,7 +338,7 @@ void AllocateAlquimiaGeochemicalConstraint(
 }  // end AllocateAlquimiaGeochemicalConstraint()
 
 void FreeAlquimiaGeochemicalConditionList(
-    struct AlquimiaGeochemicalConditionList_C* condition_list) {
+    struct AlquimiaGeochemicalConditionList* condition_list) {
   int i;
   for (i = 0; i < condition_list->num_conditions; ++i) {
     FreeAlquimiaGeochemicalCondition(&(condition_list->conditions[i]));
@@ -348,7 +348,7 @@ void FreeAlquimiaGeochemicalConditionList(
 }  // end FreeAlquimiaGeochemicalConditionList()
 
 void FreeAlquimiaGeochemicalCondition(
-    struct AlquimiaGeochemicalCondition_C* condition) {
+    struct AlquimiaGeochemicalCondition* condition) {
   int i;
   for (i = 0; i < condition->num_constraints; ++i) {
     FreeAlquimiaGeochemicalConstraint(&(condition->constraints[i]));
@@ -358,7 +358,7 @@ void FreeAlquimiaGeochemicalCondition(
 }  // end FreeAlquimiaGeochemicalCondition()
 
 void FreeAlquimiaGeochemicalConstraint(
-    struct AlquimiaGeochemicalConstraint_C* constraint) {
+    struct AlquimiaGeochemicalConstraint* constraint) {
   free(constraint->primary_species);
   constraint->primary_species = NULL;
   free(constraint->constraint_type);

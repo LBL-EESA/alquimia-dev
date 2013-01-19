@@ -14,7 +14,7 @@
 
 void CreateAlquimiaInterface(const char* engine_name,
                              struct AlquimiaInterface* interface,
-                             struct AlquimiaEngineStatus_C* status) {
+                             struct AlquimiaEngineStatus* status) {
 
   if (strncmp(engine_name, kPFloTran, strlen(kPFloTran)) == 0) {
 #ifdef HAVE_PFLOTRAN

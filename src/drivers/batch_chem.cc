@@ -99,14 +99,14 @@ int main(int argc, char** argv) {
   // Create the alquimia structures.  NOTE: These are for a single grid cell.
   //
   struct AlquimiaInterface chem;
-  AlquimiaSizes_C alquimia_sizes;
-  AlquimiaState_C alquimia_state;
-  AlquimiaMetaData_C alquimia_meta_data;
-  AlquimiaGeochemicalConditionList_C alquimia_conditions;
-  AlquimiaMaterialProperties_C alquimia_material_props;
-  AlquimiaAuxiliaryData_C alquimia_aux_data;
-  AlquimiaEngineStatus_C alquimia_status;
-  //AlquimiaOutputData_C alquimia_output_data;
+  AlquimiaSizes alquimia_sizes;
+  AlquimiaState alquimia_state;
+  AlquimiaMetaData alquimia_meta_data;
+  AlquimiaGeochemicalConditionList alquimia_conditions;
+  AlquimiaMaterialProperties alquimia_material_props;
+  AlquimiaAuxiliaryData alquimia_aux_data;
+  AlquimiaEngineStatus alquimia_status;
+  //AlquimiaOutputData alquimia_output_data;
 
   try {
     // All alquimia function calls require a status object.
@@ -393,8 +393,8 @@ void SetTimeUnits(const std::string& output_time_units,
 }  // end SetTimeUnits()
 
 void WriteOutputHeader(std::fstream* text_output, const char time_units,
-                       const AlquimiaSizes_C& sizes,
-                       const AlquimiaMetaData_C& meta_data) {
+                       const AlquimiaSizes& sizes,
+                       const AlquimiaMetaData& meta_data) {
   if (text_output->is_open()) {
     *text_output << "# Time [" << time_units << "]";
     for (int i = 0; i < sizes.num_primary; ++i) {
@@ -405,8 +405,8 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
 }  // end WriteOutputHeader()
 
 void WriteOutput(std::fstream* text_output, const double time,
-                 const AlquimiaSizes_C& sizes,
-                 const AlquimiaState_C& state) {
+                 const AlquimiaSizes& sizes,
+                 const AlquimiaState& state) {
   if (text_output->is_open()) {
     std::string seperator(" , ");
     *text_output << std::scientific << std::setprecision(6) << std::setw(15) << time;
@@ -428,8 +428,8 @@ void WriteOutput(std::fstream* text_output, const double time,
  *******************************************************************************/
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
-    const AlquimiaSizes_C& alquimia_sizes,
-    AlquimiaState_C* alquimia_state) {
+    const AlquimiaSizes& alquimia_sizes,
+    AlquimiaState* alquimia_state) {
   static_cast<void>(alquimia_sizes);
   alquimia_state->water_density = demo_state.water_density;
   alquimia_state->saturation = demo_state.saturation;
@@ -440,8 +440,8 @@ void CopyDemoStateToAlquimiaState(
 
 void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
-    const AlquimiaSizes_C& alquimia_sizes,
-    AlquimiaMaterialProperties_C* alquimia_material_props) {
+    const AlquimiaSizes& alquimia_sizes,
+    AlquimiaMaterialProperties* alquimia_material_props) {
   static_cast<void>(alquimia_sizes);
   alquimia_material_props->volume = demo_material_props.volume;
   // TODO(bja) : loop through and copy vector based material properties!
@@ -450,7 +450,7 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
 
 void CopyDemoConditionsToAlquimiaConditions(
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,
-    AlquimiaGeochemicalConditionList_C* alquimia_conditions) {
+    AlquimiaGeochemicalConditionList* alquimia_conditions) {
   namespace util = alquimia::drivers::utilities;
 
   // copy the geochemical conditions
@@ -459,7 +459,7 @@ void CopyDemoConditionsToAlquimiaConditions(
   for (demo_cond = demo_conditions.begin(), i_cond = 0;
        i_cond < demo_conditions.size(); ++i_cond, ++demo_cond) {
     std::cout << "    " << demo_cond->first << " : " << i_cond << std::endl;
-    AlquimiaGeochemicalCondition_C* condition =
+    AlquimiaGeochemicalCondition* condition =
         &(alquimia_conditions->conditions[i_cond]);
     // std::string.c_str() returns a const char*, so we need to copy
     // it to our own memory.
@@ -472,7 +472,7 @@ void CopyDemoConditionsToAlquimiaConditions(
     for (unsigned int i_const = 0; i_const < demo_cond->second.size(); ++i_const) {
       std::cout << "    " << demo_cond->first << " : " << i_cond << " : "
                 << i_const << std::endl;
-      AlquimiaGeochemicalConstraint_C* constraint =
+      AlquimiaGeochemicalConstraint* constraint =
           &(alquimia_conditions->conditions[i_cond].constraints[i_const]);
       AllocateAlquimiaGeochemicalConstraint(constraint);
       // copy demo constraint to alquimia constraint

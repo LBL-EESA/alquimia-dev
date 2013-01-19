@@ -17,7 +17,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  struct AlquimiaSizes_C {
+  struct AlquimiaSizes {
     int num_primary;
     int num_kinetic_minerals;
     int num_aqueous_complexes;
@@ -25,7 +25,7 @@ extern "C" {
     int num_ion_exchange_sites;
   };
   
-  struct AlquimiaState_C {
+  struct AlquimiaState {
     double water_density;  // [kg/m^3]
     double saturation;  // [-]
     double porosity;  // [-]
@@ -40,21 +40,21 @@ extern "C" {
     double* surface_site_density;  // [moles/m^3 bulk]
   };
   
-  struct AlquimiaMaterialProperties_C {
+  struct AlquimiaMaterialProperties {
     double volume;  // [m^3]
     double* isotherm_kd;  // [?]
     double* freundlich_n; // [?]
     double* langmuir_b;  // [?]
   };
   
-  struct AlquimiaAuxiliaryData_C {
+  struct AlquimiaAuxiliaryData {
     double* primary_activity_coeff;  // [-]
     double* secondary_activity_coeff;  // [-]
     double* ion_exchange_ref_cation_conc;  // [?]
     double* surface_complex_free_site_conc;  // [?]
   };
   
-  struct AlquimiaEngineStatus_C {
+  struct AlquimiaEngineStatus {
     int error;
     char* message;
     bool converged;
@@ -63,7 +63,7 @@ extern "C" {
     int num_newton_iterations;
   };
   
-  struct AlquimiaMetaData_C {
+  struct AlquimiaMetaData {
     bool thread_safe;
     bool temperature_dependent;
     bool pressure_dependent;
@@ -76,7 +76,7 @@ extern "C" {
     //char** auxiliary_output_names;
   };
   
-  struct AlquimiaGeochemicalConstraint_C {
+  struct AlquimiaGeochemicalConstraint {
     char* primary_species;
     char* constraint_type;
     char* associated_species;
@@ -85,18 +85,18 @@ extern "C" {
   
   /* A geochemical condition is an array of geochemical constraints */
   /* How is this going to work in the C/Fortran interface? */
-  struct AlquimiaGeochemicalCondition_C {
+  struct AlquimiaGeochemicalCondition {
     char* name;
     int num_constraints;
-    struct AlquimiaGeochemicalConstraint_C* constraints;
+    struct AlquimiaGeochemicalConstraint* constraints;
   };
 
-  struct AlquimiaGeochemicalConditionList_C {
+  struct AlquimiaGeochemicalConditionList {
     int num_conditions;
-    struct AlquimiaGeochemicalCondition_C* conditions;
+    struct AlquimiaGeochemicalCondition* conditions;
   };
   
-  struct AlquimiaOutputData_C {
+  struct AlquimiaOutputData {
     double pH;
     double* mineral_saturation_index;  // [-]
     double* mineral_reaction_rate;  // [?]
@@ -108,50 +108,50 @@ extern "C" {
     void (*Setup)(
         const char* input_filename,
         void* pft_engine_state,
-        struct AlquimiaSizes_C* sizes,
-        struct AlquimiaEngineStatus_C* status);
+        struct AlquimiaSizes* sizes,
+        struct AlquimiaEngineStatus* status);
 
     /* gracefully shutdown the engine, cleanup memory */
     void (*Shutdown)(
       void* pft_engine_state,
-      struct AlquimiaEngineStatus_C* status);
+      struct AlquimiaEngineStatus* status);
 
     /* constrain processing for boundary/initial constraints. Called
        once for each IC/BC. */
     void (*ProcessCondition)(
         void* pft_engine_state,
-        struct AlquimiaGeochemicalCondition_C* condition,
-        struct AlquimiaMaterialProperties_C* material_props,
-        struct AlquimiaState_C* state,
-        struct AlquimiaAuxiliaryData_C* aux_data,
-        struct AlquimiaEngineStatus_C* status);
+        struct AlquimiaGeochemicalCondition* condition,
+        struct AlquimiaMaterialProperties* material_props,
+        struct AlquimiaState* state,
+        struct AlquimiaAuxiliaryData* aux_data,
+        struct AlquimiaEngineStatus* status);
 
     /* take one (or more?) reaction steps in operator split mode */
     void (*ReactionStepOperatorSplit)(
         void* pft_engine_state,
         double* delta_t,
-        struct AlquimiaMaterialProperties_C* material_props,
-        struct AlquimiaState_C* state,
-        struct AlquimiaAuxiliaryData_C* aux_data,
-        struct AlquimiaEngineStatus_C* status);
+        struct AlquimiaMaterialProperties* material_props,
+        struct AlquimiaState* state,
+        struct AlquimiaAuxiliaryData* aux_data,
+        struct AlquimiaEngineStatus* status);
     
     /* Access to user selected geochemical data for output, i.e. pH, 
        mineral SI, reaction rates */
     void (*GetAuxiliaryOutput)(
         void* pft_engine_state,
-        struct AlquimiaEngineStatus_C* status);
+        struct AlquimiaEngineStatus* status);
     
     void (*GetEngineMetaData)(
         void* pft_engine_state,
-        struct AlquimiaSizes_C* sizes,
-        struct AlquimiaMetaData_C* meta_data,
-        struct AlquimiaEngineStatus_C* status);
+        struct AlquimiaSizes* sizes,
+        struct AlquimiaMetaData* meta_data,
+        struct AlquimiaEngineStatus* status);
     
     void (*GetPrimaryNameFromIndex)(
         void* pft_engine_state,
         int* primary_index,
         char* primary_name,
-        struct AlquimiaEngineStatus_C* status);
+        struct AlquimiaEngineStatus* status);
 
     /* internal representation of the chemistry engine's state */
     void* engine_state;

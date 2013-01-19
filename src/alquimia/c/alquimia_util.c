@@ -19,7 +19,7 @@
  **
  *******************************************************************************/
 
-void PrintAlquimiaSizes(const struct AlquimiaSizes_C* sizes) {
+void PrintAlquimiaSizes(const struct AlquimiaSizes* sizes) {
   fprintf(stdout, "  Alquimia Sizes :\n");
   fprintf(stdout, "    num primary species : %d\n", sizes->num_primary);
   fprintf(stdout, "    num kinetic minerals : %d\n", sizes->num_kinetic_minerals);
@@ -28,8 +28,8 @@ void PrintAlquimiaSizes(const struct AlquimiaSizes_C* sizes) {
   fprintf(stdout, "    num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
 }  // end PrintAlquimiaSizes()
 
-void PrintAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
-                           const struct AlquimiaMetaData_C* metadata) {
+void PrintAlquimiaMetaData(const struct AlquimiaSizes* sizes,
+                           const struct AlquimiaMetaData* metadata) {
   int i;
   fprintf(stdout, "  Alquimia Metadata :\n");
   fprintf(stdout, "    thread_safe : %d\n", metadata->thread_safe);
@@ -52,8 +52,8 @@ void PrintAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
   fprintf(stdout, "\n");
 }  // end PrintAlquimiaMetaData()
 
-void PrintAlquimiaState(const struct AlquimiaSizes_C* sizes,
-                        const struct AlquimiaState_C* state) {
+void PrintAlquimiaState(const struct AlquimiaSizes* sizes,
+                        const struct AlquimiaState* state) {
   int i;
   fprintf(stdout, "  Alquimia State:\n");
   fprintf(stdout, "    water density : %f\n", state->water_density);
@@ -89,8 +89,8 @@ void PrintAlquimiaState(const struct AlquimiaSizes_C* sizes,
   fprintf(stdout, "\n");
 }  // end PrintAlquimiaState()
 
-void PrintAlquimiaAuxiliaryData(const struct AlquimiaSizes_C* sizes,
-                        const struct AlquimiaAuxiliaryData_C* aux_data) {
+void PrintAlquimiaAuxiliaryData(const struct AlquimiaSizes* sizes,
+                        const struct AlquimiaAuxiliaryData* aux_data) {
   int i;
   fprintf(stdout, "  Alquimia Auxiliary Data:\n");
   fprintf(stdout, "    primary activity coeff (%d) :\n    [ ", sizes->num_primary);
@@ -122,7 +122,7 @@ void PrintAlquimiaAuxiliaryData(const struct AlquimiaSizes_C* sizes,
 }  // end PrintAlquimiaAuxiliaryData()
 
 void PrintAlquimiaGeochemicalConditionList(
-    const struct AlquimiaGeochemicalConditionList_C* condition_list) {
+    const struct AlquimiaGeochemicalConditionList* condition_list) {
   int i;
   fprintf(stdout, "Alquimia Geochemical Condition List : \n");
   for (i = 0; i < condition_list->num_conditions; ++i) {
@@ -132,7 +132,7 @@ void PrintAlquimiaGeochemicalConditionList(
 }  //  PrintAlquimiaGeochemicalConditionList()
 
 void PrintAlquimiaGeochemicalCondition(
-    const struct AlquimiaGeochemicalCondition_C* condition) {
+    const struct AlquimiaGeochemicalCondition* condition) {
   int i;
   fprintf(stdout, "  Alquimia Geochemical Condition : %s\n", condition->name);
   for (i = 0; i < condition->num_constraints; ++i) {
@@ -142,7 +142,7 @@ void PrintAlquimiaGeochemicalCondition(
 }  //  PrintAlquimiaGeochemicalCondition()
 
 void PrintAlquimiaGeochemicalConstraint(
-    const struct AlquimiaGeochemicalConstraint_C* constraint) {
+    const struct AlquimiaGeochemicalConstraint* constraint) {
   fprintf(stdout, "    Alquimia Geochemical Constraint : \n");
   fprintf(stdout, "      primary species : %s\n", constraint->primary_species);
   fprintf(stdout, "      constraint type : %s\n", constraint->constraint_type);
