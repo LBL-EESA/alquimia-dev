@@ -13,7 +13,33 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "alquimia_constants.h"
+#include "alquimia_interface.h"
 #include "alquimia_containers.h"
+
+/*******************************************************************************
+ **
+ **  Alquimia Interface
+ **
+ *******************************************************************************/
+
+void AllocateAlquimiaInterface(struct AlquimiaInterface* interface) {
+  interface->Setup = NULL;
+  interface->Shutdown = NULL;
+  interface->ProcessCondition = NULL;
+  interface->ReactionStepOperatorSplit = NULL;
+  interface->GetAuxiliaryOutput = NULL;
+  interface->GetEngineMetaData = NULL;
+  interface->GetPrimaryNameFromIndex = NULL;
+  interface->engine_state = (void*) calloc(1, sizeof(void*));
+}  // end AllocateAlquimiaInterface()
+
+void FreeAlquimiaInterface(struct AlquimiaInterface* interface) {
+  if (interface != NULL) {
+    free(interface->engine_state);
+  }
+  interface->engine_state = NULL;
+}  // end FreeAlquimiaInterface()
 
 /*******************************************************************************
  **

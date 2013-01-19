@@ -26,10 +26,8 @@
 #include "alquimia_memory.h"
 #include "alquimia_util.h"
 #include "alquimia_containers.h"
-
-#include "alquimia_interface_factory.h"
 #include "alquimia_interface.h"
-#include "alquimia_strings.h"
+#include "alquimia_constants.h"
 
 #include "cfg_reader.h"
 #include "demo_containers.h"
@@ -100,7 +98,7 @@ int main(int argc, char** argv) {
   //
   // Create the alquimia structures.  NOTE: These are for a single grid cell.
   //
-  alquimia::AlquimiaInterface* chem = NULL;
+  struct AlquimiaInterface chem;
   AlquimiaSizes_C alquimia_sizes;
   AlquimiaState_C alquimia_state;
   AlquimiaMetaData_C alquimia_meta_data;
@@ -111,14 +109,21 @@ int main(int argc, char** argv) {
   //AlquimiaOutputData_C alquimia_output_data;
 
   try {
-    // Create the chemistry engine
-    alquimia::AlquimiaInterfaceFactory aif;
-    chem = aif.Create(demo_simulation.engine);
-
     // All alquimia function calls require a status object.
     AllocateAlquimiaEngineStatus(&alquimia_status);
+    // Create the chemistry engine
+    AllocateAlquimiaInterface(&chem);
+    CreateAlquimiaInterface(demo_simulation.engine.c_str(), &chem, &alquimia_status);
+    if (alquimia_status.error != 0) {
+      std::cout << alquimia_status.message << std::endl;
+      return alquimia_status.error;
+    }
+
     // setup the engine and get the memory requirements
-    chem->Setup(demo_simulation.engine_inputfile, &alquimia_sizes, &alquimia_status);
+    chem.Setup(demo_simulation.engine_inputfile.c_str(),
+               chem.engine_state,
+               &alquimia_sizes,
+               &alquimia_status);
     if (alquimia_status.error != 0) {
       std::cout << alquimia_status.message << std::endl;
       PrintAlquimiaSizes(&alquimia_sizes);
@@ -138,7 +143,10 @@ int main(int argc, char** argv) {
 
     // get the driver meta data (thread safe, temperature/pressure
     // dependent, species names, etc)
-    chem->GetEngineMetaData(&alquimia_sizes, &alquimia_meta_data, &alquimia_status);
+    chem.GetEngineMetaData(chem.engine_state,
+                           &alquimia_sizes,
+                           &alquimia_meta_data,
+                           &alquimia_status);
     if (alquimia_status.error != 0) {
       std::cout << alquimia_status.message << std::endl;
       PrintAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
@@ -172,11 +180,12 @@ int main(int argc, char** argv) {
         // for batch, only care about the IC. If the conditions have
         // spatially dependent values, then the state and material
         // properties need to be updated here!
-        chem->ProcessCondition(&(alquimia_conditions.conditions[i]),
-                               &alquimia_material_props,
-                               &alquimia_state,
-                               &alquimia_aux_data,
-                               &alquimia_status);
+        chem.ProcessCondition(chem.engine_state,
+                              &(alquimia_conditions.conditions[i]),
+                              &alquimia_material_props,
+                              &alquimia_state,
+                              &alquimia_aux_data,
+                              &alquimia_status);
         if (alquimia_status.error != 0) {
           std::cout << alquimia_status.message << std::endl;
           PrintAlquimiaState(&alquimia_sizes, &alquimia_state);
@@ -207,11 +216,12 @@ int main(int argc, char** argv) {
         PrintAlquimiaAuxiliaryData(&alquimia_sizes, &alquimia_aux_data);
       }
       // unpack from driver memory, since this is batch, no unpacking
-      chem->ReactionStepOperatorSplit(demo_simulation.delta_t,
-                                      &alquimia_material_props,
-                                      &alquimia_state,
-                                      &alquimia_aux_data,
-                                      &alquimia_status);
+      chem.ReactionStepOperatorSplit(chem.engine_state,
+                                     &demo_simulation.delta_t,
+                                     &alquimia_material_props,
+                                     &alquimia_state,
+                                     &alquimia_aux_data,
+                                     &alquimia_status);
       if (alquimia_status.error != 0) {
           std::cout << alquimia_status.message << std::endl;
           PrintAlquimiaState(&alquimia_sizes, &alquimia_state);
@@ -243,14 +253,14 @@ int main(int argc, char** argv) {
 
   text_output.close();
   // cleanup memory
-  chem->Shutdown(&alquimia_status);
+  chem.Shutdown(chem.engine_state, &alquimia_status);
+  FreeAlquimiaInterface(&chem);
   FreeAlquimiaEngineStatus(&alquimia_status);
   FreeAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
   FreeAlquimiaState(&alquimia_state);
   FreeAlquimiaAuxiliaryData(&alquimia_aux_data);
   FreeAlquimiaMaterialProperties(&alquimia_material_props);
   FreeAlquimiaGeochemicalConditionList(&alquimia_conditions);
-  delete chem;
 
   error = PetscFinalize();
 
