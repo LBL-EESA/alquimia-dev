@@ -54,7 +54,7 @@ module PFloTranAlquimiaInterface_module
        CopyAuxVarsToAlquimia
 
   integer(kind=8), private, parameter :: integrity_check_value = &
-       B'0100001001100101011011100100000101101110011001000111001001100101'
+       b"0100001001100101011011100100000101101110011001000111001001100101"
 
   type, private :: pflotran_engine_state
      ! This is the data structure that stores the persistent data for
@@ -153,7 +153,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
 
   ! set the pflotran input file name
   call c_f_string(input_filename,   option%input_filename)
-  write (*, '(a a)') "  Reading : ", trim(option%input_filename)
+  write (*, '(a, a)') "  Reading : ", trim(option%input_filename)
 
   input => InputCreate(IN_UNIT, option%input_filename, option)
 
@@ -350,7 +350,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   ! process the condition
   !
   call  c_f_string(condition%name, name)
-  write (*, '(a a)') "processing : ", trim(name)
+  write (*, '(a, a)') "processing : ", trim(name)
 
   if (condition%num_constraints > 0) then
      ! the driver is supplying the constraint data, so we need to
@@ -365,8 +365,8 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
      ! just keeping it around for now as a reminder about how to
      ! access the constraint info....
      write (*, '(a)') "NOTE: driver supplied conditions are not implemeted."
-     write (*, '(a a)') "  echoing condition: ", trim(name)
-     write (*, '(a i3)') "     num constraints : ", condition%num_constraints
+     write (*, '(a, a)') "  echoing condition: ", trim(name)
+     write (*, '(a, i3)') "     num constraints : ", condition%num_constraints
      call c_f_pointer(condition%constraints, local_constraints, (/condition%num_constraints/))
      do i = 1, condition%num_constraints
         !call c_f_pointer(local_constraints(i), constraint)
@@ -374,14 +374,14 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
         call c_f_string(local_constraints(i)%constraint_type, constraint_type)
         call c_f_string(local_constraints(i)%associated_species, associated_species)
         constraint_value = local_constraints(i)%value
-        write (*, '(a a a)', advance='no') "        ", trim(name), " : "
-        write (*, '(a a a)', advance='no') trim(constraint_type), " ", trim(associated_species)
-        write (*, '(a f6.2)') " ", constraint_value
+        write (*, '(a, a, a)', advance='no') "        ", trim(name), " : "
+        write (*, '(a, a, a)', advance='no') trim(constraint_type), " ", trim(associated_species)
+        write (*, '(a, f6.2)') " ", constraint_value
      end do
   else
      ! the driver just supplied a name, so we check for a constraint
      ! with that name in the pflotran input file and use that.
-     write (*, '(a a)') "Looking for pflotran constraint : ", trim(name)
+     write (*, '(a, a)') "Looking for pflotran constraint : ", trim(name)
      tran_constraint => engine_state%transport_constraints%first
      do
         if (associated(tran_constraint)) then
@@ -396,7 +396,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
            end if
         else
            ! end of the list (or empty list) without out finding a match.
-           write (*, '(a a)') "Could not find pflotran constraint : ", trim(name)
+           write (*, '(a, a)') "Could not find pflotran constraint : ", trim(name)
            ! TODO(bja) : else report an error to the driver
            exit
         end if
@@ -1066,11 +1066,11 @@ subroutine PrintSizes(sizes)
   type (alquimia_sizes_f), intent(in) :: sizes
 
   write (*, '(a)') "size : "
-  write (*, '(a i4)') "  num primary : ", sizes%num_primary
-  write (*, '(a i4)') "  num kinetics minerals : ", sizes%num_kinetic_minerals
-  write (*, '(a i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
-  write (*, '(a i4)') "  num surface sites : ", sizes%num_surface_sites
-  write (*, '(a i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
+  write (*, '(a, i4)') "  num primary : ", sizes%num_primary
+  write (*, '(a, i4)') "  num kinetics minerals : ", sizes%num_kinetic_minerals
+  write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
+  write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
+  write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
 end subroutine PrintSizes
 
 
@@ -1127,11 +1127,11 @@ subroutine PrintMetaData(sizes, meta_data)
   integer (c_int) :: i
 
   write (*, '(a)') "meta_data : "
-  write (*, '(a L)') "  thread safe : ", meta_data%thread_safe
-  write (*, '(a L)') "  temperature dependent : ", meta_data%temperature_dependent
-  write (*, '(a L)') "  pressure dependent : ", meta_data%pressure_dependent
-  write (*, '(a L)') "  porosity update : ", meta_data%porosity_update
-  write (*, '(a i4)') "  index base : ", meta_data%index_base
+  write (*, '(a, L1)') "  thread safe : ", meta_data%thread_safe
+  write (*, '(a, L1)') "  temperature dependent : ", meta_data%temperature_dependent
+  write (*, '(a, L1)') "  pressure dependent : ", meta_data%pressure_dependent
+  write (*, '(a, L1)') "  porosity update : ", meta_data%porosity_update
+  write (*, '(a, i4)') "  index base : ", meta_data%index_base
   write (*, '(a)') "  primary indices : "
   call c_f_pointer(meta_data%primary_indices, indices, (/sizes%num_primary/))
   do i=1, sizes%num_primary
