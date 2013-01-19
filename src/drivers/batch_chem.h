@@ -23,27 +23,27 @@ void SetTimeUnits(const std::string& output_time_units,
 
 void WriteOutputHeader(std::fstream* text_output,
                        const char time_units,
-                       const AlquimiaSizes_C& sizes,
-                       const AlquimiaMetaData_C& meta_data);
+                       const AlquimiaSizes& sizes,
+                       const AlquimiaMetaData& meta_data);
 
 void WriteOutput(std::fstream* text_output,
                  const double time,
-                 const AlquimiaSizes_C& sizes,
-                 const AlquimiaState_C& state);
+                 const AlquimiaSizes& sizes,
+                 const AlquimiaState& state);
 
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
-    const AlquimiaSizes_C& alquimia_sizes,
-    AlquimiaState_C* alquimia_state);
+    const AlquimiaSizes& alquimia_sizes,
+    AlquimiaState* alquimia_state);
 
 void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     const alquimia::drivers::utilities::DemoMaterialProperties& material_props,
-    const AlquimiaSizes_C& alquimia_sizes,
-    AlquimiaMaterialProperties_C* alquimia_material_props);
+    const AlquimiaSizes& alquimia_sizes,
+    AlquimiaMaterialProperties* alquimia_material_props);
 
 void CopyDemoConditionsToAlquimiaConditions(
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,
-    AlquimiaGeochemicalConditionList_C* alquimia_conditions);
+    AlquimiaGeochemicalConditionList* alquimia_conditions);
 
 
 #endif  /* ALQUIMIA_DRIVERS_CC_BATCH_CHEM_H_ */

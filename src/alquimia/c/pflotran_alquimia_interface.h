@@ -19,38 +19,38 @@ extern "C" {
   void pflotran_alquimia_setup(
       const char* input_filename,
       void* pft_engine_state,
-      struct AlquimiaSizes_C* sizes,
-      struct AlquimiaEngineStatus_C* status) ;
+      struct AlquimiaSizes* sizes,
+      struct AlquimiaEngineStatus* status) ;
   void pflotran_alquimia_shutdown(
       void* pft_engine_state,
-      struct AlquimiaEngineStatus_C* status);
+      struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_processcondition(
       void* pft_engine_state,
-      struct AlquimiaGeochemicalCondition_C* condition,
-      struct AlquimiaMaterialProperties_C* material_props,
-      struct AlquimiaState_C* state,
-      struct AlquimiaAuxiliaryData_C* aux_data,
-      struct AlquimiaEngineStatus_C* status);
+      struct AlquimiaGeochemicalCondition* condition,
+      struct AlquimiaMaterialProperties* material_props,
+      struct AlquimiaState* state,
+      struct AlquimiaAuxiliaryData* aux_data,
+      struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_reactionstepoperatorsplit(
       void* pft_engine_state,
       double* delta_t,
-      struct AlquimiaMaterialProperties_C* material_properties,
-      struct AlquimiaState_C* state,
-      struct AlquimiaAuxiliaryData_C* aux_data,
-      struct AlquimiaEngineStatus_C* status);
+      struct AlquimiaMaterialProperties* material_properties,
+      struct AlquimiaState* state,
+      struct AlquimiaAuxiliaryData* aux_data,
+      struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_getauxiliaryoutput(
       void* pft_engine_state,
-      struct AlquimiaEngineStatus_C* status);
+      struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_getenginemetadata(
       void* pft_engine_state,
-      struct AlquimiaSizes_C* sizes,
-      struct AlquimiaMetaData_C* metadata,
-      struct AlquimiaEngineStatus_C* status);
+      struct AlquimiaSizes* sizes,
+      struct AlquimiaMetaData* metadata,
+      struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_getprimarynamefromindex(
       void* pft_engine_state,
       int* primary_index,
       char* primary_name,
-      struct AlquimiaEngineStatus_C* status);
+      struct AlquimiaEngineStatus* status);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

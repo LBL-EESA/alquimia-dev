@@ -16,7 +16,7 @@ extern "C" {
 
   void CreateAlquimiaInterface(const char* engine_name,
                                struct AlquimiaInterface* interface,
-                               struct AlquimiaEngineStatus_C* status);
+                               struct AlquimiaEngineStatus* status);
 
 #ifdef __cplusplus
 }

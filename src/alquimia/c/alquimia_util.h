@@ -8,19 +8,19 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  void PrintAlquimiaSizes(const struct AlquimiaSizes_C* sizes);
-  void PrintAlquimiaMetaData(const struct AlquimiaSizes_C* sizes,
-                             const struct AlquimiaMetaData_C* meta_data);
-  void PrintAlquimiaState(const struct AlquimiaSizes_C* sizes,
-                          const struct AlquimiaState_C* state);
-  void PrintAlquimiaAuxiliaryData(const struct AlquimiaSizes_C* sizes,
-                                  const struct AlquimiaAuxiliaryData_C* aux_data);
+  void PrintAlquimiaSizes(const struct AlquimiaSizes* sizes);
+  void PrintAlquimiaMetaData(const struct AlquimiaSizes* sizes,
+                             const struct AlquimiaMetaData* meta_data);
+  void PrintAlquimiaState(const struct AlquimiaSizes* sizes,
+                          const struct AlquimiaState* state);
+  void PrintAlquimiaAuxiliaryData(const struct AlquimiaSizes* sizes,
+                                  const struct AlquimiaAuxiliaryData* aux_data);
   void PrintAlquimiaGeochemicalConditionList(
-      const struct AlquimiaGeochemicalConditionList_C* condition_list);
+      const struct AlquimiaGeochemicalConditionList* condition_list);
   void PrintAlquimiaGeochemicalCondition(
-      const struct AlquimiaGeochemicalCondition_C* condition);
+      const struct AlquimiaGeochemicalCondition* condition);
   void PrintAlquimiaGeochemicalConstraint(
-      const struct AlquimiaGeochemicalConstraint_C* constraint);
+      const struct AlquimiaGeochemicalConstraint* constraint);
 
 #ifdef __cplusplus
 }
