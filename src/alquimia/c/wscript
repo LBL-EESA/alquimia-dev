@@ -2,10 +2,14 @@
 
 def build(ctx):
     src = ['alquimia_util.c',
-           'alquimia_memory.c']
+           'alquimia_memory.c',
+           'alquimia_interface.c']
     hdrs = ['alquimia_containers.h',
+            'alquimia_constants.h',
             'alquimia_memory.h',
-            'alquimia_util.h']
+            'alquimia_util.h',
+            'alquimia_interface.h',
+            'pflotran_alquimia_interface.h']
     ctx.stlib(
         features = 'c cstlib',
         source = src,

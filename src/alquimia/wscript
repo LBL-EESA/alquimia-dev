@@ -3,4 +3,3 @@
 def build(ctx):
     ctx.recurse("c")
     ctx.recurse("fortran")
-    ctx.recurse("c++")

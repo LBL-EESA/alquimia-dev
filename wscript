@@ -152,7 +152,7 @@ def setup_pflotran(ctx):
         raise waflib.Errors.ConfigurationError(
             "Could not find pflotran definitions header : {0}".format(pflotran_definitions))
 
-    ctx.env.append_unique('CXXFLAGS', ['-DHAVE_PFLOTRAN'])
+    ctx.env.append_unique('CFLAGS', ['-DHAVE_PFLOTRAN'])
     ctx.env.append_unique('STLIB', pflotran_lib_short_name)
     ctx.env.append_unique('STLIBPATH', pflotran_src_dir)
     pflotran_includes = "-I{0}".format(pflotran_src_dir)
@@ -164,7 +164,7 @@ def setup_pflotran(ctx):
 
 def setup_crunch(ctx):
     ctx.start_msg("Using crunch from : {0}".format(ctx.options.crunch))
-    ctx.env.append_unique('CXXFLAGS', ['-DHAVE_CRUNCH'])
+    ctx.env.append_unique('CFLAGS', ['-DHAVE_CRUNCH'])
     # TODO(bja) : append -L${crunch_dir}/src/crunch -lcrunchchem to link path
 
 
