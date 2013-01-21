@@ -385,3 +385,24 @@ void FreeAlquimiaGeochemicalConstraint(
   constraint->associated_species = NULL;
 }  // end FreeAlquimiaGeochemicalCondition()
 
+
+/*******************************************************************************
+ **
+ **  Data convenience struct
+ **
+ *******************************************************************************/
+void AllocateAlquimiaData(struct AlquimiaData* data) {
+    AllocateAlquimiaState(&data->sizes, &data->state);
+    AllocateAlquimiaMaterialProperties(&data->sizes, &data->material_properties);
+    AllocateAlquimiaAuxiliaryData(&data->sizes, &data->aux_data);
+    AllocateAlquimiaMetaData(&data->sizes, &data->meta_data);
+
+}  // end AllocateAlquimiaData()
+
+
+void FreeAlquimiaData(struct AlquimiaData* data) {
+  FreeAlquimiaState(&data->state);
+  FreeAlquimiaMaterialProperties(&data->material_properties);
+  FreeAlquimiaAuxiliaryData(&data->aux_data);
+  FreeAlquimiaMetaData(&data->sizes, &data->meta_data);
+}  // end FreeAlquimiaData()
