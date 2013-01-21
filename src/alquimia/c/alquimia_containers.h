@@ -84,7 +84,6 @@ extern "C" {
   };
   
   /* A geochemical condition is an array of geochemical constraints */
-  /* How is this going to work in the C/Fortran interface? */
   struct AlquimiaGeochemicalCondition {
     char* name;
     int num_constraints;
@@ -100,6 +99,18 @@ extern "C" {
     double pH;
     double* mineral_saturation_index;  // [-]
     double* mineral_reaction_rate;  // [?]
+  };
+
+  /* NOTE(bja): AlquimiaData is a convenience container, and not a data
+     structure that should be passed between the driver and
+     engine. Condations are not included here because they are short
+     lived data structures. */
+  struct AlquimiaData {
+    struct AlquimiaSizes sizes;
+    struct AlquimiaState state;
+    struct AlquimiaMaterialProperties material_properties;
+    struct AlquimiaAuxiliaryData aux_data;
+    struct AlquimiaMetaData meta_data;
   };
 
   struct AlquimiaInterface {
