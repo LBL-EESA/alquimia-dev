@@ -152,6 +152,21 @@ int main(int argc, char** argv) {
       return alquimia_status.error;
     }
 
+    // FIXME(bja) : can't get arrays of strings to pass gracefully
+    // between c and fortran, so for now we loop through and request
+    // the names one at a time
+
+    // NOTE(bja): the indices in meta_data.primary_indices already
+    // have the engine base, so we don't need to do any conversions!
+    for (int i = 0; i < alquimia_sizes.num_primary; ++i) {
+      chem.GetPrimaryNameFromIndex(
+          chem.engine_state,
+          &(alquimia_meta_data.primary_indices[i]), 
+          alquimia_meta_data.primary_names[i],
+          &alquimia_status);
+    }
+    PrintAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
+
     // finish initializing the driver, e.g. openmp for thread safe
     // engines, verify material properties, etc
 
