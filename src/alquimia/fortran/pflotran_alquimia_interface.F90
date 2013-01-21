@@ -102,7 +102,6 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   use Reaction_Aux_module
   use Reactive_Transport_Aux_module
   use Global_Aux_module
-  use Database_module
   use Option_module
   use Input_module
 
@@ -698,7 +697,6 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
 
   use Reaction_module
   use Reaction_Aux_module
-  use Database_module
   use Reactive_Transport_Aux_module
   use Global_Aux_module
   use Option_module
@@ -770,7 +768,6 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
      global_auxvars, rt_auxvars, tran_constraint, constraint_coupler)
   use Reaction_module
   use Reaction_Aux_module
-  use Database_module
   use Reactive_Transport_Aux_module
   use Global_Aux_module
   use Constraint_module
