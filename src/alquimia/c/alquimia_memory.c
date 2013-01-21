@@ -4,6 +4,19 @@
  **
  **  Alquimia C memory utilities to handle memory management
  **
+ **  Notes:
+ **
+ **  - calloc/malloc always return NULL pointers if they fail, so
+ **    there is no need to pre-assign NULL for the pointers we are
+ **    allocating here. For pointers being assigned elsewhere, we still
+ **    assign NULL just to be safe. In some places, the malloc calls
+ **    are inside if blocks, so we pre-initialize to NULL to keep life
+ **    simple.
+ **
+ ** - free just releases the memory, it does not change the value
+ **   of the pointer. After free, the pointer is no longer valid, so
+ **   we set it to NULL.
+ **
  *******************************************************************************/
 
 #include "alquimia_memory.h"
@@ -37,8 +50,8 @@ void AllocateAlquimiaInterface(struct AlquimiaInterface* interface) {
 void FreeAlquimiaInterface(struct AlquimiaInterface* interface) {
   if (interface != NULL) {
     free(interface->engine_state);
+    interface->engine_state = NULL;
   }
-  interface->engine_state = NULL;
 }  // end FreeAlquimiaInterface()
 
 /*******************************************************************************
@@ -86,14 +99,17 @@ void AllocateAlquimiaState(const struct AlquimiaSizes* sizes,
 void FreeAlquimiaState(struct AlquimiaState* state) {
   if (state != NULL) {
     free(state->total_primary);
+    state->total_primary = NULL;
+
     free(state->free_ion);
+    state->free_ion = NULL;
+
     free(state->mineral_volume_fraction);
+    state->mineral_volume_fraction = NULL;
+
     free(state->mineral_specific_surface_area);
+    state->mineral_specific_surface_area = NULL;
   }
-  state->total_primary = NULL;
-  state->free_ion = NULL;
-  state->mineral_volume_fraction = NULL;
-  state->mineral_specific_surface_area = NULL;
 }  // end FreeAlquimiaState()
 
 /*******************************************************************************
@@ -145,14 +161,17 @@ void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes* sizes,
 void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
   if (aux_data != NULL) {
     free(aux_data->primary_activity_coeff);
+    aux_data->primary_activity_coeff = NULL;
+
     free(aux_data->secondary_activity_coeff);
+    aux_data->secondary_activity_coeff = NULL;
+
     free(aux_data->ion_exchange_ref_cation_conc);
+    aux_data->ion_exchange_ref_cation_conc = NULL;
+
     free(aux_data->surface_complex_free_site_conc);
+    aux_data->surface_complex_free_site_conc = NULL;
   }
-  aux_data->primary_activity_coeff = NULL;
-  aux_data->secondary_activity_coeff = NULL;
-  aux_data->ion_exchange_ref_cation_conc = NULL;
-  aux_data->surface_complex_free_site_conc = NULL;
 }  // end FreeAlquimiaAuxiliaryData()
 
 /*******************************************************************************
@@ -196,12 +215,14 @@ void FreeAlquimiaMaterialProperties(
     struct AlquimiaMaterialProperties* material_props) {
   if (material_props != NULL) {
     free(material_props->isotherm_kd);
+    material_props->isotherm_kd = NULL;
+
     free(material_props->freundlich_n);
+    material_props->freundlich_n = NULL;
+
     free(material_props->langmuir_b);
+    material_props->langmuir_b = NULL;
   }
-  material_props->isotherm_kd = NULL;
-  material_props->freundlich_n = NULL;
-  material_props->langmuir_b = NULL;
 }  // end FreeAlquimiaMaterialProperties()
 
 /*******************************************************************************
@@ -241,16 +262,13 @@ void FreeAlquimiaMetaData(const struct AlquimiaSizes* sizes,
   int i;
   if (meta_data != NULL) {
     free(meta_data->primary_indices);
+    meta_data->primary_indices = NULL;
     for (i = 0; i < sizes->num_primary; ++i) {
       free(meta_data->primary_names[i]);
     }
     free(meta_data->primary_names);
+    meta_data->primary_names = NULL;
   }
-  meta_data->primary_indices = NULL;
-  meta_data->primary_names = NULL;
-
-  // NOTE(bja): meta_data->internal_state is not our memory, but is allocated by
-  // the engine, we rely on them to clean it up!
 
 }  // end FreeAlquimiaMetaData()
 
@@ -262,10 +280,7 @@ void FreeAlquimiaMetaData(const struct AlquimiaSizes* sizes,
 
 void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
 
-  status->message = NULL;
-  //status-> = NULL;
-
-  status->message = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(int));
+  status->message = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
   if (NULL == status->message) {
     // TODO(bja): error handling
   }
@@ -339,8 +354,8 @@ void AllocateAlquimiaGeochemicalConstraint(
 
 void FreeAlquimiaGeochemicalConditionList(
     struct AlquimiaGeochemicalConditionList* condition_list) {
-  int i;
-  for (i = 0; i < condition_list->num_conditions; ++i) {
+
+  for (int i = 0; i < condition_list->num_conditions; ++i) {
     FreeAlquimiaGeochemicalCondition(&(condition_list->conditions[i]));
   }
   free(condition_list->conditions);
@@ -349,12 +364,15 @@ void FreeAlquimiaGeochemicalConditionList(
 
 void FreeAlquimiaGeochemicalCondition(
     struct AlquimiaGeochemicalCondition* condition) {
-  int i;
-  for (i = 0; i < condition->num_constraints; ++i) {
-    FreeAlquimiaGeochemicalConstraint(&(condition->constraints[i]));
+  if (condition != NULL) {
+    free(condition->name);
+    condition->name = NULL;
+    for (int i = 0; i < condition->num_constraints; ++i) {
+      FreeAlquimiaGeochemicalConstraint(&(condition->constraints[i]));
+    }
+    free(condition->constraints);
+    condition->constraints = NULL;
   }
-  free(condition->constraints);
-  condition->constraints = NULL;
 }  // end FreeAlquimiaGeochemicalCondition()
 
 void FreeAlquimiaGeochemicalConstraint(

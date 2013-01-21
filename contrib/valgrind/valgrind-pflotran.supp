@@ -1,0 +1,40 @@
+{
+   pflotran_input_gfortran_string_len_trim
+   Memcheck:Cond
+   fun:_gfortran_string_len_trim
+   fun:__input_module_MOD_inputfindstringinfile1
+   fun:__pflotranalquimiainterface_module_MOD_initializepflotranreactions
+   fun:__pflotranalquimiainterface_module_MOD_setup
+   fun:pflotran_alquimia_setup
+   fun:main
+}
+{
+   pflotran_database_gfortran_string_len_trim
+   Memcheck:Cond
+   fun:_gfortran_string_len_trim
+   fun:__database_module_MOD_databaseread
+   fun:__pflotranalquimiainterface_module_MOD_initializepflotranreactions
+   fun:__pflotranalquimiainterface_module_MOD_setup
+   fun:pflotran_alquimia_setup
+   fun:main
+}
+{
+   pflotran_input_readword2
+   Memcheck:Cond
+   fun:__input_module_MOD_inputreadword2
+   fun:__constraint_module_MOD_tranconstraintread
+   fun:__pflotranalquimiainterface_module_MOD_readpflotranconstraints
+   fun:__pflotranalquimiainterface_module_MOD_setup
+   fun:pflotran_alquimia_setup
+   fun:main
+}
+{
+   pflotran_database_basisinit
+   Memcheck:Leak
+   fun:malloc
+   fun:__database_module_MOD_basisinit
+   fun:__pflotranalquimiainterface_module_MOD_initializepflotranreactions
+   fun:__pflotranalquimiainterface_module_MOD_setup
+   fun:pflotran_alquimia_setup
+   fun:main
+}
