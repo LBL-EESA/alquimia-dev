@@ -135,7 +135,6 @@ int main(int argc, char** argv) {
     AllocateAlquimiaMaterialProperties(&alquimia_sizes, &alquimia_material_props);
     AllocateAlquimiaAuxiliaryData(&alquimia_sizes, &alquimia_aux_data);
     AllocateAlquimiaMetaData(&alquimia_sizes, &alquimia_meta_data);
-    AllocateAlquimiaEngineStatus(&alquimia_status);
     AllocateAlquimiaGeochemicalConditionList(demo_conditions.size(),
                                              &alquimia_conditions);
 

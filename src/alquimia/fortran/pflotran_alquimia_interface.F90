@@ -199,7 +199,6 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   ! processed constraints to pflotran.out. But destroying the coupler
   ! destroys the auxvars as well, so we need to keep it around long
   ! term.
-  allocate(constraint_coupler)
   constraint_coupler => TranConstraintCouplerCreate(option)
 
   !
@@ -279,6 +278,9 @@ subroutine Shutdown(pft_engine_state, status)
   !call GlobalAuxVarDestroy(engine_state%global_auxvars)
   call ReactionDestroy(engine_state%reaction)
   call OptionDestroy(engine_state%option)
+
+  deallocate(engine_state)
+  nullify(engine_state)
 
   status%error = ALQUIMIA_NO_ERROR
 
