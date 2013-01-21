@@ -15,7 +15,7 @@ def build(ctx):
         features = 'c cxx fc cxxprogram',
         source = ['batch_chem.cc'],
         includes = ['../alquimia/c'],
-        use = ['alquimia_c',
+        use = ['alquimia_cutils',
                'alquimia_fortran',
                'demoutils'],
         target = 'batch_chem'

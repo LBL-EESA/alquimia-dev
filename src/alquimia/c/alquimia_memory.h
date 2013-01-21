@@ -65,6 +65,10 @@ extern "C" {
       struct AlquimiaGeochemicalConstraint* constraint);
 
 
+  /* Data */
+  void AllocateAlquimiaData(struct AlquimiaData* data);
+  void FreeAlquimiaData(struct AlquimiaData* data);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
