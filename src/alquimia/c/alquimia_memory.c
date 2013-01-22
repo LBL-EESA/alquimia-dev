@@ -25,8 +25,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "alquimia_constants.h"
 #include "alquimia_interface.h"
+#include "alquimia_constants.h"
 #include "alquimia_containers.h"
 
 void AllocateDoubleArray(const int size, int* array_size, double** array) {
