@@ -8,6 +8,9 @@
 extern "C" {
 #endif /* __cplusplus */
   
+  void AllocateDoubleArray(const int size, int *array_size, double** array);
+  void AllocateIntArray(const int size, int *array_size, int** array);
+
   /* Alquimia Interface */
   void AllocateAlquimiaInterface(struct AlquimiaInterface* interface);
 
@@ -35,8 +38,7 @@ extern "C" {
   void AllocateAlquimiaMetaData(const struct AlquimiaSizes* sizes,
                                 struct AlquimiaMetaData* meta_data);
 
-  void FreeAlquimiaMetaData(const struct AlquimiaSizes* sizes,
-                            struct AlquimiaMetaData* metda_data);
+  void FreeAlquimiaMetaData(struct AlquimiaMetaData* metda_data);
 
   /* Status */
   void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus* status);

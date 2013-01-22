@@ -9,12 +9,9 @@ extern "C" {
 #endif /* __cplusplus */
 
   void PrintAlquimiaSizes(const struct AlquimiaSizes* sizes);
-  void PrintAlquimiaMetaData(const struct AlquimiaSizes* sizes,
-                             const struct AlquimiaMetaData* meta_data);
-  void PrintAlquimiaState(const struct AlquimiaSizes* sizes,
-                          const struct AlquimiaState* state);
-  void PrintAlquimiaAuxiliaryData(const struct AlquimiaSizes* sizes,
-                                  const struct AlquimiaAuxiliaryData* aux_data);
+  void PrintAlquimiaMetaData(const struct AlquimiaMetaData* meta_data);
+  void PrintAlquimiaState(const struct AlquimiaState* state);
+  void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* aux_data);
   void PrintAlquimiaGeochemicalConditionList(
       const struct AlquimiaGeochemicalConditionList* condition_list);
   void PrintAlquimiaGeochemicalCondition(

@@ -19,6 +19,7 @@ extern "C" {
 
   struct AlquimiaSizes {
     int num_primary;
+    int num_sorbed;
     int num_kinetic_minerals;
     int num_aqueous_complexes;
     int num_surface_sites;
@@ -31,26 +32,40 @@ extern "C" {
     double porosity;  // [-]
     double temperature;  // [celsius]
     double aqueous_pressure; // [Pa]
+    int size_total_primary;
     double* total_primary;  // [molarity]
+    int size_total_sorbed;
     double* total_sorbed;  // [moles/m^3 bulk]
+    int size_free_ion;
     double* free_ion;  // [molality]
+    int size_mineral_volume_fraction;
     double* mineral_volume_fraction;  // [-]
+    int size_mineral_specific_surface_area;
     double* mineral_specific_surface_area; // [m^2 mineral/m^3 bulk]
+    int size_cation_exchange_capacity;
     double* cation_exchange_capacity;  // [moles/m^3 bulk]
+    int size_surface_site_density;
     double* surface_site_density;  // [moles/m^3 bulk]
   };
   
   struct AlquimiaMaterialProperties {
     double volume;  // [m^3]
+    int size_isotherm_kd;
     double* isotherm_kd;  // [?]
+    int size_freundlich_n;
     double* freundlich_n; // [?]
+    int size_langmuir_b;
     double* langmuir_b;  // [?]
   };
   
   struct AlquimiaAuxiliaryData {
+    int size_primary_activity_coeff;
     double* primary_activity_coeff;  // [-]
+    int size_secondary_activity_coeff;
     double* secondary_activity_coeff;  // [-]
+    int size_ion_exchange_ref_cation_conc;
     double* ion_exchange_ref_cation_conc;  // [?]
+    int size_surface_complex_free_site_conc;
     double* surface_complex_free_site_conc;  // [?]
   };
   
@@ -71,6 +86,7 @@ extern "C" {
     bool operator_splitting;
     bool global_implicit;
     int index_base;
+    int size_primary;
     int* primary_indices;
     char** primary_names;
     //char** auxiliary_output_names;
@@ -103,7 +119,7 @@ extern "C" {
 
   /* NOTE(bja): AlquimiaData is a convenience container, and not a data
      structure that should be passed between the driver and
-     engine. Condations are not included here because they are short
+     engine. Conditions are not included here because they are short
      lived data structures. */
   struct AlquimiaData {
     struct AlquimiaSizes sizes;
@@ -154,7 +170,6 @@ extern "C" {
     
     void (*GetEngineMetaData)(
         void* pft_engine_state,
-        struct AlquimiaSizes* sizes,
         struct AlquimiaMetaData* meta_data,
         struct AlquimiaEngineStatus* status);
     
