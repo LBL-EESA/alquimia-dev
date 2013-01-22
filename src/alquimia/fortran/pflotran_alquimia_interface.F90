@@ -228,6 +228,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   ! Grab sizes info that the driver needs to finish initializing
   !
   sizes%num_primary = reaction%ncomp
+  sizes%num_sorbed = 0 ! FIXME(bja): need some sort of if (using_sorption)...
   sizes%num_kinetic_minerals = reaction%mineral%nkinmnrl
   sizes%num_aqueous_complexes = reaction%neqcplx
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
@@ -509,7 +510,7 @@ end subroutine GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data, status)
+subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
   !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
@@ -522,7 +523,6 @@ subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data, status)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_meta_data_f), intent(out) :: meta_data
   type (alquimia_engine_status_f), intent(out) :: status
 
@@ -541,7 +541,12 @@ subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data, status)
      return
   end if
 
-  num_primary = engine_state%reaction%ncomp
+  if (meta_data%size_primary /= engine_state%reaction%ncomp) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%size_primary (", &
+          meta_data%size_primary, ") != pflotran%reaction%ncomp(", &
+          engine_state%reaction%ncomp, ")"
+  end if
+  num_primary = meta_data%size_primary
 
   ! TODO(bja) : can we extract this from pflotran without hardcoding?
   meta_data%thread_safe = .true.
@@ -578,7 +583,7 @@ subroutine GetEngineMetaData(pft_engine_state, sizes, meta_data, status)
   !
 
   ! NOTE(bja) : meta_data%primary_names() is empty for this call!
-  !call PrintMetaData(sizes, meta_data)
+  !call PrintMetaData(meta_data)
   status%error = 0
 end subroutine GetEngineMetaData
 
@@ -1102,7 +1107,7 @@ end subroutine PrintState
 
 
 ! **************************************************************************** !
-subroutine PrintMetaData(sizes, meta_data)
+subroutine PrintMetaData(meta_data)
 
   use, intrinsic :: iso_c_binding
 
@@ -1113,7 +1118,6 @@ subroutine PrintMetaData(sizes, meta_data)
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_meta_data_f), intent(in) :: meta_data
 
   ! local variables
@@ -1129,12 +1133,12 @@ subroutine PrintMetaData(sizes, meta_data)
   write (*, '(a, L1)') "  porosity update : ", meta_data%porosity_update
   write (*, '(a, i4)') "  index base : ", meta_data%index_base
   write (*, '(a)') "  primary indices : "
-  call c_f_pointer(meta_data%primary_indices, indices, (/sizes%num_primary/))
-  do i=1, sizes%num_primary
+  call c_f_pointer(meta_data%primary_indices, indices, (/meta_data%size_primary/))
+  do i=1, meta_data%size_primary
      write (*, '(i4)') indices(i)
   end do
-  call c_f_pointer(meta_data%primary_names, names, (/sizes%num_primary/))
-  do i=1, sizes%num_primary
+  call c_f_pointer(meta_data%primary_names, names, (/meta_data%size_primary/))
+  do i=1, meta_data%size_primary
      call c_f_string_ptr(names(i), name)
      write (*, '(a)') trim(name)
   end do

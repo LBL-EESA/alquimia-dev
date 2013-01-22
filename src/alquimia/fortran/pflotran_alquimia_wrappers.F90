@@ -152,7 +152,7 @@ end subroutine PFloTran_Alquimia_GetAuxiliaryOutput
 
 ! **************************************************************************** !
 subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
-     sizes, meta_data, status) bind(C)
+     meta_data, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -164,11 +164,10 @@ subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_sizes_f), intent(in) :: sizes
   type (alquimia_meta_data_f), intent(out) :: meta_data
   type (alquimia_engine_status_f), intent(out) :: status
 
-  call GetEngineMetaData(pft_engine_state, sizes, meta_data, status)
+  call GetEngineMetaData(pft_engine_state, meta_data, status)
 
 end subroutine PFloTran_Alquimia_GetEngineMetaData
 

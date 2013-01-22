@@ -137,12 +137,11 @@ int main(int argc, char** argv) {
     // get the driver meta data (thread safe, temperature/pressure
     // dependent, species names, etc)
     chem.GetEngineMetaData(chem.engine_state,
-                           &chem_data.sizes,
                            &chem_data.meta_data,
                            &chem_status);
     if (chem_status.error != 0) {
       std::cout << chem_status.message << std::endl;
-      PrintAlquimiaMetaData(&chem_data.sizes, &chem_data.meta_data);
+      PrintAlquimiaMetaData(&chem_data.meta_data);
       return chem_status.error;
     }
 
@@ -152,14 +151,14 @@ int main(int argc, char** argv) {
 
     // NOTE(bja): the indices in meta_data.primary_indices already
     // have the engine base, so we don't need to do any conversions!
-    for (int i = 0; i < chem_data.sizes.num_primary; ++i) {
+    for (int i = 0; i < chem_data.meta_data.size_primary; ++i) {
       chem.GetPrimaryNameFromIndex(
           chem.engine_state,
           &(chem_data.meta_data.primary_indices[i]), 
           chem_data.meta_data.primary_names[i],
           &chem_status);
     }
-    PrintAlquimiaMetaData(&chem_data.sizes, &chem_data.meta_data);
+    PrintAlquimiaMetaData(&chem_data.meta_data);
 
     // finish initializing the driver, e.g. openmp for thread safe
     // engines, verify material properties, etc
@@ -172,15 +171,15 @@ int main(int argc, char** argv) {
 
     // initialize the alquimia state and material properties with
     // appropriate values from the driver's memory.
-    CopyDemoStateToAlquimiaState(demo_state, chem_data.sizes, &chem_data.state);
+    CopyDemoStateToAlquimiaState(demo_state, &chem_data.state);
     CopyDemoMaterialPropertiesToAlquimiaMaterials(
-        demo_material_props, chem_data.sizes, &chem_data.material_properties);
+        demo_material_props, &chem_data.material_properties);
 
     // Read the geochemical conditions from the driver's native format
     // and store them in alquimia's format
     CopyDemoConditionsToAlquimiaConditions(demo_conditions, &alquimia_conditions);
 
-    //PrintAlquimiaState(&chem_data.sizes, &chem_data.state);
+    //PrintAlquimiaState(&chem_data.state);
     //PrintAlquimiaGeochemicalConditionList(&alquimia_conditions);
 
     for (int i = 0; i < alquimia_conditions.num_conditions; ++i) {
@@ -198,8 +197,8 @@ int main(int argc, char** argv) {
                               &chem_status);
         if (chem_status.error != 0) {
           std::cout << chem_status.message << std::endl;
-          PrintAlquimiaState(&chem_data.sizes, &chem_data.state);
-          PrintAlquimiaAuxiliaryData(&chem_data.sizes, &chem_data.aux_data);
+          PrintAlquimiaState(&chem_data.state);
+          PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
           return chem_status.error;
         }
       }
@@ -215,7 +214,7 @@ int main(int argc, char** argv) {
                  &time_units, &time_units_conversion);
 
     // save the IC to our output file
-    WriteOutputHeader(&text_output, time_units, chem_data.sizes, chem_data.meta_data);
+    WriteOutputHeader(&text_output, time_units, chem_data.meta_data);
 
     // set delta t: [time_units]/[time_units/sec] = [sec]
     double delta_t = demo_simulation.delta_t / time_units_conversion;
@@ -225,8 +224,8 @@ int main(int argc, char** argv) {
          ++t, time += delta_t) {
       std::cout << "reaction step : " << t << "  time: " << time << std::endl;
       if (false) {
-        PrintAlquimiaState(&chem_data.sizes, &chem_data.state);
-        PrintAlquimiaAuxiliaryData(&chem_data.sizes, &chem_data.aux_data);
+        PrintAlquimiaState(&chem_data.state);
+        PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
       }
       // unpack from driver memory, since this is batch, no unpacking
       chem.ReactionStepOperatorSplit(chem.engine_state,
@@ -237,13 +236,12 @@ int main(int argc, char** argv) {
                                      &chem_status);
       if (chem_status.error != 0) {
           std::cout << chem_status.message << std::endl;
-          PrintAlquimiaState(&chem_data.sizes, &chem_data.state);
-          PrintAlquimiaAuxiliaryData(&chem_data.sizes, &chem_data.aux_data);
+          PrintAlquimiaState(&chem_data.state);
+          PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
           return chem_status.error;
       }
       double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
-      WriteOutput(&text_output, out_time,
-                  chem_data.sizes, chem_data.state);
+      WriteOutput(&text_output, out_time, chem_data.state);
       // repack into driver memory...
     }
 
@@ -403,11 +401,10 @@ void SetTimeUnits(const std::string& output_time_units,
 }  // end SetTimeUnits()
 
 void WriteOutputHeader(std::fstream* text_output, const char time_units,
-                       const AlquimiaSizes& sizes,
                        const AlquimiaMetaData& meta_data) {
   if (text_output->is_open()) {
     *text_output << "# Time [" << time_units << "]";
-    for (int i = 0; i < sizes.num_primary; ++i) {
+    for (int i = 0; i < meta_data.size_primary; ++i) {
       *text_output <<  " , " << meta_data.primary_names[i];
     }
     *text_output << std::endl;
@@ -415,17 +412,16 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
 }  // end WriteOutputHeader()
 
 void WriteOutput(std::fstream* text_output, const double time,
-                 const AlquimiaSizes& sizes,
                  const AlquimiaState& state) {
   if (text_output->is_open()) {
     std::string seperator(" , ");
     *text_output << std::scientific << std::setprecision(6) << std::setw(15) << time;
-    for (int i = 0; i < sizes.num_primary; ++i) {
+    for (int i = 0; i < state.size_total_primary; ++i) {
       *text_output << seperator << state.total_primary[i];
     }
-    // for (int i = 0; i < state.total_sorbed.size(); ++i) {
-    //   *text_output << seperator << state.total_sorbed.at(i);
-    // }
+    for (int i = 0; i < state.size_total_sorbed; ++i) {
+      *text_output << seperator << state.total_sorbed[i];
+    }
     *text_output << std::endl;
   }
 }  // end WriteOutput()
@@ -438,9 +434,7 @@ void WriteOutput(std::fstream* text_output, const double time,
  *******************************************************************************/
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
-    const AlquimiaSizes& alquimia_sizes,
     AlquimiaState* alquimia_state) {
-  static_cast<void>(alquimia_sizes);
   alquimia_state->water_density = demo_state.water_density;
   alquimia_state->saturation = demo_state.saturation;
   alquimia_state->porosity = demo_state.porosity;
@@ -450,9 +444,7 @@ void CopyDemoStateToAlquimiaState(
 
 void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
-    const AlquimiaSizes& alquimia_sizes,
     AlquimiaMaterialProperties* alquimia_material_props) {
-  static_cast<void>(alquimia_sizes);
   alquimia_material_props->volume = demo_material_props.volume;
   // TODO(bja) : loop through and copy vector based material properties!
 }  // end CopyDemoMaterialPropertiesToAlquimiaMaterials()
