@@ -8,10 +8,8 @@
  **
  **  - calloc/malloc always return NULL pointers if they fail, so
  **    there is no need to pre-assign NULL for the pointers we are
- **    allocating here. For pointers being assigned elsewhere, we still
- **    assign NULL just to be safe. In some places, the malloc calls
- **    are inside if blocks, so we pre-initialize to NULL to keep life
- **    simple.
+ **    allocating here. For zero size or zero members, the returned
+ **    pointer should be NULL or something that can be freed....
  **
  ** - free just releases the memory, it does not change the value
  **   of the pointer. After free, the pointer is no longer valid, so
@@ -25,10 +23,33 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <assert.h>
 
 #include "alquimia_constants.h"
 #include "alquimia_interface.h"
 #include "alquimia_containers.h"
+
+void AllocateDoubleArray(const int size, int* array_size, double** array) {
+  if (size > 0) {
+    *array_size = size;
+    *array = (double*) calloc(size, sizeof(double));
+    assert(NULL != *array);
+  } else {
+    *array_size = 0;
+    *array = NULL;
+  }
+}  // end AllocateDoubleArray()
+
+void AllocateIntArray(const int size, int* array_size, int** array) {
+  if (size > 0) {
+    *array_size = size;
+    *array = (int*) calloc(size, sizeof(int));
+    assert(NULL != *array);
+  } else {
+    *array_size = 0;
+    *array = NULL;
+  }
+}  // end AllocateIntArray()
 
 /*******************************************************************************
  **
@@ -62,38 +83,32 @@ void FreeAlquimiaInterface(struct AlquimiaInterface* interface) {
 
 void AllocateAlquimiaState(const struct AlquimiaSizes* sizes,
                            struct AlquimiaState* state) {
-  state->total_primary = NULL;
-  state->total_sorbed = NULL;
-  state->free_ion = NULL;
-  state->mineral_volume_fraction = NULL;
-  state->mineral_specific_surface_area = NULL;
-  state->cation_exchange_capacity = NULL;
-  state->surface_site_density = NULL;
-  //state-> = NULL;
+  AllocateDoubleArray(sizes->num_primary, 
+                      &(state->size_total_primary), &(state->total_primary));
+  assert(state->total_primary != NULL);
 
-  if (sizes->num_primary > 0) {
-    state->total_primary = (double*) calloc(sizes->num_primary, sizeof(double));
-    if (NULL == state->total_primary) {
-      // TODO(bja): error handling
-    }
-    state->free_ion = (double*) calloc(sizes->num_primary, sizeof(double));
-    if (NULL == state->free_ion) {
-      // TODO(bja): error handling
-    }
-  }
+  AllocateDoubleArray(sizes->num_primary, 
+                      &(state->size_free_ion), &(state->free_ion));
+  assert(state->free_ion != NULL);
 
-  if (sizes->num_kinetic_minerals > 0) {
-    state->mineral_volume_fraction = (double*) calloc(
-        sizes->num_kinetic_minerals, sizeof(double));
-    if (NULL == state->mineral_volume_fraction) {
-      // TODO(bja): error handling
-    }
-    state->mineral_specific_surface_area = (double*) calloc(
-        sizes->num_kinetic_minerals, sizeof(double));
-    if (NULL == state->mineral_specific_surface_area) {
-      // TODO(bja): error handling
-    }
-  }
+  AllocateDoubleArray(sizes->num_sorbed,
+                      &(state->size_total_sorbed), &(state->total_sorbed));
+
+  AllocateDoubleArray(sizes->num_surface_sites,
+                      &(state->size_surface_site_density),
+                      &(state->surface_site_density));
+
+  AllocateDoubleArray(sizes->num_ion_exchange_sites,
+                      &(state->size_cation_exchange_capacity),
+                      &(state->cation_exchange_capacity));
+
+  AllocateDoubleArray(sizes->num_kinetic_minerals,
+                      &(state->size_mineral_volume_fraction),
+                      &(state->mineral_volume_fraction));
+
+  AllocateDoubleArray(sizes->num_kinetic_minerals,
+                      &(state->size_mineral_specific_surface_area),
+                      &(state->mineral_specific_surface_area));
 }  // end AllocateAlquimiaState()
 
 void FreeAlquimiaState(struct AlquimiaState* state) {
@@ -109,6 +124,12 @@ void FreeAlquimiaState(struct AlquimiaState* state) {
 
     free(state->mineral_specific_surface_area);
     state->mineral_specific_surface_area = NULL;
+
+    free(state->cation_exchange_capacity);
+    state->cation_exchange_capacity = NULL;
+
+    free(state->surface_site_density);
+    state->surface_site_density = NULL;
   }
 }  // end FreeAlquimiaState()
 
@@ -120,42 +141,22 @@ void FreeAlquimiaState(struct AlquimiaState* state) {
 
 void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes* sizes,
                                    struct AlquimiaAuxiliaryData* aux_data) {
-  aux_data->primary_activity_coeff = NULL;
-  aux_data->secondary_activity_coeff = NULL;
-  aux_data->ion_exchange_ref_cation_conc = NULL;
-  aux_data->surface_complex_free_site_conc = NULL;
-  //aux_data-> = NULL;
+  AllocateDoubleArray(sizes->num_primary,
+                      &(aux_data->size_primary_activity_coeff),
+                      &(aux_data->primary_activity_coeff));
 
-  if (sizes->num_primary > 0) {
-    aux_data->primary_activity_coeff = (double*) calloc(sizes->num_primary,
-                                                        sizeof(double));
-    if (NULL == aux_data->primary_activity_coeff) {
-      // TODO(bja): error handling
-    }
-  }
+  AllocateDoubleArray(sizes->num_aqueous_complexes,
+                      &(aux_data->size_secondary_activity_coeff),
+                      &(aux_data->secondary_activity_coeff));
 
-  if (sizes->num_aqueous_complexes > 0) {
-    aux_data->secondary_activity_coeff = (double*) calloc(sizes->num_aqueous_complexes,
-                                                          sizeof(double));
-    if (NULL == aux_data->secondary_activity_coeff) {
-      // TODO(bja): error handling
-    }
-  }
+  AllocateDoubleArray(sizes->num_ion_exchange_sites,
+                      &(aux_data->size_ion_exchange_ref_cation_conc),
+                      &(aux_data->ion_exchange_ref_cation_conc));
 
-  if (sizes->num_ion_exchange_sites > 0) {
-    aux_data->ion_exchange_ref_cation_conc = (double*) calloc(
-        sizes->num_ion_exchange_sites, sizeof(double));
-    if (NULL == aux_data->ion_exchange_ref_cation_conc) {
-      // TODO(bja): error handling
-    }
-  }
-  if (sizes->num_surface_sites > 0) {
-    aux_data->surface_complex_free_site_conc = (double*) calloc(
-        sizes->num_surface_sites, sizeof(double));
-    if (NULL == aux_data->surface_complex_free_site_conc) {
-      // TODO(bja): error handling
-    }
-  }
+  AllocateDoubleArray(sizes->num_surface_sites,
+                      &(aux_data->size_surface_complex_free_site_conc),
+                      &(aux_data->surface_complex_free_site_conc));
+
 }  // end AllocateAlquimiaAuxiliaryData()
 
 void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
@@ -186,28 +187,15 @@ void AllocateAlquimiaMaterialProperties(
   /* NOTE(bja) : need to be smarter about how we allocate memory for
      isotherms. (1) Only allocate if isotherms are used in chemistry, and
      (2) only allocate for the primary species that are being sorbed. */
-  material_props->isotherm_kd = NULL;
-  material_props->freundlich_n = NULL;
-  material_props->langmuir_b = NULL;
-  //material_props-> = NULL;
-
-  if (sizes->num_primary > 0) {
-    material_props->isotherm_kd = (double*) calloc(sizes->num_primary,
-                                                   sizeof(double));
-    if (NULL == material_props->isotherm_kd) {
-      // TODO(bja): error handling
-    }
-    material_props->freundlich_n = (double*) calloc(sizes->num_primary,
-                                                    sizeof(double));
-    if (NULL == material_props->freundlich_n) {
-      // TODO(bja): error handling
-    }
-    material_props->langmuir_b = (double*) calloc(sizes->num_primary,
-                                                  sizeof(double));
-    if (NULL == material_props->langmuir_b) {
-      // TODO(bja): error handling
-    }
-  }
+  AllocateDoubleArray(sizes->num_primary,
+                      &(material_props->size_isotherm_kd),
+                      &(material_props->isotherm_kd));
+  AllocateDoubleArray(sizes->num_primary,
+                      &(material_props->size_freundlich_n),
+                      &(material_props->freundlich_n));
+  AllocateDoubleArray(sizes->num_primary,
+                      &(material_props->size_langmuir_b),
+                      &(material_props->langmuir_b));
 
 }  // end AllocateAlquimiaMaterialProperties()
 
@@ -233,37 +221,29 @@ void FreeAlquimiaMaterialProperties(
 
 void AllocateAlquimiaMetaData(const struct AlquimiaSizes* sizes,
                               struct AlquimiaMetaData* meta_data) {
-  int i;
-
-  meta_data->primary_indices = NULL;
-  meta_data->primary_names = NULL;
-  //meta_data-> = NULL;
 
   if (sizes->num_primary > 0) {
-    meta_data->primary_indices = (int*) calloc(sizes->num_primary, sizeof(int));
-    if (NULL == meta_data->primary_indices) {
-      // TODO(bja): error handling
-    }
-    meta_data->primary_names = (char**) calloc(sizes->num_primary, sizeof(char*));
-    if (NULL == meta_data->primary_names) {
-      // TODO(bja): error handling
-    }
-    for (i = 0; i < sizes->num_primary; ++i) {
-      meta_data->primary_names[i] = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
-      if (NULL == meta_data->primary_names[i]) {
-        // TODO(bja): error handling
-      }
+    AllocateIntArray(sizes->num_primary,
+                     &(meta_data->size_primary), &(meta_data->primary_indices));
+    assert(meta_data->primary_indices != NULL);
+
+    meta_data->primary_names = (char**) calloc(meta_data->size_primary, sizeof(char*));
+    assert(NULL != meta_data->primary_names);
+
+    for (int i = 0; i < meta_data->size_primary; ++i) {
+      meta_data->primary_names[i] = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH,
+                                                   sizeof(char));
+      assert(NULL != meta_data->primary_names[i]);
     }
   }
 }  // end AllocateAlquimiaMetaData()
 
-void FreeAlquimiaMetaData(const struct AlquimiaSizes* sizes,
-                          struct AlquimiaMetaData* meta_data) {
-  int i;
+void FreeAlquimiaMetaData(struct AlquimiaMetaData* meta_data) {
+
   if (meta_data != NULL) {
     free(meta_data->primary_indices);
     meta_data->primary_indices = NULL;
-    for (i = 0; i < sizes->num_primary; ++i) {
+    for (int i = 0; i < meta_data->size_primary; ++i) {
       free(meta_data->primary_names[i]);
     }
     free(meta_data->primary_names);
@@ -404,5 +384,5 @@ void FreeAlquimiaData(struct AlquimiaData* data) {
   FreeAlquimiaState(&data->state);
   FreeAlquimiaMaterialProperties(&data->material_properties);
   FreeAlquimiaAuxiliaryData(&data->aux_data);
-  FreeAlquimiaMetaData(&data->sizes, &data->meta_data);
+  FreeAlquimiaMetaData(&data->meta_data);
 }  // end FreeAlquimiaData()

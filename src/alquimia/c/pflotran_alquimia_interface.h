@@ -43,7 +43,6 @@ extern "C" {
       struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_getenginemetadata(
       void* pft_engine_state,
-      struct AlquimiaSizes* sizes,
       struct AlquimiaMetaData* metadata,
       struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_getprimarynamefromindex(
