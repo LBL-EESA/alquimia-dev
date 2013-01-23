@@ -40,8 +40,8 @@ subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, &
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (c_ptr), intent(out) :: pft_engine_state
-  type (alquimia_sizes_f), intent(out) :: sizes
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaSizes), intent(out) :: sizes
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   call Setup(input_filename, pft_engine_state, sizes, status)
 
@@ -61,7 +61,7 @@ subroutine PFloTran_Alquimia_Shutdown(pft_engine_state, status) bind(c)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   call Shutdown(pft_engine_state, status)
 
@@ -87,11 +87,11 @@ subroutine PFloTran_Alquimia_ProcessCondition( &
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_condition_f), intent(in) :: condition
-  type (alquimia_material_properties_f), intent(in) :: material_properties
-  type (alquimia_state_f), intent(inout) :: state
-  type (alquimia_auxiliary_data_f), intent (inout) :: aux_data
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaCondition), intent(in) :: condition
+  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaState), intent(inout) :: state
+  type (AlquimiaAuxiliaryData), intent (inout) :: aux_data
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   call ProcessCondition(pft_engine_state, condition, material_properties, &
        state, aux_data, status)
@@ -119,10 +119,10 @@ subroutine PFloTran_Alquimia_ReactionStepOperatorSplit( &
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
   real (c_double), intent(in) :: delta_t
-  type (alquimia_material_properties_f), intent(in) :: material_properties
-  type (alquimia_state_f), intent(inout) :: state
-  type (alquimia_auxiliary_data_f), intent(inout) :: aux_data
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaState), intent(inout) :: state
+  type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   call ReactionStepOperatorSplit(pft_engine_state, delta_t, &
        material_properties, state, aux_data, status)
@@ -143,7 +143,7 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_engine_state, status) bind(C
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   call GetAuxiliaryOutput(pft_engine_state, status)
 
@@ -164,8 +164,8 @@ subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_meta_data_f), intent(out) :: meta_data
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaMetaData), intent(out) :: meta_data
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   call GetEngineMetaData(pft_engine_state, meta_data, status)
 
@@ -187,7 +187,7 @@ subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_engine_state, &
   type (c_ptr), intent(inout) :: pft_engine_state
   integer (c_int), intent(in) :: primary_index
   character(kind=c_char), dimension(*), intent(out) :: primary_name
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   call GetPrimaryNameFromIndex(pft_engine_state, primary_index, primary_name, status)
 
