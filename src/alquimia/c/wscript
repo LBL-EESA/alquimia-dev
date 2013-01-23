@@ -6,13 +6,15 @@ def build(ctx):
                      'alquimia_constants.h',
                      'pflotran_alquimia_interface.h']
 
-    # if there is a c-based engine (phreeqc), then it would go here as
-    # libalquimia_c.a
+    alquimia_src = ['alquimia_constants.c']
 
-#    ctx.stlib(
-#        features = 'c cstlib',
-#        source = alquimia_src,
-#        target = 'alquimia_c')
+    # if there is a c-based engine (phreeqc), then it would go here as
+    # part of libalquimia_c.a
+
+    ctx.stlib(
+        features = 'c cstlib',
+        source = alquimia_src,
+        target = 'alquimia_c')
 
     # the util library is an optional convenience for driver
     # maintainers, it should not contain required code.
