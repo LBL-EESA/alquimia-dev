@@ -52,8 +52,9 @@ module PFloTranAlquimiaInterface_module
        CopyAlquimiaToAuxVars, &
        CopyAuxVarsToAlquimia
 
-  integer(kind=8), private, parameter :: integrity_check_value = &
-       b"0100001001100101011011100100000101101110011001000111001001100101"
+  integer(kind=8), private, parameter :: integrity_check_value = 5784429996817932654_8
+  !integer(kind=int64), private, parameter :: integrity_check_value = &
+  !     b"0101000001000110011011000110111101010100011100100110000101101110"
 
   type, private :: PFloTranEngineState
      ! This is the data structure that stores the persistent data for
