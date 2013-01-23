@@ -122,8 +122,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   type(pflotran_engine_state), pointer :: engine_state
   PetscErrorCode :: ierr
   PetscBool :: option_found
-  character(len=ALQUIMIA_MAX_STRING_LENGTH) :: string
-  character(len=ALQUIMIA_MAX_STRING_LENGTH) :: filename_out
+  character(len=kAlquimiaMaxStringLength) :: string
+  character(len=kAlquimiaMaxStringLength) :: filename_out
   type(reaction_type), pointer :: reaction
   type(option_type), pointer :: option
   type(input_type), pointer :: input
@@ -236,9 +236,9 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
 
   !call PrintSizes(sizes)
 
-  status%error = ALQUIMIA_NO_ERROR
+  status%error = kAlquimiaNoError
   call f_c_string_ptr("Alquimia::PFloTran::Setup() : successful.", &
-       status%message, ALQUIMIA_MAX_STRING_LENGTH)
+       status%message, kAlquimiaMaxStringLength)
   
 end subroutine Setup
 
@@ -266,9 +266,9 @@ subroutine Shutdown(pft_engine_state, status)
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
-     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     status%error = kAlquimiaErrorEngineIntegrity
      call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
-          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+          status%message, kAlquimiaMaxStringLength)
      return
   end if
 
@@ -283,7 +283,7 @@ subroutine Shutdown(pft_engine_state, status)
   deallocate(engine_state)
   nullify(engine_state)
 
-  status%error = ALQUIMIA_NO_ERROR
+  status%error = kAlquimiaNoError
 
 end subroutine Shutdown
 
@@ -318,9 +318,9 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   ! local variables
   type (alquimia_constraint_f), pointer :: local_constraints(:)
   type (alquimia_constraint_f), pointer :: constraint
-  character (ALQUIMIA_MAX_STRING_LENGTH) :: name
-  character (ALQUIMIA_MAX_STRING_LENGTH) :: constraint_type
-  character (ALQUIMIA_MAX_STRING_LENGTH) :: associated_species
+  character (kAlquimiaMaxStringLength) :: name
+  character (kAlquimiaMaxStringLength) :: constraint_type
+  character (kAlquimiaMaxStringLength) :: associated_species
   real (c_double) :: constraint_value
   PetscReal :: porosity, volume
   integer :: i
@@ -331,9 +331,9 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
-     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     status%error = kAlquimiaErrorEngineIntegrity
      call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
-          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+          status%message, kAlquimiaMaxStringLength)
      return
   end if
 
@@ -421,7 +421,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
           porosity, &
           state, aux_data)
   end if
-  status%error = ALQUIMIA_NO_ERROR
+  status%error = kAlquimiaNoError
 end subroutine ProcessCondition
 
 
@@ -456,9 +456,9 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
-     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     status%error = kAlquimiaErrorEngineIntegrity
      call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
-          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+          status%message, kAlquimiaMaxStringLength)
      return
   end if
 
@@ -493,7 +493,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
        porosity, &
        state, aux_data)
 
-  status%error = ALQUIMIA_NO_ERROR
+  status%error = kAlquimiaNoError
 
 end subroutine ReactionStepOperatorSplit
 
@@ -520,14 +520,14 @@ subroutine GetAuxiliaryOutput(pft_engine_state, status)
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
-     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     status%error = kAlquimiaErrorEngineIntegrity
      call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
-          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+          status%message, kAlquimiaMaxStringLength)
      return
   end if
 
   write (*, '(a)') "PFloTran_Alquimia_GetAuxiliaryOutput() :"
-  status%error = ALQUIMIA_NO_ERROR
+  status%error = kAlquimiaNoError
 end subroutine GetAuxiliaryOutput
 
 
@@ -557,9 +557,9 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
-     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     status%error = kAlquimiaErrorEngineIntegrity
      call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
-          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+          status%message, kAlquimiaMaxStringLength)
      return
   end if
 
@@ -632,14 +632,14 @@ subroutine GetPrimaryNameFromIndex(pft_engine_state, &
   type (alquimia_engine_status_f), intent(out) :: status
 
   ! local variables
-  character (len=ALQUIMIA_MAX_WORD_LENGTH), pointer :: primary_list(:)
+  character (len=kAlquimiaMaxWordLength), pointer :: primary_list(:)
   type(pflotran_engine_state), pointer :: engine_state
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
-     status%error = ALQUIMIA_ERROR_ENGINE_INTEGRITY
+     status%error = kAlquimiaErrorEngineIntegrity
      call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
-          status%message, ALQUIMIA_MAX_STRING_LENGTH)
+          status%message, kAlquimiaMaxStringLength)
      return
   end if
 
@@ -649,9 +649,9 @@ subroutine GetPrimaryNameFromIndex(pft_engine_state, &
   !write (*, '(a)') "primary index = ", primary_index
 
   call f_c_string_chars(trim(primary_list(primary_index)), &
-       primary_name, ALQUIMIA_MAX_STRING_LENGTH)
+       primary_name, kAlquimiaMaxStringLength)
 
-  status%error = ALQUIMIA_NO_ERROR
+  status%error = kAlquimiaNoError
 
 end subroutine GetPrimaryNameFromIndex
 
@@ -1195,7 +1195,7 @@ subroutine PrintMetaData(meta_data)
   ! local variables
   integer (c_int), pointer :: indices(:)
   type (c_ptr), pointer :: names(:)
-  character(len=ALQUIMIA_MAX_STRING_LENGTH) :: name
+  character(len=kAlquimiaMaxStringLength) :: name
   integer (c_int) :: i
 
   write (*, '(a)') "meta_data : "

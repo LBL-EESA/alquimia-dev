@@ -25,12 +25,12 @@ void CreateAlquimiaInterface(const char* engine_name,
     interface->GetAuxiliaryOutput = &pflotran_alquimia_getauxiliaryoutput;
     interface->GetEngineMetaData = &pflotran_alquimia_getenginemetadata;
     interface->GetPrimaryNameFromIndex = &pflotran_alquimia_getprimarynamefromindex;
-    status->error = ALQUIMIA_NO_ERROR;
-    snprintf(status->message, ALQUIMIA_MAX_STRING_LENGTH,
+    status->error = kAlquimiaNoError;
+    snprintf(status->message, kAlquimiaMaxStringLength,
              "CreateAlquimiaInterface() : successfully created PFloTran interface.\n");
 #else
-    status->error = ALQUIMIA_ERROR_INVALID_ENGINE;
-    snprintf(status->message, ALQUIMIA_MAX_STRING_LENGTH,
+    status->error = kAlquimiaErrorInvalidEngine;
+    snprintf(status->message, kAlquimiaMaxStringLength,
              "\nERROR : CreateAlquimiaInterface() : PFloTran interface requested, but alquimia was not compiled with PFloTran!\n");
 #endif
 
@@ -38,13 +38,13 @@ void CreateAlquimiaInterface(const char* engine_name,
 #ifdef HAVE_CRUNCH
     //interface->Setup = ...;
 #else
-      status->error = ALQUIMIA_ERROR_INVALID_ENGINE;
-      snprintf(status->message, ALQUIMIA_MAX_STRING_LENGTH,
+      status->error = kAlquimiaErrorInvalidEngine;
+      snprintf(status->message, kAlquimiaMaxStringLength,
             "\nERROR : CreateAlquimiaInterface() : CrunchFlow interface requested, but alquimia was not compiled with CrunchFlow!\n");
 #endif
 
   } else {
-        snprintf(status->message, ALQUIMIA_MAX_STRING_LENGTH,
+        snprintf(status->message, kAlquimiaMaxStringLength,
             "\nERROR : CreateAlquimiaInterface() : Invalid interface name '%s'.\n  Valid names are:\n    '%s'\n    '%s'\n",
             engine_name, kPFloTran, kCrunchFlow);
   }
