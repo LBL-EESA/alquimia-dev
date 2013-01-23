@@ -418,6 +418,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
           engine_state%reaction, &
           engine_state%global_auxvars, &
           engine_state%rt_auxvars, &
+          porosity, &
           state, aux_data)
   end if
   status%error = ALQUIMIA_NO_ERROR
@@ -433,6 +434,8 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   use c_interface_module
 
+  use Reaction_module
+
   implicit none
 
 #include "alquimia_containers.h90"
@@ -447,7 +450,9 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   ! local variables
   type(pflotran_engine_state), pointer :: engine_state
-  PetscReal :: porosity, volume
+  PetscReal :: porosity, volume, vol_frac_prim
+  PetscReal :: tran_xx(state%size_total_primary)
+  PetscInt :: i, phase_index
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
@@ -465,10 +470,27 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
        engine_state%reaction, engine_state%global_auxvars, engine_state%rt_auxvars, &
        porosity, volume)
 
+  ! copy total primaries into dummy transport variable
+  phase_index = 1
+  
+  do i = 1, state%size_total_primary
+     tran_xx(i) = engine_state%rt_auxvars%total(i, phase_index)
+  enddo
+
+  vol_frac_prim = 1.0
+
+  engine_state%option%tran_dt = delta_t
+
+  call RReact(engine_state%rt_auxvars, engine_state%global_auxvars, &
+       tran_xx, volume, porosity, &
+       status%num_newton_iterations, &
+       engine_state%reaction, engine_state%option, vol_frac_prim)
+
   call CopyAuxVarsToAlquimia( &
        engine_state%reaction, &
        engine_state%global_auxvars, &
        engine_state%rt_auxvars, &
+       porosity, &
        state, aux_data)
 
   status%error = ALQUIMIA_NO_ERROR
@@ -886,10 +908,10 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! state
   !
-  global_auxvars%den_kg = state%density_water
-  global_auxvars%sat = state%saturation
-  global_auxvars%temp = state%temperature
-  global_auxvars%pres = state%aqueous_pressure
+  global_auxvars%den_kg(1) = state%density_water
+  global_auxvars%sat(1) = state%saturation
+  global_auxvars%temp(1) = state%temperature
+  global_auxvars%pres(1) = state%aqueous_pressure
 
   porosity = state%porosity
   volume = material_prop%volume
@@ -936,18 +958,47 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
      rt_auxvars%mnrl_area(i) = local_array(i)
   end do
 
-  ! isotherms
+  !
+  ! ion exchange, CEC only present in reaction, not aux_vars?
+  !
+  call c_f_pointer(state%cation_exchange_capacity, local_array, &
+       (/reaction%neqionxrxn/))
+  do i = 1, reaction%neqionxrxn
+     reaction%eqionx_rxn_CEC(i) = local_array(i)
+  end do
 
-  ! ion exchange
+  call c_f_pointer(aux_data%ion_exchange_ref_cation_conc, local_array, &
+       (/reaction%neqionxrxn/))
+  do i = 1, reaction%neqionxrxn
+     rt_auxvars%eqionx_ref_cation_sorbed_conc(i) = local_array(i)
+  end do
 
-  ! surface complexation
+
+  !
+  ! equilibrium surface complexation
+  !
+  call c_f_pointer(state%surface_site_density, local_array, &
+       (/reaction%surface_complexation%nsrfcplxrxn/))
+  do i = 1, reaction%surface_complexation%nsrfcplxrxn
+     reaction%surface_complexation%srfcplxrxn_site_density(i) = local_array(i)
+  end do
+
+  call c_f_pointer(aux_data%surface_complex_free_site_conc, local_array, &
+       (/reaction%surface_complexation%nsrfcplxrxn/))
+  do i = 1, reaction%surface_complexation%nsrfcplxrxn
+     rt_auxvars%srfcplxrxn_free_site_conc(i) = local_array(i)
+  end do
+
+  !
+  ! isotherms, TODO(bja): copy out of material_props into reaction (not auxvars)
+  !
 
 
 end subroutine CopyAlquimiaToAuxVars
 
 ! **************************************************************************** !
 subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
-     state, aux_data)
+     porosity, state, aux_data)
 
   use, intrinsic :: iso_c_binding
 
@@ -963,6 +1014,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   type(reaction_type), pointer, intent(in) :: reaction
   type(global_auxvar_type), pointer, intent(in) :: global_auxvars
   type(reactive_transport_auxvar_type), pointer, intent(in) :: rt_auxvars
+  PetscReal, intent(in) :: porosity
   type (alquimia_state_f), intent(inout) :: state
   type (alquimia_auxiliary_data_f), intent(inout) :: aux_data
 
@@ -970,11 +1022,19 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   real (c_double), pointer :: local_array(:)
   integer :: i, phase_index
 
-  phase_index = 1
+  phase_index = 1 ! TODO(bja): grab from pflotran?
 
   !write (*, '(a)') "PFloTran_Alquimia_CopyAuxVarsToAlquimia() :"
 
-  ! TODO(bja) : state... if pressure/temp/porosity updates are allowed...?
+  !
+  ! state
+  !
+  state%density_water = global_auxvars%den_kg(1)
+  state%saturation = global_auxvars%sat(1)
+  state%temperature = global_auxvars%temp(1)
+  state%aqueous_pressure = global_auxvars%pres(1)
+
+  state%porosity = porosity
 
   !
   ! primary aqueous species
@@ -1027,8 +1087,14 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   end do
 
   !
-  ! ion exchange
+  ! ion exchange, CEC only present in reaction, not aux_vars?
   !
+  call c_f_pointer(state%cation_exchange_capacity, local_array, &
+       (/reaction%neqionxrxn/))
+  do i = 1, reaction%neqionxrxn
+     local_array(i) = reaction%eqionx_rxn_CEC(i)
+  end do
+
   call c_f_pointer(aux_data%ion_exchange_ref_cation_conc, local_array, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
@@ -1037,8 +1103,14 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
 
 
   !
-  ! equilibrium surface complexation
+  ! equilibrium surface complexation, site density in reaction, not aux_vars
   !
+  call c_f_pointer(state%surface_site_density, local_array, &
+       (/reaction%surface_complexation%nsrfcplxrxn/))
+  do i = 1, reaction%surface_complexation%nsrfcplxrxn
+     local_array(i) = reaction%surface_complexation%srfcplxrxn_site_density(i)
+  end do
+
   call c_f_pointer(aux_data%surface_complex_free_site_conc, local_array, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
