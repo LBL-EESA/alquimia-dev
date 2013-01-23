@@ -16,6 +16,7 @@ def build(ctx):
         source = ['batch_chem.cc'],
         includes = ['../alquimia/c'],
         use = ['alquimia_cutils',
+               'alquimia_c',
                'alquimia_fortran',
                'demoutils'],
         target = 'batch_chem'
