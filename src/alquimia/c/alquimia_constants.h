@@ -5,17 +5,17 @@
 #include "stddef.h"
 
 /* String lengths */
-extern const size_t ALQUIMIA_MAX_STRING_LENGTH;
-extern const size_t ALQUIMIA_MAX_WORD_LENGTH;
+extern const size_t kAlquimiaMaxStringLength;
+extern const size_t kAlquimiaMaxWordLength;
 
 /* Geochemistry Engine Strings */
 extern const char* kPFloTran;
 extern const char* kCrunchFlow;
 
 /* Error Codes */
-extern const int ALQUIMIA_NO_ERROR;
-extern const int ALQUIMIA_ERROR_INVALID_ENGINE;
-extern const int ALQUIMIA_ERROR_ENGINE_INTEGRITY;
+extern const int kAlquimiaNoError;
+extern const int kAlquimiaErrorInvalidEngine;
+extern const int kAlquimiaErrorEngineIntegrity;
 
 
 #endif     /* ALQUIMIA_STRINGS_H_ */

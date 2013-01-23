@@ -1,12 +1,10 @@
-enum, bind(c)
-   enumerator :: ALQUIMIA_MAX_STRING_LENGTH = 512
-   enumerator :: ALQUIMIA_MAX_WORD_LENGTH = 32
-end enum
 
-enum, bind(c)
-   enumerator :: ALQUIMIA_NO_ERROR = 0
-   enumerator :: ALQUIMIA_ERROR_ENGINE_INTEGRITY = 4577
-end enum
+integer (c_int), parameter :: kAlquimiaMaxStringLength = 512
+integer (c_int), parameter :: kAlquimiaMaxWordLength = 32
+
+integer (c_int), parameter :: kAlquimiaNoError = 0
+integer (c_int), parameter :: kAlquimiaErrorInvalidEngine = 1
+integer (c_int), parameter :: kAlquimiaErrorEngineIntegrity = 4577
 
 type, bind(c) :: alquimia_sizes_f
    integer (c_int) :: num_primary
