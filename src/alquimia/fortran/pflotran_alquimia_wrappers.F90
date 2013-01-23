@@ -171,25 +171,4 @@ subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
 
 end subroutine PFloTran_Alquimia_GetEngineMetaData
 
-! **************************************************************************** !
-subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex(pft_engine_state, &
-  primary_index, primary_name, status) bind(C)
-
-  use, intrinsic :: iso_c_binding
-
-  use PFloTranAlquimiaInterface_module
-
-  implicit none
-
-#include "alquimia_containers.h90"
-
-  ! function parameters
-  type (c_ptr), intent(inout) :: pft_engine_state
-  integer (c_int), intent(in) :: primary_index
-  character(kind=c_char), dimension(*), intent(out) :: primary_name
-  type (AlquimiaEngineStatus), intent(out) :: status
-
-  call GetPrimaryNameFromIndex(pft_engine_state, primary_index, primary_name, status)
-
-end subroutine PFloTran_Alquimia_GetPrimaryNameFromIndex
 

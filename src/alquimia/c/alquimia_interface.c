@@ -24,7 +24,6 @@ void CreateAlquimiaInterface(const char* engine_name,
     interface->ReactionStepOperatorSplit = &pflotran_alquimia_reactionstepoperatorsplit;
     interface->GetAuxiliaryOutput = &pflotran_alquimia_getauxiliaryoutput;
     interface->GetEngineMetaData = &pflotran_alquimia_getenginemetadata;
-    interface->GetPrimaryNameFromIndex = &pflotran_alquimia_getprimarynamefromindex;
     status->error = kAlquimiaNoError;
     snprintf(status->message, kAlquimiaMaxStringLength,
              "CreateAlquimiaInterface() : successfully created PFloTran interface.\n");

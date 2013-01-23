@@ -144,20 +144,6 @@ int main(int argc, char** argv) {
       PrintAlquimiaMetaData(&chem_data.meta_data);
       return chem_status.error;
     }
-
-    // FIXME(bja) : can't get arrays of strings to pass gracefully
-    // between c and fortran, so for now we loop through and request
-    // the names one at a time
-
-    // NOTE(bja): the indices in meta_data.primary_indices already
-    // have the engine base, so we don't need to do any conversions!
-    for (int i = 0; i < chem_data.meta_data.size_primary; ++i) {
-      chem.GetPrimaryNameFromIndex(
-          chem.engine_state,
-          &(chem_data.meta_data.primary_indices[i]), 
-          chem_data.meta_data.primary_names[i],
-          &chem_status);
-    }
     PrintAlquimiaMetaData(&chem_data.meta_data);
 
     // finish initializing the driver, e.g. openmp for thread safe
