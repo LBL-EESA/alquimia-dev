@@ -2,26 +2,20 @@
 #ifndef ALQUIMIA_STRINGS_H_
 #define ALQUIMIA_STRINGS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include "stddef.h"
 
-  /* String lengths */
-  static const int ALQUIMIA_MAX_STRING_LENGTH = 512;
-  static const int ALQUIMIA_MAX_WORD_LENGTH = 32;
+/* String lengths */
+extern const size_t ALQUIMIA_MAX_STRING_LENGTH;
+extern const size_t ALQUIMIA_MAX_WORD_LENGTH;
 
-  /* Geochemistry Engine Strings */
-  static const char* kPFloTran = "PFloTran";
-  static const char* kCrunchFlow = "CrunchFlow";
+/* Geochemistry Engine Strings */
+extern const char* kPFloTran;
+extern const char* kCrunchFlow;
 
-  /* Error Codes */
-  static const int ALQUIMIA_NO_ERROR = 0;
-  static const int ALQUIMIA_ERROR_INVALID_ENGINE = 1;
-  static const int ALQUIMIA_ERROR_ENGINE_INTEGRITY = 4577;
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+/* Error Codes */
+extern const int ALQUIMIA_NO_ERROR;
+extern const int ALQUIMIA_ERROR_INVALID_ENGINE;
+extern const int ALQUIMIA_ERROR_ENGINE_INTEGRITY;
 
 
 #endif     /* ALQUIMIA_STRINGS_H_ */
