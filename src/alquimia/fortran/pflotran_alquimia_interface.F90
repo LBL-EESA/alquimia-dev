@@ -56,7 +56,7 @@ module PFloTranAlquimiaInterface_module
   integer(kind=8), private, parameter :: integrity_check_value = &
        b"0100001001100101011011100100000101101110011001000111001001100101"
 
-  type, private :: pflotran_engine_state
+  type, private :: PFloTranEngineState
      ! This is the data structure that stores the persistent data for
      ! pflotran, (e.g. reaction network).
      !
@@ -75,7 +75,7 @@ module PFloTranAlquimiaInterface_module
      type (global_auxvar_type), pointer :: global_auxvars
      type(tran_constraint_list_type), pointer :: transport_constraints
      type(tran_constraint_coupler_type), pointer :: constraint_coupler 
-  end type pflotran_engine_state
+  end type PFloTranEngineState
 
 contains
 
@@ -115,11 +115,11 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (c_ptr), intent(out) :: pft_engine_state
-  type (alquimia_sizes_f), intent(out) :: sizes
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaSizes), intent(out) :: sizes
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
-  type(pflotran_engine_state), pointer :: engine_state
+  type(PFloTranEngineState), pointer :: engine_state
   PetscErrorCode :: ierr
   PetscBool :: option_found
   character(len=kAlquimiaMaxStringLength) :: string
@@ -257,10 +257,10 @@ subroutine Shutdown(pft_engine_state, status)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
-  type(pflotran_engine_state), pointer :: engine_state
+  type(PFloTranEngineState), pointer :: engine_state
 
   !write (*, '(a)') "PFloTranAlquimiaInterface::Shutdown() : "
 
@@ -309,15 +309,15 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_condition_f), intent(in) :: condition
-  type (alquimia_material_properties_f), intent(in) :: material_properties
-  type (alquimia_state_f), intent(inout) :: state
-  type (alquimia_auxiliary_data_f), intent (inout) :: aux_data
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaCondition), intent(in) :: condition
+  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaState), intent(inout) :: state
+  type (AlquimiaAuxiliaryData), intent (inout) :: aux_data
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
-  type (alquimia_constraint_f), pointer :: local_constraints(:)
-  type (alquimia_constraint_f), pointer :: constraint
+  type (AlquimiaConstraint), pointer :: local_constraints(:)
+  type (AlquimiaConstraint), pointer :: constraint
   character (kAlquimiaMaxStringLength) :: name
   character (kAlquimiaMaxStringLength) :: constraint_type
   character (kAlquimiaMaxStringLength) :: associated_species
@@ -325,7 +325,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   PetscReal :: porosity, volume
   integer :: i
   type(tran_constraint_type), pointer :: tran_constraint
-  type(pflotran_engine_state), pointer :: engine_state
+  type(PFloTranEngineState), pointer :: engine_state
 
   !write (*, '(a)') "PFloTranAlquimiaInterface::ProcessCondition() : "
 
@@ -443,13 +443,13 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
   real (c_double), intent(in) :: delta_t
-  type (alquimia_material_properties_f), intent(in) :: material_properties
-  type (alquimia_state_f), intent(inout) :: state
-  type (alquimia_auxiliary_data_f), intent(inout) :: aux_data
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaState), intent(inout) :: state
+  type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
-  type(pflotran_engine_state), pointer :: engine_state
+  type(PFloTranEngineState), pointer :: engine_state
   PetscReal :: porosity, volume, vol_frac_prim
   PetscReal :: tran_xx(state%size_total_primary)
   PetscInt :: i, phase_index
@@ -513,10 +513,10 @@ subroutine GetAuxiliaryOutput(pft_engine_state, status)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
-  type(pflotran_engine_state), pointer :: engine_state
+  type(PFloTranEngineState), pointer :: engine_state
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
@@ -545,13 +545,13 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (alquimia_meta_data_f), intent(out) :: meta_data
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaMetaData), intent(out) :: meta_data
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
   integer (c_int), pointer :: primary_indices(:)
   integer :: i, num_primary
-  type(pflotran_engine_state), pointer :: engine_state
+  type(PFloTranEngineState), pointer :: engine_state
 
   !write (*, '(a)') "PFloTran_Alquimia_GetEngineMetaData() :"
 
@@ -629,11 +629,11 @@ subroutine GetPrimaryNameFromIndex(pft_engine_state, &
   type (c_ptr), intent(inout) :: pft_engine_state
   integer (c_int), intent(in) :: primary_index
   character(kind=c_char), dimension(*), intent(out) :: primary_name
-  type (alquimia_engine_status_f), intent(out) :: status
+  type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
   character (len=kAlquimiaMaxWordLength), pointer :: primary_list(:)
-  type(pflotran_engine_state), pointer :: engine_state
+  type(PFloTranEngineState), pointer :: engine_state
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
@@ -888,9 +888,9 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (alquimia_state_f), intent(in) :: state
-  type (alquimia_auxiliary_data_f), intent(in) :: aux_data
-  type (alquimia_material_properties_f), intent(in) :: material_prop
+  type (AlquimiaState), intent(in) :: state
+  type (AlquimiaAuxiliaryData), intent(in) :: aux_data
+  type (AlquimiaMaterialProperties), intent(in) :: material_prop
   type(reaction_type), pointer, intent(inout) :: reaction
   type(global_auxvar_type), pointer, intent(inout) :: global_auxvars
   type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvars
@@ -1015,8 +1015,8 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   type(global_auxvar_type), pointer, intent(in) :: global_auxvars
   type(reactive_transport_auxvar_type), pointer, intent(in) :: rt_auxvars
   PetscReal, intent(in) :: porosity
-  type (alquimia_state_f), intent(inout) :: state
-  type (alquimia_auxiliary_data_f), intent(inout) :: aux_data
+  type (AlquimiaState), intent(inout) :: state
+  type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
 
   ! local variables
   real (c_double), pointer :: local_array(:)
@@ -1136,7 +1136,7 @@ subroutine PrintSizes(sizes)
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (alquimia_sizes_f), intent(in) :: sizes
+  type (AlquimiaSizes), intent(in) :: sizes
 
   write (*, '(a)') "size : "
   write (*, '(a, i4)') "  num primary : ", sizes%num_primary
@@ -1158,7 +1158,7 @@ subroutine PrintState(reaction, state)
 
   ! function parameters
   type (reaction_type), intent(in) :: reaction
-  type (alquimia_state_f), intent(in) :: state
+  type (AlquimiaState), intent(in) :: state
 
   ! local variables
   integer :: i
@@ -1190,7 +1190,7 @@ subroutine PrintMetaData(meta_data)
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (alquimia_meta_data_f), intent(in) :: meta_data
+  type (AlquimiaMetaData), intent(in) :: meta_data
 
   ! local variables
   integer (c_int), pointer :: indices(:)
@@ -1227,7 +1227,7 @@ subroutine PrintStatus(status)
 #include "alquimia_containers.h90"
 
   ! function parameters
-  type (alquimia_engine_status_f), intent(in) :: status
+  type (AlquimiaEngineStatus), intent(in) :: status
 
   write (*, '(a)') "status : "
   write (*, '(a)') "  num rhs evaluation  : ", status%num_rhs_evaluations
