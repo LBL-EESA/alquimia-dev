@@ -235,6 +235,21 @@ void AllocateAlquimiaMetaData(const struct AlquimiaSizes* sizes,
       assert(NULL != meta_data->primary_names[i]);
     }
   }
+
+  if (sizes->num_kinetic_minerals > 0) {
+    AllocateIntArray(sizes->num_kinetic_minerals,
+                     &(meta_data->size_minerals), &(meta_data->mineral_indices));
+    assert(meta_data->mineral_indices != NULL);
+
+    meta_data->mineral_names = (char**) calloc(meta_data->size_minerals, sizeof(char*));
+    assert(meta_data->mineral_names != NULL);
+    for (int m = 0; m < meta_data->size_minerals; ++m) {
+      meta_data->mineral_names[m] = (char*) calloc(kAlquimiaMaxStringLength, 
+                                                   sizeof(char));
+      assert(meta_data->mineral_names[m] != NULL);
+    }
+  }
+
 }  // end AllocateAlquimiaMetaData()
 
 void FreeAlquimiaMetaData(struct AlquimiaMetaData* meta_data) {
@@ -247,6 +262,14 @@ void FreeAlquimiaMetaData(struct AlquimiaMetaData* meta_data) {
     }
     free(meta_data->primary_names);
     meta_data->primary_names = NULL;
+
+    free(meta_data->mineral_indices);
+    meta_data->mineral_indices = NULL;
+    for (int i = 0; i < meta_data->size_minerals; ++i) {
+      free(meta_data->mineral_names[i]);
+    }
+    free(meta_data->mineral_names);
+    meta_data->mineral_names = NULL;
   }
 
 }  // end FreeAlquimiaMetaData()
