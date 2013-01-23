@@ -231,7 +231,7 @@ void AllocateAlquimiaMetaData(const struct AlquimiaSizes* sizes,
     assert(NULL != meta_data->primary_names);
 
     for (int i = 0; i < meta_data->size_primary; ++i) {
-      meta_data->primary_names[i] = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH,
+      meta_data->primary_names[i] = (char*) calloc(kAlquimiaMaxStringLength,
                                                    sizeof(char));
       assert(NULL != meta_data->primary_names[i]);
     }
@@ -260,7 +260,7 @@ void FreeAlquimiaMetaData(struct AlquimiaMetaData* meta_data) {
 
 void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
 
-  status->message = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+  status->message = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
   if (NULL == status->message) {
     // TODO(bja): error handling
   }
@@ -306,9 +306,9 @@ void AllocateAlquimiaGeochemicalCondition(
   // the actual condstraints themselves.
   condition->num_constraints = num_constraints;
 
-  condition->name = (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
-  int max_copy_length = ALQUIMIA_MAX_STRING_LENGTH;
-  if (strlen(name) < ALQUIMIA_MAX_STRING_LENGTH) {
+  condition->name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+  int max_copy_length = kAlquimiaMaxStringLength;
+  if (strlen(name) < kAlquimiaMaxStringLength) {
     max_copy_length = strlen(name);
   }
   strncpy(condition->name, name, max_copy_length);
@@ -324,11 +324,11 @@ void AllocateAlquimiaGeochemicalCondition(
 void AllocateAlquimiaGeochemicalConstraint(
     struct AlquimiaGeochemicalConstraint* constraint){
   constraint->primary_species =
-      (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+      (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
   constraint->constraint_type =
-      (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+      (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
   constraint->associated_species =
-      (char*) calloc(ALQUIMIA_MAX_STRING_LENGTH, sizeof(char));
+      (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
   constraint->value = 0.0;
 }  // end AllocateAlquimiaGeochemicalConstraint()
 

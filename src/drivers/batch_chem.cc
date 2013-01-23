@@ -478,27 +478,27 @@ void CopyDemoConditionsToAlquimiaConditions(
           &(alquimia_conditions->conditions[i_cond].constraints[i_const]);
       AllocateAlquimiaGeochemicalConstraint(constraint);
       // copy demo constraint to alquimia constraint
-      int max_copy_length = ALQUIMIA_MAX_STRING_LENGTH;
+      int max_copy_length = kAlquimiaMaxStringLength;
       if (strlen(demo_cond->second[i_const].primary_species.c_str()) <
-          ALQUIMIA_MAX_STRING_LENGTH) {
+          kAlquimiaMaxStringLength) {
         max_copy_length = strlen(demo_cond->second[i_const].primary_species.c_str());
       }
       std::strncpy(constraint->primary_species,
                    demo_cond->second[i_const].primary_species.c_str(),
                    max_copy_length);
 
-      max_copy_length = ALQUIMIA_MAX_STRING_LENGTH;
+      max_copy_length = kAlquimiaMaxStringLength;
       if (strlen(demo_cond->second[i_const].constraint_type.c_str()) <
-          ALQUIMIA_MAX_STRING_LENGTH) {
+          kAlquimiaMaxStringLength) {
         max_copy_length = strlen(demo_cond->second[i_const].constraint_type.c_str());
       }
       std::strncpy(constraint->constraint_type,
                    demo_cond->second[i_const].constraint_type.c_str(),
                    max_copy_length);
 
-      max_copy_length = ALQUIMIA_MAX_STRING_LENGTH;
+      max_copy_length = kAlquimiaMaxStringLength;
       if (strlen(demo_cond->second[i_const].associated_species.c_str()) <
-          ALQUIMIA_MAX_STRING_LENGTH) {
+          kAlquimiaMaxStringLength) {
         max_copy_length = strlen(demo_cond->second[i_const].associated_species.c_str());
       }
       std::strncpy(constraint->associated_species,
