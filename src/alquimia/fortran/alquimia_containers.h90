@@ -78,6 +78,9 @@ type, bind(c) :: AlquimiaMetaData
    integer (c_int) :: size_primary
    type (c_ptr) :: primary_indices
    type (c_ptr) :: primary_names
+   integer (c_int) :: size_minerals
+   type (c_ptr) :: mineral_indices
+   type (c_ptr) :: mineral_names
 end type AlquimiaMetaData
   
 type, bind(c) :: AlquimiaConstraint

@@ -50,6 +50,18 @@ void PrintAlquimiaMetaData(const struct AlquimiaMetaData* metadata) {
     fprintf(stdout, "'%s', ", metadata->primary_names[i]);
   }
   fprintf(stdout, "\n");
+  fprintf(stdout, "    mineral indices (%d) (%p) :\n      ",
+          metadata->size_minerals, metadata->mineral_indices);
+  for (int i = 0; i < metadata->size_minerals; ++i) {
+    fprintf(stdout, "%d, ", metadata->mineral_indices[i]);
+  }
+  fprintf(stdout, "\n");
+  fprintf(stdout, "    mineral names (%d) (%p) :\n      ",
+          metadata->size_minerals, metadata->mineral_names);
+  for (int i = 0; i < metadata->size_minerals; ++i) {
+    fprintf(stdout, "'%s', ", metadata->mineral_names[i]);
+  }
+  fprintf(stdout, "\n");
 }  // end PrintAlquimiaMetaData()
 
 void PrintAlquimiaState(const struct AlquimiaState* state) {
