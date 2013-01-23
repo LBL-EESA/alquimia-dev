@@ -44,8 +44,7 @@ module PFloTranAlquimiaInterface_module
        ProcessCondition, &
        ReactionStepOperatorSplit, &
        GetAuxiliaryOutput, &
-       GetEngineMetaData, &
-       GetPrimaryNameFromIndex
+       GetEngineMetaData
 
   private :: InitializePFloTranReactions, &
        ReadPFloTranConstraints, &
@@ -550,6 +549,9 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
 
   ! local variables
   integer (c_int), pointer :: primary_indices(:)
+  type (c_ptr), pointer :: name_list(:)
+  character (len=kAlquimiaMaxWordLength), pointer :: primary_list(:)
+  character (c_char), pointer :: primary_name
   integer :: i, num_primary
   type(PFloTranEngineState), pointer :: engine_state
 
@@ -580,80 +582,26 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
   meta_data%index_base = 1
 
   ! associate indices with the C memory
-  if (c_associated(meta_data%primary_indices)) then
-     call c_f_pointer(meta_data%primary_indices, primary_indices, (/num_primary/))
-  else
-     ! error...
-     write (*, '(a)') "c primary indicies not associated"
-  end if
-  if (.not. associated(primary_indices)) then
-     ! error
-     write (*, '(a)') "f primary indices not associated"
-  end if
-
+  call c_f_pointer(meta_data%primary_indices, primary_indices, (/num_primary/))
   ! NOTE(bja) : if the order in reaction%primary_species_names always
   ! is not correct we need to modifiy this...
-  do i=1, num_primary
+  do i = 1, num_primary
      primary_indices(i) = i
   enddo
 
-  !
-  ! NOTE(bja): I can't figure out how to get arrays of strings passed
-  ! back and forth between C and fortran. Actually I don't understand
-  ! arrays of strings in fortran. For now we'll just require C to loop
-  ! through each string and call GetPrimaryNameFromIndex...
-  !
+  primary_list => engine_state%reaction%primary_species_names
+
+  call c_f_pointer(meta_data%primary_names, name_list, (/num_primary/))
+  do i = 1, num_primary
+     call c_f_pointer(name_list(i), primary_name, kAlquimiaMaxStringLength)
+     call f_c_string_chars(trim(primary_list(primary_indices(i))), &
+          primary_name, kAlquimiaMaxStringLength)     
+  end do
 
   ! NOTE(bja) : meta_data%primary_names() is empty for this call!
   !call PrintMetaData(meta_data)
   status%error = 0
 end subroutine GetEngineMetaData
-
-
-! **************************************************************************** !
-subroutine GetPrimaryNameFromIndex(pft_engine_state, &
-     primary_index, primary_name, status)
-!  NOTE: not officially part of the alquimia API. Eventually this should
-!    go away once we have passing arrays of strings from C to fortran
-!    and back
-
-  use, intrinsic :: iso_c_binding
-
-  use c_interface_module
-
-  implicit none
-
-#include "alquimia_containers.h90"
-
-  ! function parameters
-  type (c_ptr), intent(inout) :: pft_engine_state
-  integer (c_int), intent(in) :: primary_index
-  character(kind=c_char), dimension(*), intent(out) :: primary_name
-  type (AlquimiaEngineStatus), intent(out) :: status
-
-  ! local variables
-  character (len=kAlquimiaMaxWordLength), pointer :: primary_list(:)
-  type(PFloTranEngineState), pointer :: engine_state
-
-  call c_f_pointer(pft_engine_state, engine_state)
-  if (engine_state%integrity_check /= integrity_check_value) then
-     status%error = kAlquimiaErrorEngineIntegrity
-     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
-          status%message, kAlquimiaMaxStringLength)
-     return
-  end if
-
-  primary_list => engine_state%reaction%primary_species_names
-
-  !write (*, '(a)') "PFloTran_Alquimia_GetPrimaryNameFromIndex() :"
-  !write (*, '(a)') "primary index = ", primary_index
-
-  call f_c_string_chars(trim(primary_list(primary_index)), &
-       primary_name, kAlquimiaMaxStringLength)
-
-  status%error = kAlquimiaNoError
-
-end subroutine GetPrimaryNameFromIndex
 
 
 ! **************************************************************************** !

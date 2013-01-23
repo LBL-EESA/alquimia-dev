@@ -70,12 +70,6 @@ extern "C" {
         struct AlquimiaMetaData* meta_data,
         struct AlquimiaEngineStatus* status);
     
-    void (*GetPrimaryNameFromIndex)(
-        void* pft_engine_state,
-        int* primary_index,
-        char* primary_name,
-        struct AlquimiaEngineStatus* status);
-
     /* internal representation of the chemistry engine's state */
     void* engine_state;
 
