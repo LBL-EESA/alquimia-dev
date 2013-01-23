@@ -548,11 +548,11 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
-  integer (c_int), pointer :: primary_indices(:)
+  integer (c_int), pointer :: local_indices(:)
   type (c_ptr), pointer :: name_list(:)
-  character (len=kAlquimiaMaxWordLength), pointer :: primary_list(:)
-  character (c_char), pointer :: primary_name
-  integer :: i, num_primary
+  character (len=kAlquimiaMaxWordLength), pointer :: pflotran_names(:)
+  character (c_char), pointer :: name
+  integer :: i, list_size
   type(PFloTranEngineState), pointer :: engine_state
 
   !write (*, '(a)') "PFloTran_Alquimia_GetEngineMetaData() :"
@@ -565,13 +565,6 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
      return
   end if
 
-  if (meta_data%size_primary /= engine_state%reaction%ncomp) then
-     write (*, '(a, i3, a, i3, a)') "meta_data%size_primary (", &
-          meta_data%size_primary, ") != pflotran%reaction%ncomp(", &
-          engine_state%reaction%ncomp, ")"
-  end if
-  num_primary = meta_data%size_primary
-
   ! TODO(bja) : can we extract this from pflotran without hardcoding?
   meta_data%thread_safe = .true.
   meta_data%temperature_dependent = .true.
@@ -581,25 +574,62 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
   meta_data%global_implicit = .false.
   meta_data%index_base = 1
 
+  !
+  ! copy primary indices and names
+  !
+
+  if (meta_data%size_primary /= engine_state%reaction%ncomp) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%size_primary (", &
+          meta_data%size_primary, ") != pflotran%reaction%ncomp(", &
+          engine_state%reaction%ncomp, ")"
+  end if
+  list_size = meta_data%size_primary
+
   ! associate indices with the C memory
-  call c_f_pointer(meta_data%primary_indices, primary_indices, (/num_primary/))
+  call c_f_pointer(meta_data%primary_indices, local_indices, (/list_size/))
   ! NOTE(bja) : if the order in reaction%primary_species_names always
   ! is not correct we need to modifiy this...
-  do i = 1, num_primary
-     primary_indices(i) = i
+  do i = 1, list_size
+     local_indices(i) = i
   enddo
 
-  primary_list => engine_state%reaction%primary_species_names
+  pflotran_names => engine_state%reaction%primary_species_names
 
-  call c_f_pointer(meta_data%primary_names, name_list, (/num_primary/))
-  do i = 1, num_primary
-     call c_f_pointer(name_list(i), primary_name, kAlquimiaMaxStringLength)
-     call f_c_string_chars(trim(primary_list(primary_indices(i))), &
-          primary_name, kAlquimiaMaxStringLength)     
+  call c_f_pointer(meta_data%primary_names, name_list, (/list_size/))
+  do i = 1, list_size
+     call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
+     call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
+          name, kAlquimiaMaxStringLength)     
   end do
 
-  ! NOTE(bja) : meta_data%primary_names() is empty for this call!
-  !call PrintMetaData(meta_data)
+  !
+  ! copy mineral indices and names
+  !
+
+  if (meta_data%size_minerals /= engine_state%reaction%mineral%nkinmnrl) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%size_minerals (", &
+          meta_data%size_minerals, ") != pflotran%reaction%mineral%nkinmnrl(", &
+          engine_state%reaction%mineral%nkinmnrl, ")"
+  end if
+  list_size = meta_data%size_minerals
+
+  ! associate indices with the C memory
+  call c_f_pointer(meta_data%mineral_indices, local_indices, (/list_size/))
+  ! NOTE(bja) : if the order in reaction%mineral_names always
+  ! is not correct we need to modifiy this...
+  do i = 1, list_size
+     local_indices(i) = i
+  enddo
+
+  pflotran_names => engine_state%reaction%mineral%mineral_names
+
+  call c_f_pointer(meta_data%mineral_names, name_list, (/list_size/))
+  do i = 1, list_size
+     call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
+     call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
+          name, kAlquimiaMaxStringLength)     
+  end do
+
   status%error = 0
 end subroutine GetEngineMetaData
 

@@ -393,6 +393,9 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
     for (int i = 0; i < meta_data.size_primary; ++i) {
       *text_output <<  " , " << meta_data.primary_names[i];
     }
+    for (int i = 0; i < meta_data.size_minerals; ++i) {
+      *text_output << " , " << meta_data.mineral_names[i] << "_vol_frac";
+    }
     *text_output << std::endl;
   }
 }  // end WriteOutputHeader()
@@ -407,6 +410,9 @@ void WriteOutput(std::fstream* text_output, const double time,
     }
     for (int i = 0; i < state.size_total_sorbed; ++i) {
       *text_output << seperator << state.total_sorbed[i];
+    }
+    for (int i = 0; i < state.size_mineral_volume_fraction; ++i) {
+      *text_output << seperator << state.mineral_volume_fraction[i];
     }
     *text_output << std::endl;
   }

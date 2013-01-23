@@ -89,6 +89,9 @@ extern "C" {
     int size_primary;
     int* primary_indices;
     char** primary_names;
+    int size_minerals;
+    int* mineral_indices;
+    char** mineral_names;
     //char** auxiliary_output_names;
   };
   
