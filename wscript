@@ -226,8 +226,7 @@ def configure(ctx):
     if ctx.env.FC_NAME == 'IFORT':
         ctx.env['FCFLAGS'] = ['-warn']
     elif ctx.env.FC_NAME == 'GFORTRAN':
-        ctx.env['FCFLAGS'] = ['-Wall', '-W', '-Wno-unused-parameter', '-g']
-        #ctx.env['FCFLAGS'] = ['-std=f2003', '-Wall', '-W', '-Wno-unused-parameter', '-g']
+        ctx.env['FCFLAGS'] = ['-std=f2003', '-Wall', '-W', '-Wno-unused-parameter', '-g']
 
     ctx.check_fortran()
     ctx.check_fortran_verbose_flag()
