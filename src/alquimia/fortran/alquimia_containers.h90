@@ -16,7 +16,7 @@ type, bind(c) :: AlquimiaSizes
 end type AlquimiaSizes
 
 type, bind(c) :: AlquimiaState
-   real (c_double) :: density_water
+   real (c_double) :: water_density
    real (c_double) :: saturation
    real (c_double) :: porosity
    real (c_double) :: temperature

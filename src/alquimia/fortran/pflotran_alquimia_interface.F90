@@ -339,7 +339,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
 
   ! NOTE(bja): do NOT call CopyAlquimiaToAuxVars() here because most
   ! of that data is uninitialized in alquimia!
-  engine_state%global_auxvars%den_kg = state%density_water
+  engine_state%global_auxvars%den_kg = state%water_density
   engine_state%global_auxvars%sat = state%saturation
   engine_state%global_auxvars%temp = state%temperature
   engine_state%global_auxvars%pres = state%aqueous_pressure
@@ -908,7 +908,7 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! state
   !
-  global_auxvars%den_kg(1) = state%density_water
+  global_auxvars%den_kg(1) = state%water_density
   global_auxvars%sat(1) = state%saturation
   global_auxvars%temp(1) = state%temperature
   global_auxvars%pres(1) = state%aqueous_pressure
@@ -1029,7 +1029,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   !
   ! state
   !
-  state%density_water = global_auxvars%den_kg(1)
+  state%water_density = global_auxvars%den_kg(1)
   state%saturation = global_auxvars%sat(1)
   state%temperature = global_auxvars%temp(1)
   state%aqueous_pressure = global_auxvars%pres(1)
@@ -1165,7 +1165,7 @@ subroutine PrintState(reaction, state)
   real (c_double), pointer :: conc(:)
 
   write (*, '(a)') "state : "
-  write (*, '(a, 1es13.6)') "  density water : ", state%density_water
+  write (*, '(a, 1es13.6)') "  density water : ", state%water_density
   write (*, '(a, 1es13.6)') "  saturation : ", state%saturation
   write (*, '(a, 1es13.6)') "  porosity : ", state%porosity
   write (*, '(a, 1es13.6)') "  temperature : ", state%temperature
