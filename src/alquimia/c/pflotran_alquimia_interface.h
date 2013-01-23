@@ -45,11 +45,6 @@ extern "C" {
       void* pft_engine_state,
       struct AlquimiaMetaData* metadata,
       struct AlquimiaEngineStatus* status);
-  void pflotran_alquimia_getprimarynamefromindex(
-      void* pft_engine_state,
-      int* primary_index,
-      char* primary_name,
-      struct AlquimiaEngineStatus* status);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

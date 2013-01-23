@@ -64,7 +64,6 @@ void AllocateAlquimiaInterface(struct AlquimiaInterface* interface) {
   interface->ReactionStepOperatorSplit = NULL;
   interface->GetAuxiliaryOutput = NULL;
   interface->GetEngineMetaData = NULL;
-  interface->GetPrimaryNameFromIndex = NULL;
   interface->engine_state = (void*) calloc(1, sizeof(void*));
 }  // end AllocateAlquimiaInterface()
 
