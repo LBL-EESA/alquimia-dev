@@ -46,6 +46,13 @@ extern "C" {
 
   void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus* status);
 
+  /* Auxiliary Output Data */ 
+  void AllocateAlquimiaAuxiliaryOutputData(
+      const struct AlquimiaSizes* sizes,
+      struct AlquimiaAuxiliaryOutputData* aux_output);
+  void FreeAlquimiaAuxiliaryOutputData(
+      struct AlquimiaAuxiliaryOutputData* aux_output);
+
   /* Geochemical conditions/constraints */
   void AllocateAlquimiaGeochemicalConditionList(
       const int num_conditions,

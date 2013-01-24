@@ -131,7 +131,13 @@ end subroutine PFloTran_Alquimia_ReactionStepOperatorSplit
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_engine_state, status) bind(C)
+subroutine PFloTran_Alquimia_GetAuxiliaryOutput( &
+     pft_engine_state, &
+     material_properties, &
+     state, &
+     aux_data, &
+     aux_output, &
+     status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
@@ -143,9 +149,14 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput(pft_engine_state, status) bind(C
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
+  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaState), intent(in) :: state
+  type (AlquimiaAuxiliaryData), intent(in) :: aux_data
+  type (AlquimiaAuxiliaryOutputData), intent(out) :: aux_output
   type (AlquimiaEngineStatus), intent(out) :: status
 
-  call GetAuxiliaryOutput(pft_engine_state, status)
+  call GetAuxiliaryOutput(pft_engine_state, &
+       material_properties, state, aux_data, aux_output, status)
 
 end subroutine PFloTran_Alquimia_GetAuxiliaryOutput
 

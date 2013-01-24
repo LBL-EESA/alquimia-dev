@@ -114,8 +114,9 @@ extern "C" {
     struct AlquimiaGeochemicalCondition* conditions;
   };
   
-  struct AlquimiaOutputData {
+  struct AlquimiaAuxiliaryOutputData {
     double pH;
+    int size_minerals;
     double* mineral_saturation_index;  // [-]
     double* mineral_reaction_rate;  // [?]
   };

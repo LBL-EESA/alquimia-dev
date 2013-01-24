@@ -24,6 +24,7 @@ extern "C" {
     struct AlquimiaMaterialProperties material_properties;
     struct AlquimiaAuxiliaryData aux_data;
     struct AlquimiaMetaData meta_data;
+    struct AlquimiaAuxiliaryOutputData aux_output;
   };
 
   struct AlquimiaInterface {
@@ -63,6 +64,10 @@ extern "C" {
        mineral SI, reaction rates */
     void (*GetAuxiliaryOutput)(
         void* pft_engine_state,
+        struct AlquimiaMaterialProperties* material_props,
+        struct AlquimiaState* state,
+        struct AlquimiaAuxiliaryData* aux_data,
+        struct AlquimiaAuxiliaryOutputData* aux_out,
         struct AlquimiaEngineStatus* status);
     
     void (*GetEngineMetaData)(
