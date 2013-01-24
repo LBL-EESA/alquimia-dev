@@ -152,6 +152,7 @@ def setup_pflotran(ctx):
         raise waflib.Errors.ConfigurationError(
             "Could not find pflotran definitions header : {0}".format(pflotran_definitions))
 
+    ctx.env["libpflotranchem"] = "{0}/lib{1}.a".format(pflotran_src_dir, pflotran_lib_short_name)
     ctx.env.append_unique('CFLAGS', ['-DHAVE_PFLOTRAN'])
     ctx.env.append_unique('STLIB', pflotran_lib_short_name)
     ctx.env.append_unique('STLIBPATH', pflotran_src_dir)
@@ -248,26 +249,36 @@ def configure(ctx):
     if ctx.options.crunch:
        setup_crunch(ctx)
 
-    #
-    # write config header and linking file
-    #
-
     ctx.write_config_header('alquimia_config.h')
 
 
 def build(ctx):
     ctx.recurse("src")
 
-    # create the variables file
+    #
+    # create the link file for external drivers
+    #
     bld_dir = ctx.path.get_bld()
-    aq_vars = bld_dir.make_node("alquimia_variables")
+    aq_vars = bld_dir.make_node("alquimia_link_flags")
     ctx(rule='touch ${TGT}', target=aq_vars)
-    # write variable info
     aq_vars.write("# include and link flags for compiling against alquimia and the available engines.\n", flags='w')
+    # alquimia includes
     aq_vars.write("CFLAGS = -I{0}/include\n".format(ctx.env.PREFIX), flags='a')
     aq_vars.write("CXXFLAGS = -I{0}/include\n".format(ctx.env.PREFIX), flags='a')
-    # TODO(bja) : list of link libs
-    link_flags = ""
-    aq_vars.write("LIBS = {0}\n".format(link_flags), flags='a')
+
+    # list of alquimia and external link libs
+    alquimia_lib_names = ['alquimia_cutils',
+                     'alquimia_c',
+                     'alquimia_fortran']
+    alquimia_libs = ""
+    for lib in alquimia_lib_names:
+       alquimia_libs = "{0} {1}/lib/lib{2}.a".format(alquimia_libs, ctx.env.PREFIX, lib)
+
+    pflotran_libs = "{0}".format(ctx.env["libpflotranchem"])
+
+    crunch_libs = ""
+
+    aq_vars.write("LIBS = {0} {1} {2}\n".format(alquimia_libs, pflotran_libs, crunch_libs), flags='a')
+    
     # install the variables file
-    ctx.install_files("${PREFIX}", "alquimia_variables")
+    ctx.install_files("${PREFIX}", "alquimia_link_flags")
