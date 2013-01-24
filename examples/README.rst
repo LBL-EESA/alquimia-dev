@@ -14,6 +14,7 @@ name.
 **Status: fails** total component concentrations are correct, but pH values are different.
 
 .. sourcecode:: bash
+
   ../install/bin/batch_chem -d -i calcite-kinetics-short-pc.cfg
 
   ./pflotran -pflotranin calcite-kinetics-short.in -output_prefix calcite-kinetics-short-pc
@@ -31,6 +32,7 @@ the driver and processed by pflotran.
 **Status: fails** (driver driven constraints not implemented)
 
 .. sourcecode:: bash
+
   ../install/bin/batch_chem -d -i calcite-kinetics-short-dc.cfg
 
   ./pflotran -pflotranin calcite-kinetics-short.in -output_prefix calcite-kinetics-short-dc
@@ -49,6 +51,7 @@ updated during reaction stepping. Uses pflotran native constraints.
 **Status: fails** (volume fractions not updating)
 
 .. sourcecode:: bash
+
   ../install/bin/batch_chem -d -i calcite-kinetics-vf-pc.cfg
 
   ./pflotran -pflotranin calcite-kinetics-vf.in -output_prefix calcite-kinetics-vf
