@@ -276,6 +276,37 @@ void FreeAlquimiaMetaData(struct AlquimiaMetaData* meta_data) {
 
 /*******************************************************************************
  **
+ **  Auxiliary Output Data
+ **
+ *******************************************************************************/
+
+void AllocateAlquimiaAuxiliaryOutputData(
+    const struct AlquimiaSizes* sizes,
+    struct AlquimiaAuxiliaryOutputData* aux_output) {
+  AllocateDoubleArray(sizes->num_kinetic_minerals,
+                      &(aux_output->size_minerals),
+                      &(aux_output->mineral_saturation_index));
+
+  AllocateDoubleArray(sizes->num_kinetic_minerals,
+                      &(aux_output->size_minerals),
+                      &(aux_output->mineral_reaction_rate));
+
+
+}  // end AllocateAlquimiaAuxiliaryOutputData()
+
+void FreeAlquimiaAuxiliaryOutputData(
+    struct AlquimiaAuxiliaryOutputData* aux_output) {
+  if (aux_output != NULL) {
+    free(aux_output->mineral_saturation_index);
+    aux_output->mineral_saturation_index = NULL;
+
+    free(aux_output->mineral_reaction_rate);
+    aux_output->mineral_reaction_rate = NULL;
+  }
+}  // end FreeAlquimiaAuxiliaryOutputData()
+
+/*******************************************************************************
+ **
  **  Engine Status
  **
  *******************************************************************************/
@@ -398,7 +429,7 @@ void AllocateAlquimiaData(struct AlquimiaData* data) {
     AllocateAlquimiaMaterialProperties(&data->sizes, &data->material_properties);
     AllocateAlquimiaAuxiliaryData(&data->sizes, &data->aux_data);
     AllocateAlquimiaMetaData(&data->sizes, &data->meta_data);
-
+    AllocateAlquimiaAuxiliaryOutputData(&data->sizes, &data->aux_output);
 }  // end AllocateAlquimiaData()
 
 
@@ -407,4 +438,5 @@ void FreeAlquimiaData(struct AlquimiaData* data) {
   FreeAlquimiaMaterialProperties(&data->material_properties);
   FreeAlquimiaAuxiliaryData(&data->aux_data);
   FreeAlquimiaMetaData(&data->meta_data);
+  FreeAlquimiaAuxiliaryOutputData(&data->aux_output);
 }  // end FreeAlquimiaData()

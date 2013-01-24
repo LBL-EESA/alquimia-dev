@@ -500,7 +500,13 @@ end subroutine ReactionStepOperatorSplit
 
 
 ! **************************************************************************** !
-subroutine GetAuxiliaryOutput(pft_engine_state, status)
+subroutine GetAuxiliaryOutput( &
+     pft_engine_state, &
+     material_properties, &
+     state, &
+     aux_data, &
+     aux_output, &
+     status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
@@ -513,10 +519,16 @@ subroutine GetAuxiliaryOutput(pft_engine_state, status)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
+  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaState), intent(in) :: state
+  type (AlquimiaAuxiliaryData), intent(in) :: aux_data
+  type (AlquimiaAuxiliaryOutputData), intent(out) :: aux_output
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
   type(PFloTranEngineState), pointer :: engine_state
+  integer :: ph_index
+  PetscReal :: porosity, volume
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
@@ -526,7 +538,17 @@ subroutine GetAuxiliaryOutput(pft_engine_state, status)
      return
   end if
 
-  write (*, '(a)') "PFloTran_Alquimia_GetAuxiliaryOutput() :"
+  !write (*, '(a)') "PFloTranAlquimiaInterface::GetAuxiliaryOutput() :"
+
+  call CopyAlquimiaToAuxVars(state, aux_data, material_properties, &
+       engine_state%reaction, engine_state%global_auxvars, engine_state%rt_auxvars, &
+       porosity, volume)
+
+  ph_index = 1
+  aux_output%pH = -log10(engine_state%rt_auxvars%pri_act_coef(ph_index)* &
+       engine_state%rt_auxvars%pri_molal(ph_index))
+
+
   status%error = kAlquimiaNoError
 end subroutine GetAuxiliaryOutput
 

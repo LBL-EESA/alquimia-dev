@@ -105,7 +105,6 @@ int main(int argc, char** argv) {
   AlquimiaEngineStatus chem_status;
   AlquimiaData chem_data;
   AlquimiaGeochemicalConditionList alquimia_conditions;
-  //AlquimiaOutputData alquimia_output_data;
 
   try {
     // All alquimia function calls require a status object.
@@ -202,13 +201,21 @@ int main(int argc, char** argv) {
     // set delta t: [time_units]/[time_units/sec] = [sec]
     double delta_t = demo_simulation.delta_t / time_units_conversion;
     double time = 0.0;
+    // get initial pH
+    chem.GetAuxiliaryOutput(chem.engine_state,
+                            &chem_data.material_properties,
+                            &chem_data.state,
+                            &chem_data.aux_data,
+                            &chem_data.aux_output,
+                            &chem_status);
     // save the IC to our output file
     WriteOutputHeader(&text_output, time_units, chem_data.meta_data);
-    WriteOutput(&text_output, time, chem_data.state);
+    WriteOutput(&text_output, time, chem_data.state, chem_data.aux_output);
 
     for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
       time += delta_t;
-      std::cout << "reaction step : " << t << "  time: " << time << std::endl;
+      std::cout << ".";
+      //std::cout << "reaction step : " << t << "  time: " << time << std::endl;
       if (false) {
         PrintAlquimiaState(&chem_data.state);
         PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
@@ -226,11 +233,21 @@ int main(int argc, char** argv) {
           PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
           return chem_status.error;
       }
+      chem.GetAuxiliaryOutput(chem.engine_state,
+                              &chem_data.material_properties,
+                              &chem_data.state,
+                              &chem_data.aux_data,
+                              &chem_data.aux_output,
+                              &chem_status);
+      if (chem_status.error != 0) {
+          std::cout << chem_status.message << std::endl;
+          return chem_status.error;
+      }
       double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
-      WriteOutput(&text_output, out_time, chem_data.state);
+      WriteOutput(&text_output, out_time, chem_data.state, chem_data.aux_output);
       // repack into driver memory...
     }
-
+    std::cout << std::endl;
   } catch (const std::runtime_error& rt_error) {
     std::cout << rt_error.what();
     error = EXIT_FAILURE;
@@ -390,6 +407,7 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
                        const AlquimiaMetaData& meta_data) {
   if (text_output->is_open()) {
     *text_output << "# Time [" << time_units << "]";
+    *text_output << " , pH ,";
     for (int i = 0; i < meta_data.size_primary; ++i) {
       *text_output <<  " , " << meta_data.primary_names[i];
     }
@@ -401,10 +419,12 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
 }  // end WriteOutputHeader()
 
 void WriteOutput(std::fstream* text_output, const double time,
-                 const AlquimiaState& state) {
+                 const AlquimiaState& state,
+                 const AlquimiaAuxiliaryOutputData& aux_output) {
   if (text_output->is_open()) {
     std::string seperator(" , ");
     *text_output << std::scientific << std::setprecision(6) << std::setw(15) << time;
+    *text_output  << seperator << aux_output.pH;
     for (int i = 0; i < state.size_total_primary; ++i) {
       *text_output << seperator << state.total_primary[i];
     }

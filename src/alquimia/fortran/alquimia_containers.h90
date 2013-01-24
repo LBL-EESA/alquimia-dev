@@ -95,3 +95,11 @@ type, bind(c) :: AlquimiaCondition
    integer (c_int) :: num_constraints
    type (c_ptr) :: constraints
 end type AlquimiaCondition
+
+type, bind(c) :: AlquimiaAuxiliaryOutputData
+    real (c_double) pH
+    integer (c_int) size_minerals
+    type (c_ptr) mineral_saturation_index
+    type (c_ptr) mineral_reaction_rate
+end type AlquimiaAuxiliaryOutputData
+

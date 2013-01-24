@@ -27,7 +27,8 @@ void WriteOutputHeader(std::fstream* text_output,
 
 void WriteOutput(std::fstream* text_output,
                  const double time,
-                 const AlquimiaState& state);
+                 const AlquimiaState& state,
+                 const AlquimiaAuxiliaryOutputData& aux_output);
 
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,

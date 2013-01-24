@@ -8,10 +8,16 @@
 extern "C" {
 #endif /* __cplusplus */
 
+  void PrintAlquimiaDoubleArray(const char* name, const int size, const double* array);
+  void PrintAlquimiaIntArray(const char* name, const int size, const int* array);
+  void PrintAlquimiaStringArray(const char* name, const int size, char** array);
+
   void PrintAlquimiaSizes(const struct AlquimiaSizes* sizes);
   void PrintAlquimiaMetaData(const struct AlquimiaMetaData* meta_data);
   void PrintAlquimiaState(const struct AlquimiaState* state);
   void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* aux_data);
+  void PrintAlquimiaAuxiliaryOutputData(
+      const struct AlquimiaAuxiliaryOutputData* aux_output);
   void PrintAlquimiaGeochemicalConditionList(
       const struct AlquimiaGeochemicalConditionList* condition_list);
   void PrintAlquimiaGeochemicalCondition(
