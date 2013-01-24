@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
   alquimia::AlquimiaInterfaceFactory aif;
 
   try {
-    std::string engine_name(alquimia::strings::kPFloTran);
+    std::string engine_name(alquimia::strings::kAlquimiaStringPFloTran);
     alquimia::AlquimiaInterface* interface = aif.Create(engine_name);
     std::cout << "Successfully created '" << engine_name << "' interface!" << std::endl;
     delete interface;
@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
   }
 
   try {
-    std::string engine_name(alquimia::strings::kCrunchFlow);
+    std::string engine_name(alquimia::strings::kAlquimiaStringCrunchFlow);
     alquimia::AlquimiaInterface* interface = aif.Create(engine_name);
     std::cout << "Successfully created '" << engine_name << "' interface!" << std::endl;
     delete interface;

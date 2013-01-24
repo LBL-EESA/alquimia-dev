@@ -9,8 +9,8 @@ extern const size_t kAlquimiaMaxStringLength;
 extern const size_t kAlquimiaMaxWordLength;
 
 /* Geochemistry Engine Strings */
-extern const char* kPFloTran;
-extern const char* kCrunchFlow;
+extern const char* kAlquimiaStringPFloTran;
+extern const char* kAlquimiaStringCrunchFlow;
 
 /* Error Codes */
 extern const int kAlquimiaNoError;
