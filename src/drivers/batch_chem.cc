@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
     // save the IC to our output file
     WriteOutputHeader(&text_output, time_units, chem_data.meta_data);
     WriteOutput(&text_output, time, chem_data.state, chem_data.aux_output);
-
+    std::cout << "Starting reaction stepping with dt = " << delta_t << " [s]\n";
     for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
       time += delta_t;
       std::cout << ".";
@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
       }
       // unpack from driver memory, since this is batch, no unpacking
       chem.ReactionStepOperatorSplit(chem.engine_state,
-                                     &demo_simulation.delta_t,
+                                     &delta_t,
                                      &chem_data.material_properties,
                                      &chem_data.state,
                                      &chem_data.aux_data,
