@@ -199,15 +199,15 @@ int main(int argc, char** argv) {
     SetTimeUnits(demo_simulation.time_units,
                  &time_units, &time_units_conversion);
 
-    // save the IC to our output file
-    WriteOutputHeader(&text_output, time_units, chem_data.meta_data);
-
     // set delta t: [time_units]/[time_units/sec] = [sec]
     double delta_t = demo_simulation.delta_t / time_units_conversion;
-    int t;
-    double time;
-    for (t = 0, time = 0.0; t < demo_simulation.num_time_steps;
-         ++t, time += delta_t) {
+    double time = 0.0;
+    // save the IC to our output file
+    WriteOutputHeader(&text_output, time_units, chem_data.meta_data);
+    WriteOutput(&text_output, time, chem_data.state);
+
+    for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
+      time += delta_t;
       std::cout << "reaction step : " << t << "  time: " << time << std::endl;
       if (false) {
         PrintAlquimiaState(&chem_data.state);
