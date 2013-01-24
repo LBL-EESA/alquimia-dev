@@ -15,8 +15,8 @@
 void CreateAlquimiaInterface(const char* engine_name,
                              struct AlquimiaInterface* interface,
                              struct AlquimiaEngineStatus* status) {
-
-  if (strncmp(engine_name, kPFloTran, strlen(kPFloTran)) == 0) {
+  /* TODO(bja): need to make this case insensitive using ctype.h:tolower(). */
+  if (strncmp(engine_name, kAlquimiaStringPFloTran, strlen(kAlquimiaStringPFloTran)) == 0) {
 #ifdef HAVE_PFLOTRAN
     interface->Setup = &pflotran_alquimia_setup;
     interface->Shutdown = &pflotran_alquimia_shutdown;
@@ -33,7 +33,7 @@ void CreateAlquimiaInterface(const char* engine_name,
              "\nERROR : CreateAlquimiaInterface() : PFloTran interface requested, but alquimia was not compiled with PFloTran!\n");
 #endif
 
-  } else if (strncmp(engine_name, kCrunchFlow, strlen(kCrunchFlow)) == 0) {
+  } else if (strncmp(engine_name, kAlquimiaStringCrunchFlow, strlen(kAlquimiaStringCrunchFlow)) == 0) {
 #ifdef HAVE_CRUNCH
     //interface->Setup = ...;
 #else
@@ -45,7 +45,7 @@ void CreateAlquimiaInterface(const char* engine_name,
   } else {
         snprintf(status->message, kAlquimiaMaxStringLength,
             "\nERROR : CreateAlquimiaInterface() : Invalid interface name '%s'.\n  Valid names are:\n    '%s'\n    '%s'\n",
-            engine_name, kPFloTran, kCrunchFlow);
+            engine_name, kAlquimiaStringPFloTran, kAlquimiaStringCrunchFlow);
   }
   
 }  // end CreateAlquimiaInterface()
