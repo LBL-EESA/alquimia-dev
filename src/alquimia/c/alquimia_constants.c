@@ -9,8 +9,8 @@ const size_t kAlquimiaMaxStringLength = 512;
 const size_t kAlquimiaMaxWordLength = 32;
 
 /* Geochemistry Engine Strings */
-const char* kPFloTran = "PFloTran";
-const char* kCrunchFlow = "CrunchFlow";
+const char* kAlquimiaStringPFloTran = "PFloTran";
+const char* kAlquimiaStringCrunchFlow = "CrunchFlow";
 
 /* Error Codes */
 const int kAlquimiaNoError = 0;
