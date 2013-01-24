@@ -40,6 +40,10 @@ extern "C" {
       struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_getauxiliaryoutput(
       void* pft_engine_state,
+      struct AlquimiaMaterialProperties* material_properties,
+      struct AlquimiaState* state,
+      struct AlquimiaAuxiliaryData* aux_data,
+      struct AlquimiaAuxiliaryOutputData* aux_out,
       struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_getenginemetadata(
       void* pft_engine_state,
