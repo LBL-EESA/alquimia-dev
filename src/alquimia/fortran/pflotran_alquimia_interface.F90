@@ -267,7 +267,7 @@ subroutine Shutdown(pft_engine_state, status)
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
      status%error = kAlquimiaErrorEngineIntegrity
-     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+     call f_c_string_ptr("DEV_ERROR: pointer to engine state is not valid!", &
           status%message, kAlquimiaMaxStringLength)
      return
   end if
@@ -332,7 +332,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
      status%error = kAlquimiaErrorEngineIntegrity
-     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+     call f_c_string_ptr("DEV_ERROR: pointer to engine state is not valid!", &
           status%message, kAlquimiaMaxStringLength)
      return
   end if
@@ -457,7 +457,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
      status%error = kAlquimiaErrorEngineIntegrity
-     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+     call f_c_string_ptr("DEV_ERROR: pointer to engine state is not valid!", &
           status%message, kAlquimiaMaxStringLength)
      return
   end if
@@ -521,7 +521,7 @@ subroutine GetAuxiliaryOutput(pft_engine_state, status)
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
      status%error = kAlquimiaErrorEngineIntegrity
-     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+     call f_c_string_ptr("DEV_ERROR: pointer to engine state is not valid!", &
           status%message, kAlquimiaMaxStringLength)
      return
   end if
@@ -561,7 +561,7 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
      status%error = kAlquimiaErrorEngineIntegrity
-     call f_c_string_ptr("ERROR: pointer to engine state is not valid!", &
+     call f_c_string_ptr("DEV_ERROR: pointer to engine state is not valid!", &
           status%message, kAlquimiaMaxStringLength)
      return
   end if
