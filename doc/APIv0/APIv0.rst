@@ -1,15 +1,17 @@
-Alquimia will use `Semantic Versioning <http://semver.org/>`_ for its public API.
-
 API
 ===
 
-* `function <APIv0_Functions>`_ call signatures
-* `data structures <APIv0_Structures>`_
-* `constants <APIv0_Constants>`_
-* `c utility library <APIv0_c_utils>`_
+Alquimia will use `Semantic Versioning <http://semver.org/>`_ for its public API.
+
+
+* :doc:`function <APIv0_functions>` call signatures
+* :doc:`data structures <APIv0_structures>`
+* :doc:`constants <APIv0_constants>`
+* :doc:`c utility library <APIv0_c_utils>`
 
 Required Functionality
-======================
+~~~~~~~~~~~~~~~~~~~~~~
+
 Alquimia exposes the following generic functionality from the underlying libraries:
 
 * Reading of geochemical reaction data
@@ -25,24 +27,23 @@ Alquimia exposes the following generic functionality from the underlying librari
 * Additional information about the library, e.g. is it thread safe, so amanzi can create multiple copies using openmp? Does it support temperature dependent chemistry, porosity updates, etc.
 
 Notes
-=====
+~~~~~
 
 * "Driver" : the transport simulator or other driver, e.g. amanzi
 
 * "Engine" : the backend geochemistry engine, e.g. pflotran, crunchflow, toughreact, stomp, phreeqc, ...
 
 * Alquimia has two parts.
-    * An engine independent API consisting of `function <APIv0_Functions>`_ call signatures and `data structures <APIv0_Structures>`_.
-    * An optional `utility <APIv0_c_utils>`_ library to handle data memory allocation/freeing, printing structs, etc.
+    * An engine independent API consisting of :doc:`function <APIv0_functions>` call signatures and :doc:`data structures <APIv0_structures>`.
+    * An optional :doc:`utility <APIv0_c_utils>` library to handle data memory allocation/freeing, printing structs, etc.
 
 * Implementation details:
     * Each client will have some sort of process kernel interface to handle the native memory --> alquimia memory.
     * Each engine interface will handle the alquimia --> engine memory mapping and engine specific function calls. Most of this side of the interface will take place in the language of the engine.
 
---------
 
 Division of labor / responsibilities for implementing alquimia
-==============================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PK
 --
