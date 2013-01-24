@@ -9,8 +9,8 @@
 !  * Public function call signatures, including intent, are dictated
 !    by the alquimia API.
 !
-!  * alquimia data structures defined in alquimia_containers.h90 are
-!    dictated by the alquimia API.
+!  * alquimia data structures defined in the AlquimiaContainers_module
+!    (alquimia_containers.F90) are dictated by the alquimia API.
 !
 !  * All function calls involving pflotran native data structures must
 !    be private!
@@ -97,6 +97,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
 
   use c_interface_module
 
+  use AlquimiaContainers_module
+
   ! pflotran
   use Reaction_module
   use Reaction_Aux_module
@@ -106,8 +108,6 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   use Input_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
 #include "definitions.h"
 #include "finclude/petsclog.h"
@@ -251,9 +251,9 @@ subroutine Shutdown(pft_engine_state, status)
 
   use c_interface_module
 
-  implicit none
+  use AlquimiaContainers_module
 
-#include "alquimia_containers.h90"
+  implicit none
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -297,12 +297,13 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
 
   use c_interface_module
 
+  use AlquimiaContainers_module
+
+  ! pflotran
   use String_module
   use Constraint_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
 #include "definitions.h"
 #include "finclude/petsclog.h"
@@ -434,11 +435,12 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   use c_interface_module
 
+  use AlquimiaContainers_module
+
+  ! pflotran
   use Reaction_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -513,9 +515,9 @@ subroutine GetAuxiliaryOutput( &
 
   use c_interface_module
 
-  implicit none
+  use AlquimiaContainers_module
 
-#include "alquimia_containers.h90"
+  implicit none
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -561,9 +563,9 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
 
   use c_interface_module
 
-  implicit none
+  use AlquimiaContainers_module
 
-#include "alquimia_containers.h90"
+  implicit none
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -880,13 +882,14 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
 
   use, intrinsic :: iso_c_binding
 
+  use AlquimiaContainers_module
+
+  ! pflotran
   use Reaction_aux_module
   use Reactive_Transport_Aux_module
   use Global_Aux_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   type (AlquimiaState), intent(in) :: state
@@ -1003,13 +1006,14 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
 
   use, intrinsic :: iso_c_binding
 
+  use AlquimiaContainers_module
+
+  ! pflotran
   use Reaction_aux_module
   use Reactive_Transport_Aux_module
   use Global_Aux_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   type(reaction_type), pointer, intent(in) :: reaction
@@ -1132,9 +1136,9 @@ subroutine PrintSizes(sizes)
 
   use, intrinsic :: iso_c_binding
 
-  implicit none
+  use AlquimiaContainers_module
 
-#include "alquimia_containers.h90"
+  implicit none
 
   ! function parameters
   type (AlquimiaSizes), intent(in) :: sizes
@@ -1153,9 +1157,9 @@ subroutine PrintState(reaction, state)
 
   use, intrinsic :: iso_c_binding
 
-  implicit none
+  use AlquimiaContainers_module
 
-#include "alquimia_containers.h90"
+  implicit none
 
   ! function parameters
   type (reaction_type), intent(in) :: reaction
@@ -1186,9 +1190,9 @@ subroutine PrintMetaData(meta_data)
 
   use c_interface_module
 
-  implicit none
+  use AlquimiaContainers_module
 
-#include "alquimia_containers.h90"
+  implicit none
 
   ! function parameters
   type (AlquimiaMetaData), intent(in) :: meta_data
@@ -1223,9 +1227,9 @@ subroutine PrintStatus(status)
 
   use, intrinsic :: iso_c_binding
 
-  implicit none
+  use AlquimiaContainers_module
 
-#include "alquimia_containers.h90"
+  implicit none
 
   ! function parameters
   type (AlquimiaEngineStatus), intent(in) :: status
