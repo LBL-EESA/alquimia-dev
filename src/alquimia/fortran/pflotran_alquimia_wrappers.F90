@@ -19,8 +19,8 @@
 !
 !  * Function call signatures are dictated by the alquimia API!
 !
-!  * alquimia data structures defined in alquimia_containers.h90 are
-!    dictated by the alquimia API.
+!  * alquimia data structures defined in AlquimiaContainers_module
+!    (alquimia_containers.F90) are dictated by the alquimia API.
 !
 ! **************************************************************************** !
 
@@ -31,11 +31,10 @@ subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, &
 
   use, intrinsic :: iso_c_binding
 
+  use AlquimiaContainers_module
   use PFloTranAlquimiaInterface_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
@@ -53,11 +52,10 @@ subroutine PFloTran_Alquimia_Shutdown(pft_engine_state, status) bind(c)
 
   use, intrinsic :: iso_c_binding
 
+  use AlquimiaContainers_module
   use PFloTranAlquimiaInterface_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -79,11 +77,10 @@ subroutine PFloTran_Alquimia_ProcessCondition( &
 
   use, intrinsic :: iso_c_binding
 
+  use AlquimiaContainers_module
   use PFloTranAlquimiaInterface_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -110,11 +107,10 @@ subroutine PFloTran_Alquimia_ReactionStepOperatorSplit( &
 
   use, intrinsic :: iso_c_binding
 
+  use AlquimiaContainers_module
   use PFloTranAlquimiaInterface_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -141,11 +137,10 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput( &
 
   use, intrinsic :: iso_c_binding
 
+  use AlquimiaContainers_module
   use PFloTranAlquimiaInterface_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -167,11 +162,10 @@ subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
 
   use, intrinsic :: iso_c_binding
 
+  use AlquimiaContainers_module
   use PFloTranAlquimiaInterface_module
 
   implicit none
-
-#include "alquimia_containers.h90"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
