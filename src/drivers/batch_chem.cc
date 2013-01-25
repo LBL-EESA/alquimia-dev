@@ -406,13 +406,17 @@ void SetTimeUnits(const std::string& output_time_units,
 void WriteOutputHeader(std::fstream* text_output, const char time_units,
                        const AlquimiaMetaData& meta_data) {
   if (text_output->is_open()) {
-    *text_output << "# Time [" << time_units << "]";
-    *text_output << " , pH ,";
+    *text_output << "# \"Time [" << time_units << "]\"";
+    *text_output << " , \"pH\"";
     for (int i = 0; i < meta_data.size_primary; ++i) {
-      *text_output <<  " , " << meta_data.primary_names[i];
+      *text_output <<  " , \"Total " << meta_data.primary_names[i] << " [M]\"";
+    }
+    // TODO: sorbed header...
+    for (int i = 0; i < meta_data.size_minerals; ++i) {
+      *text_output << " , \"" << meta_data.mineral_names[i] << " VF\"";
     }
     for (int i = 0; i < meta_data.size_minerals; ++i) {
-      *text_output << " , " << meta_data.mineral_names[i] << "_vol_frac";
+      *text_output << " , \"" << meta_data.mineral_names[i] << " Rate [moles/sec]\"";
     }
     *text_output << std::endl;
   }
@@ -433,6 +437,9 @@ void WriteOutput(std::fstream* text_output, const double time,
     }
     for (int i = 0; i < state.size_mineral_volume_fraction; ++i) {
       *text_output << seperator << state.mineral_volume_fraction[i];
+    }
+    for (int i = 0; i < aux_output.size_minerals; ++i) {
+      *text_output << seperator << aux_output.mineral_reaction_rate[i];
     }
     *text_output << std::endl;
   }
