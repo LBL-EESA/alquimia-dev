@@ -38,39 +38,46 @@ bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
 
 /*******************************************************************************
  **
- **  Printing
+ **  Printing Vectors
  **
  *******************************************************************************/
-void PrintAlquimiaDoubleArray(const char* name, const int size, const double* array) {
-  fprintf(stdout, "    %s (%d) (%p):\n", name, size, array);
+void PrintAlquimiaVectorDouble(const char* const name,
+                               const struct AlquimiaVectorDouble* const vector) {
+  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
   fprintf(stdout, "   [ ");
-  for (int i = 0; i < size; ++i) {
-    fprintf(stdout, "%e, ", array[i]);
+  for (int i = 0; i < vector->size; ++i) {
+    fprintf(stdout, "%e, ", vector->data[i]);
   }
   fprintf(stdout, "]\n");
-}  // end PrintAlquimiaDoubleArray()
+}  // end PrintAlqumiaVectorDouble()
 
-void PrintAlquimiaIntArray(const char* name, const int size, const int* array) {
-  fprintf(stdout, "    %s (%d) (%p):\n", name, size, array);
+void PrintAlquimiaVectorInt(const char* const name,
+                            const struct AlquimiaVectorInt* const vector) {
+  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
   fprintf(stdout, "   [ ");
-  for (int i = 0; i < size; ++i) {
-    fprintf(stdout, "%d, ", array[i]);
+  for (int i = 0; i < vector->size; ++i) {
+    fprintf(stdout, "%d, ", vector->data[i]);
   }
   fprintf(stdout, "]\n");
-}  // end PrintAlqumiaIntArray()
+}  // end PrintAlqumiaVectorInt()
 
-void PrintAlquimiaStringArray(const char* name, const int size,
-                              char** array) {
-  fprintf(stdout, "    %s (%d) (%p):\n", name, size, array);
+void PrintAlquimiaVectorString(const char* const name,
+                               const struct AlquimiaVectorString* const vector) {
+  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
   fprintf(stdout, "   [ ");
-  for (int i = 0; i < size; ++i) {
-    fprintf(stdout, "'%s', ", array[i]);
+  for (int i = 0; i < vector->size; ++i) {
+    fprintf(stdout, "'%s', ", vector->data[i]);
   }
   fprintf(stdout, "]\n");
-}  // end PrintAlquimiaStringArray()
+}  // end PrintAlqumiaVectorInt()
 
 
-void PrintAlquimiaSizes(const struct AlquimiaSizes* sizes) {
+/*******************************************************************************
+ **
+ **  Printing Containers
+ **
+ *******************************************************************************/
+void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes) {
   fprintf(stdout, "  Alquimia Sizes :\n");
   fprintf(stdout, "    num primary species : %d\n", sizes->num_primary);
   fprintf(stdout, "    num sorbed : %d\n", sizes->num_sorbed);
@@ -80,7 +87,7 @@ void PrintAlquimiaSizes(const struct AlquimiaSizes* sizes) {
   fprintf(stdout, "    num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
 }  // end PrintAlquimiaSizes()
 
-void PrintAlquimiaMetaData(const struct AlquimiaMetaData* meta_data) {
+void PrintAlquimiaMetaData(const struct AlquimiaMetaData* const meta_data) {
 
   fprintf(stdout, "  Alquimia Meta Data :\n");
   fprintf(stdout, "    thread_safe : %d\n", meta_data->thread_safe);
@@ -89,17 +96,13 @@ void PrintAlquimiaMetaData(const struct AlquimiaMetaData* meta_data) {
   fprintf(stdout, "    pressure_dependent : %d\n", meta_data->pressure_dependent);
   fprintf(stdout, "    porosity_update  : %d\n", meta_data->porosity_update);
   fprintf(stdout, "    index base : %d\n", meta_data->index_base);
-  PrintAlquimiaIntArray("primary indices", meta_data->size_primary,
-                        meta_data->primary_indices);
-  PrintAlquimiaStringArray("primary names", meta_data->size_primary,
-                           meta_data->primary_names);
-  PrintAlquimiaIntArray("mineral indices",
-                        meta_data->size_minerals, meta_data->mineral_indices);
-  PrintAlquimiaStringArray("mineral names",
-                           meta_data->size_minerals, meta_data->mineral_names);
+  PrintAlquimiaVectorInt("primary indices", &(meta_data->primary_indices));
+  PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
+  PrintAlquimiaVectorInt("mineral indices", &(meta_data->mineral_indices));
+  PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names));
 }  // end PrintAlquimiaMetaData()
 
-void PrintAlquimiaState(const struct AlquimiaState* state) {
+void PrintAlquimiaState(const struct AlquimiaState* const state) {
 
   fprintf(stdout, "  Alquimia State:\n");
   fprintf(stdout, "    water density : %f\n", state->water_density);
@@ -108,49 +111,46 @@ void PrintAlquimiaState(const struct AlquimiaState* state) {
   fprintf(stdout, "    temperature : %f\n", state->temperature);
   fprintf(stdout, "    aqueous_pressure : %f\n", state->aqueous_pressure);
 
-  PrintAlquimiaDoubleArray("total_primary",
-                           state->size_total_primary, state->total_primary);
-  PrintAlquimiaDoubleArray("free_ion", state->size_free_ion,
-                           state->free_ion);
-  PrintAlquimiaDoubleArray("kinetic minerals volume fraction",
-                           state->size_mineral_volume_fraction,
-                           state->mineral_volume_fraction);
-  PrintAlquimiaDoubleArray("kinetic minerals specific surface area",
-                           state->size_mineral_specific_surface_area,
-                           state->mineral_specific_surface_area);
+  PrintAlquimiaVectorDouble("total_primary", &(state->total_primary));
+  PrintAlquimiaVectorDouble("total_sorbed", &(state->total_sorbed));
+  PrintAlquimiaVectorDouble("free_ion", &(state->free_ion));
+  PrintAlquimiaVectorDouble("kinetic minerals volume fraction",
+                            &(state->mineral_volume_fraction));
+  PrintAlquimiaVectorDouble("kinetic minerals specific surface area",
+                            &(state->mineral_specific_surface_area));
+  PrintAlquimiaVectorDouble("cation_exchange_capacity",
+                            &(state->cation_exchange_capacity));
+  PrintAlquimiaVectorDouble("surface_site_density",
+                            &(state->surface_site_density));
 }  // end PrintAlquimiaState()
 
-void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* aux_data) {
+void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_data) {
 
   fprintf(stdout, "  Alquimia Auxiliary Data:\n");
-  PrintAlquimiaDoubleArray("primary activity coeff",
-                           aux_data->size_primary_activity_coeff,
-                           aux_data->primary_activity_coeff);
-  PrintAlquimiaDoubleArray("secondary activity coeff",
-                           aux_data->size_secondary_activity_coeff,
-                           aux_data->secondary_activity_coeff);
-  PrintAlquimiaDoubleArray("ion exchange ref cation conc",
-                           aux_data->size_ion_exchange_ref_cation_conc,
-                           aux_data->ion_exchange_ref_cation_conc);
-  PrintAlquimiaDoubleArray("surface complex free site conc",
-                           aux_data->size_surface_complex_free_site_conc,
-                           aux_data->surface_complex_free_site_conc);
+  PrintAlquimiaVectorDouble("primary activity coeff",
+                            &(aux_data->primary_activity_coeff));
+  PrintAlquimiaVectorDouble("secondary activity coeff",
+                            &(aux_data->secondary_activity_coeff));
+  PrintAlquimiaVectorDouble("ion exchange ref cation conc",
+                            &(aux_data->ion_exchange_ref_cation_conc));
+  PrintAlquimiaVectorDouble("surface complex free site conc",
+                            &(aux_data->surface_complex_free_site_conc));
 }  // end PrintAlquimiaAuxiliaryData()
 
 void PrintAlquimiaAuxiliaryOutputData(
-    const struct AlquimiaAuxiliaryOutputData* aux_output) {
+    const struct AlquimiaAuxiliaryOutputData* const aux_output) {
 
   fprintf(stdout, "  Alquimia Auxiliary Output Data:\n");
   fprintf(stdout, "    pH : %f\n", aux_output->pH);
 
-  PrintAlquimiaDoubleArray("mineral saturation index", aux_output->size_minerals,
-                           aux_output->mineral_saturation_index);
-  PrintAlquimiaDoubleArray("mineral reaction rate", aux_output->size_minerals,
-                           aux_output->mineral_reaction_rate);
+  PrintAlquimiaVectorDouble("mineral saturation index",
+                            &(aux_output->mineral_saturation_index));
+  PrintAlquimiaVectorDouble("mineral reaction rate",
+                            &(aux_output->mineral_reaction_rate));
 }  // end PrintAlquimiaAuxiliaryOutputData()
 
 void PrintAlquimiaGeochemicalConditionList(
-    const struct AlquimiaGeochemicalConditionList* condition_list) {
+    const struct AlquimiaGeochemicalConditionList* const condition_list) {
 
   fprintf(stdout, "Alquimia Geochemical Condition List : \n");
   for (int i = 0; i < condition_list->num_conditions; ++i) {
@@ -160,7 +160,7 @@ void PrintAlquimiaGeochemicalConditionList(
 }  //  PrintAlquimiaGeochemicalConditionList()
 
 void PrintAlquimiaGeochemicalCondition(
-    const struct AlquimiaGeochemicalCondition* condition) {
+    const struct AlquimiaGeochemicalCondition* const condition) {
 
   fprintf(stdout, "  Alquimia Geochemical Condition : %s\n", condition->name);
   for (int i = 0; i < condition->num_constraints; ++i) {
@@ -170,7 +170,7 @@ void PrintAlquimiaGeochemicalCondition(
 }  //  PrintAlquimiaGeochemicalCondition()
 
 void PrintAlquimiaGeochemicalConstraint(
-    const struct AlquimiaGeochemicalConstraint* constraint) {
+    const struct AlquimiaGeochemicalConstraint* const constraint) {
   fprintf(stdout, "    Alquimia Geochemical Constraint : \n");
   fprintf(stdout, "      primary species : %s\n", constraint->primary_species);
   fprintf(stdout, "      constraint type : %s\n", constraint->constraint_type);

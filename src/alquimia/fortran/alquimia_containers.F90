@@ -34,6 +34,21 @@ module AlquimiaContainers_module
   integer (c_int), parameter :: kAlquimiaErrorInvalidEngine = 1
   integer (c_int), parameter :: kAlquimiaErrorEngineIntegrity = 4577
 
+  type, public, bind(c) :: AlquimiaVectorDouble
+     integer (c_int) :: size
+     type (c_ptr) :: data
+  end type AlquimiaVectorDouble
+
+  type, public, bind(c) :: AlquimiaVectorInt
+     integer (c_int) :: size
+     type (c_ptr) :: data
+  end type AlquimiaVectorInt
+
+  type, public, bind(c) :: AlquimiaVectorString
+     integer (c_int) :: size
+     type (c_ptr) :: data
+  end type AlquimiaVectorString
+
   type, public, bind(c) :: AlquimiaSizes
      integer (c_int) :: num_primary
      integer (c_int) :: num_sorbed
@@ -49,41 +64,27 @@ module AlquimiaContainers_module
      real (c_double) :: porosity
      real (c_double) :: temperature
      real (c_double) :: aqueous_pressure
-     integer (c_int) :: size_total_primary
-     type (c_ptr) :: total_primary
-     integer (c_int) :: size_total_sorbed
-     type (c_ptr) :: total_sorbed
-     integer (c_int) :: size_free_ion
-     type (c_ptr) :: free_ion
-     integer (c_int) :: size_mineral_volume_fraction
-     type (c_ptr) :: mineral_volume_fraction
-     integer (c_int) :: size_mineral_specific_surface_area
-     type (c_ptr) :: mineral_specific_surface_area
-     integer (c_int) :: size_cation_exchange_capacity
-     type (c_ptr) :: cation_exchange_capacity
-     integer (c_int) :: size_surface_site_density
-     type (c_ptr) :: surface_site_density
+     type (AlquimiaVectorDouble) :: total_primary
+     type (AlquimiaVectorDouble) :: total_sorbed
+     type (AlquimiaVectorDouble) :: free_ion
+     type (AlquimiaVectorDouble) :: mineral_volume_fraction
+     type (AlquimiaVectorDouble) :: mineral_specific_surface_area
+     type (AlquimiaVectorDouble) :: cation_exchange_capacity
+     type (AlquimiaVectorDouble) :: surface_site_density
   end type AlquimiaState
 
   type, public, bind(c) :: AlquimiaMaterialProperties
      real (c_double) :: volume
-     integer (c_int) :: size_isotherm_kd
-     type (c_ptr) :: isotherm_kd
-     integer (c_int) :: size_freundlich_n
-     type (c_ptr) :: freundlich_n
-     integer (c_int) :: size_langmuir_b
-     type (c_ptr) :: langmuir_b
+     type (AlquimiaVectorDouble) :: isotherm_kd
+     type (AlquimiaVectorDouble) :: freundlich_n
+     type (AlquimiaVectorDouble) :: langmuir_b
   end type AlquimiaMaterialProperties
 
   type, public, bind(c) :: AlquimiaAuxiliaryData 
-     integer (c_int) :: size_primary_activity_coeff
-     type (c_ptr) :: primary_activity_coeff
-     integer (c_int) :: size_secondary_activity_coeff
-     type (c_ptr) :: secondary_activity_coeff
-     integer (c_int) :: size_ion_exchange_ref_cation_conc
-     type (c_ptr) :: ion_exchange_ref_cation_conc
-     integer (c_int) :: size_surface_complex_free_site_conc
-     type (c_ptr) :: surface_complex_free_site_conc
+     type (AlquimiaVectorDouble) :: primary_activity_coeff
+     type (AlquimiaVectorDouble) :: secondary_activity_coeff
+     type (AlquimiaVectorDouble) :: ion_exchange_ref_cation_conc
+     type (AlquimiaVectorDouble) :: surface_complex_free_site_conc
   end type AlquimiaAuxiliaryData
 
   type, public, bind(c) :: AlquimiaEngineStatus
@@ -103,13 +104,17 @@ module AlquimiaContainers_module
      logical (c_bool) :: operator_splitting
      logical (c_bool) :: global_implicit
      integer (c_int) :: index_base
-     integer (c_int) :: size_primary
-     type (c_ptr) :: primary_indices
-     type (c_ptr) :: primary_names
-     integer (c_int) :: size_minerals
-     type (c_ptr) :: mineral_indices
-     type (c_ptr) :: mineral_names
+     type (AlquimiaVectorInt) :: primary_indices
+     type (AlquimiaVectorString) :: primary_names
+     type (AlquimiaVectorInt) :: mineral_indices
+     type (AlquimiaVectorString) :: mineral_names
   end type AlquimiaMetaData
+
+  type, public, bind(c) :: AlquimiaAuxiliaryOutputData
+     real (c_double) pH
+     type (AlquimiaVectorDouble) mineral_saturation_index
+     type (AlquimiaVectorDouble) mineral_reaction_rate
+  end type AlquimiaAuxiliaryOutputData
 
   type, public, bind(c) :: AlquimiaConstraint
      type (c_ptr) :: primary_species
@@ -123,12 +128,5 @@ module AlquimiaContainers_module
      integer (c_int) :: num_constraints
      type (c_ptr) :: constraints
   end type AlquimiaCondition
-
-  type, public, bind(c) :: AlquimiaAuxiliaryOutputData
-     real (c_double) pH
-     integer (c_int) size_minerals
-     type (c_ptr) mineral_saturation_index
-     type (c_ptr) mineral_reaction_rate
-  end type AlquimiaAuxiliaryOutputData
 
 end module AlquimiaContainers_module
