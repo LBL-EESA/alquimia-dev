@@ -10,8 +10,31 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "alquimia_containers.h"
+
+/*******************************************************************************
+ **
+ **  Strings
+ **
+ *******************************************************************************/
+bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
+                                          const char* const str2) {
+  bool equal = true;
+  if (strlen(str1) != strlen(str2)) {
+    equal = false;
+  } else {
+    for (size_t i = 0; i < strlen(str1); ++i) {
+      if (tolower(str1[i]) != tolower(str2[i])) {
+        equal = false;
+        break;
+      }  // end if()
+    }  // end for()
+  } // end else()
+  return equal;
+}  // end AlquimiaCaseInsensitiveStringCompare()
 
 /*******************************************************************************
  **
@@ -85,7 +108,7 @@ void PrintAlquimiaState(const struct AlquimiaState* state) {
   fprintf(stdout, "    temperature : %f\n", state->temperature);
   fprintf(stdout, "    aqueous_pressure : %f\n", state->aqueous_pressure);
 
-  PrintAlquimiaDoubleArray("total_primary", 
+  PrintAlquimiaDoubleArray("total_primary",
                            state->size_total_primary, state->total_primary);
   PrintAlquimiaDoubleArray("free_ion", state->size_free_ion,
                            state->free_ion);

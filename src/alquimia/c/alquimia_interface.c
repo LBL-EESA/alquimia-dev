@@ -5,18 +5,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "pflotran_alquimia_interface.h"
 
+#include "alquimia_util.h"
 #include "alquimia_containers.h"
 #include "alquimia_constants.h"
-
 
 void CreateAlquimiaInterface(const char* engine_name,
                              struct AlquimiaInterface* interface,
                              struct AlquimiaEngineStatus* status) {
-  /* TODO(bja): need to make this case insensitive using ctype.h:tolower(). */
-  if (strncmp(engine_name, kAlquimiaStringPFloTran, strlen(kAlquimiaStringPFloTran)) == 0) {
+
+  if (AlquimiaCaseInsensitiveStringCompare(engine_name,
+                                           kAlquimiaStringPFloTran)) {
 #ifdef HAVE_PFLOTRAN
     interface->Setup = &pflotran_alquimia_setup;
     interface->Shutdown = &pflotran_alquimia_shutdown;
@@ -33,19 +35,21 @@ void CreateAlquimiaInterface(const char* engine_name,
              "\nERROR : CreateAlquimiaInterface() : PFloTran interface requested, but alquimia was not compiled with PFloTran!\n");
 #endif
 
-  } else if (strncmp(engine_name, kAlquimiaStringCrunchFlow, strlen(kAlquimiaStringCrunchFlow)) == 0) {
+  } else if (AlquimiaCaseInsensitiveStringCompare(engine_name,
+                                                  kAlquimiaStringCrunchFlow)) {
 #ifdef HAVE_CRUNCH
     //interface->Setup = ...;
 #else
-      status->error = kAlquimiaErrorInvalidEngine;
-      snprintf(status->message, kAlquimiaMaxStringLength,
-            "\nERROR : CreateAlquimiaInterface() : CrunchFlow interface requested, but alquimia was not compiled with CrunchFlow!\n");
+    status->error = kAlquimiaErrorInvalidEngine;
+    snprintf(status->message, kAlquimiaMaxStringLength,
+             "\nERROR : CreateAlquimiaInterface() : CrunchFlow interface requested, but alquimia was not compiled with CrunchFlow!\n");
 #endif
 
   } else {
-        snprintf(status->message, kAlquimiaMaxStringLength,
-            "\nERROR : CreateAlquimiaInterface() : Invalid interface name '%s'.\n  Valid names are:\n    '%s'\n    '%s'\n",
-            engine_name, kAlquimiaStringPFloTran, kAlquimiaStringCrunchFlow);
+    status->error = kAlquimiaErrorInvalidEngine;
+    snprintf(status->message, kAlquimiaMaxStringLength,
+             "\nERROR : CreateAlquimiaInterface() : Invalid interface name '%s'.\n  Valid names are:\n    '%s'\n    '%s'\n",
+             engine_name, kAlquimiaStringPFloTran, kAlquimiaStringCrunchFlow);
   }
-  
+
 }  // end CreateAlquimiaInterface()
