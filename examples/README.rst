@@ -48,7 +48,7 @@ Test the alquimia interface with mineral dissolution/precipitation for
 a long simulation time, so that the mineral volume fractions are
 updated during reaction stepping. Uses pflotran native constraints.
 
-**Status: fails** (volume fractions not updating)
+**Status: fails** (numerical differences)
 
 .. sourcecode:: bash
 
