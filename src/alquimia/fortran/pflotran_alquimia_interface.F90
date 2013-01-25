@@ -488,6 +488,9 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
        status%num_newton_iterations, &
        engine_state%reaction, engine_state%option, vol_frac_prim)
 
+  call RUpdateSolution(engine_state%rt_auxvars, engine_state%global_auxvars, &
+       engine_state%reaction, engine_state%option)
+
   call CopyAuxVarsToAlquimia( &
        engine_state%reaction, &
        engine_state%global_auxvars, &
