@@ -8,6 +8,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+  bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
+                                            const char* const str2);
+
   void PrintAlquimiaDoubleArray(const char* name, const int size, const double* array);
   void PrintAlquimiaIntArray(const char* name, const int size, const int* array);
   void PrintAlquimiaStringArray(const char* name, const int size, char** array);
