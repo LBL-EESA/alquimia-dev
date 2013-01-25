@@ -11,22 +11,25 @@ extern "C" {
   bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                             const char* const str2);
 
-  void PrintAlquimiaDoubleArray(const char* name, const int size, const double* array);
-  void PrintAlquimiaIntArray(const char* name, const int size, const int* array);
-  void PrintAlquimiaStringArray(const char* name, const int size, char** array);
+  void PrintAlquimiaVectorDouble(const char* const name,
+                                 const struct AlquimiaVectorDouble* const vector);
+  void PrintAlquimiaVectorInt(const char* const name,
+                              const struct AlquimiaVectorInt* const vector);
+  void PrintAlquimiaVectorString(const char* const name,
+                                 const struct AlquimiaVectorString* const vector);
 
-  void PrintAlquimiaSizes(const struct AlquimiaSizes* sizes);
-  void PrintAlquimiaMetaData(const struct AlquimiaMetaData* meta_data);
-  void PrintAlquimiaState(const struct AlquimiaState* state);
-  void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* aux_data);
+  void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes);
+  void PrintAlquimiaMetaData(const struct AlquimiaMetaData* const meta_data);
+  void PrintAlquimiaState(const struct AlquimiaState* const state);
+  void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_data);
   void PrintAlquimiaAuxiliaryOutputData(
-      const struct AlquimiaAuxiliaryOutputData* aux_output);
+      const struct AlquimiaAuxiliaryOutputData* const aux_output);
   void PrintAlquimiaGeochemicalConditionList(
       const struct AlquimiaGeochemicalConditionList* condition_list);
   void PrintAlquimiaGeochemicalCondition(
-      const struct AlquimiaGeochemicalCondition* condition);
+      const struct AlquimiaGeochemicalCondition* const condition);
   void PrintAlquimiaGeochemicalConstraint(
-      const struct AlquimiaGeochemicalConstraint* constraint);
+      const struct AlquimiaGeochemicalConstraint* const constraint);
 
 #ifdef __cplusplus
 }

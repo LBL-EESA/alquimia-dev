@@ -453,7 +453,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   ! local variables
   type(PFloTranEngineState), pointer :: engine_state
   PetscReal :: porosity, volume, vol_frac_prim
-  PetscReal :: tran_xx(state%size_total_primary)
+  PetscReal :: tran_xx(state%total_primary%size)
   PetscInt :: i, phase_index
 
   call c_f_pointer(pft_engine_state, engine_state)
@@ -475,7 +475,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   ! copy total primaries into dummy transport variable
   phase_index = 1
   
-  do i = 1, state%size_total_primary
+  do i = 1, state%total_primary%size
      tran_xx(i) = engine_state%rt_auxvar%total(i, phase_index)
   enddo
 
@@ -530,7 +530,7 @@ subroutine GetAuxiliaryOutput( &
   type (AlquimiaMaterialProperties), intent(in) :: material_properties
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
-  type (AlquimiaAuxiliaryOutputData), intent(out) :: aux_output
+  type (AlquimiaAuxiliaryOutputData), intent(inout) :: aux_output
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
@@ -562,13 +562,15 @@ subroutine GetAuxiliaryOutput( &
   aux_output%pH = -log10(engine_state%rt_auxvar%pri_act_coef(ph_index) * &
        engine_state%rt_auxvar%pri_molal(ph_index))
 
-  call c_f_pointer(aux_output%mineral_reaction_rate, local_array, (/aux_output%size_minerals/))
-    do i = 1, aux_output%size_minerals
+  call c_f_pointer(aux_output%mineral_reaction_rate%data, local_array, &
+       (/aux_output%mineral_reaction_rate%size/))
+    do i = 1, aux_output%mineral_reaction_rate%size
      local_array(i) = engine_state%rt_auxvar%mnrl_rate(i)
   end do
 
-  call c_f_pointer(aux_output%mineral_saturation_index, local_array, (/aux_output%size_minerals/))
-  do i = 1, aux_output%size_minerals
+  call c_f_pointer(aux_output%mineral_saturation_index%data, local_array, &
+       (/aux_output%mineral_saturation_index%size/))
+  do i = 1, aux_output%mineral_saturation_index%size
      local_array(i) = RMineralSaturationIndex(i, engine_state%rt_auxvar, &
           engine_state%global_auxvar, &
           engine_state%reaction, engine_state%option)
@@ -626,15 +628,15 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
   ! copy primary indices and names
   !
 
-  if (meta_data%size_primary /= engine_state%reaction%ncomp) then
-     write (*, '(a, i3, a, i3, a)') "meta_data%size_primary (", &
-          meta_data%size_primary, ") != pflotran%reaction%ncomp(", &
+  if (meta_data%primary_names%size /= engine_state%reaction%ncomp) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%primary_names%size (", &
+          meta_data%primary_names%size, ") != pflotran%reaction%ncomp(", &
           engine_state%reaction%ncomp, ")"
   end if
-  list_size = meta_data%size_primary
+  list_size = meta_data%primary_names%size
 
   ! associate indices with the C memory
-  call c_f_pointer(meta_data%primary_indices, local_indices, (/list_size/))
+  call c_f_pointer(meta_data%primary_indices%data, local_indices, (/list_size/))
   ! NOTE(bja) : if the order in reaction%primary_species_names always
   ! is not correct we need to modifiy this...
   do i = 1, list_size
@@ -643,7 +645,7 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
 
   pflotran_names => engine_state%reaction%primary_species_names
 
-  call c_f_pointer(meta_data%primary_names, name_list, (/list_size/))
+  call c_f_pointer(meta_data%primary_names%data, name_list, (/list_size/))
   do i = 1, list_size
      call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
      call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
@@ -654,15 +656,15 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
   ! copy mineral indices and names
   !
 
-  if (meta_data%size_minerals /= engine_state%reaction%mineral%nkinmnrl) then
-     write (*, '(a, i3, a, i3, a)') "meta_data%size_minerals (", &
-          meta_data%size_minerals, ") != pflotran%reaction%mineral%nkinmnrl(", &
+  if (meta_data%mineral_names%size /= engine_state%reaction%mineral%nkinmnrl) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%mineral_names%size (", &
+          meta_data%mineral_names%size, ") != pflotran%reaction%mineral%nkinmnrl(", &
           engine_state%reaction%mineral%nkinmnrl, ")"
   end if
-  list_size = meta_data%size_minerals
+  list_size = meta_data%mineral_names%size
 
   ! associate indices with the C memory
-  call c_f_pointer(meta_data%mineral_indices, local_indices, (/list_size/))
+  call c_f_pointer(meta_data%mineral_indices%data, local_indices, (/list_size/))
   ! NOTE(bja) : if the order in reaction%mineral_names always
   ! is not correct we need to modifiy this...
   do i = 1, list_size
@@ -671,7 +673,7 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
 
   pflotran_names => engine_state%reaction%mineral%mineral_names
 
-  call c_f_pointer(meta_data%mineral_names, name_list, (/list_size/))
+  call c_f_pointer(meta_data%mineral_names%data, name_list, (/list_size/))
   do i = 1, list_size
      call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
      call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
@@ -946,17 +948,17 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! primary aqueous
   !
-  call c_f_pointer(state%total_primary, local_array, (/reaction%naqcomp/))
+  call c_f_pointer(state%total_primary%data, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
      rt_auxvar%total(i, phase_index) = local_array(i)
   end do
 
-  call c_f_pointer(state%free_ion, local_array, (/reaction%naqcomp/))
+  call c_f_pointer(state%free_ion%data, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
      rt_auxvar%pri_molal(i) = local_array(i)
   end do
 
-  call c_f_pointer(aux_data%primary_activity_coeff, local_array, (/reaction%naqcomp/))
+  call c_f_pointer(aux_data%primary_activity_coeff%data, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
      rt_auxvar%pri_act_coef(i) = local_array(i)
   end do
@@ -964,7 +966,7 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! aqueous complexes
   !
-  call c_f_pointer(aux_data%secondary_activity_coeff, local_array, &
+  call c_f_pointer(aux_data%secondary_activity_coeff%data, local_array, &
        (/reaction%neqcplx/))
   do i = 1, reaction%neqcplx
      rt_auxvar%sec_act_coef(i) = local_array(i)
@@ -973,13 +975,13 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! minerals
   !
-  call c_f_pointer(state%mineral_volume_fraction, local_array, &
+  call c_f_pointer(state%mineral_volume_fraction%data, local_array, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
      rt_auxvar%mnrl_volfrac(i) = local_array(i)
   end do
 
-  call c_f_pointer(state%mineral_specific_surface_area, local_array, &
+  call c_f_pointer(state%mineral_specific_surface_area%data, local_array, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
      rt_auxvar%mnrl_area(i) = local_array(i)
@@ -988,13 +990,13 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! ion exchange, CEC only present in reaction, not aux_vars?
   !
-  call c_f_pointer(state%cation_exchange_capacity, local_array, &
+  call c_f_pointer(state%cation_exchange_capacity%data, local_array, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
      reaction%eqionx_rxn_CEC(i) = local_array(i)
   end do
 
-  call c_f_pointer(aux_data%ion_exchange_ref_cation_conc, local_array, &
+  call c_f_pointer(aux_data%ion_exchange_ref_cation_conc%data, local_array, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
      rt_auxvar%eqionx_ref_cation_sorbed_conc(i) = local_array(i)
@@ -1004,13 +1006,13 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! equilibrium surface complexation
   !
-  call c_f_pointer(state%surface_site_density, local_array, &
+  call c_f_pointer(state%surface_site_density%data, local_array, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
      reaction%surface_complexation%srfcplxrxn_site_density(i) = local_array(i)
   end do
 
-  call c_f_pointer(aux_data%surface_complex_free_site_conc, local_array, &
+  call c_f_pointer(aux_data%surface_complex_free_site_conc%data, local_array, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
      rt_auxvar%srfcplxrxn_free_site_conc(i) = local_array(i)
@@ -1067,17 +1069,17 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! primary aqueous species
   !
-  call c_f_pointer(state%total_primary, local_array, (/reaction%naqcomp/))
+  call c_f_pointer(state%total_primary%data, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
      local_array(i) = rt_auxvar%total(i, phase_index)
   end do
 
-  call c_f_pointer(state%free_ion, local_array, (/reaction%naqcomp/))
+  call c_f_pointer(state%free_ion%data, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
      local_array(i) = rt_auxvar%pri_molal(i)
   end do
 
-  call c_f_pointer(aux_data%primary_activity_coeff, local_array, (/reaction%naqcomp/))
+  call c_f_pointer(aux_data%primary_activity_coeff%data, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
      local_array(i) = rt_auxvar%pri_act_coef(i)
   end do
@@ -1085,7 +1087,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! secondary aqueous complexes
   !
-  call c_f_pointer(aux_data%secondary_activity_coeff, local_array, &
+  call c_f_pointer(aux_data%secondary_activity_coeff%data, local_array, &
        (/reaction%neqcplx/))
   do i = 1, reaction%neqcplx
      local_array(i) = rt_auxvar%sec_act_coef(i)
@@ -1094,7 +1096,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! sorbed
   !
-  call c_f_pointer(state%total_sorbed, local_array, (/reaction%neqsorb/))
+  call c_f_pointer(state%total_sorbed%data, local_array, (/reaction%neqsorb/))
   do i = 1, reaction%neqsorb
      local_array(i) = rt_auxvar%total_sorb_eq(i)
   end do
@@ -1102,13 +1104,13 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! minerals
   !
-  call c_f_pointer(state%mineral_volume_fraction, local_array, &
+  call c_f_pointer(state%mineral_volume_fraction%data, local_array, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
      local_array(i) = rt_auxvar%mnrl_volfrac(i)
   end do
 
-  call c_f_pointer(state%mineral_specific_surface_area, local_array, &
+  call c_f_pointer(state%mineral_specific_surface_area%data, local_array, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
      local_array(i) = rt_auxvar%mnrl_area(i)
@@ -1117,13 +1119,13 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! ion exchange, CEC only present in reaction, not aux_vars?
   !
-  call c_f_pointer(state%cation_exchange_capacity, local_array, &
+  call c_f_pointer(state%cation_exchange_capacity%data, local_array, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
      local_array(i) = reaction%eqionx_rxn_CEC(i)
   end do
 
-  call c_f_pointer(aux_data%ion_exchange_ref_cation_conc, local_array, &
+  call c_f_pointer(aux_data%ion_exchange_ref_cation_conc%data, local_array, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
      local_array(i) = rt_auxvar%eqionx_ref_cation_sorbed_conc(i)
@@ -1133,13 +1135,13 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! equilibrium surface complexation, site density in reaction, not aux_vars
   !
-  call c_f_pointer(state%surface_site_density, local_array, &
+  call c_f_pointer(state%surface_site_density%data, local_array, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
      local_array(i) = reaction%surface_complexation%srfcplxrxn_site_density(i)
   end do
 
-  call c_f_pointer(aux_data%surface_complex_free_site_conc, local_array, &
+  call c_f_pointer(aux_data%surface_complex_free_site_conc%data, local_array, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
      local_array(i) = rt_auxvar%srfcplxrxn_free_site_conc(i)
@@ -1176,7 +1178,7 @@ end subroutine PrintSizes
 
 
 ! **************************************************************************** !
-subroutine PrintState(reaction, state)
+subroutine PrintState(state)
 
   use, intrinsic :: iso_c_binding
 
@@ -1185,7 +1187,6 @@ subroutine PrintState(reaction, state)
   implicit none
 
   ! function parameters
-  type (reaction_type), intent(in) :: reaction
   type (AlquimiaState), intent(in) :: state
 
   ! local variables
@@ -1198,9 +1199,9 @@ subroutine PrintState(reaction, state)
   write (*, '(a, 1es13.6)') "  porosity : ", state%porosity
   write (*, '(a, 1es13.6)') "  temperature : ", state%temperature
   write (*, '(a, 1es13.6)') "  aqueous pressure : ", state%aqueous_pressure
-  write (*, '(a, i4, a)') "  total primary (", reaction%naqcomp, ") : "
-  call c_f_pointer(state%total_primary, conc, (/reaction%naqcomp/))
-  do i=1, reaction%naqcomp
+  write (*, '(a, i4, a)') "  total primary (", state%total_primary%size, ") : "
+  call c_f_pointer(state%total_primary%data, conc, (/state%total_primary%size/))
+  do i=1, state%total_primary%size
      write (*, '(1es13.6)') conc(i)
   end do
 end subroutine PrintState
@@ -1233,12 +1234,12 @@ subroutine PrintMetaData(meta_data)
   write (*, '(a, L1)') "  porosity update : ", meta_data%porosity_update
   write (*, '(a, i4)') "  index base : ", meta_data%index_base
   write (*, '(a)') "  primary indices : "
-  call c_f_pointer(meta_data%primary_indices, indices, (/meta_data%size_primary/))
-  do i=1, meta_data%size_primary
+  call c_f_pointer(meta_data%primary_indices%data, indices, (/meta_data%primary_indices%size/))
+  do i=1, meta_data%primary_indices%size
      write (*, '(i4)') indices(i)
   end do
-  call c_f_pointer(meta_data%primary_names, names, (/meta_data%size_primary/))
-  do i=1, meta_data%size_primary
+  call c_f_pointer(meta_data%primary_names%data, names, (/meta_data%primary_names%size/))
+  do i=1, meta_data%primary_names%size
      call c_f_string_ptr(names(i), name)
      write (*, '(a)') trim(name)
   end do

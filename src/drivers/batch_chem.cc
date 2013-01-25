@@ -408,15 +408,15 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
   if (text_output->is_open()) {
     *text_output << "# \"Time [" << time_units << "]\"";
     *text_output << " , \"pH\"";
-    for (int i = 0; i < meta_data.size_primary; ++i) {
-      *text_output <<  " , \"Total " << meta_data.primary_names[i] << " [M]\"";
+    for (int i = 0; i < meta_data.primary_names.size; ++i) {
+      *text_output <<  " , \"Total " << meta_data.primary_names.data[i] << " [M]\"";
     }
     // TODO: sorbed header...
-    for (int i = 0; i < meta_data.size_minerals; ++i) {
-      *text_output << " , \"" << meta_data.mineral_names[i] << " VF\"";
+    for (int i = 0; i < meta_data.mineral_names.size; ++i) {
+      *text_output << " , \"" << meta_data.mineral_names.data[i] << " VF\"";
     }
-    for (int i = 0; i < meta_data.size_minerals; ++i) {
-      *text_output << " , \"" << meta_data.mineral_names[i] << " Rate [moles/sec]\"";
+    for (int i = 0; i < meta_data.mineral_names.size; ++i) {
+      *text_output << " , \"" << meta_data.mineral_names.data[i] << " Rate [moles/sec]\"";
     }
     *text_output << std::endl;
   }
@@ -429,17 +429,17 @@ void WriteOutput(std::fstream* text_output, const double time,
     std::string seperator(" , ");
     *text_output << std::scientific << std::setprecision(6) << std::setw(15) << time;
     *text_output  << seperator << aux_output.pH;
-    for (int i = 0; i < state.size_total_primary; ++i) {
-      *text_output << seperator << state.total_primary[i];
+    for (int i = 0; i < state.total_primary.size; ++i) {
+      *text_output << seperator << state.total_primary.data[i];
     }
-    for (int i = 0; i < state.size_total_sorbed; ++i) {
-      *text_output << seperator << state.total_sorbed[i];
+    for (int i = 0; i < state.total_sorbed.size; ++i) {
+      *text_output << seperator << state.total_sorbed.data[i];
     }
-    for (int i = 0; i < state.size_mineral_volume_fraction; ++i) {
-      *text_output << seperator << state.mineral_volume_fraction[i];
+    for (int i = 0; i < state.mineral_volume_fraction.size; ++i) {
+      *text_output << seperator << state.mineral_volume_fraction.data[i];
     }
-    for (int i = 0; i < aux_output.size_minerals; ++i) {
-      *text_output << seperator << aux_output.mineral_reaction_rate[i];
+    for (int i = 0; i < aux_output.mineral_reaction_rate.size; ++i) {
+      *text_output << seperator << aux_output.mineral_reaction_rate.data[i];
     }
     *text_output << std::endl;
   }

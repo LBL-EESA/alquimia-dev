@@ -147,7 +147,7 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput( &
   type (AlquimiaMaterialProperties), intent(in) :: material_properties
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
-  type (AlquimiaAuxiliaryOutputData), intent(out) :: aux_output
+  type (AlquimiaAuxiliaryOutputData), intent(inout) :: aux_output
   type (AlquimiaEngineStatus), intent(out) :: status
 
   call GetAuxiliaryOutput(pft_engine_state, &
