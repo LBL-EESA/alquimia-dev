@@ -71,8 +71,8 @@ module PFloTranAlquimiaInterface_module
      integer(kind=8) :: integrity_check
      type (option_type), pointer :: option
      type (reaction_type), pointer :: reaction
-     type (reactive_transport_auxvar_type), pointer :: rt_auxvars
-     type (global_auxvar_type), pointer :: global_auxvars
+     type (reactive_transport_auxvar_type), pointer :: rt_auxvar
+     type (global_auxvar_type), pointer :: global_auxvar
      type(tran_constraint_list_type), pointer :: transport_constraints
      type(tran_constraint_coupler_type), pointer :: constraint_coupler 
   end type PFloTranEngineState
@@ -127,8 +127,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   type(reaction_type), pointer :: reaction
   type(option_type), pointer :: option
   type(input_type), pointer :: input
-  type(global_auxvar_type), pointer :: global_auxvars
-  type(reactive_transport_auxvar_type), pointer :: rt_auxvars
+  type(global_auxvar_type), pointer :: global_auxvar
+  type(reactive_transport_auxvar_type), pointer :: rt_auxvar
   type(tran_constraint_list_type), pointer :: transport_constraints
   type(tran_constraint_coupler_type), pointer :: constraint_coupler 
 
@@ -181,23 +181,23 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   !
   ! NOTE(bja) : batch chem --> one cell
 
-  ! global_auxvars --> cell by cell temperature, pressure, saturation, density
-  allocate(global_auxvars)
-  call GlobalAuxVarInit(global_auxvars, option)
+  ! global_auxvar --> cell by cell temperature, pressure, saturation, density
+  allocate(global_auxvar)
+  call GlobalAuxVarInit(global_auxvar, option)
 
-  ! rt_auxvars --> cell by cell chemistry data
-  allocate(rt_auxvars)
-  call RTAuxVarInit(rt_auxvars, reaction, option)
+  ! rt_auxvar --> cell by cell chemistry data
+  allocate(rt_auxvar)
+  call RTAuxVarInit(rt_auxvar, reaction, option)
 
   ! assign default state values, not really needed?
-  global_auxvars%pres = option%reference_pressure
-  global_auxvars%temp = option%reference_temperature
-  global_auxvars%den_kg = option%reference_water_density
-  global_auxvars%sat = option%reference_saturation  
+  global_auxvar%pres = option%reference_pressure
+  global_auxvar%temp = option%reference_temperature
+  global_auxvar%den_kg = option%reference_water_density
+  global_auxvar%sat = option%reference_saturation  
 
   ! NOTE(bja) : constraint coupler is only needed for printing the
   ! processed constraints to pflotran.out. But destroying the coupler
-  ! destroys the auxvars as well, so we need to keep it around long
+  ! destroys the auxvar as well, so we need to keep it around long
   ! term.
   constraint_coupler => TranConstraintCouplerCreate(option)
 
@@ -217,8 +217,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   engine_state%integrity_check = integrity_check_value
   engine_state%option => option
   engine_state%reaction => reaction
-  engine_state%rt_auxvars => rt_auxvars
-  engine_state%global_auxvars => global_auxvars
+  engine_state%rt_auxvar => rt_auxvar
+  engine_state%global_auxvar => global_auxvar
   engine_state%constraint_coupler => constraint_coupler
   engine_state%transport_constraints => transport_constraints
 
@@ -275,8 +275,8 @@ subroutine Shutdown(pft_engine_state, status)
   call TranConstraintCouplerDestroy(engine_state%constraint_coupler)
   call TranConstraintDestroyList(engine_state%transport_constraints)
   ! FIXME(bja) : causes error freeing memory.
-  !call RTAuxVarDestroy(engine_state%rt_auxvars)
-  !call GlobalAuxVarDestroy(engine_state%global_auxvars)
+  !call RTAuxVarDestroy(engine_state%rt_auxvar)
+  !call GlobalAuxVarDestroy(engine_state%global_auxvar)
   call ReactionDestroy(engine_state%reaction)
   call OptionDestroy(engine_state%option)
 
@@ -340,10 +340,10 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
 
   ! NOTE(bja): do NOT call CopyAlquimiaToAuxVars() here because most
   ! of that data is uninitialized in alquimia!
-  engine_state%global_auxvars%den_kg = state%water_density
-  engine_state%global_auxvars%sat = state%saturation
-  engine_state%global_auxvars%temp = state%temperature
-  engine_state%global_auxvars%pres = state%aqueous_pressure
+  engine_state%global_auxvar%den_kg = state%water_density
+  engine_state%global_auxvar%sat = state%saturation
+  engine_state%global_auxvar%temp = state%temperature
+  engine_state%global_auxvar%pres = state%aqueous_pressure
   porosity = state%porosity
 
   !
@@ -409,16 +409,16 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
      call ProcessPFloTranConstraint( &
           engine_state%option, &
           engine_state%reaction, &
-          engine_state%global_auxvars, &
-          engine_state%rt_auxvars, &
+          engine_state%global_auxvar, &
+          engine_state%rt_auxvar, &
           tran_constraint, &
           engine_state%constraint_coupler)
      ! now repack the processed constraint data into the alquimia
      ! struct for the driver.
      call CopyAuxVarsToAlquimia( &
           engine_state%reaction, &
-          engine_state%global_auxvars, &
-          engine_state%rt_auxvars, &
+          engine_state%global_auxvar, &
+          engine_state%rt_auxvar, &
           porosity, &
           state, aux_data)
   end if
@@ -469,32 +469,32 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   !call PrintState(engine_state%reaction, state)
 
   call CopyAlquimiaToAuxVars(state, aux_data, material_properties, &
-       engine_state%reaction, engine_state%global_auxvars, engine_state%rt_auxvars, &
+       engine_state%reaction, engine_state%global_auxvar, engine_state%rt_auxvar, &
        porosity, volume)
 
   ! copy total primaries into dummy transport variable
   phase_index = 1
   
   do i = 1, state%size_total_primary
-     tran_xx(i) = engine_state%rt_auxvars%total(i, phase_index)
+     tran_xx(i) = engine_state%rt_auxvar%total(i, phase_index)
   enddo
 
   vol_frac_prim = 1.0
 
   engine_state%option%tran_dt = delta_t
 
-  call RReact(engine_state%rt_auxvars, engine_state%global_auxvars, &
+  call RReact(engine_state%rt_auxvar, engine_state%global_auxvar, &
        tran_xx, volume, porosity, &
        status%num_newton_iterations, &
        engine_state%reaction, engine_state%option, vol_frac_prim)
 
-  call RUpdateSolution(engine_state%rt_auxvars, engine_state%global_auxvars, &
+  call RUpdateSolution(engine_state%rt_auxvar, engine_state%global_auxvar, &
        engine_state%reaction, engine_state%option)
 
   call CopyAuxVarsToAlquimia( &
        engine_state%reaction, &
-       engine_state%global_auxvars, &
-       engine_state%rt_auxvars, &
+       engine_state%global_auxvar, &
+       engine_state%rt_auxvar, &
        porosity, &
        state, aux_data)
 
@@ -546,12 +546,12 @@ subroutine GetAuxiliaryOutput( &
   !write (*, '(a)') "PFloTranAlquimiaInterface::GetAuxiliaryOutput() :"
 
   call CopyAlquimiaToAuxVars(state, aux_data, material_properties, &
-       engine_state%reaction, engine_state%global_auxvars, engine_state%rt_auxvars, &
+       engine_state%reaction, engine_state%global_auxvar, engine_state%rt_auxvar, &
        porosity, volume)
 
   ph_index = 1
-  aux_output%pH = -log10(engine_state%rt_auxvars%pri_act_coef(ph_index)* &
-       engine_state%rt_auxvars%pri_molal(ph_index))
+  aux_output%pH = -log10(engine_state%rt_auxvar%pri_act_coef(ph_index)* &
+       engine_state%rt_auxvar%pri_molal(ph_index))
 
 
   status%error = kAlquimiaNoError
@@ -800,7 +800,7 @@ end subroutine ReadPFloTranConstraints
 
 ! **************************************************************************** !
 subroutine ProcessPFloTranConstraint(option, reaction, &
-     global_auxvars, rt_auxvars, tran_constraint, constraint_coupler)
+     global_auxvar, rt_auxvar, tran_constraint, constraint_coupler)
   use Reaction_module
   use Reaction_Aux_module
   use Reactive_Transport_Aux_module
@@ -817,8 +817,8 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
   ! function parameters
   type(option_type), pointer, intent(in) :: option
   type(reaction_type), pointer, intent(inout) :: reaction
-  type(global_auxvar_type), pointer, intent(inout) :: global_auxvars
-  type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvars
+  type(global_auxvar_type), pointer, intent(inout) :: global_auxvar
+  type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvar
   type(tran_constraint_type), pointer, intent(inout) :: tran_constraint
   type(tran_constraint_coupler_type), pointer, intent(inout) :: constraint_coupler 
 
@@ -853,7 +853,7 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
   ! equilibrate
   option%io_buffer = "equilibrate constraint : " // tran_constraint%name
   call printMsg(option)
-  call ReactionEquilibrateConstraint(rt_auxvars, global_auxvars, reaction, &
+  call ReactionEquilibrateConstraint(rt_auxvar, global_auxvar, reaction, &
        tran_constraint%name, &
        tran_constraint%aqueous_species, &
        tran_constraint%minerals, &
@@ -871,8 +871,8 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
   constraint_coupler%minerals => tran_constraint%minerals
   constraint_coupler%surface_complexes => tran_constraint%surface_complexes
   constraint_coupler%colloids => tran_constraint%colloids
-  constraint_coupler%global_auxvar => global_auxvars
-  constraint_coupler%rt_auxvar => rt_auxvars     
+  constraint_coupler%global_auxvar => global_auxvar
+  constraint_coupler%rt_auxvar => rt_auxvar     
   call ReactionPrintConstraint(constraint_coupler, reaction, option)
 
 
@@ -881,7 +881,7 @@ end subroutine ProcessPFloTranConstraint
 
 ! **************************************************************************** !
 subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
-  reaction, global_auxvars, rt_auxvars, porosity, volume)
+  reaction, global_auxvar, rt_auxvar, porosity, volume)
 
   use, intrinsic :: iso_c_binding
 
@@ -899,8 +899,8 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaMaterialProperties), intent(in) :: material_prop
   type(reaction_type), pointer, intent(inout) :: reaction
-  type(global_auxvar_type), pointer, intent(inout) :: global_auxvars
-  type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvars
+  type(global_auxvar_type), pointer, intent(inout) :: global_auxvar
+  type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvar
   PetscReal, intent(out) :: porosity
   PetscReal, intent(out) :: volume
 
@@ -915,10 +915,10 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! state
   !
-  global_auxvars%den_kg(1) = state%water_density
-  global_auxvars%sat(1) = state%saturation
-  global_auxvars%temp(1) = state%temperature
-  global_auxvars%pres(1) = state%aqueous_pressure
+  global_auxvar%den_kg(1) = state%water_density
+  global_auxvar%sat(1) = state%saturation
+  global_auxvar%temp(1) = state%temperature
+  global_auxvar%pres(1) = state%aqueous_pressure
 
   porosity = state%porosity
   volume = material_prop%volume
@@ -928,17 +928,17 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   call c_f_pointer(state%total_primary, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-     rt_auxvars%total(i, phase_index) = local_array(i)
+     rt_auxvar%total(i, phase_index) = local_array(i)
   end do
 
   call c_f_pointer(state%free_ion, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-     rt_auxvars%pri_molal(i) = local_array(i)
+     rt_auxvar%pri_molal(i) = local_array(i)
   end do
 
   call c_f_pointer(aux_data%primary_activity_coeff, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-     rt_auxvars%pri_act_coef(i) = local_array(i)
+     rt_auxvar%pri_act_coef(i) = local_array(i)
   end do
 
   !
@@ -947,7 +947,7 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   call c_f_pointer(aux_data%secondary_activity_coeff, local_array, &
        (/reaction%neqcplx/))
   do i = 1, reaction%neqcplx
-     rt_auxvars%sec_act_coef(i) = local_array(i)
+     rt_auxvar%sec_act_coef(i) = local_array(i)
   end do
 
   !
@@ -956,13 +956,13 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   call c_f_pointer(state%mineral_volume_fraction, local_array, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
-     rt_auxvars%mnrl_volfrac(i) = local_array(i)
+     rt_auxvar%mnrl_volfrac(i) = local_array(i)
   end do
 
   call c_f_pointer(state%mineral_specific_surface_area, local_array, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
-     rt_auxvars%mnrl_area(i) = local_array(i)
+     rt_auxvar%mnrl_area(i) = local_array(i)
   end do
 
   !
@@ -977,7 +977,7 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   call c_f_pointer(aux_data%ion_exchange_ref_cation_conc, local_array, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
-     rt_auxvars%eqionx_ref_cation_sorbed_conc(i) = local_array(i)
+     rt_auxvar%eqionx_ref_cation_sorbed_conc(i) = local_array(i)
   end do
 
 
@@ -993,18 +993,18 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   call c_f_pointer(aux_data%surface_complex_free_site_conc, local_array, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
-     rt_auxvars%srfcplxrxn_free_site_conc(i) = local_array(i)
+     rt_auxvar%srfcplxrxn_free_site_conc(i) = local_array(i)
   end do
 
   !
-  ! isotherms, TODO(bja): copy out of material_props into reaction (not auxvars)
+  ! isotherms, TODO(bja): copy out of material_props into reaction (not auxvar)
   !
 
 
 end subroutine CopyAlquimiaToAuxVars
 
 ! **************************************************************************** !
-subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
+subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
      porosity, state, aux_data)
 
   use, intrinsic :: iso_c_binding
@@ -1020,8 +1020,8 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
 
   ! function parameters
   type(reaction_type), pointer, intent(in) :: reaction
-  type(global_auxvar_type), pointer, intent(in) :: global_auxvars
-  type(reactive_transport_auxvar_type), pointer, intent(in) :: rt_auxvars
+  type(global_auxvar_type), pointer, intent(in) :: global_auxvar
+  type(reactive_transport_auxvar_type), pointer, intent(in) :: rt_auxvar
   PetscReal, intent(in) :: porosity
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
@@ -1037,10 +1037,10 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   !
   ! state
   !
-  state%water_density = global_auxvars%den_kg(1)
-  state%saturation = global_auxvars%sat(1)
-  state%temperature = global_auxvars%temp(1)
-  state%aqueous_pressure = global_auxvars%pres(1)
+  state%water_density = global_auxvar%den_kg(1)
+  state%saturation = global_auxvar%sat(1)
+  state%temperature = global_auxvar%temp(1)
+  state%aqueous_pressure = global_auxvar%pres(1)
 
   state%porosity = porosity
 
@@ -1049,17 +1049,17 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   !
   call c_f_pointer(state%total_primary, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-     local_array(i) = rt_auxvars%total(i, phase_index)
+     local_array(i) = rt_auxvar%total(i, phase_index)
   end do
 
   call c_f_pointer(state%free_ion, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-     local_array(i) = rt_auxvars%pri_molal(i)
+     local_array(i) = rt_auxvar%pri_molal(i)
   end do
 
   call c_f_pointer(aux_data%primary_activity_coeff, local_array, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-     local_array(i) = rt_auxvars%pri_act_coef(i)
+     local_array(i) = rt_auxvar%pri_act_coef(i)
   end do
 
   !
@@ -1068,7 +1068,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   call c_f_pointer(aux_data%secondary_activity_coeff, local_array, &
        (/reaction%neqcplx/))
   do i = 1, reaction%neqcplx
-     local_array(i) = rt_auxvars%sec_act_coef(i)
+     local_array(i) = rt_auxvar%sec_act_coef(i)
   end do
 
   !
@@ -1076,7 +1076,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   !
   call c_f_pointer(state%total_sorbed, local_array, (/reaction%neqsorb/))
   do i = 1, reaction%neqsorb
-     local_array(i) = rt_auxvars%total_sorb_eq(i)
+     local_array(i) = rt_auxvar%total_sorb_eq(i)
   end do
 
   !
@@ -1085,13 +1085,13 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   call c_f_pointer(state%mineral_volume_fraction, local_array, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
-     local_array(i) = rt_auxvars%mnrl_volfrac(i)
+     local_array(i) = rt_auxvar%mnrl_volfrac(i)
   end do
 
   call c_f_pointer(state%mineral_specific_surface_area, local_array, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
-     local_array(i) = rt_auxvars%mnrl_area(i)
+     local_array(i) = rt_auxvar%mnrl_area(i)
   end do
 
   !
@@ -1106,7 +1106,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   call c_f_pointer(aux_data%ion_exchange_ref_cation_conc, local_array, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
-     local_array(i) = rt_auxvars%eqionx_ref_cation_sorbed_conc(i)
+     local_array(i) = rt_auxvar%eqionx_ref_cation_sorbed_conc(i)
   end do
 
 
@@ -1122,7 +1122,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvars, rt_auxvars, &
   call c_f_pointer(aux_data%surface_complex_free_site_conc, local_array, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
-     local_array(i) = rt_auxvars%srfcplxrxn_free_site_conc(i)
+     local_array(i) = rt_auxvar%srfcplxrxn_free_site_conc(i)
   end do
 
 
