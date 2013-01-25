@@ -9,8 +9,15 @@
 extern "C" {
 #endif /* __cplusplus */
   
-  void AllocateDoubleArray(const int size, int *array_size, double** array);
-  void AllocateIntArray(const int size, int *array_size, int** array);
+  /* Alquimia Vectors */
+  void AllocateAlquimiaVectorDouble(const int size, struct AlquimiaVectorDouble* vector);
+  void FreeAlquimiaVectorDouble(struct AlquimiaVectorDouble* vector);
+
+  void AllocateAlquimiaVectorInt(const int size, struct AlquimiaVectorInt* vector);
+  void FreeAlquimiaVectorInt(struct AlquimiaVectorInt* vector);
+
+  void AllocateAlquimiaVectorString(const int size, struct AlquimiaVectorString* vector);
+  void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector);
 
   /* Alquimia Interface */
   void AllocateAlquimiaInterface(struct AlquimiaInterface* interface);
