@@ -520,6 +520,9 @@ subroutine GetAuxiliaryOutput( &
 
   use AlquimiaContainers_module
 
+  ! pflotran
+  use Mineral_module
+
   implicit none
 
   ! function parameters
@@ -532,7 +535,8 @@ subroutine GetAuxiliaryOutput( &
 
   ! local variables
   type(PFloTranEngineState), pointer :: engine_state
-  integer :: ph_index
+  integer :: i, ph_index
+  real (c_double), pointer :: local_array(:)
   PetscReal :: porosity, volume
 
   call c_f_pointer(pft_engine_state, engine_state)
@@ -545,14 +549,30 @@ subroutine GetAuxiliaryOutput( &
 
   !write (*, '(a)') "PFloTranAlquimiaInterface::GetAuxiliaryOutput() :"
 
-  call CopyAlquimiaToAuxVars(state, aux_data, material_properties, &
-       engine_state%reaction, engine_state%global_auxvar, engine_state%rt_auxvar, &
-       porosity, volume)
+  ! NOTE(bja): right now, all info from the previous reaction step is
+  ! still in the auxvars. We are assuming that the driver has called
+  ! GetAuxiliaryOutput immediately after reaction step...!
 
-  ph_index = 1
-  aux_output%pH = -log10(engine_state%rt_auxvar%pri_act_coef(ph_index)* &
+  !call CopyAlquimiaToAuxVars(state, aux_data, material_properties, &
+  !     engine_state%reaction, engine_state%global_auxvar, engine_state%rt_auxvar, &
+  !     porosity, volume)
+
+  ph_index = engine_state%reaction%species_idx%h_ion_id
+  ! FIXME(bja): this violates the no geochemistry calculations in alquimia rule.
+  aux_output%pH = -log10(engine_state%rt_auxvar%pri_act_coef(ph_index) * &
        engine_state%rt_auxvar%pri_molal(ph_index))
 
+  call c_f_pointer(aux_output%mineral_reaction_rate, local_array, (/aux_output%size_minerals/))
+    do i = 1, aux_output%size_minerals
+     local_array(i) = engine_state%rt_auxvar%mnrl_rate(i)
+  end do
+
+  call c_f_pointer(aux_output%mineral_saturation_index, local_array, (/aux_output%size_minerals/))
+  do i = 1, aux_output%size_minerals
+     local_array(i) = RMineralSaturationIndex(i, engine_state%rt_auxvar, &
+          engine_state%global_auxvar, &
+          engine_state%reaction, engine_state%option)
+  end do
 
   status%error = kAlquimiaNoError
 end subroutine GetAuxiliaryOutput
