@@ -101,23 +101,43 @@ extern "C" {
     struct AlquimiaVectorDouble mineral_reaction_rate;  // [?]
   };
 
-  struct AlquimiaGeochemicalConstraint {
-    char* primary_species;
+  /* 
+  ** Geochemical Conditions
+  */
+
+  struct AlquimiaAqueousConstraint {
+    char* primary_species_name;
     char* constraint_type;
     char* associated_species;
     double value;
   };
-  
-  /* A geochemical condition is an array of geochemical constraints */
-  struct AlquimiaGeochemicalCondition {
-    char* name;
-    int num_constraints;
-    struct AlquimiaGeochemicalConstraint* constraints;
+
+  struct AlquimiaAqueousConstraintVector {
+    int size;
+    struct AlquimiaAqueousConstraint* data;
   };
 
-  struct AlquimiaGeochemicalConditionList {
-    int num_conditions;
-    struct AlquimiaGeochemicalCondition* conditions;
+  struct AlquimiaMineralConstraint {
+    char* mineral_name;
+    double volume_fraction;
+    double specific_surface_area;
+  };
+  
+  struct AlquimiaMineralConstraintVector {
+    int size;
+    struct AlquimiaMineralConstraint* data;
+  };
+
+  /* A geochemical condition is an array of aqueous and mineral geochemical constraints */
+  struct AlquimiaGeochemicalCondition {
+    char* name;
+    struct AlquimiaAqueousConstraintVector aqueous_constraints;
+    struct AlquimiaMineralConstraintVector mineral_constraints;
+  };
+
+  struct AlquimiaGeochemicalConditionVector {
+    int size;
+    struct AlquimiaGeochemicalCondition* data;
   };
   
 #ifdef __cplusplus

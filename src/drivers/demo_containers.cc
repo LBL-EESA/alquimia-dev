@@ -59,14 +59,20 @@ void DemoMaterialProperties::Print(void) const {
 
 /*******************************************************************************
  **
- **  Geochemical Constraint
+ **  Geochemical Constraints
  **
  *******************************************************************************/
-void DemoGeochemicalConstraint::Print(void) const {
-  std::cout << "        " << this->primary_species << std::endl;
+void DemoAqueousConstraint::Print(void) const {
+  std::cout << "        " << this->primary_species_name << std::endl;
   std::cout << "            type : " << this->constraint_type << std::endl;
   std::cout << "            associated : " << this->associated_species << std::endl;
   std::cout << "            value : " << this->value << std::endl;
+}  // end Print()
+
+void DemoMineralConstraint::Print(void) const {
+  std::cout << "        " << this->mineral_name << std::endl;
+  std::cout << "            volume fraction : " << this->volume_fraction << std::endl;
+  std::cout << "            specific surface area : " << this->specific_surface_area << std::endl;
 }  // end Print()
 
 /*******************************************************************************
@@ -74,6 +80,20 @@ void DemoGeochemicalConstraint::Print(void) const {
  **  Geochemical Conditions
  **
  *******************************************************************************/
+
+void DemoGeochemicalCondition::Print(void) const {
+  
+  std::vector<DemoAqueousConstraint>::const_iterator ac;
+  for (ac = this->aqueous_constraints.begin(); ac != aqueous_constraints.end(); ++ac) {
+    ac->Print();
+  }
+
+  std::vector<DemoMineralConstraint>::const_iterator mc;
+  for (mc = this->mineral_constraints.begin(); mc != this->mineral_constraints.end(); ++mc) {
+    mc->Print();
+  }
+
+}  // end Print()
 
 void PrintGeochemicalConditions(
     const alquimia::drivers::utilities::DemoConditions& conditions)
@@ -83,10 +103,7 @@ void PrintGeochemicalConditions(
   for (util::DemoConditions::const_iterator c = conditions.begin();
        c != conditions.end(); ++c) {
     std::cout << "    " << c->first << " : " << std::endl;
-    for (util::DemoGeochemicalCondition::const_iterator g = c->second.begin();
-         g != c->second.end(); ++g) {
-      g->Print();
-    }
+    c->second.Print();
   }
 }  // end PrintGeochemicalConditions()
 

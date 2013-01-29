@@ -316,64 +316,78 @@ void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
  **
  *******************************************************************************/
 
-void AllocateAlquimiaGeochemicalConditionList(
+void AllocateAlquimiaGeochemicalConditionVector(
     const int num_conditions,
-    struct AlquimiaGeochemicalConditionList* condition_list) {
+    struct AlquimiaGeochemicalConditionVector* condition_list) {
   // NOTE: we are only allocating pointers to N conditions here, not
   // the actual conditions themselves.
   fprintf(stdout, " AllocateAlquimiaGeochemicalConditionList() : %d\n",
           num_conditions);
-  condition_list->num_conditions = num_conditions;
+  condition_list->size = num_conditions;
 
-  condition_list->conditions = NULL;
-  if (condition_list->num_conditions > 0) {
-    condition_list->conditions = (struct AlquimiaGeochemicalCondition*)
-        calloc(condition_list->num_conditions, 
+  if (condition_list->size > 0) {
+    condition_list->data = (struct AlquimiaGeochemicalCondition*)
+        calloc(condition_list->size, 
                sizeof(struct AlquimiaGeochemicalCondition));
   }
-}  // end AllocateAlquimiaGeochemicalConditionList()
+}  // end AllocateAlquimiaGeochemicalConditionVector()
 
 void AllocateAlquimiaGeochemicalCondition(
-    const char* name, const int num_constraints,
+    const int size_name,
+    const int num_aqueous_constraints, const int num_mineral_constraints,
     struct AlquimiaGeochemicalCondition* condition) {
   // NOTE: we are only allocating pointers to N constraints here, not
   // the actual condstraints themselves.
-  condition->num_constraints = num_constraints;
+  if (condition != NULL) {
+    // size_name + 1 to include the null character!
+    condition->name = (char*) calloc(size_name+1, sizeof(char));
 
-  condition->name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
-  int max_copy_length = kAlquimiaMaxStringLength;
-  if (strlen(name) < kAlquimiaMaxStringLength) {
-    max_copy_length = strlen(name);
-  }
-  strncpy(condition->name, name, max_copy_length);
+    condition->aqueous_constraints.size = num_aqueous_constraints;
+    if (condition->aqueous_constraints.size > 0) {
+      condition->aqueous_constraints.data = (struct AlquimiaAqueousConstraint*)
+          calloc(condition->aqueous_constraints.size, 
+                 sizeof(struct AlquimiaAqueousConstraint));
+    }
 
-  condition->constraints = NULL;
-  if (condition->num_constraints > 0) {
-    condition->constraints = (struct AlquimiaGeochemicalConstraint*)
-        calloc(condition->num_constraints, 
-               sizeof(struct AlquimiaGeochemicalConstraint));
+    condition->mineral_constraints.size = num_mineral_constraints;
+    if (condition->mineral_constraints.size > 0) {
+      condition->mineral_constraints.data = (struct AlquimiaMineralConstraint*)
+          calloc(condition->mineral_constraints.size, 
+                 sizeof(struct AlquimiaMineralConstraint));
+    }
+
   }
 }  // end AllocateAlquimiaGeochemicalCondition()
 
-void AllocateAlquimiaGeochemicalConstraint(
-    struct AlquimiaGeochemicalConstraint* constraint){
-  constraint->primary_species =
+void AllocateAlquimiaAqueousConstraint(
+    struct AlquimiaAqueousConstraint* constraint) {
+  constraint->primary_species_name =
       (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
   constraint->constraint_type =
       (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
   constraint->associated_species =
       (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
   constraint->value = 0.0;
-}  // end AllocateAlquimiaGeochemicalConstraint()
+}  // end AllocateAlquimiaAqueousConstraint()
 
-void FreeAlquimiaGeochemicalConditionList(
-    struct AlquimiaGeochemicalConditionList* condition_list) {
+void AllocateAlquimiaMineralConstraint(
+    struct AlquimiaMineralConstraint* constraint) {
+  constraint->mineral_name =
+      (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+  constraint->volume_fraction = -1.0;
+  constraint->specific_surface_area = -1.0;
+}  // end AllocateAlquimiaMineralConstraint()
 
-  for (int i = 0; i < condition_list->num_conditions; ++i) {
-    FreeAlquimiaGeochemicalCondition(&(condition_list->conditions[i]));
+void FreeAlquimiaGeochemicalConditionVector(
+    struct AlquimiaGeochemicalConditionVector* condition_list) {
+  if (condition_list != NULL) {
+    for (int i = 0; i < condition_list->size; ++i) {
+      FreeAlquimiaGeochemicalCondition(&(condition_list->data[i]));
+    }
+    free(condition_list->data);
+    condition_list->data = NULL;
+    condition_list->size = 0;
   }
-  free(condition_list->conditions);
-  condition_list->conditions = NULL;
 }  // end FreeAlquimiaGeochemicalConditionList()
 
 void FreeAlquimiaGeochemicalCondition(
@@ -381,23 +395,50 @@ void FreeAlquimiaGeochemicalCondition(
   if (condition != NULL) {
     free(condition->name);
     condition->name = NULL;
-    for (int i = 0; i < condition->num_constraints; ++i) {
-      FreeAlquimiaGeochemicalConstraint(&(condition->constraints[i]));
-    }
-    free(condition->constraints);
-    condition->constraints = NULL;
+    FreeAlquimiaAqueousConstraintVector(&(condition->aqueous_constraints));
+    FreeAlquimiaMineralConstraintVector(&(condition->mineral_constraints));
   }
 }  // end FreeAlquimiaGeochemicalCondition()
 
-void FreeAlquimiaGeochemicalConstraint(
-    struct AlquimiaGeochemicalConstraint* constraint) {
-  free(constraint->primary_species);
-  constraint->primary_species = NULL;
+void FreeAlquimiaAqueousConstraintVector(
+    struct AlquimiaAqueousConstraintVector* vector) {
+  if (vector != NULL) {
+    for (int i = 0; i < vector->size; ++i) {
+      FreeAlquimiaAqueousConstraint(&vector->data[i]);
+    }
+    free(vector->data);
+    vector->data = NULL;
+    vector->size = 0;
+  }
+}  // end FreeAlquimiaAqueousConstraintVector()
+
+void FreeAlquimiaAqueousConstraint(
+    struct AlquimiaAqueousConstraint* constraint) {
+  free(constraint->primary_species_name);
+  constraint->primary_species_name = NULL;
   free(constraint->constraint_type);
   constraint->constraint_type = NULL;
   free(constraint->associated_species);
   constraint->associated_species = NULL;
-}  // end FreeAlquimiaGeochemicalCondition()
+}  // end FreeAlquimiaAqueousConstraint()
+
+void FreeAlquimiaMineralConstraintVector(
+    struct AlquimiaMineralConstraintVector* vector) {
+  if (vector != NULL) {
+    for (int i = 0; i < vector->size; ++i) {
+      FreeAlquimiaMineralConstraint(&vector->data[i]);
+    }
+    free(vector->data);
+    vector->data = NULL;
+    vector->size = 0;
+  }
+}  // end FreeAlquimiaMineralConstraintVector()
+
+void FreeAlquimiaMineralConstraint(
+    struct AlquimiaMineralConstraint* constraint) {
+  free(constraint->mineral_name);
+  constraint->mineral_name = NULL;
+}  // end FreeAlquimiaMineralConstraint()
 
 
 /*******************************************************************************

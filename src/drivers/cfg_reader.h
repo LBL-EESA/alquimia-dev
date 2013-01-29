@@ -83,6 +83,8 @@ class DemoConfigReader {
   static const std::string kGeochemicalConditionsSection;
   static const std::string kNamedConditionSection;
   static const std::string kNameString;
+  static const std::string kAqueousString;
+  static const std::string kMineralString;
 
   bool debug_;
   
