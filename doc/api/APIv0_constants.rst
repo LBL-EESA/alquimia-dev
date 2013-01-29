@@ -32,6 +32,9 @@ Alquimia String Lengths
 Alquimia Strings
 ~~~~~~~~~~~~~~~~
 
+String comparisons should be case insensitive. The only exception is
+chemical sysmols, which should follow standard conventions.
+
 +---------------------------+--------------+
 | **name**                  | **value**    |
 +---------------------------+--------------+
@@ -48,5 +51,5 @@ Alquimia Strings
 | kAlquimiaStringCharge     | "charge"     |
 +---------------------------+--------------+
 
-NOTE(bja): Except for species names, strings should be case insensitive? The demo driver (and C++ chem) use lower case, but pflotran uses a mixture of StringToUpper and StringToLower internally.
+NOTE(bja): 
 

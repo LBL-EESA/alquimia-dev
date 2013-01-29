@@ -7,28 +7,45 @@ All function parameters must be either:
 
 * plain old data (POD), i.e. int, float, bool, char, c pointers.
 
-* structures containing POD. All structures must defined on the [[APIv0_Structures | structures]] section.
+* structures containing POD. All structures must defined on the :doc:`structures <APIv0_structures>` section.
 
 * strings should be c style strings, i.e. null terminated arrays of characters.
 
 Alquimia: Setup
 ~~~~~~~~~~~~~~~
 
-Read data files/structures, initialize memory, basis management, including reading database, swapping basis, etc. 
-
-One of the output variables from Setup is a void pointer to the engines internal representation of the reaction network. **The actual struct will be different for different engines. The client driver should store this and return it on all subsequent alquimia function calls, but should not use it for anything else. Do NOT rely on any particular form of the engine's internal state.** If the engine is thread safe (no internal global variables), then OpenMP threading can be used by calling setup once for each thread and storing multiple copies of the internal state.
+Read data files/structures, initialize memory, basis management,
+including reading database, swapping basis, etc.
 
 .. code-block:: none
 
     void AlquimiaSetup(
         in/out: engine_native_input_file <string>,
-        input: mpi_com <?>,
-        output: engine_internal_state <void pointer >,
-        output: sizes <struct: Alquimia Sizes>)
+        output: engine_internal_state <void pointer>,
+        output: sizes <struct: Alquimia Sizes>,
+	output: status <struct: Alquimia Status>)
 
-The sizes structure contains the number of degrees of freedom for the mobile phase (aqueous components) and immobile phases (sorbed, biomass), auxiliary memory requirements. The driver should use this information for allocating memory and input file validation.
+The sizes structure contains the number of degrees of freedom for the
+mobile phase (aqueous components) and immobile phases (sorbed,
+biomass), auxiliary memory requirements. The driver should use this
+information for allocating memory and input file validation.
 
-NOTE: PETScInitialize() or MPI_Init() must be called prior to calling AlquimiaSetup()! PFloTran requires mpi/petsc to be present (TODO: document why). For now we are assuming that it can operate on MPI_COMM_WORLD, but if this turns out not to be a valid assumption, we will need to pass the specific communicator to PFloTran through the setup interface. 
+One of the output variables from Setup is a void pointer to the
+engines internal representation of the reaction network. **The actual
+struct will be different for different engines. The client driver
+should store this and return it on all subsequent alquimia function
+calls, but should not use it for anything else. Do NOT rely on any
+particular form of the engine's internal state.** If the engine is
+thread safe (no internal global variables), then OpenMP threading can
+be used by calling setup once for each thread and storing multiple
+copies of the internal state.
+
+NOTE: PETScInitialize() or MPI_Init() must be called prior to calling
+AlquimiaSetup()! PFloTran requires mpi/petsc to be present (for
+variable types, e.g. PetscReal, and logging). For now we are assuming
+that it can operate on MPI_COMM_WORLD, but if this turns out not to be
+a valid assumption, we will need to pass the specific communicator to
+PFloTran through the setup interface.
 
 Alquimia: Shutdown
 ~~~~~~~~~~~~~~~~~~
@@ -38,7 +55,8 @@ Shutdown the engine. Destroys all internal objects, frees manually allocated mem
 .. code-block:: none
 
     void AlquimiaShutdown(
-        in/out: engine_internal_state <void pointer>)
+        in/out: engine_internal_state <void pointer>,
+	output: status <struct: Alquimia Status>)
 
 
 Alquimia: Get Engine Meta Data
@@ -49,7 +67,8 @@ Additional information about the library that may be needed by the engine. Is it
 
     void AlquimiaGetEngineMetaData(
         in/out: engine_internal_state <void pointer>,
-        output: engine_meta_data <struct: Alquimia Meta Data>)
+        output: engine_meta_data <struct: Alquimia Meta Data>,
+	output: status <struct: Alquimia Status>)
 
 
 
@@ -74,7 +93,7 @@ If the name field of the condition structure is specified and the constraint lis
 Alquimia: Operator Splitting Reaction Step
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Take one (or more?) reaction steps in operator split mode
+Take one reaction step in operator split mode with the specified delta t.
 
 .. code-block:: none
 
