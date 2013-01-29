@@ -6,6 +6,9 @@ These are the named constants that alquimia uses and their required values.
 Alquimia Error Codes
 ~~~~~~~~~~~~~~~~~~~~
 
+Every alquimia function call should be followed by checking the
+AlquimiaEngineStatus.error against the following codes:
+
 +-------------------------------+-----------+-----------------------------------+
 | **name**                      | **value** | **meaning**                       |
 +-------------------------------+-----------+-----------------------------------+
@@ -33,7 +36,8 @@ Alquimia Strings
 ~~~~~~~~~~~~~~~~
 
 String comparisons should be case insensitive. The only exception is
-chemical sysmols, which should follow standard conventions.
+chemical sysmols, which should follow standard conventions, i.e. "H+",
+not "h+", "CO" = carbon monoxide, "Co" = cobalt, "co" = undefined.
 
 +---------------------------+--------------+
 | **name**                  | **value**    |
