@@ -34,5 +34,14 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+Glossary
+========
 
- 
+.. glossary::
+
+    driver
+        the transport simulator or other driver, e.g. Amanzi-u, Amanzi-s, ParFlow
+
+    engine
+        the backend geochemistry engine, e.g. PFloTran, CrunchFlow, toughreact, stomp, PHREEQC, ...
+
