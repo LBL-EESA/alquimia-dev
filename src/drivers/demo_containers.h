@@ -50,16 +50,27 @@ struct DemoMaterialProperties {
   void Print(void) const;
 };
 
-struct DemoGeochemicalConstraint {
-  std::string primary_species;
+struct DemoAqueousConstraint {
+  std::string primary_species_name;
   std::string constraint_type;
   std::string associated_species;
   double value;
   void Print(void) const;
 };
   
-typedef std::vector<DemoGeochemicalConstraint> DemoGeochemicalCondition;
+struct DemoMineralConstraint {
+  std::string mineral_name;
+  double volume_fraction;
+  double specific_surface_area;
+  void Print(void) const;
+};
 
+struct DemoGeochemicalCondition {
+  std::vector<DemoAqueousConstraint> aqueous_constraints;
+  std::vector<DemoMineralConstraint> mineral_constraints;
+  void Print(void) const;
+};
+  
 typedef std::map<std::string, DemoGeochemicalCondition> DemoConditions;
 
 void PrintGeochemicalConditions(

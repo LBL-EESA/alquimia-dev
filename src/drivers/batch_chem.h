@@ -40,7 +40,14 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
 
 void CopyDemoConditionsToAlquimiaConditions(
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,
-    AlquimiaGeochemicalConditionList* alquimia_conditions);
+    AlquimiaGeochemicalConditionVector* alquimia_conditions);
 
+void CopyDemoAqueousConstraintsToAlquimia(
+    const std::vector<alquimia::drivers::utilities::DemoAqueousConstraint>& demo_aqueous_constraints,
+    AlquimiaAqueousConstraintVector* alquimia_aqueous_constraints);
+
+void CopyDemoMineralConstraintsToAlquimia(
+    const std::vector<alquimia::drivers::utilities::DemoMineralConstraint>& demo_mineral_constraints,
+    AlquimiaMineralConstraintVector* alquimia_mineral_constraints);
 
 #endif  /* ALQUIMIA_DRIVERS_CC_BATCH_CHEM_H_ */

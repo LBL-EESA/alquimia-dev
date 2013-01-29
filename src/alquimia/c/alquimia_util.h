@@ -24,12 +24,14 @@ extern "C" {
   void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_data);
   void PrintAlquimiaAuxiliaryOutputData(
       const struct AlquimiaAuxiliaryOutputData* const aux_output);
-  void PrintAlquimiaGeochemicalConditionList(
-      const struct AlquimiaGeochemicalConditionList* condition_list);
+  void PrintAlquimiaGeochemicalConditionVector(
+      const struct AlquimiaGeochemicalConditionVector* condition_list);
   void PrintAlquimiaGeochemicalCondition(
       const struct AlquimiaGeochemicalCondition* const condition);
-  void PrintAlquimiaGeochemicalConstraint(
-      const struct AlquimiaGeochemicalConstraint* const constraint);
+  void PrintAlquimiaAqueousConstraint(
+      const struct AlquimiaAqueousConstraint* const constraint);
+  void PrintAlquimiaMineralConstraint(
+      const struct AlquimiaMineralConstraint* const constraint);
 
 #ifdef __cplusplus
 }

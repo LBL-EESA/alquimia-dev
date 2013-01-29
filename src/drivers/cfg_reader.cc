@@ -44,6 +44,8 @@ const std::string DemoConfigReader::kLangmuirBString("langmuir_b");
 const std::string DemoConfigReader::kGeochemicalConditionsSection("geochemical_conditions");
 const std::string DemoConfigReader::kNamedConditionSection("condition");
 const std::string DemoConfigReader::kNameString("name");
+const std::string DemoConfigReader::kAqueousString("aqueous");
+const std::string DemoConfigReader::kMineralString("mineral");
 
 void DemoConfigReader::ReadInputFile(
     const std::string& file_name,
@@ -337,18 +339,27 @@ void DemoConfigReader::ParseConditionSection(
           (*geochemical_conditions)[condition_name] = DemoGeochemicalCondition();
         } else {
           // now we deal with vector parameters.
-
-          // TODO(bja): can we check or deal with the order/species names
-          // somehow....
-          DemoGeochemicalConstraint constraint;
-          constraint.primary_species = key;
           util::StringTokenizer constraint_data(value, kSpaces);
-          constraint.value = std::atof(constraint_data.at(0).c_str());
-          constraint.constraint_type = constraint_data.at(1);
-          if (constraint_data.size() > 2) {
-            constraint.associated_species = constraint_data.at(2);
+          if (util::CaseInsensitiveStringCompare(constraint_data.at(0),
+                                                 kAqueousString)) {
+            // TODO(bja): can we check or deal with the order/species names
+            // somehow....
+            DemoAqueousConstraint constraint;
+            constraint.primary_species_name = key;
+            constraint.value = std::atof(constraint_data.at(1).c_str());
+            constraint.constraint_type = constraint_data.at(2);
+            if (constraint_data.size() > 3) {
+              constraint.associated_species = constraint_data.at(3);
+            }
+            (*geochemical_conditions)[condition_name].aqueous_constraints.push_back(constraint);
+          } else if (util::CaseInsensitiveStringCompare(constraint_data.at(0),
+                                                        kMineralString)) {
+            DemoMineralConstraint constraint;
+            constraint.mineral_name = key;
+            constraint.volume_fraction = std::atof(constraint_data.at(1).c_str());
+            constraint.specific_surface_area = std::atof(constraint_data.at(2).c_str());
+            (*geochemical_conditions)[condition_name].mineral_constraints.push_back(constraint);
           }
-          (*geochemical_conditions)[condition_name].push_back(constraint);
         }  // end else (vector parameters)
       }  // end if(params.size())
     }  // end else(parameter line)
