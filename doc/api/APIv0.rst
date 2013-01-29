@@ -12,64 +12,82 @@ Alquimia will use `Semantic Versioning <http://semver.org/>`_ for its public API
 Required Functionality
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Alquimia exposes the following generic functionality from the underlying libraries:
+Alquimia exposes the following functionality from the underlying
+geochemistry :term:`engine`\ s in a generic interface:
 
 * Reading of geochemical reaction data
 
 * Basis management (includes reading database, swapping basis, etc.)
 
-* Constraint processing for boundary/initial constraints. (Say you set a boundary concentration to be equilibrated with a mineral. The total component concentration for the species equilibrated with the mineral needs to be calculated and sent back to Amanzi transport.)
+* Constraint processing for boundary/initial constraints. (Say you set
+  a boundary concentration to be equilibrated with a mineral. The
+  total component concentration for the species equilibrated with the
+  mineral needs to be calculated and sent back to Amanzi transport.)
 
-* Reaction step(ping), operator split and global implicit
+* Reaction step: operator split and global implicit
 
 * Access to user selected geochemical data for output, i.e. pH, mineral SI, reaction rates
 
-* Additional information about the library, e.g. is it thread safe, so amanzi can create multiple copies using openmp? Does it support temperature dependent chemistry, porosity updates, etc.
+* Additional information about the library, e.g. is it thread safe, so
+  amanzi can create multiple copies using openmp? Does it support
+  temperature dependent chemistry, porosity updates, etc.
 
-Notes
-~~~~~
-
-* "Driver" : the transport simulator or other driver, e.g. amanzi
-
-* "Engine" : the backend geochemistry engine, e.g. pflotran, crunchflow, toughreact, stomp, phreeqc, ...
-
-* Alquimia has two parts.
-    * An engine independent API consisting of :doc:`function <APIv0_functions>` call signatures and :doc:`data structures <APIv0_structures>`.
-    * An optional :doc:`utility <APIv0_c_utils>` library to handle data memory allocation/freeing, printing structs, etc.
-
-* Implementation details:
-    * Each client will have some sort of process kernel interface to handle the native memory --> alquimia memory.
-    * Each engine interface will handle the alquimia --> engine memory mapping and engine specific function calls. Most of this side of the interface will take place in the language of the engine.
+Alquimia has two parts.
+    * An engine independent API consisting of :doc:`function
+      <APIv0_functions>` call signatures and :doc:`data structures
+      <APIv0_structures>`.
+    * An optional :doc:`utility <APIv0_c_utils>` library to handle
+      data memory allocation/freeing, printing structs, etc.
 
 
 Division of labor / responsibilities for implementing alquimia
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PK
---
+Driver Process Kernel
+---------------------
 
-Amanzi-U, Amanzi-S, ParFlow etc. Implemented by the developers of the PK.
+Implemented by the developers of the :term:`driver`.
 
-* Manage global storage, including reading spatially and/or temporally varying material properties, geochemical conditions, etc.
+* Manage global storage, including reading spatially and/or temporally
+  varying material properties, geochemical conditions, etc.
 * loop through space
 * manage time stepping, substepping, etc
-* unpack and move data from the mesh dependent storage into alquimia data transfer containers
+* unpack and move data from the mesh dependent storage into alquimia
+  data transfer containers
 * I/O
 
 Alquimia Interface
 ------------------
 
-defines the engine independent API, including function call signatures and data transfer [[APIv0_Structures | containers]].
+* Defines the engine independent API, including function call
+  signatures and data transfer :doc:`containers <APIv0_structures>`.
 
-Handles the engine dependent details for setup, shutdown, processing constraints, reaction stepping, etc. 
+* The API must be compatible with mixed language programing, C++
+  calling fortran or fortran calling C, etc.
 
-**Alquimia does NOT do any geochemical calculations**
+* Handles the engine dependent details for setup, shutdown, processing
+  constraints, reaction stepping, etc.
+
+* At the start of on operation, it unpacks data from the alquimia data
+  transfer containers and packages them into the correct format for
+  the engine. At the end of the operation, in packages the results
+  back into the alquimia containers.
+
+* **Alquimia does NOT do any geochemical calculations.**
+
+* Implementation details : Each engine interface will handle the
+  alquimia operations in it's native implementation language.
+
 
 Engine
 ------
 
-PFloTran, CrunchFlow, phreeqc, tough react, etc.
+* The :term:`engine` is responsibly for all geochemistry calculations, including:
+    * managing the reaction network (database reading, basis swapping).
+    * constraint processing.
+    * reaction stepping (OS).
+    * returning reaction step jacobian and rhs evaluations (GI).
+    * provideding auxiliary output, e.g. pH, mineral saturation index, reaction rates, etc
 
-Responsibly for all geochemistry calculations, including database reading, basis swapping, setting up reaction networks, constraint processing, reaction stepping (OS), returning reaction step jacobian and rhs evaluations (GI).
-
-The maintainers of each engine are responsible for providing a wrapper library that conforms to the alquimia API.
+* The maintainers of each engine are responsible for providing a
+  wrapper library that **EXACTLY** conforms to the alquimia API.

@@ -128,6 +128,7 @@ Spatially and temporally variable internal state data for the chemistry engine. 
 +-------------------------------------+----------------------+--------------------------+
 | surface_complex_free_site_conc (1)  | vector<double, N_ss> | [moles sites / m^3 bulk] |
 +-------------------------------------+----------------------+--------------------------+
+
 * (1) PFloTran/C++ internal variable that must be stored
 
 Struct: Alquimia Engine Status
