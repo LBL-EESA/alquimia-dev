@@ -61,25 +61,30 @@ extern "C" {
       struct AlquimiaAuxiliaryOutputData* aux_output);
 
   /* Geochemical conditions/constraints */
-  void AllocateAlquimiaGeochemicalConditionList(
+  void AllocateAlquimiaGeochemicalConditionVector(
       const int num_conditions,
-      struct AlquimiaGeochemicalConditionList* condition_list);
-
+      struct AlquimiaGeochemicalConditionVector* condition_list);
   void AllocateAlquimiaGeochemicalCondition(
-      const char* name, const int num_constraints,
+      const int size_name,
+      const int num_aqueous_constraints, const int num_mineral_constraints,
       struct AlquimiaGeochemicalCondition* condition);
+  void AllocateAlquimiaAqueousConstraint(
+      struct AlquimiaAqueousConstraint* constraint);
+  void AllocateAlquimiaMineralConstraint(
+      struct AlquimiaMineralConstraint* constraint);
 
-  void AllocateAlquimiaGeochemicalConstraint(
-      struct AlquimiaGeochemicalConstraint* constraint);
-
-  void FreeAlquimiaGeochemicalConditionList(
-      struct AlquimiaGeochemicalConditionList* conditions);
-
+  void FreeAlquimiaGeochemicalConditionVector(
+      struct AlquimiaGeochemicalConditionVector* condition_list);
   void FreeAlquimiaGeochemicalCondition(
       struct AlquimiaGeochemicalCondition* condition);
-
-  void FreeAlquimiaGeochemicalConstraint(
-      struct AlquimiaGeochemicalConstraint* constraint);
+  void FreeAlquimiaAqueousConstraintVector(
+      struct AlquimiaAqueousConstraintVector* vector);
+  void FreeAlquimiaAqueousConstraint(
+      struct AlquimiaAqueousConstraint* constraint);
+  void FreeAlquimiaMineralConstraintVector(
+      struct AlquimiaMineralConstraintVector* vector);
+  void FreeAlquimiaMineralConstraint(
+      struct AlquimiaMineralConstraint* constraint);
 
 
   /* Data */

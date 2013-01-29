@@ -149,31 +149,42 @@ void PrintAlquimiaAuxiliaryOutputData(
                             &(aux_output->mineral_reaction_rate));
 }  // end PrintAlquimiaAuxiliaryOutputData()
 
-void PrintAlquimiaGeochemicalConditionList(
-    const struct AlquimiaGeochemicalConditionList* const condition_list) {
+void PrintAlquimiaGeochemicalConditionVector(
+    const struct AlquimiaGeochemicalConditionVector* const condition_list) {
 
   fprintf(stdout, "Alquimia Geochemical Condition List : \n");
-  for (int i = 0; i < condition_list->num_conditions; ++i) {
-    PrintAlquimiaGeochemicalCondition(&(condition_list->conditions[i]));
+  for (int i = 0; i < condition_list->size; ++i) {
+    PrintAlquimiaGeochemicalCondition(&(condition_list->data[i]));
     fprintf(stdout, "\n");
   }
-}  //  PrintAlquimiaGeochemicalConditionList()
+}  //  PrintAlquimiaGeochemicalConditionVector()
 
 void PrintAlquimiaGeochemicalCondition(
     const struct AlquimiaGeochemicalCondition* const condition) {
 
   fprintf(stdout, "  Alquimia Geochemical Condition : %s\n", condition->name);
-  for (int i = 0; i < condition->num_constraints; ++i) {
-    PrintAlquimiaGeochemicalConstraint(&(condition->constraints[i]));
-    fprintf(stdout, "\n");
+  for (int i = 0; i < condition->aqueous_constraints.size; ++i) {
+    PrintAlquimiaAqueousConstraint(&(condition->aqueous_constraints.data[i]));
   }
+  for (int i = 0; i < condition->mineral_constraints.size; ++i) {
+    PrintAlquimiaMineralConstraint(&(condition->mineral_constraints.data[i]));
+  }
+  fprintf(stdout, "\n");
 }  //  PrintAlquimiaGeochemicalCondition()
 
-void PrintAlquimiaGeochemicalConstraint(
-    const struct AlquimiaGeochemicalConstraint* const constraint) {
-  fprintf(stdout, "    Alquimia Geochemical Constraint : \n");
-  fprintf(stdout, "      primary species : %s\n", constraint->primary_species);
+void PrintAlquimiaAqueousConstraint(
+    const struct AlquimiaAqueousConstraint* const constraint) {
+  fprintf(stdout, "    Alquimia Aqueous Constraint : \n");
+  fprintf(stdout, "      primary species : %s\n", constraint->primary_species_name);
   fprintf(stdout, "      constraint type : %s\n", constraint->constraint_type);
   fprintf(stdout, "      associated species : %s\n", constraint->associated_species);
   fprintf(stdout, "      value : %e\n", constraint->value);
-}  //  PrintAlquimiaGeochemicalConstraint()
+}  //  PrintAlquimiaAqueousConstraint()
+
+void PrintAlquimiaMineralConstraint(
+    const struct AlquimiaMineralConstraint* const constraint) {
+  fprintf(stdout, "    Alquimia Mineral Constraint : \n");
+  fprintf(stdout, "      mineral : %s\n", constraint->mineral_name);
+  fprintf(stdout, "      volume fraction : %e\n", constraint->volume_fraction);
+  fprintf(stdout, "      specific surface area : %e\n", constraint->specific_surface_area);
+}  //  PrintAlquimiaMineralConstraint()

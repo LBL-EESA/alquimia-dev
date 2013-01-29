@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
+#include <cassert>
 
 #include <sstream>
 #include <iostream>
@@ -18,6 +19,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+#include <algorithm>
 
 #include <mpi.h>
 
@@ -104,7 +106,7 @@ int main(int argc, char** argv) {
   struct AlquimiaInterface chem;
   AlquimiaEngineStatus chem_status;
   AlquimiaData chem_data;
-  AlquimiaGeochemicalConditionList alquimia_conditions;
+  AlquimiaGeochemicalConditionVector alquimia_conditions;
 
   try {
     // All alquimia function calls require a status object.
@@ -151,8 +153,6 @@ int main(int argc, char** argv) {
     //
     // prepare for constraint processing
     //
-    AllocateAlquimiaGeochemicalConditionList(demo_conditions.size(),
-                                             &alquimia_conditions);
 
     // initialize the alquimia state and material properties with
     // appropriate values from the driver's memory.
@@ -167,15 +167,15 @@ int main(int argc, char** argv) {
     //PrintAlquimiaState(&chem_data.state);
     //PrintAlquimiaGeochemicalConditionList(&alquimia_conditions);
 
-    for (int i = 0; i < alquimia_conditions.num_conditions; ++i) {
+    for (int i = 0; i < alquimia_conditions.size; ++i) {
       // ask the engine to process the geochemical conditions
       if (demo_simulation.initial_condition.compare(
-              alquimia_conditions.conditions[i].name) == 0) {
+              alquimia_conditions.data[i].name) == 0) {
         // for batch, only care about the IC. If the conditions have
         // spatially dependent values, then the state and material
         // properties need to be updated here!
         chem.ProcessCondition(chem.engine_state,
-                              &(alquimia_conditions.conditions[i]),
+                              &(alquimia_conditions.data[i]),
                               &chem_data.material_properties,
                               &chem_data.state,
                               &chem_data.aux_data,
@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
     }
     // we are done with the conditions (data is stored in driver state
     // vectors at this point).
-    FreeAlquimiaGeochemicalConditionList(&alquimia_conditions);
+    FreeAlquimiaGeochemicalConditionVector(&alquimia_conditions);
 
     char time_units;
     double time_units_conversion;  // [time_units / sec]
@@ -471,8 +471,11 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
 
 void CopyDemoConditionsToAlquimiaConditions(
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,
-    AlquimiaGeochemicalConditionList* alquimia_conditions) {
+    AlquimiaGeochemicalConditionVector* alquimia_conditions) {
   namespace util = alquimia::drivers::utilities;
+
+  AllocateAlquimiaGeochemicalConditionVector(demo_conditions.size(),
+                                             alquimia_conditions);
 
   // copy the geochemical conditions
   util::DemoConditions::const_iterator demo_cond;
@@ -481,49 +484,91 @@ void CopyDemoConditionsToAlquimiaConditions(
        i_cond < demo_conditions.size(); ++i_cond, ++demo_cond) {
     std::cout << "    " << demo_cond->first << " : " << i_cond << std::endl;
     AlquimiaGeochemicalCondition* condition =
-        &(alquimia_conditions->conditions[i_cond]);
-    // std::string.c_str() returns a const char*, so we need to copy
-    // it to our own memory.
-    char* condition_name = new char [demo_cond->first.size() + 1];
-    strcpy(condition_name, demo_cond->first.c_str());
-    AllocateAlquimiaGeochemicalCondition(condition_name,
-                                         demo_cond->second.size(),
+        &(alquimia_conditions->data[i_cond]);
+    AllocateAlquimiaGeochemicalCondition(kAlquimiaMaxStringLength,
+                                         demo_cond->second.aqueous_constraints.size(),
+                                         demo_cond->second.mineral_constraints.size(),
                                          condition);
-    delete condition_name;
-    for (unsigned int i_const = 0; i_const < demo_cond->second.size(); ++i_const) {
-      std::cout << "    " << demo_cond->first << " : " << i_cond << " : "
-                << i_const << std::endl;
-      AlquimiaGeochemicalConstraint* constraint =
-          &(alquimia_conditions->conditions[i_cond].constraints[i_const]);
-      AllocateAlquimiaGeochemicalConstraint(constraint);
-      // copy demo constraint to alquimia constraint
-      int max_copy_length = kAlquimiaMaxStringLength;
-      if (strlen(demo_cond->second[i_const].primary_species.c_str()) <
-          kAlquimiaMaxStringLength) {
-        max_copy_length = strlen(demo_cond->second[i_const].primary_species.c_str());
-      }
-      std::strncpy(constraint->primary_species,
-                   demo_cond->second[i_const].primary_species.c_str(),
-                   max_copy_length);
-
-      max_copy_length = kAlquimiaMaxStringLength;
-      if (strlen(demo_cond->second[i_const].constraint_type.c_str()) <
-          kAlquimiaMaxStringLength) {
-        max_copy_length = strlen(demo_cond->second[i_const].constraint_type.c_str());
-      }
-      std::strncpy(constraint->constraint_type,
-                   demo_cond->second[i_const].constraint_type.c_str(),
-                   max_copy_length);
-
-      max_copy_length = kAlquimiaMaxStringLength;
-      if (strlen(demo_cond->second[i_const].associated_species.c_str()) <
-          kAlquimiaMaxStringLength) {
-        max_copy_length = strlen(demo_cond->second[i_const].associated_species.c_str());
-      }
-      std::strncpy(constraint->associated_species,
-                   demo_cond->second[i_const].associated_species.c_str(),
-                   max_copy_length);
-      constraint->value = demo_cond->second[i_const].value;
-    }
+    unsigned int max_copy_length = std::min(kAlquimiaMaxStringLength, demo_cond->first.size());
+    strncpy(condition->name, demo_cond->first.c_str(), max_copy_length);
+    CopyDemoAqueousConstraintsToAlquimia(demo_cond->second.aqueous_constraints,
+                                         &condition->aqueous_constraints);
+    CopyDemoMineralConstraintsToAlquimia(demo_cond->second.mineral_constraints,
+                                         &condition->mineral_constraints);
   }
 }  // end CopyDemoConditionsToAlquimiaConditions()
+
+void CopyDemoAqueousConstraintsToAlquimia(
+    const std::vector<alquimia::drivers::utilities::DemoAqueousConstraint>& demo_aqueous_constraints,
+    AlquimiaAqueousConstraintVector* alquimia_aqueous_constraints) {
+  // loop through aqueous constraints
+  for (unsigned int i = 0; i < demo_aqueous_constraints.size(); ++i) {
+
+    // easier to work with a pointer to one constraint than the entire vector
+    AlquimiaAqueousConstraint* constraint =
+        &(alquimia_aqueous_constraints->data[i]);
+    
+    // allocate memory fo the current constraint
+    AllocateAlquimiaAqueousConstraint(constraint);
+
+    //
+    // copy demo constraint to alquimia constraint
+    //
+
+    // name
+    int max_copy_length = std::min(kAlquimiaMaxStringLength,
+                                   demo_aqueous_constraints.at(i).primary_species_name.size());
+    std::strncpy(constraint->primary_species_name,
+                 demo_aqueous_constraints.at(i).primary_species_name.c_str(),
+                 max_copy_length);
+
+    // constraint type
+    max_copy_length = std::min(kAlquimiaMaxStringLength,
+                               demo_aqueous_constraints.at(i).constraint_type.size());
+    std::strncpy(constraint->constraint_type,
+                 demo_aqueous_constraints.at(i).constraint_type.c_str(),
+                 max_copy_length);
+
+    // associated species
+    max_copy_length = std::min(kAlquimiaMaxStringLength,
+                               demo_aqueous_constraints.at(i).associated_species.size());
+    std::strncpy(constraint->associated_species,
+                 demo_aqueous_constraints.at(i).associated_species.c_str(),
+                 max_copy_length);
+
+    // constraint value
+    constraint->value = demo_aqueous_constraints.at(i).value;
+  }
+}  // end CopyDemoAqueousConstraintsToAlquimia()
+
+void CopyDemoMineralConstraintsToAlquimia(
+    const std::vector<alquimia::drivers::utilities::DemoMineralConstraint>& demo_mineral_constraints,
+    AlquimiaMineralConstraintVector* alquimia_mineral_constraints) {
+
+  //assert(demo_mineral_constraints.size() == alquimia_mineral_constraints->size);
+
+  // loop through mineral constraints
+  for (unsigned int i = 0; i < demo_mineral_constraints.size(); ++i) {
+
+    // easier to work with a single pointer instead of the full array
+    AlquimiaMineralConstraint* constraint =
+        &(alquimia_mineral_constraints->data[i]);
+
+    // create memory in the constraint
+    AllocateAlquimiaMineralConstraint(constraint);
+
+    //
+    // copy demo constraint to alquimia constraint
+    //
+
+    // name
+    int max_copy_length = std::min(kAlquimiaMaxStringLength,
+                                   demo_mineral_constraints.at(i).mineral_name.size());
+    std::strncpy(constraint->mineral_name,
+                 demo_mineral_constraints.at(i).mineral_name.c_str(),
+                 max_copy_length);
+    
+    constraint->volume_fraction = demo_mineral_constraints.at(i).volume_fraction;
+    constraint->specific_surface_area = demo_mineral_constraints.at(i).specific_surface_area;
+  }
+}  // end CopyDemoMineralConstraintsToAlquimia()
