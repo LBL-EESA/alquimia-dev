@@ -20,11 +20,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   APIv0
-   APIv0_functions
-   APIv0_structures
-   APIv0_constants
-   APIv0_c_utils
+   api/APIv0
+   api/APIv0_functions
+   api/APIv0_structures
+   api/APIv0_constants
+   api/APIv0_c_utils
 
 
 Indices and tables
