@@ -11,10 +11,18 @@ extern const size_t kAlquimiaMaxWordLength;
 /* Geochemistry Engine Strings */
 extern const char* kAlquimiaStringPFloTran;
 extern const char* kAlquimiaStringCrunchFlow;
+extern const char* kAlquimiaStringTotal;
+extern const char* kAlquimiaStringTotalSorbed;
+extern const char* kAlquimiaStringFree;
+extern const char* kAlquimiaStringPH;
+extern const char* kAlquimiaStringMineral;
+extern const char* kAlquimiaStringGas;
+extern const char* kAlquimiaStringCharge;
 
 /* Error Codes */
 extern const int kAlquimiaNoError;
 extern const int kAlquimiaErrorInvalidEngine;
+extern const int kAlquimiaErrorUnknownConstraintName;
 extern const int kAlquimiaErrorEngineIntegrity;
 
 

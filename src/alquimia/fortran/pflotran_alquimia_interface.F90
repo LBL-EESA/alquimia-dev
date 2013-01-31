@@ -49,6 +49,7 @@ module PFloTranAlquimiaInterface_module
   private :: InitializePFloTranReactions, &
        ReadPFloTranConstraints, &
        ProcessPFloTranConstraint, &
+       ConvertAlquimiaConditionToPflotran, &
        CopyAlquimiaToAuxVars, &
        CopyAuxVarsToAlquimia
 
@@ -300,8 +301,8 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   use AlquimiaContainers_module
 
   ! pflotran
-  use String_module
-  use Constraint_module
+  use String_module, only : StringCompareIgnoreCase
+  use Constraint_module, only : tran_constraint_type
 
   implicit none
 
@@ -310,22 +311,18 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (AlquimiaCondition), intent(in) :: condition
+  type (AlquimiaGeochemicalCondition), intent(in) :: condition
   type (AlquimiaMaterialProperties), intent(in) :: material_properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent (inout) :: aux_data
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
-  type (AlquimiaConstraint), pointer :: local_constraints(:)
-  type (AlquimiaConstraint), pointer :: constraint
   character (kAlquimiaMaxStringLength) :: name
-  character (kAlquimiaMaxStringLength) :: constraint_type
-  character (kAlquimiaMaxStringLength) :: associated_species
+  type(tran_constraint_type), pointer :: tran_constraint
   real (c_double) :: constraint_value
   PetscReal :: porosity, volume
   integer :: i
-  type(tran_constraint_type), pointer :: tran_constraint
   type(PFloTranEngineState), pointer :: engine_state
 
   !write (*, '(a)') "PFloTranAlquimiaInterface::ProcessCondition() : "
@@ -352,32 +349,15 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   call  c_f_string(condition%name, name)
   write (*, '(a, a)') "processing : ", trim(name)
 
-  if (condition%num_constraints > 0) then
+  if (condition%aqueous_constraints%size > 0) then
      ! the driver is supplying the constraint data, so we need to
      ! construct an object in pflotran's internal format.
-     tran_constraint => TranConstraintCreate(engine_state%option)
-     tran_constraint%name = trim(name)
-     tran_constraint%requires_equilibration = PETSC_TRUE
-     ! TODO(bja) : remaining manual setup goes here...
+     tran_constraint => ConvertAlquimiaConditionToPflotran(engine_state%option, &
+          engine_state%reaction, condition)
+     ! add to the list to ensure memory gets cleaned up.
+     call TranConstraintAddToList(tran_constraint, &
+          engine_state%transport_constraints)
 
-     call TranConstraintAddToList(tran_constraint, engine_state%transport_constraints)
-     ! TODO(bja) : the rest of this if block eventually goes away,
-     ! just keeping it around for now as a reminder about how to
-     ! access the constraint info....
-     write (*, '(a)') "NOTE: driver supplied conditions are not implemeted."
-     write (*, '(a, a)') "  echoing condition: ", trim(name)
-     write (*, '(a, i3)') "     num constraints : ", condition%num_constraints
-     call c_f_pointer(condition%constraints, local_constraints, (/condition%num_constraints/))
-     do i = 1, condition%num_constraints
-        !call c_f_pointer(local_constraints(i), constraint)
-        call c_f_string(local_constraints(i)%primary_species, name)
-        call c_f_string(local_constraints(i)%constraint_type, constraint_type)
-        call c_f_string(local_constraints(i)%associated_species, associated_species)
-        constraint_value = local_constraints(i)%value
-        write (*, '(a, a, a)', advance='no') "        ", trim(name), " : "
-        write (*, '(a, a, a)', advance='no') trim(constraint_type), " ", trim(associated_species)
-        write (*, '(a, f6.2)') " ", constraint_value
-     end do
   else
      ! the driver just supplied a name, so we check for a constraint
      ! with that name in the pflotran input file and use that.
@@ -396,8 +376,10 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
            end if
         else
            ! end of the list (or empty list) without out finding a match.
-           write (*, '(a, a)') "Could not find pflotran constraint : ", trim(name)
+           call f_c_string_ptr("INPUT ERROR: Could not find pflotran constraint : "//trim(name), &
+                status%message, kAlquimiaMaxStringLength)
            ! TODO(bja) : else report an error to the driver
+           status%error = kAlquimiaErrorUnknownConstraintName
            exit
         end if
      end do
@@ -899,6 +881,145 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
 
 
 end subroutine ProcessPFloTranConstraint
+
+
+! **************************************************************************** !
+function ConvertAlquimiaConditionToPflotran(&
+     option, reaction, alquimia_condition)
+  use, intrinsic :: iso_c_binding
+
+  use c_interface_module
+  use AlquimiaContainers_module
+
+  ! pflotran
+  use Option_module, only : option_type
+  use Reaction_aux_module, only : reaction_type
+  use Mineral_aux_module, only : mineral_constraint_type
+  use String_module, only : StringCompareIgnoreCase
+  use Constraint_module
+
+  implicit none
+
+#include "definitions.h"
+
+  ! function parameters
+  type(option_type), pointer, intent(in) :: option
+  type(reaction_type), pointer, intent(in) :: reaction
+  type (AlquimiaGeochemicalCondition), intent(in) :: alquimia_condition
+
+  ! Return value
+  type (tran_constraint_type), pointer :: ConvertAlquimiaConditionToPflotran
+
+  ! local variables
+  integer :: i
+  character (kAlquimiaMaxStringLength) :: name, constraint_type
+  character (kAlquimiaMaxStringLength) :: associated_species
+  type (tran_constraint_type), pointer :: tran_constraint
+  type(aq_species_constraint_type), pointer :: pft_aq_species_constraint
+  type(mineral_constraint_type), pointer :: pft_mineral_constraint
+  type (AlquimiaAqueousConstraint), pointer :: alq_aqueous_constraints(:)
+  type (AlquimiaMineralConstraint), pointer :: alq_mineral_constraints(:)
+
+
+  call c_f_string(alquimia_condition%name, name)
+  write (*, '(a, a)') "building : ", trim(name)
+
+  tran_constraint => TranConstraintCreate(option)
+  tran_constraint%name = trim(name)
+  tran_constraint%requires_equilibration = PETSC_TRUE
+
+  !
+  ! aqueous species
+  !
+  if (alquimia_condition%aqueous_constraints%size /= reaction%naqcomp) then
+     option%io_buffer = 'Number of aqueous constraints ' // &
+          'does not equal the number of primary chemical ' // &
+          'components in constraint: ' // &
+          trim(tran_constraint%name)
+     call printErrMsg(option)
+  end if
+
+  ! NOTE(bja) : this is the container for ALL aqueous constraints
+  pft_aq_species_constraint => &
+       AqueousSpeciesConstraintCreate(reaction, option)
+
+  call c_f_pointer(alquimia_condition%aqueous_constraints%data, &
+       alq_aqueous_constraints, (/alquimia_condition%aqueous_constraints%size/))
+
+  do i = 1, alquimia_condition%aqueous_constraints%size
+     call c_f_string(alq_aqueous_constraints(i)%primary_species_name, name)
+     pft_aq_species_constraint%names(i) = trim(name)
+
+     pft_aq_species_constraint%constraint_conc(i) = alq_aqueous_constraints(i)%value
+
+     call c_f_string(alq_aqueous_constraints(i)%constraint_type, constraint_type)
+
+     call c_f_string(alq_aqueous_constraints(i)%associated_species, &
+          associated_species)
+
+     if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_FREE
+
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotal)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL
+
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalSorbed)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL_SORB
+
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringPH)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_PH
+
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringMineral)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_MINERAL
+        pft_aq_species_constraint%constraint_aux_string(i) = &
+             trim(associated_species)
+
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringGas)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_GAS
+        pft_aq_species_constraint%constraint_aux_string(i) = &
+             trim(associated_species)
+
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringCharge)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_CHARGE_BAL
+
+     else
+        option%io_buffer = 'Constraint type: ' // trim(constraint_type) // &
+             ' not recognized in constraint,concentration'
+        call printErrMsg(option)
+     end if
+  end do
+  tran_constraint%aqueous_species => pft_aq_species_constraint
+
+  !
+  ! minerals
+  !
+  ! FIXME(bja): are these checks the correct thing to do in all cases...?
+  if (alquimia_condition%mineral_constraints%size > 0 .and. &
+       alquimia_condition%mineral_constraints%size /= &
+       reaction%mineral%nkinmnrl) then
+     option%io_buffer = &
+          'Number of mineral constraints is not equal to ' // &
+          'number of kinetic minerals in condition: ' // &
+          trim(tran_constraint%name)
+     call printErrMsg(option)
+  end if
+
+  pft_mineral_constraint => MineralConstraintCreate(reaction%mineral, option)
+
+  call c_f_pointer(alquimia_condition%mineral_constraints%data, &
+       alq_mineral_constraints, (/alquimia_condition%mineral_constraints%size/))
+  do i = 1, alquimia_condition%mineral_constraints%size
+     call c_f_string(alq_mineral_constraints(i)%mineral_name, name)
+     pft_mineral_constraint%names(i) = trim(name)
+     pft_mineral_constraint%constraint_vol_frac(i) = &
+          alq_mineral_constraints(i)%volume_fraction
+     pft_mineral_constraint%constraint_area(i) = &
+          alq_mineral_constraints(i)%specific_surface_area
+  end do
+  tran_constraint%minerals => pft_mineral_constraint
+
+  ConvertAlquimiaConditionToPflotran => tran_constraint
+end function ConvertAlquimiaConditionToPflotran
 
 
 ! **************************************************************************** !
