@@ -84,7 +84,7 @@ subroutine PFloTran_Alquimia_ProcessCondition( &
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (AlquimiaCondition), intent(in) :: condition
+  type (AlquimiaGeochemicalCondition), intent(in) :: condition
   type (AlquimiaMaterialProperties), intent(in) :: material_properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent (inout) :: aux_data

@@ -107,7 +107,7 @@ CONSTRAINT initial
     Ca++    1.d-5      T
   /
   MINERALS
-    Calcite  0.2 1.0 cm^2/cm^3
+    Calcite  0.2 100.0 m^2/m^3
   /
 END
 
