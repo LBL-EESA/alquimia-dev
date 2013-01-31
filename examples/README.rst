@@ -29,7 +29,7 @@ Test the alquimia interface with mineral dissolution/precipitation for
 a short simulation time. The initial condition is fully specified by
 the driver and processed by pflotran.
 
-**Status: fails** (driver driven constraints not implemented)
+**Status: fails** (same numerical values as native constraints, but pH values off?)
 
 .. sourcecode:: bash
 
