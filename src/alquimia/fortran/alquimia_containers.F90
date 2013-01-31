@@ -32,7 +32,16 @@ module AlquimiaContainers_module
 
   integer (c_int), parameter :: kAlquimiaNoError = 0
   integer (c_int), parameter :: kAlquimiaErrorInvalidEngine = 1
+  integer (c_int), parameter :: kAlquimiaErrorUnknownConstraintName = 2
   integer (c_int), parameter :: kAlquimiaErrorEngineIntegrity = 4577
+
+  character (5), parameter :: kAlquimiaStringTotal = 'total'
+  character (12), parameter :: kAlquimiaStringTotalSorbed = 'total_sorbed'
+  character (4), parameter :: kAlquimiaStringFree = 'free'
+  character (2), parameter :: kAlquimiaStringPH = 'pH'
+  character (7), parameter :: kAlquimiaStringMineral = 'mineral'
+  character (3), parameter :: kAlquimiaStringGas = 'gas'
+  character (6), parameter :: kAlquimiaStringCharge = 'charge'
 
   type, public, bind(c) :: AlquimiaVectorDouble
      integer (c_int) :: size
@@ -111,22 +120,38 @@ module AlquimiaContainers_module
   end type AlquimiaMetaData
 
   type, public, bind(c) :: AlquimiaAuxiliaryOutputData
-     real (c_double) pH
-     type (AlquimiaVectorDouble) mineral_saturation_index
-     type (AlquimiaVectorDouble) mineral_reaction_rate
+     real (c_double) :: pH
+     type (AlquimiaVectorDouble) :: mineral_saturation_index
+     type (AlquimiaVectorDouble) :: mineral_reaction_rate
   end type AlquimiaAuxiliaryOutputData
 
-  type, public, bind(c) :: AlquimiaConstraint
-     type (c_ptr) :: primary_species
+  type, public, bind(c) :: AlquimiaAqueousConstraint
+     type (c_ptr) :: primary_species_name
      type (c_ptr) :: constraint_type
      type (c_ptr) :: associated_species
      real (c_double) :: value
-  end type AlquimiaConstraint
+  end type AlquimiaAqueousConstraint
 
-  type, public, bind(c) :: AlquimiaCondition
+  type, public, bind(c) :: AlquimiaAqueousConstraintVector
+     integer (c_int) :: size
+     type (c_ptr) :: data
+  end type AlquimiaAqueousConstraintVector
+
+  type, public, bind(c) :: AlquimiaMineralConstraint
+     type (c_ptr) :: mineral_name
+     real (c_double) :: volume_fraction
+     real (c_double) :: specific_surface_area
+  end type AlquimiaMineralConstraint
+
+  type, public, bind(c) :: AlquimiaMineralConstraintVector
+     integer (c_int) :: size
+     type (c_ptr) :: data
+  end type AlquimiaMineralConstraintVector
+
+  type, public, bind(c) :: AlquimiaGeochemicalCondition
      type (c_ptr) :: name
-     integer (c_int) :: num_constraints
-     type (c_ptr) :: constraints
-  end type AlquimiaCondition
+     type (AlquimiaAqueousConstraintVector) :: aqueous_constraints
+     type (AlquimiaMineralConstraintVector) :: mineral_constraints
+  end type AlquimiaGeochemicalCondition
 
 end module AlquimiaContainers_module
