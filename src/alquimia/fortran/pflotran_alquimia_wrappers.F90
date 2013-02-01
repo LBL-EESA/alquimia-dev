@@ -27,12 +27,12 @@
 
 ! **************************************************************************** !
 subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, &
-     sizes, status) bind(C)
+     sizes, functionality, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
   use AlquimiaContainers_module
-  use PFloTranAlquimiaInterface_module
+  use PFloTranAlquimiaInterface_module, only : Setup
 
   implicit none
 
@@ -40,9 +40,10 @@ subroutine PFloTran_Alquimia_Setup(input_filename, pft_engine_state, &
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (c_ptr), intent(out) :: pft_engine_state
   type (AlquimiaSizes), intent(out) :: sizes
+  type (AlquimiaEngineFunctionality), intent(out) :: functionality
   type (AlquimiaEngineStatus), intent(out) :: status
 
-  call Setup(input_filename, pft_engine_state, sizes, status)
+  call Setup(input_filename, pft_engine_state, sizes, functionality, status)
 
 end subroutine PFloTran_Alquimia_Setup
 
@@ -53,7 +54,7 @@ subroutine PFloTran_Alquimia_Shutdown(pft_engine_state, status) bind(c)
   use, intrinsic :: iso_c_binding
 
   use AlquimiaContainers_module
-  use PFloTranAlquimiaInterface_module
+  use PFloTranAlquimiaInterface_module, only : Shutdown
 
   implicit none
 
@@ -78,7 +79,7 @@ subroutine PFloTran_Alquimia_ProcessCondition( &
   use, intrinsic :: iso_c_binding
 
   use AlquimiaContainers_module
-  use PFloTranAlquimiaInterface_module
+  use PFloTranAlquimiaInterface_module, only : ProcessCondition
 
   implicit none
 
@@ -108,7 +109,7 @@ subroutine PFloTran_Alquimia_ReactionStepOperatorSplit( &
   use, intrinsic :: iso_c_binding
 
   use AlquimiaContainers_module
-  use PFloTranAlquimiaInterface_module
+  use PFloTranAlquimiaInterface_module, only : ReactionStepOperatorSplit
 
   implicit none
 
@@ -138,7 +139,7 @@ subroutine PFloTran_Alquimia_GetAuxiliaryOutput( &
   use, intrinsic :: iso_c_binding
 
   use AlquimiaContainers_module
-  use PFloTranAlquimiaInterface_module
+  use PFloTranAlquimiaInterface_module, only : GetAuxiliaryOutput
 
   implicit none
 
@@ -157,23 +158,23 @@ end subroutine PFloTran_Alquimia_GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_GetEngineMetaData(pft_engine_state, &
+subroutine PFloTran_Alquimia_GetProblemMetaData(pft_engine_state, &
      meta_data, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
   use AlquimiaContainers_module
-  use PFloTranAlquimiaInterface_module
+  use PFloTranAlquimiaInterface_module, only: GetProblemMetaData
 
   implicit none
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (AlquimiaMetaData), intent(out) :: meta_data
+  type (AlquimiaProblemMetaData), intent(out) :: meta_data
   type (AlquimiaEngineStatus), intent(out) :: status
 
-  call GetEngineMetaData(pft_engine_state, meta_data, status)
+  call GetProblemMetaData(pft_engine_state, meta_data, status)
 
-end subroutine PFloTran_Alquimia_GetEngineMetaData
+end subroutine PFloTran_Alquimia_GetProblemMetaData
 
 

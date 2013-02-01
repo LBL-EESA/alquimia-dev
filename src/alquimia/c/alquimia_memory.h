@@ -42,11 +42,11 @@ extern "C" {
   void FreeAlquimiaMaterialProperties(
       struct AlquimiaMaterialProperties* material_props);
 
-  /* MetaData */
-  void AllocateAlquimiaMetaData(const struct AlquimiaSizes* sizes,
-                                struct AlquimiaMetaData* meta_data);
+  /* Problem Meta Data */
+  void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* sizes,
+                                       struct AlquimiaProblemMetaData* meta_data);
 
-  void FreeAlquimiaMetaData(struct AlquimiaMetaData* metda_data);
+  void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* metda_data);
 
   /* Status */
   void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus* status);

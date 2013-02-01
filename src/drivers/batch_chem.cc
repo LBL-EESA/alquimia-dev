@@ -123,6 +123,7 @@ int main(int argc, char** argv) {
     chem.Setup(demo_simulation.engine_inputfile.c_str(),
                chem.engine_state,
                &chem_data.sizes,
+               &chem_data.functionality,
                &chem_status);
     if (chem_status.error != 0) {
       std::cout << chem_status.message << std::endl;
@@ -137,15 +138,15 @@ int main(int argc, char** argv) {
 
     // get the driver meta data (thread safe, temperature/pressure
     // dependent, species names, etc)
-    chem.GetEngineMetaData(chem.engine_state,
-                           &chem_data.meta_data,
-                           &chem_status);
+    chem.GetProblemMetaData(chem.engine_state,
+                            &chem_data.meta_data,
+                            &chem_status);
     if (chem_status.error != 0) {
       std::cout << chem_status.message << std::endl;
-      PrintAlquimiaMetaData(&chem_data.meta_data);
+      PrintAlquimiaProblemMetaData(&chem_data.meta_data);
       return chem_status.error;
     }
-    PrintAlquimiaMetaData(&chem_data.meta_data);
+    PrintAlquimiaProblemMetaData(&chem_data.meta_data);
 
     // finish initializing the driver, e.g. openmp for thread safe
     // engines, verify material properties, etc
@@ -404,7 +405,7 @@ void SetTimeUnits(const std::string& output_time_units,
 }  // end SetTimeUnits()
 
 void WriteOutputHeader(std::fstream* text_output, const char time_units,
-                       const AlquimiaMetaData& meta_data) {
+                       const AlquimiaProblemMetaData& meta_data) {
   if (text_output->is_open()) {
     *text_output << "# \"Time [" << time_units << "]\"";
     *text_output << " , \"pH\"";
@@ -429,11 +430,11 @@ void WriteOutput(std::fstream* text_output, const double time,
     std::string seperator(" , ");
     *text_output << std::scientific << std::setprecision(6) << std::setw(15) << time;
     *text_output  << seperator << aux_output.pH;
-    for (int i = 0; i < state.total_primary.size; ++i) {
-      *text_output << seperator << state.total_primary.data[i];
+    for (int i = 0; i < state.total_mobile.size; ++i) {
+      *text_output << seperator << state.total_mobile.data[i];
     }
-    for (int i = 0; i < state.total_sorbed.size; ++i) {
-      *text_output << seperator << state.total_sorbed.data[i];
+    for (int i = 0; i < state.total_immobile.size; ++i) {
+      *text_output << seperator << state.total_immobile.data[i];
     }
     for (int i = 0; i < state.mineral_volume_fraction.size; ++i) {
       *text_output << seperator << state.mineral_volume_fraction.data[i];

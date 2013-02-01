@@ -23,7 +23,7 @@ void SetTimeUnits(const std::string& output_time_units,
 
 void WriteOutputHeader(std::fstream* text_output,
                        const char time_units,
-                       const AlquimiaMetaData& meta_data);
+                       const AlquimiaProblemMetaData& meta_data);
 
 void WriteOutput(std::fstream* text_output,
                  const double time,

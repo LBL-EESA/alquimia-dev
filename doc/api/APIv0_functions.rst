@@ -3,13 +3,18 @@ Alquimia Functions
 
 Details of the engine independent API and wrapper interface.
 
-All function parameters must be either:
+Alquimia is intended for mixed language environments: a C/C++ based driver can call a fortran based engine or vice versa. The common language for mixed language programming is pure C. All function parameters must be either:
 
 * plain old data (POD), i.e. int, float, bool, char, c pointers.
 
-* structures containing POD. All structures must defined on the :doc:`structures <APIv0_structures>` section.
+* structures containing POD. Nested structures are OK. All structures must defined on the :doc:`structures <APIv0_structures>` page.
 
 * strings should be c style strings, i.e. null terminated arrays of characters.
+
+* Fortran expects all function parameters to be pass by value. All C
+  function parameters must be pointers.
+
+All function interfaces are described in a language independent pseudocode.
 
 Alquimia: Setup
 ~~~~~~~~~~~~~~~
@@ -20,9 +25,10 @@ including reading database, swapping basis, etc.
 .. code-block:: none
 
     void AlquimiaSetup(
-        in/out: engine_native_input_file <string>,
+        in: engine_native_input_filename <string>,
         output: engine_internal_state <void pointer>,
         output: sizes <struct: Alquimia Sizes>,
+	output: functionality <struct: Alquimia Engine Functionality>
 	output: status <struct: Alquimia Status>)
 
 The sizes structure contains the number of degrees of freedom for the
@@ -59,15 +65,18 @@ Shutdown the engine. Destroys all internal objects, frees manually allocated mem
 	output: status <struct: Alquimia Status>)
 
 
-Alquimia: Get Engine Meta Data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Additional information about the library that may be needed by the engine. Is it tread_safe (can the engine create multiple copies using openmp). Does it support temperature dependent chemistry? etc
+Alquimia: Get Problem Meta Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Additional information the engine may need about the specific problem
+being solved. For example, the names of the primary species and
+minerals, and their required order.
 
 .. code-block:: none
 
     void AlquimiaGetEngineMetaData(
         in/out: engine_internal_state <void pointer>,
-        output: engine_meta_data <struct: Alquimia Meta Data>,
+        output: problem_meta_data <struct: Alquimia Problem Meta Data>,
 	output: status <struct: Alquimia Status>)
 
 

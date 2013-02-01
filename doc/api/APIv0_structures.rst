@@ -41,11 +41,17 @@ Stand alone variables
 |              |              |chemistry engine.                 |
 +--------------+--------------+----------------------------------+
 
+NOTE: The engine state variable should be used by the engine to store
+any spatially independent, persistent data. All spatially or mesh
+dependent must be stored in the auxiliary data structure managed by
+the driver. This allows an AMR based driver to refine or interpolate
+as needed.
 
 Struct: Alquimia Sizes
 ======================
 
-The size of the various arrays that are being passed through the interface.
+The memory requirements and size of the various arrays that are being
+passed through the interface.
 
 +-------------------------+-------------+--------------------------------------------+
 | **variable**            | **storage** | **use**                                    |
@@ -59,6 +65,10 @@ The size of the various arrays that are being passed through the interface.
 | num_surface_sites       | int         | N_ss, number of surface sites              |
 +-------------------------+-------------+--------------------------------------------+
 | num_ion_exchange_sites  | int         | N_ix, number of ion exchange sites         |
++-------------------------+-------------+--------------------------------------------+
+|    num_aux_integers     | int         | N_ai, number of auxiliary integers         |
++-------------------------+-------------+--------------------------------------------+
+|     num_aux_doubles     | int         | N_ad, number of auxiliary doubles          |
 +-------------------------+-------------+--------------------------------------------+
 
 Struct: Alquimia State
@@ -77,11 +87,9 @@ Storage for spatially and temporally varying "state" data. Read/write (chemistry
 +-----------------------------------+----------------------+-------------------------+
 | aqueous_pressure                  |        double        |           [-]           |
 +-----------------------------------+----------------------+-------------------------+
-| total_primary                     | vector<double, N_p>  |       [molarity]        |
+| total_mobile                      | vector<double, N_p>  |       [molarity]        |
 +-----------------------------------+----------------------+-------------------------+
-| total_sorbed                      | vector<double, N_p>  |    [moles/m^3 bulk]     |
-+-----------------------------------+----------------------+-------------------------+
-| free_ion                          | vector<double, N_p>  |       [molality]        |
+| total_immobile                    | vector<double, N_p>  |    [moles/m^3 bulk]     |
 +-----------------------------------+----------------------+-------------------------+
 | mineral_volume_fractions          | vector<double, N_m>  |           [-]           |
 +-----------------------------------+----------------------+-------------------------+
@@ -92,11 +100,6 @@ Storage for spatially and temporally varying "state" data. Read/write (chemistry
 | surface_site_density              | vector<double, N_ss> |      [moles / m^3]      |
 +-----------------------------------+----------------------+-------------------------+
 
-
-Possible changes: 
-* move free ion into alquimia auxiliary data?
-* rename total_primary => total mobile?
-* rename total_sorbed => total immobile?
 
 Struct: Alquimia Material Properties
 ====================================
@@ -124,19 +127,23 @@ chemistry engine. The driver code **MUST** store these on the mesh
 of each reaction step call and stored after the call.  This data
 **MUST** be written to checkpoint/restart files. The driver does not
 need to do anything else with them, they do not need to be
-transported.
+transported. Persistent data that is not mesh dependent should be
+stored in the engine state variable.
 
-+-------------------------------------+-----------------------+--------------------------+
-| **variable**                        | **storage**           | **units**                |
-+=====================================+=======================+==========================+
-| primary activity coeff              |  vector<double, N_p>  | [-]                      |
-+-------------------------------------+-----------------------+--------------------------+
-| secondary activity coeff            |  vector<double, N_s>  | [-]                      |
-+-------------------------------------+-----------------------+--------------------------+
-| ion_exchange_ref_cation_conc [1]_   | vector<double, N_ix>  | [?]                      |
-+-------------------------------------+-----------------------+--------------------------+
-| surface_complex_free_site_conc [1]_ | vector<double, N_ss>  | [moles sites / m^3 bulk] |
-+-------------------------------------+-----------------------+--------------------------+
+This structure is intened for things like free ion concentrations,
+primary and secondary activity coefficients, surface complex free site
+concentration [1]_, ion exchange reference cation concentration [1]_,
+etc. The engine is responsible for packing and unpacking this data as
+needed.
+
++----------------+-----------------------+------------+
+| **variable**   | **storage**           | **units**  |
++================+=======================+============+
+| aux_ints       |   vector<int, N_ai>   | [-]        |
++----------------+-----------------------+------------+
+| aux_double     | vector<double, N_ad>  | [-]        |
++----------------+-----------------------+------------+
+
 
 .. [1] PFloTran internal variable that must be stored
 
@@ -175,10 +182,10 @@ operation.
   "DEV_ERROR:" at the start of the string.
 
 
-Struct: Alquimia Meta Data
-==========================
+Struct: Alquimia Engine Functionality
+=====================================
 
-Other information exchanged between the engine and client
+Information about the functionality of the supported by the geochemistry engine
 
 +-------------------------+---------------------+-------------------------------------------+
 | **variable**            | **storage**         |**comment**                                |
@@ -210,6 +217,15 @@ Other information exchanged between the engine and client
 |                         |                     |based, base index = 0, if fortran based,   |
 |                         |                     |base index = 1                             |
 +-------------------------+---------------------+-------------------------------------------+
+
+Struct: Alquimia Problem Meta Data
+==================================
+
+Problem specific meta data, e.g. primary species and mineral names.
+
++-------------------------+---------------------+-------------------------------------------+
+| **variable**            | **storage**         |**comment**                                |
++=========================+=====================+===========================================+
 | primary indices         | vector<int, N_p>    |indices of the named primaries             |
 +-------------------------+---------------------+-------------------------------------------+
 | primary names           | vector<string, N_p> |names of the primary species               |
@@ -270,6 +286,7 @@ An aqueous geochemical constraint is a struct with the following fields:
 +--------------------+----------+
 
 Types of constraints supported:
+
 * mineral
 * gas
 * pH

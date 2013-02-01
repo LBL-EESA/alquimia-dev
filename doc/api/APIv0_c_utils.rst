@@ -24,7 +24,7 @@ state for the desired engine.
 +---------------------------+------------------+
 | GetAuxiliaryOutput        | function pointer |
 +---------------------------+------------------+
-| GetEngineMetaData         | function pointer |
+| GetProblemMetaData        | function pointer |
 +---------------------------+------------------+
 | engine_state              | void*            |
 +---------------------------+------------------+
@@ -71,6 +71,29 @@ Alquimia: Memory
 C library for allocating and freeing memory in the alquimia structs,
 ``alquimia_memory.h`` and ``alquimia_memory.c``.
 
+If an AlquimiaData struct is created and the 'sizes' member is
+correctly filled out, then a call to
+
+.. code-block:: c
+
+   void AllocateAlquimiaData(struct AlquimiaData* data)
+
+will allocate all the internal memory necessary.
+
+Individual containers can be allocated by calling the appropriate
+allocate function:
+
+.. code-block:: c
+
+    void AllocateAlquimiaXXX(const struct AlquimiaSizes* sizes,
+                             struct AlquimiaXXX* xxx)
+
+Every allocate function has a corresponding free function
+
+.. code-block:: c
+
+    void FreeAlquimiaXXX(struct AlquimiaXXX* xxx)
+
 Alquimia Print Utils
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -78,3 +101,10 @@ C library of common utilities for working with the contents of the
 alquimia structs, ``alquimia_utils.h`` and
 ``alquimia_utils.c``. Primarily functions for printing the contents of
 alquimia structs.
+
+All printing functions are in the form:
+
+.. code-block:: c
+
+    void PrintAlquimiaXXX(const struct AlquimiaXXX* const xxx)
+
