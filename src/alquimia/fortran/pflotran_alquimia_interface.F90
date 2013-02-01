@@ -46,7 +46,11 @@ module PFloTranAlquimiaInterface_module
        GetAuxiliaryOutput, &
        GetProblemMetaData
 
-  private :: InitializePFloTranReactions, &
+  private :: &
+       SetupPFloTranOptions, &
+       SetEngineFunctionality, &
+       SetAlquimiaSizes, &
+       InitializePFloTranReactions, &
        ReadPFloTranConstraints, &
        ProcessPFloTranConstraint, &
        ConvertAlquimiaConditionToPflotran, &
@@ -127,10 +131,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 
   ! local variables
   type(PFloTranEngineState), pointer :: engine_state
-  PetscErrorCode :: ierr
   PetscBool :: option_found
   character(len=kAlquimiaMaxStringLength) :: string
-  character(len=kAlquimiaMaxStringLength) :: filename_out
   type(reaction_type), pointer :: reaction
   type(option_type), pointer :: option
   type(input_type), pointer :: input
@@ -146,37 +148,12 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 
   ! setup pflotran's option object, including mpi
   option => OptionCreate()
-  option%fid_out = OUT_UNIT
-
-  option%global_comm = MPI_COMM_WORLD
-  call MPI_Comm_rank(MPI_COMM_WORLD, option%global_rank, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, option%global_commsize, ierr)
-  call MPI_Comm_group(MPI_COMM_WORLD, option%global_group, ierr)
-  option%mycomm = option%global_comm
-  option%myrank = option%global_rank
-  option%mycommsize = option%global_commsize
-  option%mygroup = option%global_group
+  call SetupPFloTranOptions(option)
 
   ! set the pflotran input file name
   call c_f_string(input_filename,   option%input_filename)
   write (*, '(a, a)') "  Reading : ", trim(option%input_filename)
-
   input => InputCreate(IN_UNIT, option%input_filename, option)
-
-  filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
-                 '.out'
-
-  if (option%myrank == option%io_rank .and. option%print_to_file) then
-    open(option%fid_out, file=filename_out, action="write", status="unknown")
-  endif
-
-  !
-  ! manual initialization...
-  !
-  option%nphase = 1
-  option%liquid_phase = 1
-  option%reference_water_density = 998.2
-
 
   !
   ! initialize chemistry
@@ -192,15 +169,15 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   allocate(global_auxvar)
   call GlobalAuxVarInit(global_auxvar, option)
 
-  ! rt_auxvar --> cell by cell chemistry data
-  allocate(rt_auxvar)
-  call RTAuxVarInit(rt_auxvar, reaction, option)
-
   ! assign default state values, not really needed?
   global_auxvar%pres = option%reference_pressure
   global_auxvar%temp = option%reference_temperature
   global_auxvar%den_kg = option%reference_water_density
   global_auxvar%sat = option%reference_saturation  
+
+  ! rt_auxvar --> cell by cell chemistry data
+  allocate(rt_auxvar)
+  call RTAuxVarInit(rt_auxvar, reaction, option)
 
   ! NOTE(bja) : constraint coupler is only needed for printing the
   ! processed constraints to pflotran.out. But destroying the coupler
@@ -216,6 +193,10 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   ! close the input file because we don't need it any more
   call InputDestroy(input)
 
+  call SetAlquimiaSizes(reaction, sizes)
+
+  call SetEngineFunctionality(reaction, functionality)
+
   !
   ! save pflotran's persistent data to a struct so the driver can
   ! store it for us
@@ -230,34 +211,6 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   engine_state%transport_constraints => transport_constraints
 
   pft_engine_state = c_loc(engine_state)
-
-  !
-  ! Grab sizes info that the driver needs to finish initializing
-  !
-  sizes%num_primary = reaction%ncomp
-  sizes%num_sorbed = 0 ! FIXME(bja): need some sort of if (using_sorption)...
-  sizes%num_kinetic_minerals = reaction%mineral%nkinmnrl
-  sizes%num_aqueous_complexes = reaction%neqcplx
-  sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
-  sizes%num_ion_exchange_sites = reaction%neqionxrxn
-  call GetAuxiliaryDataSizes(reaction, &
-       sizes%num_aux_integers, sizes%num_aux_doubles)
-
-  !call PrintSizes(sizes)
-
-  !
-  ! Tell the driver what functionality we support
-  !
-
-  ! TODO(bja) : can we extract this from pflotran without hardcoding?
-  functionality%thread_safe = .true.
-  functionality%temperature_dependent = .true.
-  functionality%pressure_dependent = .true.
-  functionality%porosity_update = engine_state%reaction%update_porosity
-  functionality%operator_splitting = .true.
-  functionality%global_implicit = .false.
-  functionality%index_base = 1
-
 
   status%error = kAlquimiaNoError
   call f_c_string_ptr("Alquimia::PFloTran::Setup() : successful.", &
@@ -405,7 +358,6 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
            ! end of the list (or empty list) without out finding a match.
            call f_c_string_ptr("INPUT ERROR: Could not find pflotran constraint : "//trim(name), &
                 status%message, kAlquimiaMaxStringLength)
-           ! TODO(bja) : else report an error to the driver
            status%error = kAlquimiaErrorUnknownConstraintName
            exit
         end if
@@ -689,6 +641,108 @@ end subroutine GetProblemMetaData
 ! Private work routines
 !
 ! **************************************************************************** !
+
+! **************************************************************************** !
+subroutine SetupPFloTranOptions(option)
+
+  use c_interface_module, only : c_f_string
+
+  use Option_module, only : option_type
+
+  implicit none
+
+#include "definitions.h"
+#include "finclude/petsclog.h"
+
+  ! function parameters
+  type (option_type), intent(inout) :: option
+
+  ! local variables
+  character(len=MAXSTRINGLENGTH) :: filename_out
+  PetscErrorCode :: ierr
+
+  !
+  ! mpi
+  !
+  option%global_comm = MPI_COMM_WORLD
+  call MPI_Comm_rank(MPI_COMM_WORLD, option%global_rank, ierr)
+  call MPI_Comm_size(MPI_COMM_WORLD, option%global_commsize, ierr)
+  call MPI_Comm_group(MPI_COMM_WORLD, option%global_group, ierr)
+  option%mycomm = option%global_comm
+  option%myrank = option%global_rank
+  option%mycommsize = option%global_commsize
+  option%mygroup = option%global_group
+
+  !
+  ! output file
+  !
+  option%fid_out = OUT_UNIT
+
+  filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
+                 '.out'
+
+  if (option%myrank == option%io_rank .and. option%print_to_file) then
+    open(option%fid_out, file=filename_out, action="write", status="unknown")
+  endif
+
+  !
+  ! manually initialize some required values
+  !
+  option%nphase = 1
+  option%liquid_phase = 1
+  option%reference_water_density = 998.2
+
+end subroutine SetupPFloTranOptions
+
+! **************************************************************************** !
+subroutine SetEngineFunctionality(reaction, functionality)
+
+  use AlquimiaContainers_module, only : AlquimiaEngineFunctionality
+
+  use Reaction_aux_module, only : reaction_type
+
+  implicit none
+
+  ! function parameters
+  type (reaction_type), intent(in) :: reaction
+  type (AlquimiaEngineFunctionality), intent(out) :: functionality
+
+  ! TODO(bja) : can we extract this from pflotran without hardcoding?
+  functionality%thread_safe = .true.
+  functionality%temperature_dependent = .true.
+  functionality%pressure_dependent = .true.
+  functionality%porosity_update = reaction%update_porosity
+  functionality%operator_splitting = .true.
+  functionality%global_implicit = .false.
+  functionality%index_base = 1
+
+end subroutine SetEngineFunctionality
+
+! **************************************************************************** !
+subroutine SetAlquimiaSizes(reaction, sizes)
+
+  use AlquimiaContainers_module, only : AlquimiaSizes
+
+  use Reaction_aux_module, only : reaction_type
+
+  implicit none
+
+  ! function parameters
+  type (reaction_type), intent(in) :: reaction
+  type (AlquimiaSizes), intent(out) :: sizes
+
+  sizes%num_primary = reaction%ncomp
+  sizes%num_sorbed = 0 ! FIXME(bja): need some sort of if (using_sorption)...
+  sizes%num_kinetic_minerals = reaction%mineral%nkinmnrl
+  sizes%num_aqueous_complexes = reaction%neqcplx
+  sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
+  sizes%num_ion_exchange_sites = reaction%neqionxrxn
+  call GetAuxiliaryDataSizes(reaction, &
+       sizes%num_aux_integers, sizes%num_aux_doubles)
+
+  !call PrintSizes(sizes)
+
+end subroutine SetAlquimiaSizes
 
 ! **************************************************************************** !
 subroutine InitializePFloTranReactions(option, input, reaction)
