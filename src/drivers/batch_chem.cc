@@ -131,13 +131,18 @@ int main(int argc, char** argv) {
       return chem_status.error;
     }
 
-    // allocate memory for alquimia data transfer containers.
+    // if you want multiple copies of the chemistry engine with
+    // OpenMP, check chem_data.functionality.thread_safe == true, then
+    // create the appropriate number of chem interface and data
+    // objects
+
+    // chem_data.sizes was set by Setup(), so now we can allocate
+    // memory for alquimia data transfer containers.
     AllocateAlquimiaData(&chem_data);
 
     // allocate the remaining memory in the driver (mesh dependent)
 
-    // get the driver meta data (thread safe, temperature/pressure
-    // dependent, species names, etc)
+    // get the problem meta data (species and mineral names, etc)
     chem.GetProblemMetaData(chem.engine_state,
                             &chem_data.meta_data,
                             &chem_status);
@@ -148,8 +153,8 @@ int main(int argc, char** argv) {
     }
     PrintAlquimiaProblemMetaData(&chem_data.meta_data);
 
-    // finish initializing the driver, e.g. openmp for thread safe
-    // engines, verify material properties, etc
+    // finish initializing the driver, e.g. verify material
+    // properties, species names, etc
 
     //
     // prepare for constraint processing
