@@ -31,11 +31,11 @@
 module PFloTranAlquimiaInterface_module
 
   ! pflotran modules
-  use Option_module
-  use Reaction_Aux_module
-  use Reactive_Transport_Aux_module
-  use Global_Aux_module
-  use Constraint_module
+  use Option_module, only : option_type
+  use Reaction_Aux_module, only : reaction_type
+  use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
+  use Global_Aux_module, only : global_auxvar_type
+  use Constraint_module, only : tran_constraint_list_type, tran_constraint_coupler_type
 
   implicit none
 
@@ -97,19 +97,21 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 !  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
 !    been called by the driver
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_char, c_ptr
 
-  use c_interface_module
+  use c_interface_module, only : c_f_string, f_c_string_ptr
 
   use AlquimiaContainers_module
 
   ! pflotran
-  use Reaction_module
-  use Reaction_Aux_module
-  use Reactive_Transport_Aux_module
-  use Global_Aux_module
-  use Option_module
-  use Input_module
+  use Reaction_Aux_module, only : reaction_type
+  use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type, &
+       RTAuxVarInit
+  use Global_Aux_module, only : global_auxvar_type, GlobalAuxVarInit
+  use Option_module, only : option_type, OptionCreate
+  use Input_module, only : input_type, InputCreate, InputDestroy
+  use Constraint_module, only : tran_constraint_list_type, &
+       tran_constraint_coupler_type, TranConstraintCouplerCreate
 
   implicit none
 
@@ -268,11 +270,16 @@ end subroutine Setup
 subroutine Shutdown(pft_engine_state, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_f_pointer
 
-  use c_interface_module
+  use c_interface_module, only : f_c_string_ptr
 
   use AlquimiaContainers_module
+
+  ! pflotran
+  use Option_module, only : OptionDestroy
+  use Reaction_aux_module, only : ReactionDestroy
+  use Constraint_module, only : TranConstraintCouplerDestroy, TranConstraintDestroyList
 
   implicit none
 
@@ -314,15 +321,15 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
      state, aux_data, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_f_pointer
 
-  use c_interface_module
+  use c_interface_module, only : c_f_string, f_c_string_ptr
 
   use AlquimiaContainers_module
 
   ! pflotran
   use String_module, only : StringCompareIgnoreCase
-  use Constraint_module, only : tran_constraint_type
+  use Constraint_module, only : tran_constraint_type, TranConstraintAddToList
 
   implicit none
 
@@ -433,14 +440,14 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
      delta_t, material_properties, state, aux_data, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
 
-  use c_interface_module
+  use c_interface_module, only : f_c_string_ptr
 
   use AlquimiaContainers_module
 
   ! pflotran
-  use Reaction_module
+  use Reaction_module, only : RReact, RUpdateSolution
 
   implicit none
 
@@ -516,14 +523,14 @@ subroutine GetAuxiliaryOutput( &
      status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
 
-  use c_interface_module
+  use c_interface_module, only : f_c_string_ptr
 
   use AlquimiaContainers_module
 
   ! pflotran
-  use Mineral_module
+  use Mineral_module, only : RMineralSaturationIndex
 
   implicit none
 
@@ -586,9 +593,9 @@ end subroutine GetAuxiliaryOutput
 subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   !  NOTE: Function signature is dictated by the alquimia API.
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_int, c_char, c_f_pointer
 
-  use c_interface_module
+  use c_interface_module, only : f_c_string_ptr, f_c_string_chars
 
   use AlquimiaContainers_module
 
@@ -686,12 +693,12 @@ end subroutine GetProblemMetaData
 ! **************************************************************************** !
 subroutine InitializePFloTranReactions(option, input, reaction)
 
-  use Reaction_module
-  use Reaction_Aux_module
-  use Database_module
-  use Option_module
-  use Input_module
-  use String_module
+  ! pflotran
+  use Reaction_module, only : ReactionInit, ReactionReadPass2
+  use Reaction_Aux_module, only : reaction_type
+  use Database_module, only : DatabaseRead, BasisInit
+  use Option_module, only : option_type
+  use Input_module, only : input_type, InputFindStringInFile, InputError
 
   implicit none
 
@@ -709,7 +716,7 @@ subroutine InitializePFloTranReactions(option, input, reaction)
   ! check for a chemistry block in the  input file
   string = "CHEMISTRY"
   call InputFindStringInFile(input, option, string)
-  if (.not.InputError(input)) then
+  if (.not. InputError(input)) then
     ! found a chemistry block, initialize the chemistry.
 
     ! NOTE(bja): ReactionInit() only does a first pass through the
@@ -745,14 +752,14 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
 !  NOTE: We are just reading the data from the input file. No processing
 !    is done here because we don't know yet if we are using these.
 
-  use Reaction_module
-  use Reaction_Aux_module
-  use Reactive_Transport_Aux_module
-  use Global_Aux_module
-  use Option_module
-  use Input_module
-  use Constraint_module
-  use String_module
+  use Reaction_Aux_module, only : reaction_type
+  use Option_module, only : option_type, printMsg, printErrMsg
+  use Input_module, only : input_type, InputReadFlotranString, InputReadWord, &
+       InputErrorMsg, InputError
+  use String_module, only : StringToUpper
+  use Constraint_module, only : tran_constraint_list_type, tran_constraint_type, &
+       TranConstraintRead, TranConstraintInitList, TranConstraintAddToList, &
+       TranConstraintCreate
 
   implicit none
 
@@ -816,13 +823,14 @@ end subroutine ReadPFloTranConstraints
 ! **************************************************************************** !
 subroutine ProcessPFloTranConstraint(option, reaction, &
      global_auxvar, rt_auxvar, tran_constraint, constraint_coupler)
-  use Reaction_module
-  use Reaction_Aux_module
-  use Reactive_Transport_Aux_module
-  use Global_Aux_module
-  use Constraint_module
-  use Option_module
-  use String_module
+
+  use Reaction_module, only : ReactionProcessConstraint, ReactionPrintConstraint, &
+       ReactionEquilibrateConstraint
+  use Reaction_Aux_module, only : reaction_type
+  use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
+  use Global_Aux_module, only : global_auxvar_type
+  use Constraint_module, only : tran_constraint_type, tran_constraint_coupler_type
+  use Option_module, only : option_type, printMsg
 
   implicit none
 
@@ -899,15 +907,17 @@ function ConvertAlquimiaConditionToPflotran(&
      option, reaction, alquimia_condition)
   use, intrinsic :: iso_c_binding
 
-  use c_interface_module
+  use c_interface_module, only : c_f_string
+
   use AlquimiaContainers_module
 
   ! pflotran
-  use Option_module, only : option_type
-  use Reaction_aux_module, only : reaction_type
-  use Mineral_aux_module, only : mineral_constraint_type
+  use Option_module, only : option_type, printErrMsg
+  use Reaction_aux_module, only : reaction_type, aq_species_constraint_type, &
+       AqueousSpeciesConstraintCreate
+  use Mineral_aux_module, only : mineral_constraint_type, MineralConstraintCreate
   use String_module, only : StringCompareIgnoreCase
-  use Constraint_module
+  use Constraint_module, only : tran_constraint_type, TranConstraintCreate
 
   implicit none
 
@@ -1037,14 +1047,14 @@ end function ConvertAlquimiaConditionToPflotran
 subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   reaction, global_auxvar, rt_auxvar, porosity, volume)
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
 
   use AlquimiaContainers_module
 
   ! pflotran
-  use Reaction_aux_module
-  use Reactive_Transport_Aux_module
-  use Global_Aux_module
+  use Reaction_aux_module, only : reaction_type
+  use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
+  use Global_Aux_module, only : global_auxvar_type
 
   implicit none
 
@@ -1130,14 +1140,14 @@ end subroutine CopyAlquimiaToAuxVars
 subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
      porosity, state, aux_data)
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
 
   use AlquimiaContainers_module
 
   ! pflotran
-  use Reaction_aux_module
-  use Reactive_Transport_Aux_module
-  use Global_Aux_module
+  use Reaction_aux_module, only : reaction_type
+  use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
+  use Global_Aux_module, only : global_auxvar_type
 
   implicit none
 
@@ -1238,7 +1248,7 @@ end subroutine CopyAuxVarsToAlquimia
 ! **************************************************************************** !
 subroutine GetAuxiliaryDataSizes(reaction, num_ints, num_doubles)
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_int
 
   use Reaction_aux_module, only : reaction_type
 
@@ -1258,7 +1268,8 @@ end subroutine GetAuxiliaryDataSizes
 
 ! **************************************************************************** !
 subroutine PackAlquimiaAuxiliaryData(reaction, rt_auxvar, aux_data)
-  use, intrinsic :: iso_c_binding
+
+  use, intrinsic :: iso_c_binding, only : c_int, c_double, c_f_pointer
 
   use AlquimiaContainers_module, only : AlquimiaAuxiliaryData
 
@@ -1315,7 +1326,8 @@ end subroutine PackAlquimiaAuxiliaryData
 
 ! **************************************************************************** !
 subroutine UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
-  use, intrinsic :: iso_c_binding
+
+  use, intrinsic :: iso_c_binding, only : c_int, c_double, c_f_pointer
 
   use AlquimiaContainers_module, only : AlquimiaAuxiliaryData
 
@@ -1381,9 +1393,7 @@ end subroutine UnpackAlquimiaAuxiliaryData
 ! **************************************************************************** !
 subroutine PrintSizes(sizes)
 
-  use, intrinsic :: iso_c_binding
-
-  use AlquimiaContainers_module
+  use AlquimiaContainers_module, only : AlquimiaSizes
 
   implicit none
 
@@ -1402,9 +1412,9 @@ end subroutine PrintSizes
 ! **************************************************************************** !
 subroutine PrintState(state)
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
 
-  use AlquimiaContainers_module
+  use AlquimiaContainers_module, only : AlquimiaState
 
   implicit none
 
@@ -1432,8 +1442,6 @@ end subroutine PrintState
 ! **************************************************************************** !
 subroutine PrintEngineFunctionality(functionality)
 
-  use, intrinsic :: iso_c_binding
-
   use AlquimiaContainers_module, only : AlquimiaEngineFunctionality
 
   implicit none
@@ -1452,7 +1460,7 @@ end subroutine PrintEngineFunctionality
 ! **************************************************************************** !
 subroutine PrintProblemMetaData(meta_data)
 
-  use, intrinsic :: iso_c_binding
+  use, intrinsic :: iso_c_binding, only : c_int, c_ptr, c_f_pointer
 
   use c_interface_module, only : c_f_string_ptr
 
@@ -1486,8 +1494,6 @@ end subroutine PrintProblemMetaData
 
 ! **************************************************************************** !
 subroutine PrintStatus(status)
-
-  use, intrinsic :: iso_c_binding
 
   use AlquimiaContainers_module, only : AlquimiaEngineStatus
 
