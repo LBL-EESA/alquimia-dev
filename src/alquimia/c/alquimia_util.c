@@ -136,7 +136,7 @@ void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_da
 
   fprintf(stdout, "  Alquimia Auxiliary Data:\n");
   PrintAlquimiaVectorInt("auxiliary integers", &(aux_data->aux_ints));
-  PrintAlquimiaVectorString("auxiliary doubles", &(aux_data->aux_doubles));
+  PrintAlquimiaVectorDouble("auxiliary doubles", &(aux_data->aux_doubles));
 }  // end PrintAlquimiaAuxiliaryData()
 
 void PrintAlquimiaAuxiliaryOutputData(
