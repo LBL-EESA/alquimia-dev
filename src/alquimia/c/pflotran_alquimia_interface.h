@@ -20,7 +20,8 @@ extern "C" {
       const char* input_filename,
       void* pft_engine_state,
       struct AlquimiaSizes* sizes,
-      struct AlquimiaEngineStatus* status) ;
+      struct AlquimiaEngineFunctionality* functionality,
+      struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_shutdown(
       void* pft_engine_state,
       struct AlquimiaEngineStatus* status);
@@ -45,9 +46,9 @@ extern "C" {
       struct AlquimiaAuxiliaryData* aux_data,
       struct AlquimiaAuxiliaryOutputData* aux_out,
       struct AlquimiaEngineStatus* status);
-  void pflotran_alquimia_getenginemetadata(
+  void pflotran_alquimia_getproblemmetadata(
       void* pft_engine_state,
-      struct AlquimiaMetaData* metadata,
+      struct AlquimiaProblemMetaData* meta_data,
       struct AlquimiaEngineStatus* status);
 #ifdef __cplusplus
 }

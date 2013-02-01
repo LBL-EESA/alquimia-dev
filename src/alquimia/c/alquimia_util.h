@@ -19,7 +19,10 @@ extern "C" {
                                  const struct AlquimiaVectorString* const vector);
 
   void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes);
-  void PrintAlquimiaMetaData(const struct AlquimiaMetaData* const meta_data);
+  void PrintAlquimiaProblemMetaData(
+      const struct AlquimiaProblemMetaData* const meta_data);
+  void PrintAlquimiaEngineFunctionality(
+      const struct AlquimiaEngineFunctionality* const functionality);
   void PrintAlquimiaState(const struct AlquimiaState* const state);
   void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_data);
   void PrintAlquimiaAuxiliaryOutputData(

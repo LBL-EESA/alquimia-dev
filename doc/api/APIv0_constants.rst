@@ -40,7 +40,7 @@ Alquimia Strings
 ~~~~~~~~~~~~~~~~
 
 String comparisons should be case insensitive. The only exception is
-chemical sysmols, which should follow standard conventions, i.e. "H+",
+chemical symbols, which should follow standard conventions, i.e. "H+",
 not "h+", "CO" = carbon monoxide, "Co" = cobalt, "co" = undefined.
 
 +-----------------------------+----------------+

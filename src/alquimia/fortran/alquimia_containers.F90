@@ -65,6 +65,8 @@ module AlquimiaContainers_module
      integer (c_int) :: num_aqueous_complexes
      integer (c_int) :: num_surface_sites
      integer (c_int) :: num_ion_exchange_sites
+     integer (c_int) :: num_aux_integers
+     integer (c_int) :: num_aux_doubles
   end type AlquimiaSizes
 
   type, public, bind(c) :: AlquimiaState
@@ -73,9 +75,8 @@ module AlquimiaContainers_module
      real (c_double) :: porosity
      real (c_double) :: temperature
      real (c_double) :: aqueous_pressure
-     type (AlquimiaVectorDouble) :: total_primary
-     type (AlquimiaVectorDouble) :: total_sorbed
-     type (AlquimiaVectorDouble) :: free_ion
+     type (AlquimiaVectorDouble) :: total_mobile
+     type (AlquimiaVectorDouble) :: total_immobile
      type (AlquimiaVectorDouble) :: mineral_volume_fraction
      type (AlquimiaVectorDouble) :: mineral_specific_surface_area
      type (AlquimiaVectorDouble) :: cation_exchange_capacity
@@ -90,10 +91,8 @@ module AlquimiaContainers_module
   end type AlquimiaMaterialProperties
 
   type, public, bind(c) :: AlquimiaAuxiliaryData 
-     type (AlquimiaVectorDouble) :: primary_activity_coeff
-     type (AlquimiaVectorDouble) :: secondary_activity_coeff
-     type (AlquimiaVectorDouble) :: ion_exchange_ref_cation_conc
-     type (AlquimiaVectorDouble) :: surface_complex_free_site_conc
+     type (AlquimiaVectorInt) :: aux_ints
+     type (AlquimiaVectorDouble) :: aux_doubles
   end type AlquimiaAuxiliaryData
 
   type, public, bind(c) :: AlquimiaEngineStatus
@@ -105,7 +104,7 @@ module AlquimiaContainers_module
      integer (c_int) :: num_newton_iterations
   end type AlquimiaEngineStatus
 
-  type, public, bind(c) :: AlquimiaMetaData
+  type, public, bind(c) :: AlquimiaEngineFunctionality
      logical (c_bool) :: thread_safe
      logical (c_bool) :: temperature_dependent
      logical (c_bool) :: pressure_dependent
@@ -113,11 +112,14 @@ module AlquimiaContainers_module
      logical (c_bool) :: operator_splitting
      logical (c_bool) :: global_implicit
      integer (c_int) :: index_base
+  end type AlquimiaEngineFunctionality
+
+  type, public, bind(c) :: AlquimiaProblemMetaData
      type (AlquimiaVectorInt) :: primary_indices
      type (AlquimiaVectorString) :: primary_names
      type (AlquimiaVectorInt) :: mineral_indices
      type (AlquimiaVectorString) :: mineral_names
-  end type AlquimiaMetaData
+  end type AlquimiaProblemMetaData
 
   type, public, bind(c) :: AlquimiaAuxiliaryOutputData
      real (c_double) :: pH
