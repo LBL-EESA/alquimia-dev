@@ -20,10 +20,11 @@ extern "C" {
      lived data structures. */
   struct AlquimiaData {
     struct AlquimiaSizes sizes;
+    struct AlquimiaEngineFunctionality functionality;
     struct AlquimiaState state;
     struct AlquimiaMaterialProperties material_properties;
     struct AlquimiaAuxiliaryData aux_data;
-    struct AlquimiaMetaData meta_data;
+    struct AlquimiaProblemMetaData meta_data;
     struct AlquimiaAuxiliaryOutputData aux_output;
   };
 
@@ -34,6 +35,7 @@ extern "C" {
         const char* input_filename,
         void* pft_engine_state,
         struct AlquimiaSizes* sizes,
+        struct AlquimiaEngineFunctionality* functionality,
         struct AlquimiaEngineStatus* status);
 
     /* gracefully shutdown the engine, cleanup memory */
@@ -70,9 +72,9 @@ extern "C" {
         struct AlquimiaAuxiliaryOutputData* aux_out,
         struct AlquimiaEngineStatus* status);
     
-    void (*GetEngineMetaData)(
+    void (*GetProblemMetaData)(
         void* pft_engine_state,
-        struct AlquimiaMetaData* meta_data,
+        struct AlquimiaProblemMetaData* meta_data,
         struct AlquimiaEngineStatus* status);
     
     /* internal representation of the chemistry engine's state */

@@ -85,22 +85,31 @@ void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes) {
   fprintf(stdout, "    num aqueous complexes : %d\n", sizes->num_aqueous_complexes);
   fprintf(stdout, "    num surface sites : %d\n", sizes->num_surface_sites);
   fprintf(stdout, "    num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
+  fprintf(stdout, "    num auxiliary integers : %d\n", sizes->num_aux_integers);
+  fprintf(stdout, "    num auxiliary doubles : %d\n", sizes->num_aux_doubles);
 }  // end PrintAlquimiaSizes()
 
-void PrintAlquimiaMetaData(const struct AlquimiaMetaData* const meta_data) {
+void PrintAlquimiaEngineFunctionality(
+    const struct AlquimiaEngineFunctionality* const functionality) {
 
-  fprintf(stdout, "  Alquimia Meta Data :\n");
-  fprintf(stdout, "    thread_safe : %d\n", meta_data->thread_safe);
+  fprintf(stdout, "  Alquimia Engine Functionality :\n");
+  fprintf(stdout, "    thread_safe : %d\n", functionality->thread_safe);
   fprintf(stdout, "    temperature_dependent : %d\n",
-          meta_data->temperature_dependent);
-  fprintf(stdout, "    pressure_dependent : %d\n", meta_data->pressure_dependent);
-  fprintf(stdout, "    porosity_update  : %d\n", meta_data->porosity_update);
-  fprintf(stdout, "    index base : %d\n", meta_data->index_base);
+          functionality->temperature_dependent);
+  fprintf(stdout, "    pressure_dependent : %d\n", 
+          functionality->pressure_dependent);
+  fprintf(stdout, "    porosity_update  : %d\n", functionality->porosity_update);
+  fprintf(stdout, "    index base : %d\n", functionality->index_base);
+}  // end PrintAlquimiaEngineFunctionality()
+
+void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const meta_data) {
+
+  fprintf(stdout, "  Alquimia Problem Meta Data :\n");
   PrintAlquimiaVectorInt("primary indices", &(meta_data->primary_indices));
   PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
   PrintAlquimiaVectorInt("mineral indices", &(meta_data->mineral_indices));
   PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names));
-}  // end PrintAlquimiaMetaData()
+}  // end PrintAlquimiaProblemMetaData()
 
 void PrintAlquimiaState(const struct AlquimiaState* const state) {
 
@@ -111,9 +120,8 @@ void PrintAlquimiaState(const struct AlquimiaState* const state) {
   fprintf(stdout, "    temperature : %f\n", state->temperature);
   fprintf(stdout, "    aqueous_pressure : %f\n", state->aqueous_pressure);
 
-  PrintAlquimiaVectorDouble("total_primary", &(state->total_primary));
-  PrintAlquimiaVectorDouble("total_sorbed", &(state->total_sorbed));
-  PrintAlquimiaVectorDouble("free_ion", &(state->free_ion));
+  PrintAlquimiaVectorDouble("total_mobile", &(state->total_mobile));
+  PrintAlquimiaVectorDouble("total_immobile", &(state->total_immobile));
   PrintAlquimiaVectorDouble("kinetic minerals volume fraction",
                             &(state->mineral_volume_fraction));
   PrintAlquimiaVectorDouble("kinetic minerals specific surface area",
@@ -127,14 +135,8 @@ void PrintAlquimiaState(const struct AlquimiaState* const state) {
 void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_data) {
 
   fprintf(stdout, "  Alquimia Auxiliary Data:\n");
-  PrintAlquimiaVectorDouble("primary activity coeff",
-                            &(aux_data->primary_activity_coeff));
-  PrintAlquimiaVectorDouble("secondary activity coeff",
-                            &(aux_data->secondary_activity_coeff));
-  PrintAlquimiaVectorDouble("ion exchange ref cation conc",
-                            &(aux_data->ion_exchange_ref_cation_conc));
-  PrintAlquimiaVectorDouble("surface complex free site conc",
-                            &(aux_data->surface_complex_free_site_conc));
+  PrintAlquimiaVectorInt("auxiliary integers", &(aux_data->aux_ints));
+  PrintAlquimiaVectorString("auxiliary doubles", &(aux_data->aux_doubles));
 }  // end PrintAlquimiaAuxiliaryData()
 
 void PrintAlquimiaAuxiliaryOutputData(

@@ -40,6 +40,8 @@ extern "C" {
     int num_aqueous_complexes;
     int num_surface_sites;
     int num_ion_exchange_sites;
+    int num_aux_integers;
+    int num_aux_doubles;
   };
   
   struct AlquimiaState {
@@ -48,9 +50,8 @@ extern "C" {
     double porosity;  // [-]
     double temperature;  // [celsius]
     double aqueous_pressure; // [Pa]
-    struct AlquimiaVectorDouble total_primary;  // [molarity]
-    struct AlquimiaVectorDouble total_sorbed;  // [moles/m^3 bulk]
-    struct AlquimiaVectorDouble free_ion;  // [molality]
+    struct AlquimiaVectorDouble total_mobile;  // [molarity]
+    struct AlquimiaVectorDouble total_immobile;  // [moles/m^3 bulk]
     struct AlquimiaVectorDouble mineral_volume_fraction;  // [-]
     struct AlquimiaVectorDouble mineral_specific_surface_area; // [m^2 mineral/m^3 bulk]
     struct AlquimiaVectorDouble cation_exchange_capacity;  // [moles/m^3 bulk]
@@ -65,10 +66,8 @@ extern "C" {
   };
   
   struct AlquimiaAuxiliaryData {
-    struct AlquimiaVectorDouble primary_activity_coeff;  // [-]
-    struct AlquimiaVectorDouble secondary_activity_coeff;  // [-]
-    struct AlquimiaVectorDouble ion_exchange_ref_cation_conc;  // [?]
-    struct AlquimiaVectorDouble surface_complex_free_site_conc;  // [?]
+    struct AlquimiaVectorInt aux_ints;  // [-]
+    struct AlquimiaVectorDouble aux_doubles;  // [-]
   };
   
   struct AlquimiaEngineStatus {
@@ -80,7 +79,7 @@ extern "C" {
     int num_newton_iterations;
   };
   
-  struct AlquimiaMetaData {
+  struct AlquimiaEngineFunctionality {
     bool thread_safe;
     bool temperature_dependent;
     bool pressure_dependent;
@@ -88,6 +87,9 @@ extern "C" {
     bool operator_splitting;
     bool global_implicit;
     int index_base;
+  };
+  
+  struct AlquimiaProblemMetaData {
     struct AlquimiaVectorInt primary_indices;
     struct AlquimiaVectorString primary_names;
     struct AlquimiaVectorInt mineral_indices;

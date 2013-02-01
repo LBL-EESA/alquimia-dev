@@ -111,7 +111,7 @@ void AllocateAlquimiaInterface(struct AlquimiaInterface* interface) {
   interface->ProcessCondition = NULL;
   interface->ReactionStepOperatorSplit = NULL;
   interface->GetAuxiliaryOutput = NULL;
-  interface->GetEngineMetaData = NULL;
+  interface->GetProblemMetaData = NULL;
   interface->engine_state = (void*) calloc(1, sizeof(void*));
 }  // end AllocateAlquimiaInterface()
 
@@ -130,13 +130,10 @@ void FreeAlquimiaInterface(struct AlquimiaInterface* interface) {
 
 void AllocateAlquimiaState(const struct AlquimiaSizes* sizes,
                            struct AlquimiaState* state) {
-  AllocateAlquimiaVectorDouble(sizes->num_primary, &(state->total_primary));
-  assert(state->total_primary.data != NULL);
+  AllocateAlquimiaVectorDouble(sizes->num_primary, &(state->total_mobile));
+  assert(state->total_mobile.data != NULL);
 
-  AllocateAlquimiaVectorDouble(sizes->num_primary, &(state->free_ion));
-  assert(state->free_ion.data != NULL);
-
-  AllocateAlquimiaVectorDouble(sizes->num_sorbed, &(state->total_sorbed));
+  AllocateAlquimiaVectorDouble(sizes->num_sorbed, &(state->total_immobile));
 
   AllocateAlquimiaVectorDouble(sizes->num_surface_sites,
                                &(state->surface_site_density));
@@ -153,8 +150,8 @@ void AllocateAlquimiaState(const struct AlquimiaSizes* sizes,
 
 void FreeAlquimiaState(struct AlquimiaState* state) {
   if (state != NULL) {
-    FreeAlquimiaVectorDouble(&(state->total_primary));
-    FreeAlquimiaVectorDouble(&(state->free_ion));
+    FreeAlquimiaVectorDouble(&(state->total_mobile));
+    FreeAlquimiaVectorDouble(&(state->total_immobile));
     FreeAlquimiaVectorDouble(&(state->mineral_volume_fraction));
     FreeAlquimiaVectorDouble(&(state->mineral_specific_surface_area));
     FreeAlquimiaVectorDouble(&(state->cation_exchange_capacity));
@@ -170,26 +167,18 @@ void FreeAlquimiaState(struct AlquimiaState* state) {
 
 void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes* sizes,
                                    struct AlquimiaAuxiliaryData* aux_data) {
-  AllocateAlquimiaVectorDouble(sizes->num_primary,
-                               &(aux_data->primary_activity_coeff));
+  AllocateAlquimiaVectorInt(sizes->num_aux_integers,
+                            &(aux_data->aux_ints));
 
-  AllocateAlquimiaVectorDouble(sizes->num_aqueous_complexes,
-                               &(aux_data->secondary_activity_coeff));
-
-  AllocateAlquimiaVectorDouble(sizes->num_ion_exchange_sites,
-                               &(aux_data->ion_exchange_ref_cation_conc));
-
-  AllocateAlquimiaVectorDouble(sizes->num_surface_sites,
-                               &(aux_data->surface_complex_free_site_conc));
+  AllocateAlquimiaVectorDouble(sizes->num_aux_doubles,
+                               &(aux_data->aux_doubles));
 
 }  // end AllocateAlquimiaAuxiliaryData()
 
 void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
   if (aux_data != NULL) {
-    FreeAlquimiaVectorDouble(&(aux_data->primary_activity_coeff));
-    FreeAlquimiaVectorDouble(&(aux_data->secondary_activity_coeff));
-    FreeAlquimiaVectorDouble(&(aux_data->ion_exchange_ref_cation_conc));
-    FreeAlquimiaVectorDouble(&(aux_data->surface_complex_free_site_conc));
+    FreeAlquimiaVectorInt(&(aux_data->aux_ints));
+    FreeAlquimiaVectorDouble(&(aux_data->aux_doubles));
   }
 }  // end FreeAlquimiaAuxiliaryData()
 
@@ -225,12 +214,12 @@ void FreeAlquimiaMaterialProperties(
 
 /*******************************************************************************
  **
- **  Meta Data
+ **  Problem Meta Data
  **
  *******************************************************************************/
 
-void AllocateAlquimiaMetaData(const struct AlquimiaSizes* sizes,
-                              struct AlquimiaMetaData* meta_data) {
+void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* sizes,
+                                     struct AlquimiaProblemMetaData* meta_data) {
 
   if (sizes->num_primary > 0) {
     AllocateAlquimiaVectorInt(sizes->num_primary, &(meta_data->primary_indices));
@@ -248,9 +237,9 @@ void AllocateAlquimiaMetaData(const struct AlquimiaSizes* sizes,
     AllocateAlquimiaVectorString(sizes->num_kinetic_minerals, &(meta_data->mineral_names));
     assert(meta_data->mineral_names.data != NULL);
   }
-}  // end AllocateAlquimiaMetaData()
+}  // end AllocateAlquimiaProblemMetaData()
 
-void FreeAlquimiaMetaData(struct AlquimiaMetaData* meta_data) {
+void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
 
   if (meta_data != NULL) {
     FreeAlquimiaVectorInt(&(meta_data->primary_indices));
@@ -258,7 +247,7 @@ void FreeAlquimiaMetaData(struct AlquimiaMetaData* meta_data) {
     FreeAlquimiaVectorInt(&(meta_data->mineral_indices));
     FreeAlquimiaVectorString(&(meta_data->mineral_names));
   }
-}  // end FreeAlquimiaMetaData()
+}  // end FreeAlquimiaProblemMetaData()
 
 /*******************************************************************************
  **
@@ -450,7 +439,7 @@ void AllocateAlquimiaData(struct AlquimiaData* data) {
     AllocateAlquimiaState(&data->sizes, &data->state);
     AllocateAlquimiaMaterialProperties(&data->sizes, &data->material_properties);
     AllocateAlquimiaAuxiliaryData(&data->sizes, &data->aux_data);
-    AllocateAlquimiaMetaData(&data->sizes, &data->meta_data);
+    AllocateAlquimiaProblemMetaData(&data->sizes, &data->meta_data);
     AllocateAlquimiaAuxiliaryOutputData(&data->sizes, &data->aux_output);
 }  // end AllocateAlquimiaData()
 
@@ -459,6 +448,6 @@ void FreeAlquimiaData(struct AlquimiaData* data) {
   FreeAlquimiaState(&data->state);
   FreeAlquimiaMaterialProperties(&data->material_properties);
   FreeAlquimiaAuxiliaryData(&data->aux_data);
-  FreeAlquimiaMetaData(&data->meta_data);
+  FreeAlquimiaProblemMetaData(&data->meta_data);
   FreeAlquimiaAuxiliaryOutputData(&data->aux_output);
 }  // end FreeAlquimiaData()

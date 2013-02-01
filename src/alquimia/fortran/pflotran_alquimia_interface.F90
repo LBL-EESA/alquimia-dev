@@ -44,14 +44,17 @@ module PFloTranAlquimiaInterface_module
        ProcessCondition, &
        ReactionStepOperatorSplit, &
        GetAuxiliaryOutput, &
-       GetEngineMetaData
+       GetProblemMetaData
 
   private :: InitializePFloTranReactions, &
        ReadPFloTranConstraints, &
        ProcessPFloTranConstraint, &
        ConvertAlquimiaConditionToPflotran, &
        CopyAlquimiaToAuxVars, &
-       CopyAuxVarsToAlquimia
+       CopyAuxVarsToAlquimia, &
+       GetAuxiliaryDataSizes, &
+       PackAlquimiaAuxiliaryData, &
+       UnpackAlquimiaAuxiliaryData
 
   integer(kind=8), private, parameter :: integrity_check_value = 5784429996817932654_8
   !integer(kind=int64), private, parameter :: integrity_check_value = &
@@ -88,7 +91,7 @@ contains
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine Setup(input_filename, pft_engine_state, sizes, status)
+subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 !
 !  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
@@ -117,6 +120,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (c_ptr), intent(out) :: pft_engine_state
   type (AlquimiaSizes), intent(out) :: sizes
+  type (AlquimiaEngineFunctionality), intent(out) :: functionality
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
@@ -234,8 +238,24 @@ subroutine Setup(input_filename, pft_engine_state, sizes, status)
   sizes%num_aqueous_complexes = reaction%neqcplx
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
+  call GetAuxiliaryDataSizes(reaction, &
+       sizes%num_aux_integers, sizes%num_aux_doubles)
 
   !call PrintSizes(sizes)
+
+  !
+  ! Tell the driver what functionality we support
+  !
+
+  ! TODO(bja) : can we extract this from pflotran without hardcoding?
+  functionality%thread_safe = .true.
+  functionality%temperature_dependent = .true.
+  functionality%pressure_dependent = .true.
+  functionality%porosity_update = engine_state%reaction%update_porosity
+  functionality%operator_splitting = .true.
+  functionality%global_implicit = .false.
+  functionality%index_base = 1
+
 
   status%error = kAlquimiaNoError
   call f_c_string_ptr("Alquimia::PFloTran::Setup() : successful.", &
@@ -435,7 +455,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   ! local variables
   type(PFloTranEngineState), pointer :: engine_state
   PetscReal :: porosity, volume, vol_frac_prim
-  PetscReal :: tran_xx(state%total_primary%size)
+  PetscReal :: tran_xx(state%total_mobile%size)
   PetscInt :: i, phase_index
 
   call c_f_pointer(pft_engine_state, engine_state)
@@ -457,7 +477,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   ! copy total primaries into dummy transport variable
   phase_index = 1
   
-  do i = 1, state%total_primary%size
+  do i = 1, state%total_mobile%size
      tran_xx(i) = engine_state%rt_auxvar%total(i, phase_index)
   enddo
 
@@ -563,7 +583,7 @@ end subroutine GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
+subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding
@@ -576,7 +596,7 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (AlquimiaMetaData), intent(out) :: meta_data
+  type (AlquimiaProblemMetaData), intent(out) :: meta_data
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
@@ -596,15 +616,6 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
           status%message, kAlquimiaMaxStringLength)
      return
   end if
-
-  ! TODO(bja) : can we extract this from pflotran without hardcoding?
-  meta_data%thread_safe = .true.
-  meta_data%temperature_dependent = .true.
-  meta_data%pressure_dependent = .true.
-  meta_data%porosity_update = engine_state%reaction%update_porosity
-  meta_data%operator_splitting = .true.
-  meta_data%global_implicit = .false.
-  meta_data%index_base = 1
 
   !
   ! copy primary indices and names
@@ -663,7 +674,7 @@ subroutine GetEngineMetaData(pft_engine_state, meta_data, status)
   end do
 
   status%error = 0
-end subroutine GetEngineMetaData
+end subroutine GetProblemMetaData
 
 
 ! **************************************************************************** !
@@ -1048,7 +1059,7 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   PetscReal, intent(out) :: volume
 
   ! local variables
-  real (c_double), pointer :: local_array(:)
+  real (c_double), pointer :: data(:)
   integer :: i, phase_index
 
   !write (*, '(a)') "PFloTran_Alquimia_CopyAlquimiaToAuxVars() :"
@@ -1069,80 +1080,49 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   !
   ! primary aqueous
   !
-  call c_f_pointer(state%total_primary%data, local_array, (/reaction%naqcomp/))
+  call c_f_pointer(state%total_mobile%data, data, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-     rt_auxvar%total(i, phase_index) = local_array(i)
-  end do
-
-  call c_f_pointer(state%free_ion%data, local_array, (/reaction%naqcomp/))
-  do i = 1, reaction%naqcomp
-     rt_auxvar%pri_molal(i) = local_array(i)
-  end do
-
-  call c_f_pointer(aux_data%primary_activity_coeff%data, local_array, (/reaction%naqcomp/))
-  do i = 1, reaction%naqcomp
-     rt_auxvar%pri_act_coef(i) = local_array(i)
-  end do
-
-  !
-  ! aqueous complexes
-  !
-  call c_f_pointer(aux_data%secondary_activity_coeff%data, local_array, &
-       (/reaction%neqcplx/))
-  do i = 1, reaction%neqcplx
-     rt_auxvar%sec_act_coef(i) = local_array(i)
+     rt_auxvar%total(i, phase_index) = data(i)
   end do
 
   !
   ! minerals
   !
-  call c_f_pointer(state%mineral_volume_fraction%data, local_array, &
+  call c_f_pointer(state%mineral_volume_fraction%data, data, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
-     rt_auxvar%mnrl_volfrac(i) = local_array(i)
+     rt_auxvar%mnrl_volfrac(i) = data(i)
   end do
 
-  call c_f_pointer(state%mineral_specific_surface_area%data, local_array, &
+  call c_f_pointer(state%mineral_specific_surface_area%data, data, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
-     rt_auxvar%mnrl_area(i) = local_array(i)
+     rt_auxvar%mnrl_area(i) = data(i)
   end do
 
   !
   ! ion exchange, CEC only present in reaction, not aux_vars?
   !
-  call c_f_pointer(state%cation_exchange_capacity%data, local_array, &
+  call c_f_pointer(state%cation_exchange_capacity%data, data, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
-     reaction%eqionx_rxn_CEC(i) = local_array(i)
+     reaction%eqionx_rxn_CEC(i) = data(i)
   end do
-
-  call c_f_pointer(aux_data%ion_exchange_ref_cation_conc%data, local_array, &
-       (/reaction%neqionxrxn/))
-  do i = 1, reaction%neqionxrxn
-     rt_auxvar%eqionx_ref_cation_sorbed_conc(i) = local_array(i)
-  end do
-
 
   !
   ! equilibrium surface complexation
   !
-  call c_f_pointer(state%surface_site_density%data, local_array, &
+  call c_f_pointer(state%surface_site_density%data, data, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
-     reaction%surface_complexation%srfcplxrxn_site_density(i) = local_array(i)
-  end do
-
-  call c_f_pointer(aux_data%surface_complex_free_site_conc%data, local_array, &
-       (/reaction%surface_complexation%nsrfcplxrxn/))
-  do i = 1, reaction%surface_complexation%nsrfcplxrxn
-     rt_auxvar%srfcplxrxn_free_site_conc(i) = local_array(i)
+     reaction%surface_complexation%srfcplxrxn_site_density(i) = data(i)
   end do
 
   !
   ! isotherms, TODO(bja): copy out of material_props into reaction (not auxvar)
   !
 
+  call UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
 
 end subroutine CopyAlquimiaToAuxVars
 
@@ -1170,7 +1150,7 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
 
   ! local variables
-  real (c_double), pointer :: local_array(:)
+  real (c_double), pointer :: data(:)
   integer :: i, phase_index
 
   phase_index = 1 ! TODO(bja): grab from pflotran?
@@ -1190,86 +1170,207 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! primary aqueous species
   !
-  call c_f_pointer(state%total_primary%data, local_array, (/reaction%naqcomp/))
+  call c_f_pointer(state%total_mobile%data, data, (/reaction%naqcomp/))
   do i = 1, reaction%naqcomp
-     local_array(i) = rt_auxvar%total(i, phase_index)
-  end do
-
-  call c_f_pointer(state%free_ion%data, local_array, (/reaction%naqcomp/))
-  do i = 1, reaction%naqcomp
-     local_array(i) = rt_auxvar%pri_molal(i)
-  end do
-
-  call c_f_pointer(aux_data%primary_activity_coeff%data, local_array, (/reaction%naqcomp/))
-  do i = 1, reaction%naqcomp
-     local_array(i) = rt_auxvar%pri_act_coef(i)
-  end do
-
-  !
-  ! secondary aqueous complexes
-  !
-  call c_f_pointer(aux_data%secondary_activity_coeff%data, local_array, &
-       (/reaction%neqcplx/))
-  do i = 1, reaction%neqcplx
-     local_array(i) = rt_auxvar%sec_act_coef(i)
+     data(i) = rt_auxvar%total(i, phase_index)
   end do
 
   !
   ! sorbed
   !
-  call c_f_pointer(state%total_sorbed%data, local_array, (/reaction%neqsorb/))
+  call c_f_pointer(state%total_immobile%data, data, (/reaction%neqsorb/))
   do i = 1, reaction%neqsorb
-     local_array(i) = rt_auxvar%total_sorb_eq(i)
+     data(i) = rt_auxvar%total_sorb_eq(i)
   end do
 
   !
   ! minerals
   !
-  call c_f_pointer(state%mineral_volume_fraction%data, local_array, &
+  call c_f_pointer(state%mineral_volume_fraction%data, data, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
-     local_array(i) = rt_auxvar%mnrl_volfrac(i)
+     data(i) = rt_auxvar%mnrl_volfrac(i)
   end do
 
-  call c_f_pointer(state%mineral_specific_surface_area%data, local_array, &
+  call c_f_pointer(state%mineral_specific_surface_area%data, data, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
-     local_array(i) = rt_auxvar%mnrl_area(i)
+     data(i) = rt_auxvar%mnrl_area(i)
   end do
 
   !
   ! ion exchange, CEC only present in reaction, not aux_vars?
   !
-  call c_f_pointer(state%cation_exchange_capacity%data, local_array, &
+  call c_f_pointer(state%cation_exchange_capacity%data, data, &
        (/reaction%neqionxrxn/))
   do i = 1, reaction%neqionxrxn
-     local_array(i) = reaction%eqionx_rxn_CEC(i)
+     data(i) = reaction%eqionx_rxn_CEC(i)
   end do
-
-  call c_f_pointer(aux_data%ion_exchange_ref_cation_conc%data, local_array, &
-       (/reaction%neqionxrxn/))
-  do i = 1, reaction%neqionxrxn
-     local_array(i) = rt_auxvar%eqionx_ref_cation_sorbed_conc(i)
-  end do
-
 
   !
   ! equilibrium surface complexation, site density in reaction, not aux_vars
   !
-  call c_f_pointer(state%surface_site_density%data, local_array, &
+  call c_f_pointer(state%surface_site_density%data, data, &
        (/reaction%surface_complexation%nsrfcplxrxn/))
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
-     local_array(i) = reaction%surface_complexation%srfcplxrxn_site_density(i)
+     data(i) = reaction%surface_complexation%srfcplxrxn_site_density(i)
   end do
 
-  call c_f_pointer(aux_data%surface_complex_free_site_conc%data, local_array, &
-       (/reaction%surface_complexation%nsrfcplxrxn/))
-  do i = 1, reaction%surface_complexation%nsrfcplxrxn
-     local_array(i) = rt_auxvar%srfcplxrxn_free_site_conc(i)
-  end do
-
+  call PackAlquimiaAuxiliaryData(reaction, rt_auxvar, aux_data)
 
 end subroutine CopyAuxVarsToAlquimia
+
+! **************************************************************************** !
+!
+! Auxiliary Data helper routines
+!
+! We are packaging data into the auxiliary data vectors in the following order:
+!
+! ints: none
+!
+! doubles:
+!   free ion conc <N_primary>
+!   primary_activity_coeff <N_primary>
+!   secondary_activity_coeff <N_aqueous_complexes>
+!   ion exchange ref cation sorbed conc <N_ion_exchange_sites>
+!   surface complexation free site conc <N_surface_sites>
+!
+! **************************************************************************** !
+subroutine GetAuxiliaryDataSizes(reaction, num_ints, num_doubles)
+
+  use, intrinsic :: iso_c_binding
+
+  use Reaction_aux_module, only : reaction_type
+
+  type (reaction_type), intent(in) :: reaction
+  integer (c_int), intent(out) :: num_ints
+  integer (c_int), intent(out) :: num_doubles
+
+  num_ints = 0
+
+  num_doubles = &
+       2 * reaction%naqcomp + &
+       reaction%neqcplx + &
+       reaction%neqionxrxn + &
+       reaction%surface_complexation%nsrfcplxrxn
+
+end subroutine GetAuxiliaryDataSizes
+
+! **************************************************************************** !
+subroutine PackAlquimiaAuxiliaryData(reaction, rt_auxvar, aux_data)
+  use, intrinsic :: iso_c_binding
+
+  use AlquimiaContainers_module, only : AlquimiaAuxiliaryData
+
+  use Reaction_aux_module, only : reaction_type
+  use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
+
+  ! function parameters
+  type (reaction_type), intent(in) :: reaction
+  type(reactive_transport_auxvar_type), pointer, intent(in) :: rt_auxvar
+  type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
+
+  ! local variables
+  integer (c_int) :: num_ints, num_doubles
+  real (c_double), pointer :: data(:)
+  integer :: i, dindex, phase_index
+
+  phase_index = 1 ! TODO(bja): grab from pflotran?
+
+  call GetAuxiliaryDataSizes(reaction, num_ints, num_doubles)
+
+  call c_f_pointer(aux_data%aux_doubles%data, data, (/num_doubles/))
+  dindex = 0
+  ! free ion
+  do i = 1, reaction%naqcomp
+     dindex = dindex + 1
+     data(dindex) = rt_auxvar%pri_molal(i)
+  end do
+
+  ! primary activity coeff
+  do i = 1, reaction%naqcomp
+     dindex = dindex + 1
+     data(dindex) = rt_auxvar%pri_act_coef(i)
+  end do
+
+  ! secondary aqueous complexe activity coeffs
+  do i = 1, reaction%neqcplx
+     dindex = dindex + 1
+     data(dindex) = rt_auxvar%sec_act_coef(i)
+  end do
+
+  ! ion exchange
+  do i = 1, reaction%neqionxrxn
+     dindex = dindex + 1
+     data(dindex) = rt_auxvar%eqionx_ref_cation_sorbed_conc(i)
+  end do
+
+  ! equilibrium surface complexation
+  do i = 1, reaction%surface_complexation%nsrfcplxrxn
+     dindex = dindex + 1
+     data(dindex) = rt_auxvar%srfcplxrxn_free_site_conc(i)
+  end do
+
+end subroutine PackAlquimiaAuxiliaryData
+
+! **************************************************************************** !
+subroutine UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
+  use, intrinsic :: iso_c_binding
+
+  use AlquimiaContainers_module, only : AlquimiaAuxiliaryData
+
+  use Reaction_aux_module, only : reaction_type
+  use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
+
+  ! function parameters
+  type (AlquimiaAuxiliaryData), intent(in) :: aux_data
+  type (reaction_type), intent(inout) :: reaction
+  type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvar
+
+  ! local variables
+  integer (c_int) :: num_ints, num_doubles
+  real (c_double), pointer :: data(:)
+  integer :: i, dindex, phase_index
+
+  call GetAuxiliaryDataSizes(reaction, num_ints, num_doubles)
+
+  call c_f_pointer(aux_data%aux_doubles%data, data, (/num_doubles/))
+  dindex = 0
+
+  ! free ion
+  do i = 1, reaction%naqcomp
+     dindex = dindex + 1
+     rt_auxvar%pri_molal(i) = data(dindex)
+  end do
+
+
+  ! primary activity coeff
+  do i = 1, reaction%naqcomp
+     dindex = dindex + 1
+     rt_auxvar%pri_act_coef(i) = data(dindex)
+  end do
+
+  ! aqueous complexes activity coeff
+  do i = 1, reaction%neqcplx
+     dindex = dindex + 1
+     rt_auxvar%sec_act_coef(i) = data(dindex)
+  end do
+
+
+  ! ion exchange
+  do i = 1, reaction%neqionxrxn
+     dindex = dindex + 1
+     rt_auxvar%eqionx_ref_cation_sorbed_conc(i) = data(dindex)
+  end do
+
+
+  ! equilibrium surface complexation
+  do i = 1, reaction%surface_complexation%nsrfcplxrxn
+     dindex = dindex + 1
+     rt_auxvar%srfcplxrxn_free_site_conc(i) = data(dindex)
+  end do
+
+end subroutine UnpackAlquimiaAuxiliaryData
 
 ! **************************************************************************** !
 !
@@ -1320,27 +1421,48 @@ subroutine PrintState(state)
   write (*, '(a, 1es13.6)') "  porosity : ", state%porosity
   write (*, '(a, 1es13.6)') "  temperature : ", state%temperature
   write (*, '(a, 1es13.6)') "  aqueous pressure : ", state%aqueous_pressure
-  write (*, '(a, i4, a)') "  total primary (", state%total_primary%size, ") : "
-  call c_f_pointer(state%total_primary%data, conc, (/state%total_primary%size/))
-  do i=1, state%total_primary%size
+  write (*, '(a, i4, a)') "  total primary (", state%total_mobile%size, ") : "
+  call c_f_pointer(state%total_mobile%data, conc, (/state%total_mobile%size/))
+  do i=1, state%total_mobile%size
      write (*, '(1es13.6)') conc(i)
   end do
 end subroutine PrintState
 
 
 ! **************************************************************************** !
-subroutine PrintMetaData(meta_data)
+subroutine PrintEngineFunctionality(functionality)
 
   use, intrinsic :: iso_c_binding
 
-  use c_interface_module
-
-  use AlquimiaContainers_module
+  use AlquimiaContainers_module, only : AlquimiaEngineFunctionality
 
   implicit none
 
   ! function parameters
-  type (AlquimiaMetaData), intent(in) :: meta_data
+  type (AlquimiaEngineFunctionality), intent(in) :: functionality
+
+  write (*, '(a)') "functionality : "
+  write (*, '(a, L1)') "  thread safe : ", functionality%thread_safe
+  write (*, '(a, L1)') "  temperature dependent : ", functionality%temperature_dependent
+  write (*, '(a, L1)') "  pressure dependent : ", functionality%pressure_dependent
+  write (*, '(a, L1)') "  porosity update : ", functionality%porosity_update
+  write (*, '(a, i4)') "  index base : ", functionality%index_base
+end subroutine PrintEngineFunctionality
+
+! **************************************************************************** !
+subroutine PrintProblemMetaData(meta_data)
+
+  use, intrinsic :: iso_c_binding
+
+  use c_interface_module, only : c_f_string_ptr
+
+  use AlquimiaContainers_module, only : &
+       AlquimiaProblemMetaData, kAlquimiaMaxStringLength
+
+  implicit none
+
+  ! function parameters
+  type (AlquimiaProblemMetaData), intent(in) :: meta_data
 
   ! local variables
   integer (c_int), pointer :: indices(:)
@@ -1349,11 +1471,6 @@ subroutine PrintMetaData(meta_data)
   integer (c_int) :: i
 
   write (*, '(a)') "meta_data : "
-  write (*, '(a, L1)') "  thread safe : ", meta_data%thread_safe
-  write (*, '(a, L1)') "  temperature dependent : ", meta_data%temperature_dependent
-  write (*, '(a, L1)') "  pressure dependent : ", meta_data%pressure_dependent
-  write (*, '(a, L1)') "  porosity update : ", meta_data%porosity_update
-  write (*, '(a, i4)') "  index base : ", meta_data%index_base
   write (*, '(a)') "  primary indices : "
   call c_f_pointer(meta_data%primary_indices%data, indices, (/meta_data%primary_indices%size/))
   do i=1, meta_data%primary_indices%size
@@ -1364,7 +1481,7 @@ subroutine PrintMetaData(meta_data)
      call c_f_string_ptr(names(i), name)
      write (*, '(a)') trim(name)
   end do
-end subroutine PrintMetaData
+end subroutine PrintProblemMetaData
 
 
 ! **************************************************************************** !
@@ -1372,7 +1489,7 @@ subroutine PrintStatus(status)
 
   use, intrinsic :: iso_c_binding
 
-  use AlquimiaContainers_module
+  use AlquimiaContainers_module, only : AlquimiaEngineStatus
 
   implicit none
 
