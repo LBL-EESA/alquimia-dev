@@ -98,10 +98,10 @@ int main(int argc, char** argv) {
   text_output.open(text_output_name.c_str(), std::fstream::out);
 
   //
-  // Create the alquimia structures.  NOTE: These are for a single
-  // grid cell. For openmp/threaded code, you'd need one per thead,
-  // but we don't know if the engine is thread safe until after the
-  // call to GetMetaData()!
+  // Create the alquimia structures.  NOTE: chem_data are for a single
+  // grid cell. For openmp/threaded code, you'd need one chem_status
+  // and chem_data per thead, but we don't know if the engine is
+  // thread safe until after the call to Setup()!
   //
   struct AlquimiaInterface chem;
   AlquimiaEngineStatus chem_status;
@@ -112,7 +112,6 @@ int main(int argc, char** argv) {
     // All alquimia function calls require a status object.
     AllocateAlquimiaEngineStatus(&chem_status);
     // Create the chemistry engine
-    AllocateAlquimiaInterface(&chem);
     CreateAlquimiaInterface(demo_simulation.engine.c_str(), &chem, &chem_status);
     if (chem_status.error != 0) {
       std::cout << chem_status.message << std::endl;
@@ -121,7 +120,7 @@ int main(int argc, char** argv) {
 
     // setup the engine and get the memory requirements
     chem.Setup(demo_simulation.engine_inputfile.c_str(),
-               chem.engine_state,
+               &chem_data.engine_state,
                &chem_data.sizes,
                &chem_data.functionality,
                &chem_status);
@@ -132,8 +131,8 @@ int main(int argc, char** argv) {
     }
 
     // if you want multiple copies of the chemistry engine with
-    // OpenMP, check chem_data.functionality.thread_safe == true, then
-    // create the appropriate number of chem interface and data
+    // OpenMP, verify: chem_data.functionality.thread_safe == true,
+    // then create the appropriate number of chem status and data
     // objects
 
     // chem_data.sizes was set by Setup(), so now we can allocate
@@ -143,7 +142,7 @@ int main(int argc, char** argv) {
     // allocate the remaining memory in the driver (mesh dependent)
 
     // get the problem meta data (species and mineral names, etc)
-    chem.GetProblemMetaData(chem.engine_state,
+    chem.GetProblemMetaData(&chem_data.engine_state,
                             &chem_data.meta_data,
                             &chem_status);
     if (chem_status.error != 0) {
@@ -151,7 +150,7 @@ int main(int argc, char** argv) {
       PrintAlquimiaProblemMetaData(&chem_data.meta_data);
       return chem_status.error;
     }
-    PrintAlquimiaProblemMetaData(&chem_data.meta_data);
+    //PrintAlquimiaProblemMetaData(&chem_data.meta_data);
 
     // finish initializing the driver, e.g. verify material
     // properties, species names, etc
@@ -180,7 +179,7 @@ int main(int argc, char** argv) {
         // for batch, only care about the IC. If the conditions have
         // spatially dependent values, then the state and material
         // properties need to be updated here!
-        chem.ProcessCondition(chem.engine_state,
+        chem.ProcessCondition(&chem_data.engine_state,
                               &(alquimia_conditions.data[i]),
                               &chem_data.material_properties,
                               &chem_data.state,
@@ -208,7 +207,7 @@ int main(int argc, char** argv) {
     double delta_t = demo_simulation.delta_t / time_units_conversion;
     double time = 0.0;
     // get initial pH
-    chem.GetAuxiliaryOutput(chem.engine_state,
+    chem.GetAuxiliaryOutput(&chem_data.engine_state,
                             &chem_data.material_properties,
                             &chem_data.state,
                             &chem_data.aux_data,
@@ -227,7 +226,7 @@ int main(int argc, char** argv) {
         PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
       }
       // unpack from driver memory, since this is batch, no unpacking
-      chem.ReactionStepOperatorSplit(chem.engine_state,
+      chem.ReactionStepOperatorSplit(&chem_data.engine_state,
                                      &delta_t,
                                      &chem_data.material_properties,
                                      &chem_data.state,
@@ -239,7 +238,7 @@ int main(int argc, char** argv) {
           PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
           return chem_status.error;
       }
-      chem.GetAuxiliaryOutput(chem.engine_state,
+      chem.GetAuxiliaryOutput(&chem_data.engine_state,
                               &chem_data.material_properties,
                               &chem_data.state,
                               &chem_data.aux_data,
@@ -274,8 +273,7 @@ int main(int argc, char** argv) {
   text_output.close();
 
   // cleanup memory
-  chem.Shutdown(chem.engine_state, &chem_status);
-  FreeAlquimiaInterface(&chem);
+  chem.Shutdown(&chem_data.engine_state, &chem_status);
   FreeAlquimiaData(&chem_data);
   FreeAlquimiaEngineStatus(&chem_status);
 

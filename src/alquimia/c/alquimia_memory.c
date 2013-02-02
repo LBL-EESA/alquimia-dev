@@ -101,29 +101,6 @@ void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector) {
 
 /*******************************************************************************
  **
- **  Alquimia Interface
- **
- *******************************************************************************/
-
-void AllocateAlquimiaInterface(struct AlquimiaInterface* interface) {
-  interface->Setup = NULL;
-  interface->Shutdown = NULL;
-  interface->ProcessCondition = NULL;
-  interface->ReactionStepOperatorSplit = NULL;
-  interface->GetAuxiliaryOutput = NULL;
-  interface->GetProblemMetaData = NULL;
-  interface->engine_state = (void*) calloc(1, sizeof(void*));
-}  // end AllocateAlquimiaInterface()
-
-void FreeAlquimiaInterface(struct AlquimiaInterface* interface) {
-  if (interface != NULL) {
-    free(interface->engine_state);
-    interface->engine_state = NULL;
-  }
-}  // end FreeAlquimiaInterface()
-
-/*******************************************************************************
- **
  **  State
  **
  *******************************************************************************/
