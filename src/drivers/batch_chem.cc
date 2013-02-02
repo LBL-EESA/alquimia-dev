@@ -165,12 +165,13 @@ int main(int argc, char** argv) {
     CopyDemoMaterialPropertiesToAlquimiaMaterials(
         demo_material_props, &chem_data.material_properties);
 
+    PrintAlquimiaData(&chem_data);
+
     // Read the geochemical conditions from the driver's native format
     // and store them in alquimia's format
     CopyDemoConditionsToAlquimiaConditions(demo_conditions, &alquimia_conditions);
 
-    //PrintAlquimiaState(&chem_data.state);
-    //PrintAlquimiaGeochemicalConditionList(&alquimia_conditions);
+    PrintAlquimiaGeochemicalConditionVector(&alquimia_conditions);
 
     for (int i = 0; i < alquimia_conditions.size; ++i) {
       // ask the engine to process the geochemical conditions
@@ -187,8 +188,8 @@ int main(int argc, char** argv) {
                               &chem_status);
         if (chem_status.error != 0) {
           std::cout << chem_status.message << std::endl;
-          PrintAlquimiaState(&chem_data.state);
-          PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
+          PrintAlquimiaData(&chem_data);
+          PrintAlquimiaGeochemicalCondition(&(alquimia_conditions.data[i]));
           return chem_status.error;
         }
       }

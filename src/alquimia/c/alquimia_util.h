@@ -3,6 +3,7 @@
 #define ALQUIMIA_C_UTIL_H_
 
 #include "alquimia_containers.h"
+#include "alquimia_interface.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,6 +19,7 @@ extern "C" {
   void PrintAlquimiaVectorString(const char* const name,
                                  const struct AlquimiaVectorString* const vector);
 
+  void PrintAlquimiaData(const struct AlquimiaData* const data);
   void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes);
   void PrintAlquimiaProblemMetaData(
       const struct AlquimiaProblemMetaData* const meta_data);
