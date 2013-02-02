@@ -50,6 +50,7 @@ module PFloTranAlquimiaInterface_module
        SetupPFloTranOptions, &
        SetEngineFunctionality, &
        SetAlquimiaSizes, &
+       InitializeTemperatureDependence, &
        InitializePFloTranReactions, &
        ReadPFloTranConstraints, &
        ProcessPFloTranConstraint, &
@@ -158,6 +159,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   !
   ! initialize chemistry
   !
+  call InitializeTemperatureDependence(option, input)
   call InitializePFloTranReactions(option, input, reaction)
 
   !
@@ -195,7 +197,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 
   call SetAlquimiaSizes(reaction, sizes)
 
-  call SetEngineFunctionality(reaction, functionality)
+  call SetEngineFunctionality(reaction, option, functionality)
 
   !
   ! save pflotran's persistent data to a struct so the driver can
@@ -691,26 +693,28 @@ subroutine SetupPFloTranOptions(option)
   option%nphase = 1
   option%liquid_phase = 1
   option%reference_water_density = 998.2
+  option%use_isothermal = PETSC_TRUE
 
 end subroutine SetupPFloTranOptions
 
 ! **************************************************************************** !
-subroutine SetEngineFunctionality(reaction, functionality)
+subroutine SetEngineFunctionality(reaction, option, functionality)
 
   use AlquimiaContainers_module, only : AlquimiaEngineFunctionality
 
   use Reaction_aux_module, only : reaction_type
+  use Option_module, only : option_type
 
   implicit none
 
   ! function parameters
   type (reaction_type), intent(in) :: reaction
+  type (option_type), intent(in) :: option
   type (AlquimiaEngineFunctionality), intent(out) :: functionality
 
-  ! TODO(bja) : can we extract this from pflotran without hardcoding?
   functionality%thread_safe = .true.
-  functionality%temperature_dependent = .true.
-  functionality%pressure_dependent = .true.
+  functionality%temperature_dependent = .not. option%use_isothermal
+  functionality%pressure_dependent = .false.
   functionality%porosity_update = reaction%update_porosity
   functionality%operator_splitting = .true.
   functionality%global_implicit = .false.
@@ -743,6 +747,39 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   !call PrintSizes(sizes)
 
 end subroutine SetAlquimiaSizes
+
+! **************************************************************************** !
+subroutine InitializeTemperatureDependence(option, input)
+
+  ! pflotran
+  use Option_module, only : option_type
+  use Input_module, only : input_type, InputFindStringInFile, InputError
+
+  implicit none
+
+#include "definitions.h"
+#include "finclude/petsclog.h"
+
+  ! function parameters
+  type(option_type), pointer, intent(in) :: option
+  type(input_type), pointer, intent(in) :: input
+
+  ! local variables
+  character(len=MAXSTRINGLENGTH) :: string
+
+  ! NOTE(bja): we are assuming isothermal by default. then override
+  ! from the input file if nonisothermal was specified
+
+  option%use_isothermal = PETSC_TRUE
+
+  string = 'NONISOTHERMAL'
+  call InputFindStringInFile(input, option, string)
+  if (.not. InputError(input)) then
+     ! found a nonisothermal block
+        option%use_isothermal = PETSC_FALSE
+  end if
+
+end subroutine InitializeTemperatureDependence
 
 ! **************************************************************************** !
 subroutine InitializePFloTranReactions(option, input, reaction)
