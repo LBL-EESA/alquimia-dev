@@ -16,6 +16,12 @@
 void CreateAlquimiaInterface(const char* engine_name,
                              struct AlquimiaInterface* interface,
                              struct AlquimiaEngineStatus* status) {
+  interface->Setup = NULL;
+  interface->Shutdown = NULL;
+  interface->ProcessCondition = NULL;
+  interface->ReactionStepOperatorSplit = NULL;
+  interface->GetAuxiliaryOutput = NULL;
+  interface->GetProblemMetaData = NULL;
 
   if (AlquimiaCaseInsensitiveStringCompare(engine_name,
                                            kAlquimiaStringPFloTran)) {
