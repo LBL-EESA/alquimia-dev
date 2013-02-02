@@ -19,11 +19,6 @@ extern "C" {
   void AllocateAlquimiaVectorString(const int size, struct AlquimiaVectorString* vector);
   void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector);
 
-  /* Alquimia Interface */
-  void AllocateAlquimiaInterface(struct AlquimiaInterface* interface);
-
-  void FreeAlquimiaInterface(struct AlquimiaInterface* interface);
-
   /* State */
   void AllocateAlquimiaState(const struct AlquimiaSizes* sizes,
                              struct AlquimiaState* state);

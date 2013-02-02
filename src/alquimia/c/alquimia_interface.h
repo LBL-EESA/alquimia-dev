@@ -17,8 +17,9 @@ extern "C" {
   /* NOTE(bja): AlquimiaData is a convenience container, and not a data
      structure that should be passed between the driver and
      engine. Conditions are not included here because they are short
-     lived data structures. */
+     lived data structures. Need one data object per thread. */
   struct AlquimiaData {
+    void* engine_state;
     struct AlquimiaSizes sizes;
     struct AlquimiaEngineFunctionality functionality;
     struct AlquimiaState state;
@@ -28,6 +29,9 @@ extern "C" {
     struct AlquimiaAuxiliaryOutputData aux_output;
   };
 
+  /* NOTE(bja): The alquimia interface should contain nothing but
+     function pointers. Inorder to thread chemistry, we need just one
+     interface object. */ 
   struct AlquimiaInterface {
     /* read data files/structures, initialize memory, basis management
        (includes reading database, swapping basis, etc.) */
@@ -76,10 +80,6 @@ extern "C" {
         void* pft_engine_state,
         struct AlquimiaProblemMetaData* meta_data,
         struct AlquimiaEngineStatus* status);
-    
-    /* internal representation of the chemistry engine's state */
-    void* engine_state;
-
   };
 
 
