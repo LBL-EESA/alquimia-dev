@@ -3,18 +3,31 @@ Alquimia Functions
 
 Details of the engine independent API and wrapper interface.
 
-Alquimia is intended for mixed language environments: a C/C++ based driver can call a fortran based engine or vice versa. The common language for mixed language programming is pure C. All function parameters must be either:
+Alquimia is intended for mixed language environments: a C/C++ based
+driver can call a fortran based engine or vice versa. The common
+language for mixed language programming is pure C. All function
+parameters must be either:
 
 * plain old data (POD), i.e. int, float, bool, char, c pointers.
 
-* structures containing POD. Nested structures are OK. All structures must defined on the :doc:`structures <APIv0_structures>` page.
+* structures containing POD. Nested structures are OK. The ordering
+  and size of data contained in the structures is important. It must
+  be the same for C and Fortran. All structures must defined on the
+  :doc:`structures <APIv0_structures>` page.
 
 * strings should be c style strings, i.e. null terminated arrays of characters.
 
 * Fortran expects all function parameters to be pass by value. All C
   function parameters must be pointers.
 
-All function interfaces are described in a language independent pseudocode.
+* Because of name mangling, interfaces contained in C++ classes or
+  Fortran modules must also provide wrapper functions.
+
+All function interfaces are described in a language independent
+pseudocode. Implementations should be described in header files
+``XXX_alquimia_interface.h`` or module files
+``XXX_alquimia_interface.F90`` and compiled into ``libalquimia_c.a``
+or ``libalquimia_fortran.a`` respectively.
 
 Alquimia: Setup
 ~~~~~~~~~~~~~~~
@@ -47,16 +60,17 @@ be used by calling setup once for each thread and storing multiple
 copies of the internal state.
 
 NOTE: PETScInitialize() or MPI_Init() must be called prior to calling
-AlquimiaSetup()! PFloTran requires mpi/petsc to be present (for
-variable types, e.g. PetscReal, and logging). For now we are assuming
-that it can operate on MPI_COMM_WORLD, but if this turns out not to be
-a valid assumption, we will need to pass the specific communicator to
-PFloTran through the setup interface.
+AlquimiaSetup()! PFloTran requires PETSc to be present (headers for
+variable types, e.g. PetscReal, and library for logging). For now we
+are assuming that it can operate on MPI_COMM_WORLD, but if this turns
+out not to be a valid assumption, we will need to pass the specific
+communicator to PFloTran through the setup interface.
 
 Alquimia: Shutdown
 ~~~~~~~~~~~~~~~~~~
 
-Shutdown the engine. Destroys all internal objects, frees manually allocated memory, and any other shutdown the engine may need.
+Shutdown the engine. Destroys all internal objects, frees manually
+allocated memory, and any other shutdown the engine may need.
 
 .. code-block:: none
 
@@ -120,7 +134,13 @@ Alquimia: Get Auxiliary Output
 
 Access to user selected geochemical data for output, i.e. pH, mineral SI, reaction rates.
 
-NOTE: as currently implemented in batch mode, this **MUST** be done after each reaction step call....
+NOTE: as currently implemented in batch mode, this **MUST** be done
+immediately after each reaction step call....
+
+:ref:`AlquimiaAuxiliaryOutputData` contains a series of arrays for
+different data types. If the driver does not want a particular set of
+data, it should set the array size to zero. The engine should use the
+value contained in aux_output to determine how much data to write.
 
 .. code-block:: none
 

@@ -1,17 +1,25 @@
 Alquimia Data Transfer Containers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These are the containers that will be used to pass data between the
-transport code and alquimia. The alquimia may pass these on to the
-chemistry engine directly, or may change units, container type etc and
-pass the munged data on to the engine.
+These are the containers that alquimia will used to pass data between the
+driver code and engine.
 
-**Implementation note**: In order to pass data between C/C++ and
-Fortran, all containers should be **implemented** as structs or
-derived types of plain old data (integers, doubles, characters,
-bool/logical) and pointers to arrays. Structs may be nested.
+**Implementation notes**:
+ 
+* In order to pass data between C/C++ and Fortran, all containers
+  should be **implemented** as structs or derived types of plain old
+  data (integers, doubles, characters, bool/logical) and pointers to
+  arrays.
+* Structs may be nested.
+* The ordering and size of the data contained in the structs is
+  important. It must be the same on both sides of the C/Fortran
+  interface.
+* Check your units.
 
 
+The implementations of these structures are contained in
+``alquimia_containers.h`` and ``alquimia_containers.F90`` for C/C++
+and Fortran respectively.
 
 Struct: Alquimia Vectors
 ========================
@@ -162,7 +170,7 @@ operation.
 +--------------------------+-------------+
 | message                  |   string    |
 +--------------------------+-------------+
-| converged                | boo         |
+| converged                | bool        |
 +--------------------------+-------------+
 | num_rhs_evaluations      | int         |
 +--------------------------+-------------+
@@ -174,12 +182,13 @@ operation.
 * Every alquimia function call should be followed by a check
   of the error status. 
 
-* Convergence failure is **NOT** an error.
+* Convergence failure is a normal part of numerical computing, **NOT**
+  an error.
 
 * error messages in the message string should spell out the source of
   the error as much as possible. Developer errors should be
   distinguished from user errors if possible. Use something like
-  "DEV_ERROR:" at the start of the string.
+  "DEV_ERROR:" or "INPUT_ERROR:" at the start of the string.
 
 
 Struct: Alquimia Engine Functionality
@@ -193,7 +202,7 @@ Information about the functionality of the supported by the geochemistry engine
 | thread safe             | bool                |tells the client whether it can create     |
 |                         |                     |multiple copies of the chemistry engine on |
 |                         |                     |the same processor and farm out work using |
-|                         |                     |openmp or something similar. Only valid if |
+|                         |                     |OpenMP or something similar. Only valid if |
 |                         |                     |the engine doesn't have global variables.  |
 +-------------------------+---------------------+-------------------------------------------+
 | temperature dependent   | bool                |Engine supports temperature dependent      |
@@ -226,21 +235,26 @@ Problem specific meta data, e.g. primary species and mineral names.
 +-------------------------+---------------------+-------------------------------------------+
 | **variable**            | **storage**         |**comment**                                |
 +=========================+=====================+===========================================+
-| primary indices         | vector<int, N_p>    |indices of the named primaries             |
+| primary indices         | vector<int, N_p>    |indices of the named primaries [2]_        |
 +-------------------------+---------------------+-------------------------------------------+
 | primary names           | vector<string, N_p> |names of the primary species               |
 +-------------------------+---------------------+-------------------------------------------+
-| kinetic mineral indices | vector<string, N_m> |indices of the kinetic minerals            |
+| kinetic mineral indices | vector<string, N_m> |indices of the kinetic minerals [2]_       |
 +-------------------------+---------------------+-------------------------------------------+
 | kinetic mineral names   | vector<string, N_m> |names of the kinetic minerals              |
 +-------------------------+---------------------+-------------------------------------------+
+
+.. [2] These are the indices according to the **engine**, using the "base index" provided in the engine functionality struct.
+
+.. _AlquimiaAuxiliaryOutputData:
 
 Struct: Alquimia Auxiliary Output Data
 ======================================
 
 Additional data that the user may request be written to the output
 files. The engine ignores any value passed in with these arrays and
-over writes it with the current value.
+over writes it with the current value. If the driver does not want
+data in a particular array, it should set the size to zero.
 
 +--------------------------+------------------------+-----------+
 |       **variable**       |        **type**        | **units** |
@@ -251,6 +265,14 @@ over writes it with the current value.
 +--------------------------+------------------------+-----------+
 |  mineral_reaction_rate   |  vector<double, N_m>   | [?]       |
 +--------------------------+------------------------+-----------+
+
+TODO(bja): to keep things simple, we just write out all the mineral
+data. If the driver only wants a subset, then they can grab the ones
+they want using the name-index mapping provided by the problem meta
+data.... 
+
+TODO(bja): this is only considering kinetic minerals. User may want
+reference minerals as well....
 
 Struct: Alquimia Geochemical Condition
 ======================================
@@ -287,6 +309,9 @@ An aqueous geochemical constraint is a struct with the following fields:
 
 Types of constraints supported:
 
+* total
+* total_sorbed
+* free
 * mineral
 * gas
 * pH
