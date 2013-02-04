@@ -3,11 +3,21 @@ API
 
 Alquimia will use `Semantic Versioning <http://semver.org/>`_ for its public API.
 
+Required parts of the interface API include:
 
 * :doc:`function <APIv0_functions>` call signatures
 * :doc:`data structures <APIv0_structures>`
 * :doc:`constants <APIv0_constants>`
+
+The required parts of the interface will be compiled into
+``libalquimia_c.a`` and ``libalquimia_fortran.a``.
+
+There is also an optional C utility library containing reuseable code
+for common tasks (allocating memory, printing data)
+
 * :doc:`c utility library <APIv0_c_utils>`
+
+
 
 Required Functionality
 ~~~~~~~~~~~~~~~~~~~~~~

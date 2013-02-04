@@ -3,6 +3,14 @@ Alquimia Constants
 
 These are the named constants that alquimia uses and their required values. 
 
+These should be implemented as C constants or Fortran parameters, not
+preprocessor macros. Because they are constant, they can be
+global. Implementations should be described in header files
+``alquimia_constants.h`` or module files ``alquimia_constants.F90``
+and compiled into ``libalquimia_c.a`` or ``libalquimia_fortran.a``
+respectively.
+
+
 Alquimia Error Codes
 ~~~~~~~~~~~~~~~~~~~~
 

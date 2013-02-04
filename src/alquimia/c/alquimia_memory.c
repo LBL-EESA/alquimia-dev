@@ -105,7 +105,7 @@ void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector) {
  **
  *******************************************************************************/
 
-void AllocateAlquimiaState(const struct AlquimiaSizes* sizes,
+void AllocateAlquimiaState(const struct AlquimiaSizes* const sizes,
                            struct AlquimiaState* state) {
   AllocateAlquimiaVectorDouble(sizes->num_primary, &(state->total_mobile));
   assert(state->total_mobile.data != NULL);
@@ -142,7 +142,7 @@ void FreeAlquimiaState(struct AlquimiaState* state) {
  **
  *******************************************************************************/
 
-void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes* sizes,
+void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes* const sizes,
                                    struct AlquimiaAuxiliaryData* aux_data) {
   AllocateAlquimiaVectorInt(sizes->num_aux_integers,
                             &(aux_data->aux_ints));
@@ -166,7 +166,7 @@ void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
  *******************************************************************************/
 
 void AllocateAlquimiaMaterialProperties(
-    const struct AlquimiaSizes* sizes,
+    const struct AlquimiaSizes* const sizes,
     struct AlquimiaMaterialProperties* material_props) {
   /* NOTE(bja) : need to be smarter about how we allocate memory for
      isotherms. (1) Only allocate if isotherms are used in chemistry, and
@@ -195,7 +195,7 @@ void FreeAlquimiaMaterialProperties(
  **
  *******************************************************************************/
 
-void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* sizes,
+void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
                                      struct AlquimiaProblemMetaData* meta_data) {
 
   if (sizes->num_primary > 0) {
@@ -233,7 +233,7 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
  *******************************************************************************/
 
 void AllocateAlquimiaAuxiliaryOutputData(
-    const struct AlquimiaSizes* sizes,
+    const struct AlquimiaSizes* const sizes,
     struct AlquimiaAuxiliaryOutputData* aux_output) {
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(aux_output->mineral_saturation_index));
