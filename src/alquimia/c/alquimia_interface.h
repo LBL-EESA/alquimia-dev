@@ -83,7 +83,7 @@ extern "C" {
   };
 
 
-  void CreateAlquimiaInterface(const char* engine_name,
+  void CreateAlquimiaInterface(const char* const engine_name,
                                struct AlquimiaInterface* interface,
                                struct AlquimiaEngineStatus* status);
 

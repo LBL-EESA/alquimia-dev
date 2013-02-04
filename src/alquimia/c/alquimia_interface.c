@@ -13,7 +13,7 @@
 #include "alquimia_containers.h"
 #include "alquimia_constants.h"
 
-void CreateAlquimiaInterface(const char* engine_name,
+void CreateAlquimiaInterface(const char* const engine_name,
                              struct AlquimiaInterface* interface,
                              struct AlquimiaEngineStatus* status) {
   interface->Setup = NULL;
