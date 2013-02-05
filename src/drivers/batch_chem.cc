@@ -431,9 +431,11 @@ void WriteOutput(std::fstream* text_output, const double time,
                  const AlquimiaState& state,
                  const AlquimiaAuxiliaryOutputData& aux_output) {
   if (text_output->is_open()) {
-    std::string seperator(" , ");
-    *text_output << std::scientific << std::setprecision(6) << std::setw(15) << time;
-    *text_output  << seperator << aux_output.pH;
+    std::string seperator("  ");
+    *text_output << std::scientific << std::uppercase
+                 << std::setprecision(6);
+    *text_output << seperator << time;
+    *text_output << seperator << aux_output.pH;
     for (int i = 0; i < state.total_mobile.size; ++i) {
       *text_output << seperator << state.total_mobile.data[i];
     }
