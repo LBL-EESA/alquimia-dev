@@ -1,4 +1,4 @@
-:Description: Batch carbonate equilibrium speciation reaction
+:Description: Batch calcite dissolution, with changes to calcite volume fraction.
 
 :=========================== regression =======================================
 REGRESSION
@@ -39,7 +39,7 @@ END
 
 :=========================== solver options ===================================
 TIMESTEPPER
-  TS_ACCELERATION 8
+  TS_ACCELERATION 15
 /
 
 :=========================== discretization ===================================
