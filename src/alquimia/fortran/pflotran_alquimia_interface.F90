@@ -149,10 +149,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 
   ! setup pflotran's option object, including mpi
   option => OptionCreate()
-  call SetupPFloTranOptions(option)
+  call SetupPFloTranOptions(input_filename, option)
 
-  ! set the pflotran input file name
-  call c_f_string(input_filename,   option%input_filename)
   write (*, '(a, a)') "  Reading : ", trim(option%input_filename)
   input => InputCreate(IN_UNIT, option%input_filename, option)
 
@@ -645,7 +643,9 @@ end subroutine GetProblemMetaData
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine SetupPFloTranOptions(option)
+subroutine SetupPFloTranOptions(input_filename, option)
+
+  use, intrinsic :: iso_c_binding, only : c_char
 
   use c_interface_module, only : c_f_string
 
@@ -657,11 +657,17 @@ subroutine SetupPFloTranOptions(option)
 #include "finclude/petsclog.h"
 
   ! function parameters
+  character(kind=c_char), dimension(*), intent(in) :: input_filename
   type (option_type), intent(inout) :: option
 
   ! local variables
   character(len=MAXSTRINGLENGTH) :: filename_out
   PetscErrorCode :: ierr
+
+  ! set the pflotran input file name
+  call c_f_string(input_filename,   option%input_filename)
+
+  option%global_prefix = option%input_filename
 
   !
   ! mpi
@@ -681,7 +687,7 @@ subroutine SetupPFloTranOptions(option)
   option%fid_out = OUT_UNIT
 
   filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
-                 '.out'
+                 '.out.alquimia'
 
   if (option%myrank == option%io_rank .and. option%print_to_file) then
     open(option%fid_out, file=filename_out, action="write", status="unknown")
@@ -986,7 +992,9 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
   constraint_coupler%surface_complexes => tran_constraint%surface_complexes
   constraint_coupler%colloids => tran_constraint%colloids
   constraint_coupler%global_auxvar => global_auxvar
-  constraint_coupler%rt_auxvar => rt_auxvar     
+  constraint_coupler%rt_auxvar => rt_auxvar
+  constraint_coupler%num_iterations = num_iterations
+
   call ReactionPrintConstraint(constraint_coupler, reaction, option)
 
 
