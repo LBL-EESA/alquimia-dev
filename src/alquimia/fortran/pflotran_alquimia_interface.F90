@@ -698,7 +698,7 @@ subroutine SetupPFloTranOptions(input_filename, option)
   !
   option%nphase = 1
   option%liquid_phase = 1
-  option%reference_water_density = 998.2
+  option%reference_water_density = 997.16
   option%use_isothermal = PETSC_TRUE
 
 end subroutine SetupPFloTranOptions
