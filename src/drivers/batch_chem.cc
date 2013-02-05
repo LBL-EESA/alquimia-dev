@@ -217,10 +217,9 @@ int main(int argc, char** argv) {
     // save the IC to our output file
     WriteOutputHeader(&text_output, time_units, chem_data.meta_data);
     WriteOutput(&text_output, time, chem_data.state, chem_data.aux_output);
-    std::cout << "Starting reaction stepping with dt = " << delta_t << " [s]\n";
+    std::cout << "Starting reaction stepping (OS) with dt = " << delta_t << " [s]\n";
     for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
       time += delta_t;
-      std::cout << ".";
       //std::cout << "reaction step : " << t << "  time: " << time << std::endl;
       if (false) {
         PrintAlquimiaState(&chem_data.state);
@@ -251,6 +250,11 @@ int main(int argc, char** argv) {
       }
       double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
       WriteOutput(&text_output, out_time, chem_data.state, chem_data.aux_output);
+      std::cout << "  step = " << std::setw(6) << std::right << t 
+                << "    time = " << std::setw(8) << std::right
+                << time*time_units_conversion << " [" << time_units 
+                << "]    newton = " << std::setw(4) << std::right 
+                << chem_status.num_newton_iterations << std::endl; 
       // repack into driver memory...
     }
     std::cout << std::endl;
