@@ -194,8 +194,10 @@ def configure(ctx):
     ctx.check_cc(header_name='ctype.h')
     ctx.check_cc(header_name='mpi.h')
     ctx.check_cc(function_name='MPI_Init', header_name='mpi.h')
-    ctx.env['CFLAGS'] = ['-Wall', '-W', '-Wunused', '-g']
+    if ctx.env.CC_NAME == 'gcc':
+       ctx.env['CFLAGS'] = ['-std=c99', '-Wall', '-W', '-Wunused', '-g']
 
+ 
     #
     # check the c++ compilers
     #
@@ -216,7 +218,8 @@ def configure(ctx):
     ctx.check_cxx(header_name='mpi.h')
     ctx.check_cxx(function_name='MPI_Init', header_name='mpi.h')
     #ctx.check_cxx(header_name='')
-    ctx.env['CXXFLAGS'] = ['-Wall', '-W', '-g']
+    if ctx.env.CXX_NAME == 'gcc':
+       ctx.env['CXXFLAGS'] = ['-Wall', '-W', '-g']
 
     #
     # check the fortran compiler
