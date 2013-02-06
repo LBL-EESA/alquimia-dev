@@ -967,7 +967,7 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
        tran_constraint%minerals, &
        tran_constraint%surface_complexes, &
        tran_constraint%colloids, &
-       tran_constraint%biomass, &
+       tran_constraint%immobile_species, &
        option)
 
   ! equilibrate
@@ -979,7 +979,7 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
        tran_constraint%minerals, &
        tran_constraint%surface_complexes, &
        tran_constraint%colloids, &
-       tran_constraint%biomass, &
+       tran_constraint%immobile_species, &
        option%reference_porosity, &
        num_iterations, &
        use_prev_soln_as_guess, &
