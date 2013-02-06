@@ -193,7 +193,6 @@ def configure(ctx):
     ctx.check_cc(function_name='strlen', header_name='string.h')
     ctx.check_cc(header_name='ctype.h')
     ctx.check_cc(header_name='mpi.h')
-    ctx.check_cc(lib='mpi')
     ctx.check_cc(function_name='MPI_Init', header_name='mpi.h')
     ctx.env['CFLAGS'] = ['-Wall', '-W', '-Wunused', '-g']
 
@@ -215,7 +214,6 @@ def configure(ctx):
     ctx.check_cxx(header_name='map')
     ctx.check_cxx(header_name='stdexcept')
     ctx.check_cxx(header_name='mpi.h')
-    ctx.check_cxx(lib='mpi')
     ctx.check_cxx(function_name='MPI_Init', header_name='mpi.h')
     #ctx.check_cxx(header_name='')
     ctx.env['CXXFLAGS'] = ['-Wall', '-W', '-g']
