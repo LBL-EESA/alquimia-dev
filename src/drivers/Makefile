@@ -20,9 +20,9 @@ INCLUDES = -I. \
 CXXFLAGS += $(INCLUDES)
 
 LIBS = \
-	-L../alquimia/fortran -lalquimia_fortran \
 	-L../alquimia/c -lalquimia_c \
-	-L../alquimia/c -lalquimia_cutils
+	-L../alquimia/c -lalquimia_cutils \
+	-L../alquimia/fortran -lalquimia_fortran
 
 DEPEND_LIBS += \
 	../alquimia/fortran/libalquimia_fortran.a \
