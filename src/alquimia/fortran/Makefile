@@ -2,12 +2,15 @@
 WORKSPACE_PATH := $(shell expr $(PWD) : '\(.*\/src\)/.*' \| $(PWD))
 include $(WORKSPACE_PATH)/Makefile.inc 
 
-HEADERS = alquimia_containers.h90
+HEADERS = 
 
-SRCS = c_interface_module.F90
+SRCS = \
+	c_interface_module.F90 \
+	alquimia_containers.F90
 
 ifdef PFLOTRAN_DIR
-	SRCS += pflotran_alquimia.F90
+	SRCS += pflotran_alquimia_interface.F90
+	SRCS += pflotran_alquimia_wrappers.F90
 endif
 
 ifdef CRUNCH_DIR

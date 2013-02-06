@@ -15,20 +15,19 @@ LDFLAGS +=  -lgfortran
 # generic to include alquimia library
 #
 INCLUDES = -I. \
-	-I../alquimia/c \
-	-I../alquimia/c++
+	-I../alquimia/c
 
 CXXFLAGS += $(INCLUDES)
 
 LIBS = \
-	-L../alquimia/c++ -lalquimia_c++ \
 	-L../alquimia/fortran -lalquimia_fortran \
-	-L../alquimia/c -lalquimia_c
+	-L../alquimia/c -lalquimia_c \
+	-L../alquimia/c -lalquimia_cutils
 
 DEPEND_LIBS += \
-	../alquimia/c++/libalquimia_c++.a \
 	../alquimia/fortran/libalquimia_fortran.a \
-	../alquimia/c/libalquimia_c.a 
+	../alquimia/c/libalquimia_c.a \
+	../alquimia/c/libalquimia_cutils.a
 
 #
 # libdemoutils.a
@@ -89,7 +88,7 @@ EXECUTABLES_TEST = \
 %.o : %.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-all : test_alquimia_interface_factory batch_chem
+all : batch_chem
 
 #
 # demo utils library
