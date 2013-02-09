@@ -2,6 +2,22 @@
 Test problems
 =============
 
+Automated test driver
+---------------------
+
+Since the batch chem drivers are not doing anything except calling the
+engine reaction stepping many times, the numerical results should be
+identical (to the precision of the text file output) at every time
+step.
+
+The automated test driver compares the pflotran observation problem
+with a similarly structured alquimia batch_chem output file.
+
+::
+
+    python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ../src/drivers/batch_chem -t calcite-kinetics-volume-fractions-pflotran-constraint
+
+
 
 Calcite kinetics, short time, and pflotran native constraints
 -------------------------------------------------------------
@@ -11,9 +27,9 @@ a short simulation time (no changes to calcite volume fraction). The
 initial condition is specified by name only, causing alquimia look for
 a pflotran native constraint with that name.
 
-**Status: pass** 
+**Status: fail** 
 
-Status Notes: Looking at the pH time series, there are occasional differences in the sixth decimal.
+Status Notes: Looking at the time series, there are occasional differences in the sixth decimal.
 
 ::
 
@@ -32,9 +48,9 @@ a short simulation time (no changes to calcite volume fraction). The
 initial condition is fully specified by the driver and processed by
 pflotran.
 
-**Status: pass**
+**Status: fail**
 
-Status Notes: Looking at the pH time series, there are occasional differences in the sixth decimal.
+Status Notes: Looking at the time series, there are occasional differences in the sixth decimal.
 
 ::
 
