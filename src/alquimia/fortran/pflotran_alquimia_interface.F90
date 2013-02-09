@@ -359,7 +359,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
            call f_c_string_ptr("INPUT ERROR: Could not find pflotran constraint : "//trim(name), &
                 status%message, kAlquimiaMaxStringLength)
            status%error = kAlquimiaErrorUnknownConstraintName
-           exit
+           return
         end if
      end do
   end if
@@ -382,8 +382,8 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
           engine_state%rt_auxvar, &
           porosity, &
           state, aux_data)
+     status%error = kAlquimiaNoError
   end if
-  status%error = kAlquimiaNoError
 end subroutine ProcessCondition
 
 
@@ -399,7 +399,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   use AlquimiaContainers_module
 
   ! pflotran
-  use Reaction_module, only : RReact, RUpdateSolution
+  use Reaction_module, only : RReact, RUpdateSolution, RTAuxVarCompute
 
   implicit none
 
@@ -443,6 +443,12 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   vol_frac_prim = 1.0
 
   engine_state%option%tran_dt = delta_t
+
+  !TODO(bja): if (.not.option%use_isothermal) then call RUpdateTempDependentCoefs...?
+
+!!$  call RTAuxVarCompute(engine_state%rt_auxvar, &
+!!$                       engine_state%global_auxvar, &
+!!$                       engine_state%reaction, engine_state%option)
 
   call RReact(engine_state%rt_auxvar, engine_state%global_auxvar, &
        tran_xx, volume, porosity, &
@@ -510,7 +516,7 @@ subroutine GetAuxiliaryOutput( &
 
   !write (*, '(a)') "PFloTranAlquimiaInterface::GetAuxiliaryOutput() :"
 
-  ! NOTE(bja): right now, all info from the previous reaction step is
+  ! FIXME(bja): right now, all info from the previous reaction step is
   ! still in the auxvars. We are assuming that the driver has called
   ! GetAuxiliaryOutput immediately after reaction step...!
 
