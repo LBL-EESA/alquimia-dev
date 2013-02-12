@@ -1,0 +1,221 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>API &mdash; Alquimia 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Alquimia 0.1 documentation" href="../index.html" />
+    <link rel="next" title="Alquimia Functions" href="APIv0_functions.html" />
+    <link rel="prev" title="Welcome to alquimia’s documentation!" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="APIv0_functions.html" title="Alquimia Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to alquimia’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Alquimia 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<p>Alquimia will use <a class="reference external" href="http://semver.org/">Semantic Versioning</a> for its public API.</p>
+<p>Required parts of the interface API include:</p>
+<ul class="simple">
+<li><a class="reference internal" href="APIv0_functions.html"><em>function</em></a> call signatures</li>
+<li><a class="reference internal" href="APIv0_structures.html"><em>data structures</em></a></li>
+<li><a class="reference internal" href="APIv0_constants.html"><em>constants</em></a></li>
+</ul>
+<p>The required parts of the interface will be compiled into
+<tt class="docutils literal"><span class="pre">libalquimia_c.a</span></tt> and <tt class="docutils literal"><span class="pre">libalquimia_fortran.a</span></tt>.</p>
+<p>There is also an optional C utility library containing reuseable code
+for common tasks (allocating memory, printing data)</p>
+<ul class="simple">
+<li><a class="reference internal" href="APIv0_c_utils.html"><em>c utility library</em></a></li>
+</ul>
+<div class="section" id="required-functionality">
+<h2>Required Functionality<a class="headerlink" href="#required-functionality" title="Permalink to this headline">¶</a></h2>
+<p>Alquimia exposes the following functionality from the underlying
+geochemistry <a class="reference internal" href="../index.html#term-engine"><em class="xref std std-term">engine</em></a>s in a generic interface:</p>
+<ul class="simple">
+<li>Reading of geochemical reaction data</li>
+<li>Basis management (includes reading database, swapping basis, etc.)</li>
+<li>Constraint processing for boundary/initial constraints. (Say you set
+a boundary concentration to be equilibrated with a mineral. The
+total component concentration for the species equilibrated with the
+mineral needs to be calculated and sent back to Amanzi transport.)</li>
+<li>Reaction step: operator split and global implicit</li>
+<li>Access to user selected geochemical data for output, i.e. pH, mineral SI, reaction rates</li>
+<li>Additional information about the library, e.g. is it thread safe, so
+amanzi can create multiple copies using openmp? Does it support
+temperature dependent chemistry, porosity updates, etc.</li>
+</ul>
+<dl class="docutils">
+<dt>Alquimia has two parts.</dt>
+<dd><ul class="first last simple">
+<li>An engine independent API consisting of <a class="reference internal" href="APIv0_functions.html"><em>function</em></a> call signatures and <a class="reference internal" href="APIv0_structures.html"><em>data structures</em></a>.</li>
+<li>An optional <a class="reference internal" href="APIv0_c_utils.html"><em>utility</em></a> library to handle
+data memory allocation/freeing, printing structs, etc.</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="division-of-labor-responsibilities-for-implementing-alquimia">
+<h2>Division of labor / responsibilities for implementing alquimia<a class="headerlink" href="#division-of-labor-responsibilities-for-implementing-alquimia" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="driver-process-kernel">
+<h3>Driver Process Kernel<a class="headerlink" href="#driver-process-kernel" title="Permalink to this headline">¶</a></h3>
+<p>Implemented by the developers of the <a class="reference internal" href="../index.html#term-driver"><em class="xref std std-term">driver</em></a>.</p>
+<ul class="simple">
+<li>Manage global storage, including reading spatially and/or temporally
+varying material properties, geochemical conditions, etc.</li>
+<li>loop through space</li>
+<li>manage time stepping, substepping, etc</li>
+<li>unpack and move data from the mesh dependent storage into alquimia
+data transfer containers</li>
+<li>I/O</li>
+</ul>
+</div>
+<div class="section" id="alquimia-interface">
+<h3>Alquimia Interface<a class="headerlink" href="#alquimia-interface" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Defines the engine independent API, including function call
+signatures and data transfer <a class="reference internal" href="APIv0_structures.html"><em>containers</em></a>.</li>
+<li>The API must be compatible with mixed language programing, C++
+calling fortran or fortran calling C, etc.</li>
+<li>Handles the engine dependent details for setup, shutdown, processing
+constraints, reaction stepping, etc.</li>
+<li>At the start of on operation, it unpacks data from the alquimia data
+transfer containers and packages them into the correct format for
+the engine. At the end of the operation, in packages the results
+back into the alquimia containers.</li>
+<li><strong>Alquimia does NOT do any geochemical calculations.</strong></li>
+<li>Implementation details : Each engine interface will handle the
+alquimia operations in it&#8217;s native implementation language.</li>
+</ul>
+</div>
+<div class="section" id="engine">
+<h3>Engine<a class="headerlink" href="#engine" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><dl class="first docutils">
+<dt>The <a class="reference internal" href="../index.html#term-engine"><em class="xref std std-term">engine</em></a> is responsibly for all geochemistry calculations, including:</dt>
+<dd><ul class="first last simple">
+<li>managing the reaction network (database reading, basis swapping).</li>
+<li>constraint processing.</li>
+<li>reaction stepping (OS).</li>
+<li>returning reaction step jacobian and rhs evaluations (GI).</li>
+<li>provideding auxiliary output, e.g. pH, mineral saturation index, reaction rates, etc</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">The maintainers of each engine are responsible for providing a
+wrapper library that <strong>EXACTLY</strong> conforms to the alquimia API.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">API</a><ul>
+<li><a class="reference internal" href="#required-functionality">Required Functionality</a></li>
+<li><a class="reference internal" href="#division-of-labor-responsibilities-for-implementing-alquimia">Division of labor / responsibilities for implementing alquimia</a><ul>
+<li><a class="reference internal" href="#driver-process-kernel">Driver Process Kernel</a></li>
+<li><a class="reference internal" href="#alquimia-interface">Alquimia Interface</a></li>
+<li><a class="reference internal" href="#engine">Engine</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">Welcome to alquimia&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="APIv0_functions.html"
+                        title="next chapter">Alquimia Functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/APIv0.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="APIv0_functions.html" title="Alquimia Functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to alquimia’s documentation!"
+             >previous</a> |</li>
+        <li><a href="../index.html">Alquimia 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Lawrence Berkeley National Lab, Ben Andre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
