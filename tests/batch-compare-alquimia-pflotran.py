@@ -259,6 +259,7 @@ class TestManager(object):
     def _setup_logfile(self):
         self._log_filename = "alquimia-tests-{0}.testlog".format(datetime.datetime.today().strftime("%Y-%m-%d_%H-%M-%S"))
         self._test_log = open(self._log_filename, 'w')
+        print("Alquimia / PFloTran Batch Chemistry Test Log", file=self._test_log)
         print("System Info :", file=self._test_log)
         print("    platform : {0}".format(sys.platform), file=self._test_log)
 
