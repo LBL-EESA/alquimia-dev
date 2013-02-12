@@ -13,9 +13,18 @@ step.
 The automated test driver compares the pflotran observation problem
 with a similarly structured alquimia batch_chem output file.
 
+To run a all tests in a particular config file:
 ::
 
-    python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ../src/drivers/batch_chem -t calcite-kinetics-volume-fractions-pflotran-constraint
+    python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ../src/drivers/batch_chem
+
+
+To run a single test by name:
+::
+
+    python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ../src/drivers/batch_chem -t calcite-volume-fractions-pflotran-constraint
+
+
 
 
 
@@ -33,9 +42,10 @@ Status Notes: Looking at the time series, there are occasional differences in th
 
 ::
 
-  ../install/bin/batch_chem -d -i calcite-kinetics-short-pc.cfg
+  ../install/bin/batch_chem -d -i calcite-short-pc.cfg
 
-  ./pflotran -pflotranin calcite-kinetics-short.in -output_prefix calcite-kinetics-short-pc
+  ./pflotran -input_prefix calcite-short
+
 
 NOTE: this is the same pflotran input file as
 calcite-kinetics-short-dc!
@@ -54,9 +64,10 @@ Status Notes: Looking at the time series, there are occasional differences in th
 
 ::
 
-  ../install/bin/batch_chem -d -i calcite-kinetics-short-dc.cfg
+  ../install/bin/batch_chem -d -i calcite-short-dc.cfg
 
-  ./pflotran -pflotranin calcite-kinetics-short.in -output_prefix calcite-kinetics-short-dc
+  ./pflotran -input_prefix calcite-short
+
 
 NOTE: this is the same pflotran input file as
 calcite-kinetics-short-pc!
@@ -75,8 +86,8 @@ Status Notes: slight initial numerical differences in rates accumulate error?
 
 ::
 
-  ../install/bin/batch_chem -d -i calcite-kinetics-vf-pc.cfg
+  ../install/bin/batch_chem -d -i calcite-vf-pc.cfg
 
-  ./pflotran -pflotranin calcite-kinetics-vf.in -output_prefix calcite-kinetics-vf
+  ./pflotran -input_prefix calcite-vf
 
 
