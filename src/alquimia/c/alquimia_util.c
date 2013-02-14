@@ -23,11 +23,12 @@
  *******************************************************************************/
 bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                           const char* const str2) {
+  int i;
   bool equal = true;
   if (strlen(str1) != strlen(str2)) {
     equal = false;
   } else {
-    for (size_t i = 0; i < strlen(str1); ++i) {
+    for (i = 0; i < strlen(str1); ++i) {
       if (tolower(str1[i]) != tolower(str2[i])) {
         equal = false;
         break;
@@ -44,9 +45,10 @@ bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
  *******************************************************************************/
 void PrintAlquimiaVectorDouble(const char* const name,
                                const struct AlquimiaVectorDouble* const vector) {
+  int i;
   fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
   fprintf(stdout, "   [ ");
-  for (int i = 0; i < vector->size; ++i) {
+  for (i = 0; i < vector->size; ++i) {
     fprintf(stdout, "%e, ", vector->data[i]);
   }
   fprintf(stdout, "]\n");
@@ -54,9 +56,10 @@ void PrintAlquimiaVectorDouble(const char* const name,
 
 void PrintAlquimiaVectorInt(const char* const name,
                             const struct AlquimiaVectorInt* const vector) {
+  int i;
   fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
   fprintf(stdout, "   [ ");
-  for (int i = 0; i < vector->size; ++i) {
+  for (i = 0; i < vector->size; ++i) {
     fprintf(stdout, "%d, ", vector->data[i]);
   }
   fprintf(stdout, "]\n");
@@ -64,9 +67,10 @@ void PrintAlquimiaVectorInt(const char* const name,
 
 void PrintAlquimiaVectorString(const char* const name,
                                const struct AlquimiaVectorString* const vector) {
+  int i;
   fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
   fprintf(stdout, "   [ ");
-  for (int i = 0; i < vector->size; ++i) {
+  for (i = 0; i < vector->size; ++i) {
     fprintf(stdout, "'%s', ", vector->data[i]);
   }
   fprintf(stdout, "]\n");
@@ -167,9 +171,9 @@ void PrintAlquimiaAuxiliaryOutputData(
 
 void PrintAlquimiaGeochemicalConditionVector(
     const struct AlquimiaGeochemicalConditionVector* const condition_list) {
-
+  int i;
   fprintf(stdout, "- Alquimia Geochemical Condition List ------------------\n");
-  for (int i = 0; i < condition_list->size; ++i) {
+  for (i = 0; i < condition_list->size; ++i) {
     PrintAlquimiaGeochemicalCondition(&(condition_list->data[i]));
     fprintf(stdout, "\n");
   }
@@ -178,12 +182,12 @@ void PrintAlquimiaGeochemicalConditionVector(
 
 void PrintAlquimiaGeochemicalCondition(
     const struct AlquimiaGeochemicalCondition* const condition) {
-
+  int i;
   fprintf(stdout, "-- Alquimia Geochemical Condition : %s\n", condition->name);
-  for (int i = 0; i < condition->aqueous_constraints.size; ++i) {
+  for (i = 0; i < condition->aqueous_constraints.size; ++i) {
     PrintAlquimiaAqueousConstraint(&(condition->aqueous_constraints.data[i]));
   }
-  for (int i = 0; i < condition->mineral_constraints.size; ++i) {
+  for (i = 0; i < condition->mineral_constraints.size; ++i) {
     PrintAlquimiaMineralConstraint(&(condition->mineral_constraints.data[i]));
   }
   fprintf(stdout, "\n");

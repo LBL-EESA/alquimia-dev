@@ -73,12 +73,12 @@ void FreeAlquimiaVectorInt(struct AlquimiaVectorInt* vector) {
 }  // end FreeAlquimiaVectorInt()
 
 void AllocateAlquimiaVectorString(const int size, struct AlquimiaVectorString* vector) {
+  int i;
   if (size > 0) {
     vector->size = size;
     vector->data = (char**) calloc(size, sizeof(char*));
     assert(NULL != vector->data);
-
-    for (int i = 0; i < vector->size; ++i) {
+    for (i = 0; i < vector->size; ++i) {
       vector->data[i] = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
       assert(NULL != vector->data[i]);
     }
@@ -89,8 +89,9 @@ void AllocateAlquimiaVectorString(const int size, struct AlquimiaVectorString* v
 }  // end AllocateAlquimiaVectorString()
  
 void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector) {
+  int i;
   if (vector != NULL) {
-    for (int i = 0; i < vector->size; ++i) {
+    for (i = 0; i < vector->size; ++i) {
       free(vector->data[i]);
     }
     free(vector->data);
@@ -346,8 +347,9 @@ void AllocateAlquimiaMineralConstraint(
 
 void FreeAlquimiaGeochemicalConditionVector(
     struct AlquimiaGeochemicalConditionVector* condition_list) {
+  int i;
   if (condition_list != NULL) {
-    for (int i = 0; i < condition_list->size; ++i) {
+    for (i = 0; i < condition_list->size; ++i) {
       FreeAlquimiaGeochemicalCondition(&(condition_list->data[i]));
     }
     free(condition_list->data);
@@ -368,8 +370,9 @@ void FreeAlquimiaGeochemicalCondition(
 
 void FreeAlquimiaAqueousConstraintVector(
     struct AlquimiaAqueousConstraintVector* vector) {
+  int i;
   if (vector != NULL) {
-    for (int i = 0; i < vector->size; ++i) {
+    for (i = 0; i < vector->size; ++i) {
       FreeAlquimiaAqueousConstraint(&vector->data[i]);
     }
     free(vector->data);
@@ -390,8 +393,9 @@ void FreeAlquimiaAqueousConstraint(
 
 void FreeAlquimiaMineralConstraintVector(
     struct AlquimiaMineralConstraintVector* vector) {
+  int i;
   if (vector != NULL) {
-    for (int i = 0; i < vector->size; ++i) {
+    for (i = 0; i < vector->size; ++i) {
       FreeAlquimiaMineralConstraint(&vector->data[i]);
     }
     free(vector->data);
