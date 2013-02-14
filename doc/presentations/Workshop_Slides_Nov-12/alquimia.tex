@@ -1,0 +1,550 @@
+\documentclass{beamer}
+
+\usepackage{comment}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{xspace}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks=true,citecolor=blue,filecolor=blue,linkcolor=blue,
+urlcolor=blue,breaklinks=true}
+
+\definecolor{green}{RGB}{0,128,0}
+
+\def\EQ#1\EN{\begin{equation*}#1\end{equation*}}
+\def\BA#1\EA{\begin{align*}#1\end{align*}}
+\def\BS#1\ES{\begin{split*}#1\end{split*}}
+\newcommand{\bc}{\begin{center}}
+\newcommand{\ec}{\end{center}}
+\newcommand{\eq}{\ =\ }
+\newcommand{\degc}{$^\circ$C}
+
+\def\p{\partial}
+\def\qbs{\boldsymbol{q}}
+\def\Dbs{\boldsymbol{D}}
+\def\A{\mathcal A}
+\def\gC{\mathcal C}
+\def\gD{\mathcal D}
+\def\gL{\mathcal L}
+\def\M{\mathcal M}
+\def\P{\mathcal P}
+\def\Q{\mathcal Q}
+\def\gR{\mathcal R}
+\def\gS{\mathcal S}
+\def\X{\mathcal X}
+\def\bnabla{\boldsymbol{\nabla}}
+\def\bnu{\boldsymbol{\nu}}
+\renewcommand{\a}{{\alpha}}
+%\renewcommand{\a}{{}}
+\newcommand{\s}{{\sigma}}
+\newcommand{\bq}{\boldsymbol{q}}
+\newcommand{\bz}{\boldsymbol{z}}
+\def\bPsi{\boldsymbol{\Psi}}
+
+\def\Li{\textit{L}}
+\def\Fb{\textbf{f}}
+\def\Jb{\textbf{J}}
+\def\cb{\textbf{c}}
+
+\def\Dt{\Delta t}
+\def\tpdt{{t + \Delta t}}
+\def\bpsi{\boldsymbol{\psi}}
+\def\dbpsi{\delta \boldsymbol{\psi}}
+\def\bc{\textbf{c}}
+\def\dbc{\delta \textbf{c}}
+\def\arrows{\rightleftharpoons}
+
+\newcommand{\bGamma}{\boldsymbol{\Gamma}}
+\newcommand{\bOmega}{\boldsymbol{\Omega}}
+%\newcommand{\bPsi}{\boldsymbol{\Psi}}
+%\newcommand{\bpsi}{\boldsymbol{\psi}}
+\newcommand{\bO}{\boldsymbol{O}}
+%\newcommand{\bnu}{\boldsymbol{\nu}}
+\newcommand{\bdS}{\boldsymbol{dS}}
+\newcommand{\bg}{\boldsymbol{g}}
+\newcommand{\bk}{\boldsymbol{k}}
+%\newcommand{\bq}{\boldsymbol{q}}
+\newcommand{\br}{\boldsymbol{r}}
+\newcommand{\bR}{\boldsymbol{R}}
+\newcommand{\bS}{\boldsymbol{S}}
+\newcommand{\bu}{\boldsymbol{u}}
+\newcommand{\bv}{\boldsymbol{v}}
+%\newcommand{\bz}{\boldsymbol{z}}
+\newcommand{\pressure}{P}
+
+\def\water{H$_2$O}
+\def\calcium{Ca$^{2+}$}
+\def\copper{Cu$^{2+}$}
+\def\magnesium{Mg$^{2+}$}
+\def\sodium{Na$^+$}
+\def\potassium{K$^+$}
+\def\uranium{UO$_2^{2+}$}
+\def\hion{H$^+$}
+\def\hydroxide{0H$^-$}
+\def\bicarbonate{HCO$_3^-$}
+\def\carbonate{CO$_3^{2-}$}
+\def\cotwo{CO$_2$(aq)}
+\def\chloride{Cl$^-$}
+\def\fluoride{F$^-$}
+\def\phosphoricacid{HPO$_4^{2-}$}
+\def\nitrate{NO$_3^-$}
+\def\sulfate{SO$_4^{2-}$}
+\def\souotwooh{$>$SOUO$_2$OH}
+\def\sohuotwocothree{$>$SOHUO$_2$CO$_3$}
+\def\soh{$>$SOH}
+
+\newcommand{\pft}{PFLOTRAN\xspace}
+
+\newcommand\add[1]{{{\color{blue} #1}}}
+\newcommand\remove[1]{\sout{{\color{red} #1}}}
+\newcommand\codecomment[1]{{{\color{green} #1}}}
+\newcommand\redcolor[1]{{{\color{red} #1}}}
+\newcommand\bluecolor[1]{{{\color{blue} #1}}}
+\newcommand\greencolor[1]{{{\color{green} #1}}}
+\newcommand\magentacolor[1]{{{\color{magenta} #1}}}
+\newcommand\gehcomment[1]{{{\color{orange} #1}}}
+
+\def\aligntop#1{\vtop{\null\hbox{#1}}}
+
+\begin{comment}
+\tiny
+\scriptsize
+\footnotesize
+\small
+\normalsize
+\large
+\Large
+\LARGE
+\huge
+\Huge
+\end{comment}
+
+%\usetheme[height=7mm]{Rochester}  % No navigation bar
+\setbeamertemplate{blocks}[rounded][shadow=true]
+
+\setbeamersize{text margin left=4mm, text margin right=4mm}
+  % Do this so there isn't so much white space before bullet items! --RTM
+
+\beamertemplatenavigationsymbolsempty % to get rid of nav symbols
+%\setbeamertemplate{frames}{}
+
+
+\begin{document}
+\title[Alquimia]{Alquimia: an API for ASCEM geochemistry}
+\author[]{Ben Andre, Glenn Hammond, Sergi Molins, Carl Steefel}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}{Template}
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\frame{\titlepage}
+%\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{The Alquimia Philosophy}
+\Large
+\begin{itemize}
+\item What Alquimia \bluecolor{is}:
+\begin{itemize}
+\Large
+\item An API and wrapper facilitating interfacing with existing, external
+      geochemistry codes as 3$^\text{rd}$ party libraries
+%\item Geochemical democracy
+\end{itemize}
+
+\vspace{1cm}
+\item What Alquimia \redcolor{is not}:
+\begin{itemize}
+\Large
+\item A geochemistry library implementation
+%\item Geochemical coercion
+\end{itemize}
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Alquimia Concept}
+Provide a uniform application programming interface (API) through which (solute) transport simulators may couple to third-party geochemical reaction libraries.  The API
+\begin{itemize}
+\item Provides a common set of primitive data structures to which data structures from 3$^\text{rd}$ party libraries may be mapped.
+\item Provides common handles (routines) for
+\begin{itemize}
+\item Reading and initializing the geochemical basis and associated reactions.
+\item Integrating a time step at a single grid cell.
+\item Extracting geochemical concentrations.
+\end{itemize}
+\item Serves solely to pass information between transport and reaction components (i.e. it does not drive the geochemical solution procedure).
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Alquimia: Required Functionality}
+\begin{itemize}
+\item Handles for
+\begin{itemize}
+\item Reading of geochemical reaction data
+\item Basis management (e.g. reading and setting the basis)
+\item Constraint processing for geochemical conditions (e.g. boundary/initial conditions, source/sinks) with respect to the desired basis
+\item Speciation
+\item Reaction stepping in operator split mode
+%\item Evaluation of local residual and Jacobian entries for grid cell
+%\begin{itemize}
+%\item Note that \emph{evaluation} does not construct the global Jacobian
+%\end{itemize}
+\item Delivery of secondary variables (e.g. pH, reaction rates, mineral saturation, etc.) at the request of the client
+\end{itemize}
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Division of Labor}
+\begin{tabular}{c|c|c}
+\aligntop{
+\begin{minipage}{0.3\textwidth}
+\textbf{Client (Amanzi)}
+\begin{itemize}
+\small
+\item Process kernel implemented by developers of the transport code
+\item Manage global storage
+\item Loop through space
+\item Unpack and move data from mesh dependent storage into Alquimia data transfer containers
+\item Manage time stepping, sub-stepping, error handling etc.
+\end{itemize}
+\end{minipage}} &
+\aligntop{
+\begin{minipage}{0.3\textwidth}
+\textbf{Alquimia wrapper}
+\begin{itemize}
+\small
+\item Defines an engine independent API
+\item Provides data munging or delivers raw data
+\item \redcolor{No} geochemical calculations
+\end{itemize}
+\end{minipage}} &
+\aligntop{
+\begin{minipage}{0.3\textwidth}
+\textbf{Engine}
+\begin{itemize}
+\small
+\item Provides all geochemical functionality, i.e. basis
+  management, constraint processing, reaction stepping
+\end{itemize}
+\end{minipage}} \\
+\end{tabular}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Constraint Processing}
+\begin{itemize}
+\item Domain scientist rarely want to define the IC/BC for a problem
+  purely in terms of total component concentrations.
+\item Often want to specify the system in variables that are
+  closer to observational data. for example:
+  \begin{itemize}
+    \item pH instead of Total $H^+$
+    \item aqueous $CO_2$ at equilibrium with the atmosphere
+    \item $Ca^{2+}$ in equilibrium with calcite
+    \item $Cl^-$ based on charge balance.
+  \end{itemize}
+\item What does this mean for state, transport and input processing?
+\item Initial and boundary conditions are no longer simple lists of
+  dirichlet conditions.
+\item ``Geochemical Conditions'' must be preprocessed by the
+  geochemistry engine to determine the appropriate dirichlet condition
+  to apply.
+\item ...
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim,allowframebreaks]{PFLOTRAN biogeochemical constraints}
+\footnotesize
+\begin{semiverbatim}
+
+
+
+\bluecolor{CONSTRAINT} copper_leaching_initial_condition
+  \bluecolor{CONCENTRATIONS}
+    Na+      5.0d-3   \bluecolor{T}               \magentacolor{! Total component concentration}
+    K+       2.5d-5   \bluecolor{M} Muscovite     \magentacolor{! Equilibration with mineral}
+    Ca++     6.5d-4   \bluecolor{M} Calcite
+    H+       8.d0     \bluecolor{P}               \magentacolor{! pH}
+    Cu++     6.4d-9   \bluecolor{M} Chrysocolla
+    Al+++    2.8d-17  \bluecolor{M} Kaolinite
+    Fe++     1.2d-23  \bluecolor{M} Goethite
+    SiO2(aq) 1.8d-4   \bluecolor{M} Chalcedony
+    HCO3-    -3.d0    \bluecolor{G} CO2(g)        \magentacolor{! Equilibration with CO2(g)}
+    SO4--    5.0d-4   \bluecolor{T DATASET} Sulfate \magentacolor{! Dataset name `random_so4'}
+    Cl-      3.7d-3   \bluecolor{Z}               \magentacolor{! Charge balance}
+    O2(aq)   -0.7d0   \bluecolor{G} O2(g)
+  \bluecolor{/}
+  ...
+\end{semiverbatim}
+\newpage
+\begin{semiverbatim}
+  ...
+  \bluecolor{MINERALS}        \magentacolor{vol. frac.}    \magentacolor{spec. surf. area}
+    Alunite       0.d0          1.d0 cm^2/cm^3
+    Chrysocolla2  5.0d-3        1.d0 cm^2/cm^3
+    Goethite      2.5d-2        1.d0 cm^2/cm^3
+    Gypsum        0.d0          1.d0 cm^2/cm^3
+    Jarosite      0.d0          1.d0 cm^2/cm^3
+    Jurbanite     0.d0          1.d0 cm^2/cm^3
+    Kaolinite     5.0d-2        1.d0 cm^2/cm^3
+    Muscovite     5.0d-2        1.d0 cm^2/cm^3
+    SiO2(am)      0.d0          1.d0 cm^2/cm^3
+    Quartz        8.2d-1        1.d0 cm^2/cm^3
+  \bluecolor{/}
+\bluecolor{/}
+\end{semiverbatim}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{Timeline (FY13)}
+\begin{itemize}
+\item Alquimia interface
+\begin{itemize}
+\item Preliminary API (pseudocode) - Dec
+\item Batch chemistry driver - Feb
+\item Process constraints with database - Mar
+\item Reactive transport driver (OS) - Apr
+\item Amanzi driven reactive transport - Jun
+\end{itemize}
+\item Geochemistry database
+\begin{itemize}
+\item With unexpected Akuna deliverables, no commitment until FY 14
+\end{itemize}
+\item Akuna interface
+\begin{itemize}
+\item Preliminary implementation - Mar
+\end{itemize}
+
+\newpage
+
+\item Amanzi chemistry library
+\begin{itemize}
+\item Reaction step through Alquimia - Feb
+\item Existing functionality supported through FY13
+\end{itemize}
+\item \pft
+\begin{itemize}
+\item Regression test suite - Done
+\item Isolation of \pft chemistry - Done
+\item \pft chemistry library
+\begin{itemize}
+\item Develop Alquimia linkage - Jan
+\item Additional development/refactor as needed
+\item Interface to new geochemical database - FY14
+\end{itemize}
+\end{itemize}
+\item CrunchFlow chemistry library
+\begin{itemize}
+\item Staggered by a month with \pft
+\end{itemize}
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\pft Geochemistry Flowchart}
+\begin{itemize}
+\item Initialization
+\item Read input deck
+\item Set basis (read database, form reaction network)
+\item Equilibrate constraints
+\item Reaction step
+\item Speciate for output
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim]{PFLOTRAN input specification example}
+\footnotesize
+\begin{tabular}{cc}
+%\aligntop{
+\begin{minipage}{0.5\textwidth}
+\begin{semiverbatim}
+\greencolor{:======== chemistry ========}
+\bluecolor{CHEMISTRY}
+  \bluecolor{PRIMARY_SPECIES}
+    H+
+    HCO3-
+    Ca++
+  \bluecolor{/}
+  \bluecolor{SECONDARY_SPECIES}
+    OH-
+    CO3--
+    CO2(aq)
+    CaCO3(aq)
+    CaHCO3+
+    CaOH+
+  \bluecolor{/}
+  \bluecolor{GAS_SPECIES}
+    CO2(g)
+  \bluecolor{/}
+  ...
+\end{semiverbatim}
+\end{minipage}
+%}
+%\aligntop{
+\begin{minipage}{0.5\textwidth}
+\begin{semiverbatim}
+  ...
+  \bluecolor{MINERALS}
+    Calcite
+  \bluecolor{/}
+  \bluecolor{MINERAL_KINETICS}
+    Calcite
+      \bluecolor{RATE_CONSTANT} 1.d-6
+    \bluecolor{/}
+  \bluecolor{/}
+  \bluecolor{DATABASE} ./hanford.dat
+  \bluecolor{LOG_FORMULATION}
+\greencolor{:  OPERATOR_SPLITTING}
+  \bluecolor{ACTIVITY_COEFFICIENTS TIMESTEP}
+  \bluecolor{OUTPUT}
+    PH
+    all
+  \bluecolor{/}
+\bluecolor{END}
+\end{semiverbatim}
+\end{minipage}
+%}
+\end{tabular}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim,allowframebreaks]{PFLOTRAN biogeochemical constraints: IFRC}
+\footnotesize
+\begin{semiverbatim}
+\bluecolor{CONSTRAINT} ifrc_initial_condition_SZ
+  \bluecolor{CONCENTRATIONS}
+    H+       7.3          \bluecolor{P}
+    Ca++     1.2d-3       \bluecolor{T}
+    Mg++     5.1d-4       \bluecolor{T}
+    UO2++    5.d-7        \bluecolor{T DATASET} Initial_U
+    K+       1.6d-4       \bluecolor{T}
+    Na+      1.0d-3       \bluecolor{Z}
+    HCO3-    2.6d-3       \bluecolor{T}
+    Cl-      7.0d-4       \bluecolor{T}
+    SO4--    6.4d-4       \bluecolor{T}
+    Tracer   1.e-7        \bluecolor{F}    
+  \bluecolor{/}
+  \bluecolor{MINERALS}
+    Calcite        \bluecolor{DATASET} Calcite_Vol_Frac 1.
+    Metatorbernite 0.0   1.
+  \bluecolor{/}
+\bluecolor{/}
+\end{semiverbatim}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile,containsverbatim,allowframebreaks]{PFLOTRAN biogeochemistry OO Design}
+\scriptsize
+%\footnotesize
+\begin{semiverbatim}
+    \bluecolor{type}, \bluecolor{public} :: reaction_type
+      ...
+     \bluecolor{integer} :: neqcplx                     \greencolor{! # sec aq complexes}
+      \bluecolor{integer}, \bluecolor{pointer} :: eqcplxspecid(:,:)  \greencolor{! pri spec ids in cplx}
+      \bluecolor{real*8}, \bluecolor{pointer} :: eqcplxstoich(:,:)   \greencolor{! stoich of pri spec}
+      \bluecolor{real*8}, \bluecolor{pointer} :: eqcplx_lnK(:)       \greencolor{! nat log of equil coef}
+      ...
+    \bluecolor{end} reaction_type
+
+    \bluecolor{type}, \bluecolor{public} :: reactive_transport_auxvar_type
+      ...
+      \bluecolor{real*8}, \bluecolor{pointer} :: pri_molal(:)     \greencolor{! pri spec conc [m]}
+      \bluecolor{real*8}, \bluecolor{pointer} :: total(:,:)       \greencolor{! tot comp conc [M]}
+      \bluecolor{real*8}, \bluecolor{pointer} :: sec_molal(:)     \greencolor{! sec aq complex conc [m]}
+      \bluecolor{real*8}, \bluecolor{pointer} :: pri_act_coef(:)  \greencolor{! pri act coef}
+      \bluecolor{real*8}, \bluecolor{pointer} :: sec_act_coef(:)  \greencolor{! sec act coef}
+      ...
+    \bluecolor{end type} reactive_transport_auxvar_type
+\end{semiverbatim}
+
+\newpage
+
+
+
+\tiny
+\begin{semiverbatim}
+          \bluecolor{integer} :: i, icomp, icplx, ncomp, iphase
+          \bluecolor{real*8} :: ln_act(:), lnQK
+          \bluecolor{type}(reactive_transport_auxvar_type), \bluecolor{pointer} :: rt_axuvar
+          \bluecolor{type}(reaction_type), \bluecolor{pointer} :: reaction
+
+          ln_act(:) = \bluecolor{log}(rt_auxvar%pri_molal(:)) + &
+                      \bluecolor{log}(rt_auxvar%pri_act_coef(:))
+
+          \bluecolor{do} icplx = 1, reaction%neqcplx ! for each sec aq complex
+
+            \greencolor{! calculate secondary aqueous complex concentration}
+            lnQK = -reaction%eqcplx_lnK(icplx)
+            ncomp = reaction%eqcplxspecid(0,icplx)
+            \bluecolor{do} i = 1, ncomp
+              icomp = reaction%eqcplxspecid(i,icplx)
+              lnQK = lnQK + reaction%eqcplxstoich(i,icplx) * &
+                            ln_act(icomp)
+            \bluecolor{enddo}
+            rt_auxvar%sec_molal(icplx) = \bluecolor{exp}(lnQK) / &
+                               rt_auxvar%sec_act_coef(icplx)
+
+            \greencolor{! add complex to total component concentration}
+            \bluecolor{do} i = 1, ncomp
+              icomp = reaction%eqcplxspecid(i,icplx)
+              rt_auxvar%total(icomp,iphase) = &
+                                       rt_auxvar%total(icomp,iphase) + &
+                                       reaction%eqcplxstoich(i,icplx)* &
+                                       rt_auxvar%sec_molal(icplx)
+            \bluecolor{enddo}
+          \bluecolor{enddo}
+\end{semiverbatim}
+
+\newpage
+%\scriptsize
+\footnotesize
+\begin{semiverbatim}
+    \greencolor{! initialization of reaction network and basis}
+    \bluecolor{call} DatabaseRead(reaction,option)
+    \bluecolor{call} BasisInit(reaction,option)
+    ...
+
+    \greencolor{! equilibration of constraint and assignment to auxvar object}
+    \bluecolor{call} ReactionEquilibrateConstraint(rt_auxvar,global_auxvar, &
+                                       reaction, &
+                                       constraint_coupler, &
+                                       porosity, &
+                                       PETSC_FALSE,option)
+    ...
+    
+    \greencolor{! computing reaction contribution to residual and Jacobian}
+    \bluecolor{call} RReaction(residual,J,PETSC_FALSE, &
+                   rt_aux_vars(ghosted_id), &
+                   global_aux_vars(ghosted_id), &
+                   porosity(ghosted_id), &
+                   volume(local_id),reaction,option)                            
+\end{semiverbatim}                            
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

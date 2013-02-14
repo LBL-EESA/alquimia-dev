@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+def build(ctx):
+    # required part of alquimia api
+    alquimia_hdrs = ['alquimia_containers.h',
+                     'alquimia_constants.h',
+                     'pflotran_alquimia_interface.h']
+
+    alquimia_src = ['alquimia_constants.c']
+
+    # if there is a c-based engine (phreeqc), then it would go here as
+    # part of libalquimia_c.a
+
+    ctx.stlib(
+        features = 'c cstlib',
+        source = alquimia_src,
+        target = 'alquimia_c')
+
+    # the util library is an optional convenience for driver
+    # maintainers, it should not contain required code.
+    util_src = ['alquimia_util.c',
+                'alquimia_memory.c',
+                'alquimia_interface.c']
+
+    util_hdrs = ['alquimia_util.h',
+                 'alquimia_memory.h',
+                 'alquimia_interface.h']
+
+    ctx.stlib(
+        features = 'c cstlib',
+        source = util_src,
+        target = 'alquimia_cutils')
+
+
+    ctx.install_files("${PREFIX}/include", alquimia_hdrs)
+    ctx.install_files("${PREFIX}/include", util_hdrs)
+    ctx.install_files("${PREFIX}/lib", ['libalquimia_cutils.a'])
