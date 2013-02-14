@@ -1,9 +1,4 @@
-:Description: Batch carbonate equilibrium speciation reaction
-
-:=========================== regression =======================================
-REGRESSION
-  CELLS_PER_PROCESS 1
-END
+:Description: Batch calcite dissolution
 
 :=========================== chemistry ========================================
 CHEMISTRY
@@ -38,7 +33,7 @@ END
 
 :=========================== solver options ===================================
 TIMESTEPPER
-  TS_ACCELERATION 8
+  TS_ACCELERATION 15
 /
 
 :=========================== discretization ===================================
@@ -78,8 +73,8 @@ OUTPUT
 :=========================== times ============================================
 TIME
   FINAL_TIME 250.d0 s
-  INITIAL_TIMESTEP_SIZE 0.5d0 s
-  MAXIMUM_TIMESTEP_SIZE 0.5d0 s
+  INITIAL_TIMESTEP_SIZE 5.0d0 s
+  MAXIMUM_TIMESTEP_SIZE 5.0d0 s
 /
 
 :=========================== regions ==========================================

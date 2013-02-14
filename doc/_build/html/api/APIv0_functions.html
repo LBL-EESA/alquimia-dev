@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Alquimia Functions &mdash; Alquimia 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Alquimia 0.1 documentation" href="../index.html" />
+    <link rel="next" title="Alquimia Data Transfer Containers" href="APIv0_structures.html" />
+    <link rel="prev" title="API" href="APIv0.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="APIv0_structures.html" title="Alquimia Data Transfer Containers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="APIv0.html" title="API"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Alquimia 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="alquimia-functions">
+<h1>Alquimia Functions<a class="headerlink" href="#alquimia-functions" title="Permalink to this headline">¶</a></h1>
+<p>Details of the engine independent API and wrapper interface.</p>
+<p>Alquimia is intended for mixed language environments: a C/C++ based
+driver can call a fortran based engine or vice versa. The common
+language for mixed language programming is pure C. All function
+parameters must be either:</p>
+<ul class="simple">
+<li>plain old data (POD), i.e. int, float, bool, char, c pointers.</li>
+<li>structures containing POD. Nested structures are OK. The ordering
+and size of data contained in the structures is important. It must
+be the same for C and Fortran. All structures must defined on the
+<a class="reference internal" href="APIv0_structures.html"><em>structures</em></a> page.</li>
+<li>strings should be c style strings, i.e. null terminated arrays of characters.</li>
+<li>Fortran expects all function parameters to be pass by value. All C
+function parameters must be pointers.</li>
+<li>Because of name mangling, interfaces contained in C++ classes or
+Fortran modules must also provide wrapper functions.</li>
+</ul>
+<p>All function interfaces are described in a language independent
+pseudocode. Implementations should be described in header files
+<tt class="docutils literal"><span class="pre">XXX_alquimia_interface.h</span></tt> or module files
+<tt class="docutils literal"><span class="pre">XXX_alquimia_interface.F90</span></tt> and compiled into <tt class="docutils literal"><span class="pre">libalquimia_c.a</span></tt>
+or <tt class="docutils literal"><span class="pre">libalquimia_fortran.a</span></tt> respectively.</p>
+<div class="section" id="alquimia-setup">
+<h2>Alquimia: Setup<a class="headerlink" href="#alquimia-setup" title="Permalink to this headline">¶</a></h2>
+<p>Read data files/structures, initialize memory, basis management,
+including reading database, swapping basis, etc.</p>
+<div class="highlight-none"><div class="highlight"><pre>void AlquimiaSetup(
+    in: engine_native_input_filename &lt;string&gt;,
+    output: engine_internal_state &lt;void pointer&gt;,
+    output: sizes &lt;struct: Alquimia Sizes&gt;,
+    output: functionality &lt;struct: Alquimia Engine Functionality&gt;
+    output: status &lt;struct: Alquimia Status&gt;)
+</pre></div>
+</div>
+<p>The sizes structure contains the number of degrees of freedom for the
+mobile phase (aqueous components) and immobile phases (sorbed,
+biomass), auxiliary memory requirements. The driver should use this
+information for allocating memory and input file validation.</p>
+<p>One of the output variables from Setup is a void pointer to the
+engines internal representation of the reaction network. <strong>The actual
+struct will be different for different engines. The client driver
+should store this and return it on all subsequent alquimia function
+calls, but should not use it for anything else. Do NOT rely on any
+particular form of the engine&#8217;s internal state.</strong> If the engine is
+thread safe (no internal global variables), then OpenMP threading can
+be used by calling setup once for each thread and storing multiple
+copies of the internal state.</p>
+<p>NOTE: PETScInitialize() or MPI_Init() must be called prior to calling
+AlquimiaSetup()! PFloTran requires PETSc to be present (headers for
+variable types, e.g. PetscReal, and library for logging). For now we
+are assuming that it can operate on MPI_COMM_WORLD, but if this turns
+out not to be a valid assumption, we will need to pass the specific
+communicator to PFloTran through the setup interface.</p>
+</div>
+<div class="section" id="alquimia-shutdown">
+<h2>Alquimia: Shutdown<a class="headerlink" href="#alquimia-shutdown" title="Permalink to this headline">¶</a></h2>
+<p>Shutdown the engine. Destroys all internal objects, frees manually
+allocated memory, and any other shutdown the engine may need.</p>
+<div class="highlight-none"><div class="highlight"><pre>void AlquimiaShutdown(
+    in/out: engine_internal_state &lt;void pointer&gt;,
+    output: status &lt;struct: Alquimia Status&gt;)
+</pre></div>
+</div>
+</div>
+<div class="section" id="alquimia-get-problem-meta-data">
+<h2>Alquimia: Get Problem Meta Data<a class="headerlink" href="#alquimia-get-problem-meta-data" title="Permalink to this headline">¶</a></h2>
+<p>Additional information the engine may need about the specific problem
+being solved. For example, the names of the primary species and
+minerals, and their required order.</p>
+<div class="highlight-none"><div class="highlight"><pre>void AlquimiaGetEngineMetaData(
+    in/out: engine_internal_state &lt;void pointer&gt;,
+    output: problem_meta_data &lt;struct: Alquimia Problem Meta Data&gt;,
+    output: status &lt;struct: Alquimia Status&gt;)
+</pre></div>
+</div>
+</div>
+<div class="section" id="alquimia-geochemical-condition-processing">
+<h2>Alquimia: Geochemical Condition Processing<a class="headerlink" href="#alquimia-geochemical-condition-processing" title="Permalink to this headline">¶</a></h2>
+<p>Geochemical condition processing for boundary/initial conditions. Called once for each IC/BC, or once for each grid cell for heterogeneous conditions.</p>
+<div class="highlight-none"><div class="highlight"><pre>void AlquimiaProcessCondition(
+    in/out engine_internal_state &lt;void pointer&gt;,
+    input: condition &lt;struct: Alquimia Geochemical Condition&gt;,
+    input: material_properties &lt;struct: Alquimia Material Properties&gt;,
+    in/out: state &lt;struct: Alquimia State&gt;,
+    in/out: aux_data &lt;struct: Alquimia Auxiliary Data&gt;,
+    output: status &lt;struct: Alquimia Status&gt;)
+</pre></div>
+</div>
+<p>If the name field of the condition structure is specified and the constraint list is empty, then the engine will check for a condition with the same name in its native input file format.</p>
+</div>
+<div class="section" id="alquimia-operator-splitting-reaction-step">
+<h2>Alquimia: Operator Splitting Reaction Step<a class="headerlink" href="#alquimia-operator-splitting-reaction-step" title="Permalink to this headline">¶</a></h2>
+<p>Take one reaction step in operator split mode with the specified delta t.</p>
+<div class="highlight-none"><div class="highlight"><pre>void AlquimiaReactionStepOperatorSplit(
+    in/out: engine_internal_state &lt;void pointer&gt;,
+    input: delta_t &lt;double&gt;,
+    input: material_properties &lt;struct: Alquimia Material Properties&gt;,
+    in/out: state &lt;struct: Alquimia State&gt;,
+    in/out: aux_data &lt;struct: Alquimia Auxiliary Data&gt;
+    out: status &lt;struct: Alquimia Status&gt;)
+</pre></div>
+</div>
+</div>
+<div class="section" id="alquimia-get-auxiliary-output">
+<h2>Alquimia: Get Auxiliary Output<a class="headerlink" href="#alquimia-get-auxiliary-output" title="Permalink to this headline">¶</a></h2>
+<p>Access to user selected geochemical data for output, i.e. pH, mineral SI, reaction rates.</p>
+<p>NOTE: as currently implemented in batch mode, this <strong>MUST</strong> be done
+immediately after each reaction step call....</p>
+<p><a class="reference internal" href="APIv0_structures.html#alquimiaauxiliaryoutputdata"><em>Struct: Alquimia Auxiliary Output Data</em></a> contains a series of arrays for
+different data types. If the driver does not want a particular set of
+data, it should set the array size to zero. The engine should use the
+value contained in aux_output to determine how much data to write.</p>
+<div class="highlight-none"><div class="highlight"><pre>void AlquimiaGetAuxiliaryOutput(
+    in/out: engine_internal_state &lt;void pointer&gt;,
+    input: state &lt;struct: Alquimia State&gt;,
+    input: aux_data &lt;struct: Alquimia Auxiliary Data&gt;,
+    output: aux_output &lt;struct: Alquimia Auxiliary Output Data&gt;,
+    output: states &lt;struct: Alquimia Status&gt;)
+</pre></div>
+</div>
+</div>
+<div class="section" id="alquimia-global-implicit-reaction-step">
+<h2>Alquimia: Global Implicit Reaction Step<a class="headerlink" href="#alquimia-global-implicit-reaction-step" title="Permalink to this headline">¶</a></h2>
+<p>NOTE: This will not be implemented in version 1.0.0 of the alquimia API. By not specifying it in version 1.0, it can be added as a backward compatible feature in version 1.x.</p>
+<p>NOTE: need to keep track of whether driver and engine are using row-major or column-major ordering....</p>
+<p>Return the function evaluation and jacobian information for a GI step</p>
+<div class="highlight-none"><div class="highlight"><pre>void AlquimiaReactionStepGlobalImplicit(....)
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Alquimia Functions</a><ul>
+<li><a class="reference internal" href="#alquimia-setup">Alquimia: Setup</a></li>
+<li><a class="reference internal" href="#alquimia-shutdown">Alquimia: Shutdown</a></li>
+<li><a class="reference internal" href="#alquimia-get-problem-meta-data">Alquimia: Get Problem Meta Data</a></li>
+<li><a class="reference internal" href="#alquimia-geochemical-condition-processing">Alquimia: Geochemical Condition Processing</a></li>
+<li><a class="reference internal" href="#alquimia-operator-splitting-reaction-step">Alquimia: Operator Splitting Reaction Step</a></li>
+<li><a class="reference internal" href="#alquimia-get-auxiliary-output">Alquimia: Get Auxiliary Output</a></li>
+<li><a class="reference internal" href="#alquimia-global-implicit-reaction-step">Alquimia: Global Implicit Reaction Step</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="APIv0.html"
+                        title="previous chapter">API</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="APIv0_structures.html"
+                        title="next chapter">Alquimia Data Transfer Containers</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/APIv0_functions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="APIv0_structures.html" title="Alquimia Data Transfer Containers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="APIv0.html" title="API"
+             >previous</a> |</li>
+        <li><a href="../index.html">Alquimia 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Lawrence Berkeley National Lab, Ben Andre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

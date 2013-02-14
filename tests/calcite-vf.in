@@ -1,10 +1,5 @@
 :Description: Batch calcite dissolution, with changes to calcite volume fraction.
 
-:=========================== regression =======================================
-REGRESSION
-  CELLS_PER_PROCESS 1
-END
-
 :=========================== chemistry ========================================
 CHEMISTRY
   PRIMARY_SPECIES

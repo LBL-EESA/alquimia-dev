@@ -1,0 +1,238 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Alquimia C Utilities Library &mdash; Alquimia 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Alquimia 0.1 documentation" href="../index.html" />
+    <link rel="prev" title="Alquimia Constants" href="APIv0_constants.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="APIv0_constants.html" title="Alquimia Constants"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Alquimia 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="alquimia-c-utilities-library">
+<h1>Alquimia C Utilities Library<a class="headerlink" href="#alquimia-c-utilities-library" title="Permalink to this headline">¶</a></h1>
+<p>Alquimia provies an optional C utility library,
+<tt class="docutils literal"><span class="pre">libalquimia_cutils.a</span></tt>. This is not a required part of the alquimia
+API, but a collection of reuseable code for common operations when
+working with alquimia from C or C++.</p>
+<div class="section" id="alquimia-interface">
+<h2>Alquimia Interface<a class="headerlink" href="#alquimia-interface" title="Permalink to this headline">¶</a></h2>
+<p>Code to ease working the alquimia interface, <tt class="docutils literal"><span class="pre">alquimia_intefrace.h</span></tt>
+and <tt class="docutils literal"><span class="pre">alquimia_interface.c</span></tt>.</p>
+<div class="section" id="struct-alquimia-interface">
+<h3>Struct: Alquimia Interface<a class="headerlink" href="#struct-alquimia-interface" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">AlquimiaInterface</span> <span class="pre">{...}</span></tt> is a C struct containing function pointers</dt>
+<dd>to the alquimia interface functions for the desired engine.</dd>
+</dl>
+<table border="1" class="docutils">
+<colgroup>
+<col width="60%" />
+<col width="40%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>variable</strong></td>
+<td><strong>type</strong></td>
+</tr>
+<tr class="row-even"><td>Setup</td>
+<td>function pointer</td>
+</tr>
+<tr class="row-odd"><td>Shutdown</td>
+<td>function pointer</td>
+</tr>
+<tr class="row-even"><td>ProcessCondition</td>
+<td>function pointer</td>
+</tr>
+<tr class="row-odd"><td>ReactionStepOperatorSplit</td>
+<td>function pointer</td>
+</tr>
+<tr class="row-even"><td>GetAuxiliaryOutput</td>
+<td>function pointer</td>
+</tr>
+<tr class="row-odd"><td>GetProblemMetaData</td>
+<td>function pointer</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="creating-an-alquimia-interface">
+<h3>Creating an Alquimia Interface<a class="headerlink" href="#creating-an-alquimia-interface" title="Permalink to this headline">¶</a></h3>
+<p>The function <tt class="docutils literal"><span class="pre">CreateAlquimiaInterface(...)</span></tt>, will create an alquimia
+interface struct with the correct function pointers for a given
+engine.  All <tt class="docutils literal"><span class="pre">#ifdef</span> <span class="pre">HAVE_XXX</span></tt> code for a particulare geochemistry
+engine is contained in this function.</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">void</span> <span class="n">CreateAlquimiaInterface</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">engine_name</span><span class="p">,</span>
+    <span class="k">struct</span> <span class="n">AlquimiaInterface</span><span class="o">*</span> <span class="n">interface</span><span class="p">,</span>
+    <span class="k">struct</span> <span class="n">AlquimiaEngineStatus</span><span class="o">*</span> <span class="n">status</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="struct-alquimia-data">
+<h3>Struct: Alquimia Data<a class="headerlink" href="#struct-alquimia-data" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">AlquimiaData</span> <span class="pre">{...}</span></tt> is a convenience data structure holding all the log
+lived Alquimia data in a single structure. Eases storage of multiple
+copies of data (e.g. when threading with OpenMP), but not part of the
+formal alquimia API.</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">struct</span> <span class="n">AlquimiaData</span> <span class="p">{</span>
+  <span class="kt">void</span><span class="o">*</span> <span class="n">engine_state</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">AlquimiaSizes</span> <span class="n">sizes</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">AlquimiaEngineFunctionality</span> <span class="n">functionality</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">AlquimiaState</span> <span class="n">state</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">AlquimiaMaterialProperties</span> <span class="n">material_properties</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">AlquimiaAuxiliaryData</span> <span class="n">aux_data</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">AlquimiaProblemMetaData</span> <span class="n">meta_data</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">AlquimiaAuxiliaryOutputData</span> <span class="n">aux_output</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="alquimia-memory">
+<h2>Alquimia Memory<a class="headerlink" href="#alquimia-memory" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">alquimia_memory.h</span></tt> and <tt class="docutils literal"><span class="pre">alquimia_memory.c</span></tt> contain a C library
+for allocating and freeing memory in the alquimia structures.</p>
+<p>If an AlquimiaData struct is created and the &#8216;sizes&#8217; member is
+correctly filled out, then a call to</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">void</span> <span class="n">AllocateAlquimiaData</span><span class="p">(</span><span class="k">struct</span> <span class="n">AlquimiaData</span><span class="o">*</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will allocate all the internal memory necessary.</p>
+<p>Individual containers can be allocated by calling the appropriate
+allocate function:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">void</span> <span class="n">AllocateAlquimiaXXX</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">AlquimiaSizes</span><span class="o">*</span> <span class="k">const</span> <span class="n">sizes</span><span class="p">,</span>
+                         <span class="k">struct</span> <span class="n">AlquimiaXXX</span><span class="o">*</span> <span class="n">xxx</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where XXX is the name of an alquimia structure. Every allocate
+function has a corresponding free function</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">void</span> <span class="n">FreeAlquimiaXXX</span><span class="p">(</span><span class="k">struct</span> <span class="n">AlquimiaXXX</span><span class="o">*</span> <span class="n">xxx</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="alquimia-utils">
+<h2>Alquimia Utils<a class="headerlink" href="#alquimia-utils" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">alquimia_utils.h</span></tt> and <tt class="docutils literal"><span class="pre">alquimia_utils.c</span></tt> contain common utilities
+for working with the contents of the alquimia data.</p>
+<div class="section" id="printing">
+<h3>Printing<a class="headerlink" href="#printing" title="Permalink to this headline">¶</a></h3>
+<p>Calling <tt class="docutils literal"><span class="pre">PrintAlquimiaXXX</span></tt> will pretty-print the contents of alquimia data structure XXX to the screen.</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">void</span> <span class="n">PrintAlquimiaXXX</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">AlquimiaXXX</span><span class="o">*</span> <span class="k">const</span> <span class="n">xxx</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="strings">
+<h3>Strings<a class="headerlink" href="#strings" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">bool</span> <span class="n">AlquimiaCaseInsensitiveStringCompare</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">str1</span><span class="p">,</span>
+                                          <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">str2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Alquimia C Utilities Library</a><ul>
+<li><a class="reference internal" href="#alquimia-interface">Alquimia Interface</a><ul>
+<li><a class="reference internal" href="#struct-alquimia-interface">Struct: Alquimia Interface</a></li>
+<li><a class="reference internal" href="#creating-an-alquimia-interface">Creating an Alquimia Interface</a></li>
+<li><a class="reference internal" href="#struct-alquimia-data">Struct: Alquimia Data</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#alquimia-memory">Alquimia Memory</a></li>
+<li><a class="reference internal" href="#alquimia-utils">Alquimia Utils</a><ul>
+<li><a class="reference internal" href="#printing">Printing</a></li>
+<li><a class="reference internal" href="#strings">Strings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="APIv0_constants.html"
+                        title="previous chapter">Alquimia Constants</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/APIv0_c_utils.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="APIv0_constants.html" title="Alquimia Constants"
+             >previous</a> |</li>
+        <li><a href="../index.html">Alquimia 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Lawrence Berkeley National Lab, Ben Andre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

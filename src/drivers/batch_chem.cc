@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 
   //
   // Create the alquimia structures.  NOTE: chem_data are for a single
-  // grid cell. For openmp/threaded code, you'd need one chem_status
+  // grid cell. For openmp/threaded code, you'll need one chem_status
   // and chem_data per thead, but we don't know if the engine is
   // thread safe until after the call to Setup()!
   //
@@ -187,9 +187,9 @@ int main(int argc, char** argv) {
                               &chem_data.aux_data,
                               &chem_status);
         if (chem_status.error != 0) {
-          std::cout << chem_status.message << std::endl;
           PrintAlquimiaData(&chem_data);
           PrintAlquimiaGeochemicalCondition(&(alquimia_conditions.data[i]));
+          std::cout << chem_status.message << std::endl;
           return chem_status.error;
         }
       }
@@ -425,7 +425,7 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
       *text_output << " , \"" << meta_data.mineral_names.data[i] << " VF\"";
     }
     for (int i = 0; i < meta_data.mineral_names.size; ++i) {
-      *text_output << " , \"" << meta_data.mineral_names.data[i] << " Rate [moles/sec]\"";
+      *text_output << " , \"" << meta_data.mineral_names.data[i] << " Rate [mol/sec]\"";
     }
     *text_output << std::endl;
   }
