@@ -2,11 +2,9 @@
 
 #include "alquimia_constants.h"
 
-#include "stddef.h"
-
 /* String lengths */
-const size_t kAlquimiaMaxStringLength = 512;
-const size_t kAlquimiaMaxWordLength = 32;
+const int kAlquimiaMaxStringLength = 512;
+const int kAlquimiaMaxWordLength = 32;
 
 /* Geochemistry Engine Strings */
 const char* kAlquimiaStringPFloTran = "PFloTran";

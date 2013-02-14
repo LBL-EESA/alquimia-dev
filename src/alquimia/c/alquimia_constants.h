@@ -2,11 +2,13 @@
 #ifndef ALQUIMIA_STRINGS_H_
 #define ALQUIMIA_STRINGS_H_
 
-#include "stddef.h"
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /* String lengths */
-extern const size_t kAlquimiaMaxStringLength;
-extern const size_t kAlquimiaMaxWordLength;
+extern const int kAlquimiaMaxStringLength;
+extern const int kAlquimiaMaxWordLength;
 
 /* Geochemistry Engine Strings */
 extern const char* kAlquimiaStringPFloTran;
@@ -25,5 +27,8 @@ extern const int kAlquimiaErrorInvalidEngine;
 extern const int kAlquimiaErrorUnknownConstraintName;
 extern const int kAlquimiaErrorEngineIntegrity;
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif     /* ALQUIMIA_STRINGS_H_ */
