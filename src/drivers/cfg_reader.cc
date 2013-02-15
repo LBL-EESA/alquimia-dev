@@ -5,6 +5,8 @@
 
 #include <string>
 #include <fstream>
+#include <stdexcept>
+#include <sstream>
 #include <iostream>
 
 
@@ -272,28 +274,64 @@ void DemoConfigReader::ParseMaterialPropertySection(
 
           // TODO(bja): can we check or deal with the order/species names
           // somehow....
+          material_props->isotherm_species.push_back(key);
           util::StringTokenizer vec_values(value, ",");
           for (util::StringTokenizer::iterator s = vec_values.begin();
                s != vec_values.end(); ++s) {
             util::StringTokenizer data(*s, kSpaces);
-            std::string species(data.at(0));
-            util::RemoveLeadingAndTrailingWhitespace(&key);
+            std::string param_str(data.at(0));
+            util::RemoveLeadingAndTrailingWhitespace(&param_str);
             std::string value_str(data.at(1));
             util::RemoveLeadingAndTrailingWhitespace(&value_str);
-            double species_value(std::atof(value_str.c_str()));
-            //std::cout << "Parsing ----->  " << key << " : " << species << std::endl;
-            if (util::CaseInsensitiveStringCompare(key, kIsothermKdString)) {
-              material_props->isotherm_kd.push_back(species_value);
-            } else if (util::CaseInsensitiveStringCompare(key, kFreundlichNString)) {
-              material_props->freundlich_n.push_back(species_value);
-            } else if (util::CaseInsensitiveStringCompare(key, kLangmuirBString)) {
-              material_props->langmuir_b.push_back(species_value);
+            double param_value(std::atof(value_str.c_str()));
+            if (util::CaseInsensitiveStringCompare(param_str, kIsothermKdString)) {
+              material_props->isotherm_kd.push_back(param_value);
+            } else if (util::CaseInsensitiveStringCompare(param_str, kFreundlichNString)) {
+              material_props->freundlich_n.push_back(param_value);
+            } else if (util::CaseInsensitiveStringCompare(param_str, kLangmuirBString)) {
+              material_props->langmuir_b.push_back(param_value);
+            } else {
+              std::cout << "ERROR: unknown material property : " << key << " : "
+                        << param_str << " : " << param_value << std::endl;              
             }
           }  // end for(s)
         }  // end else (vector parameters)
       }  // end if(params.size())
     }  // end else(parameter line)
   }  // end while(input_file)
+
+  // do a quick sanity check of parameters
+  if (material_props->volume <= 0.0) {
+    std::stringstream message;
+    message << "ERROR: volume should be > 0" << std::endl;
+    throw std::runtime_error(message.str());
+  }
+  if (material_props->isotherm_species.size() != material_props->isotherm_kd.size() &&
+      material_props->isotherm_species.size() != material_props->freundlich_n.size() &&
+      material_props->isotherm_species.size() != material_props->langmuir_b.size()) {
+    std::stringstream message;
+    message << "ERROR: if material properties are defined for a species, all properties must be defined."
+              << std::endl;
+    message << "    num species : " << material_props->isotherm_species.size()
+              << std::endl;
+    message << "    num kd : " << material_props->isotherm_kd.size()
+              << std::endl;
+    message << "    num langmuir_b : " << material_props->langmuir_b.size()
+              << std::endl;
+    message << "    num freundlich_n : " << material_props->freundlich_n.size()
+              << std::endl;
+    throw std::runtime_error(message.str());
+  } else {
+    for (size_t i = 0; i < material_props->isotherm_species.size(); ++i) {
+      if (material_props->freundlich_n.at(i) != 0.0 && material_props->langmuir_b.at(i) != 0.0) {
+        std::stringstream message;
+        message << "ERROR: only one of langmuir b and freundlich n may be non-zero for species " 
+                  << material_props->isotherm_species.at(i) << std::endl;
+        throw std::runtime_error(message.str());
+      }
+    }
+    
+  }
 }  // end ParseMaterialPropertiesSection();
 
 void DemoConfigReader::ParseConditionSection(

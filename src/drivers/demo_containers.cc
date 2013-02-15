@@ -51,6 +51,7 @@ void DemoMaterialProperties::Print(void) const {
   namespace util = alquimia::drivers::utilities;
   std::cout << "  -- Material Properties :" << std::endl;
   std::cout << "    volume : " << this->volume << std::endl;
+  util::PrintVector("    isotherm_species", this->isotherm_species);
   util::PrintVector("    isotherm_kd", this->isotherm_kd);
   util::PrintVector("    freundlich_n", this->freundlich_n);
   util::PrintVector("    langmuir_b", this->langmuir_b);

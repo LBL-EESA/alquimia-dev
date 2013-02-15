@@ -44,6 +44,7 @@ struct DemoState {
 
 struct DemoMaterialProperties {
   double volume;  // [m^3]
+  std::vector<std::string> isotherm_species;
   std::vector<double> isotherm_kd;  // [?]
   std::vector<double> freundlich_n; // [?]
   std::vector<double> langmuir_b;  // [?]
