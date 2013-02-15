@@ -638,6 +638,16 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
           name, kAlquimiaMaxStringLength)     
   end do
 
+  !
+  ! isotherm indices
+  !
+  list_size = meta_data%isotherm_species_indices%size
+  call c_f_pointer(meta_data%isotherm_species_indices%data, local_indices, &
+       (/list_size/))
+  do i = 1, list_size
+     local_indices(i) = engine_state%reaction%eqkdspecid(i)
+  end do
+
   status%error = 0
 end subroutine GetProblemMetaData
 
@@ -748,11 +758,16 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   type (AlquimiaSizes), intent(out) :: sizes
 
   sizes%num_primary = reaction%ncomp
-  sizes%num_sorbed = 0 ! FIXME(bja): need some sort of if (using_sorption)...
+  if (reaction%nsorb > 0) then
+     sizes%num_sorbed = reaction%ncomp
+  else
+     sizes%num_sorbed = 0
+  end if
   sizes%num_kinetic_minerals = reaction%mineral%nkinmnrl
   sizes%num_aqueous_complexes = reaction%neqcplx
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
+  sizes%num_isotherm_species = reaction%neqkdrxn
   call GetAuxiliaryDataSizes(reaction, &
        sizes%num_aux_integers, sizes%num_aux_doubles)
 
@@ -1200,6 +1215,14 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
      rt_auxvar%total(i, phase_index) = data(i)
   end do
 
+  ! sorbed primary
+  if (reaction%neqsorb > 0) then
+     call c_f_pointer(state%total_immobile%data, data, (/reaction%naqcomp/))
+     do i = 1, reaction%naqcomp
+        rt_auxvar%total_sorb_eq(i) = data(i)
+     end do
+  end if
+
   !
   ! minerals
   !
@@ -1234,8 +1257,25 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   end do
 
   !
-  ! isotherms, TODO(bja): copy out of material_props into reaction (not auxvar)
+  ! isotherms
   !
+  call c_f_pointer(material_prop%isotherm_kd%data, data, &
+       (/material_prop%isotherm_kd%size/))
+  do i = 1, material_prop%isotherm_kd%size
+     reaction%eqkddistcoef(i) = data(i)
+  end do
+
+  call c_f_pointer(material_prop%langmuir_b%data, data, &
+       (/material_prop%langmuir_b%size/))
+  do i = 1, material_prop%langmuir_b%size
+     reaction%eqkdlangmuirb(i) = data(i)
+  end do
+
+  call c_f_pointer(material_prop%freundlich_n%data, data, &
+       (/material_prop%freundlich_n%size/))
+  do i = 1, material_prop%freundlich_n%size
+     reaction%eqkdfreundlichn(i) = data(i)
+  end do
 
   call UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
 
@@ -1293,11 +1333,12 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! sorbed
   !
-  call c_f_pointer(state%total_immobile%data, data, (/reaction%neqsorb/))
-  do i = 1, reaction%neqsorb
-     data(i) = rt_auxvar%total_sorb_eq(i)
-  end do
-
+  if (reaction%neqsorb > 0) then
+     call c_f_pointer(state%total_immobile%data, data, (/reaction%naqcomp/))
+     do i = 1, reaction%naqcomp
+        data(i) = rt_auxvar%total_sorb_eq(i)
+     end do
+  end if
   !
   ! minerals
   !
@@ -1330,6 +1371,9 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
      data(i) = reaction%surface_complexation%srfcplxrxn_site_density(i)
   end do
+
+  ! NOTE(bja): isotherms are material properties, and can't be changed
+  ! by chemistry. We don't need to copy theme here!
 
   call PackAlquimiaAuxiliaryData(reaction, rt_auxvar, aux_data)
 

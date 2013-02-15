@@ -131,9 +131,9 @@ as needed.</p>
 passed through the interface.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="30%" />
-<col width="16%" />
-<col width="54%" />
+<col width="26%" />
+<col width="14%" />
+<col width="60%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><strong>variable</strong></th>
@@ -146,21 +146,29 @@ passed through the interface.</p>
 <td>int</td>
 <td>N_p, number of primary species</td>
 </tr>
-<tr class="row-odd"><td>num_kinetic_minerals</td>
+<tr class="row-odd"><td>num_sorbed</td>
+<td>int</td>
+<td>N_sorb, number of sorbed species <a class="footnote-reference" href="#id2" id="id1">[3]</a></td>
+</tr>
+<tr class="row-even"><td>num_kinetic_minerals</td>
 <td>int</td>
 <td>N_m, number of kinetic minerals</td>
 </tr>
-<tr class="row-even"><td>num_aqueous_complexes</td>
+<tr class="row-odd"><td>num_aqueous_complexes</td>
 <td>int</td>
 <td>N_s, number of secondary aqueous complexes</td>
 </tr>
-<tr class="row-odd"><td>num_surface_sites</td>
+<tr class="row-even"><td>num_surface_sites</td>
 <td>int</td>
 <td>N_ss, number of surface sites</td>
 </tr>
-<tr class="row-even"><td>num_ion_exchange_sites</td>
+<tr class="row-odd"><td>num_ion_exchange_sites</td>
 <td>int</td>
 <td>N_ix, number of ion exchange sites</td>
+</tr>
+<tr class="row-even"><td>num_isotherm_species</td>
+<td>int</td>
+<td>N_is, number of species involved in isotherm reactions</td>
 </tr>
 <tr class="row-odd"><td>num_aux_integers</td>
 <td>int</td>
@@ -170,6 +178,12 @@ passed through the interface.</p>
 <td>int</td>
 <td>N_ad, number of auxiliary doubles</td>
 </tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[3]</a></td><td>Consider the number of sorbed species to be a flag requiring memory allocation for the immobile component of the primary species, generally assert (N_sorb == N_p || N_sorb == 0).</td></tr>
 </tbody>
 </table>
 </div>
@@ -210,7 +224,7 @@ passed through the interface.</p>
 <td>[molarity]</td>
 </tr>
 <tr class="row-odd"><td>total_immobile</td>
-<td>vector&lt;double, N_p&gt;</td>
+<td>vector&lt;double, N_sorb&gt;</td>
 <td>[moles/m^3 bulk]</td>
 </tr>
 <tr class="row-even"><td>mineral_volume_fractions</td>
@@ -253,15 +267,15 @@ passed through the interface.</p>
 <td>[m^3]</td>
 </tr>
 <tr class="row-odd"><td>Isotherm Kd</td>
-<td>vector&lt;double, N_p&gt;</td>
+<td>vector&lt;double, N_is&gt;</td>
 <td>[?]</td>
 </tr>
 <tr class="row-even"><td>Freundlich N</td>
-<td>vector&lt;double, N_p&gt;</td>
+<td>vector&lt;double, N_is&gt;</td>
 <td>[?]</td>
 </tr>
 <tr class="row-odd"><td>Langmuir b</td>
-<td>vector&lt;double, N_p&gt;</td>
+<td>vector&lt;double, N_is&gt;</td>
 <td>[?]</td>
 </tr>
 </tbody>
@@ -279,7 +293,7 @@ transported. Persistent data that is not mesh dependent should be
 stored in the engine state variable.</p>
 <p>This structure is intened for things like free ion concentrations,
 primary and secondary activity coefficients, surface complex free site
-concentration <a class="footnote-reference" href="#id3" id="id1">[1]</a>, ion exchange reference cation concentration <a class="footnote-reference" href="#id3" id="id2">[1]</a>,
+concentration <a class="footnote-reference" href="#id5" id="id3">[1]</a>, ion exchange reference cation concentration <a class="footnote-reference" href="#id5" id="id4">[1]</a>,
 etc. The engine is responsible for packing and unpacking this data as
 needed.</p>
 <table border="1" class="docutils">
@@ -305,10 +319,10 @@ needed.</p>
 </tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id3" rules="none">
+<table class="docutils footnote" frame="void" id="id5" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> PFloTran internal variable that must be stored</td></tr>
+<tr><td class="label">[1]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id4">2</a>)</em> PFloTran internal variable that must be stored</td></tr>
 </tbody>
 </table>
 </div>
@@ -436,26 +450,31 @@ base index = 1</td>
 <tbody valign="top">
 <tr class="row-even"><td>primary indices</td>
 <td>vector&lt;int, N_p&gt;</td>
-<td>indices of the named primaries <a class="footnote-reference" href="#id6" id="id4">[2]</a></td>
+<td>indices of the named primaries <a class="footnote-reference" href="#id9" id="id6">[2]</a></td>
 </tr>
 <tr class="row-odd"><td>primary names</td>
 <td>vector&lt;string, N_p&gt;</td>
 <td>names of the primary species</td>
 </tr>
 <tr class="row-even"><td>kinetic mineral indices</td>
-<td>vector&lt;string, N_m&gt;</td>
-<td>indices of the kinetic minerals <a class="footnote-reference" href="#id6" id="id5">[2]</a></td>
+<td>vector&lt;int, N_m&gt;</td>
+<td>indices of the kinetic minerals <a class="footnote-reference" href="#id9" id="id7">[2]</a></td>
 </tr>
 <tr class="row-odd"><td>kinetic mineral names</td>
 <td>vector&lt;string, N_m&gt;</td>
 <td>names of the kinetic minerals</td>
 </tr>
+<tr class="row-even"><td>isotherm species indices</td>
+<td>vector&lt;int, N_is&gt;</td>
+<td>indices of the primary species involved in
+isotherm reactions <a class="footnote-reference" href="#id9" id="id8">[2]</a></td>
+</tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id6" rules="none">
+<table class="docutils footnote" frame="void" id="id9" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[2]</td><td><em>(<a class="fn-backref" href="#id4">1</a>, <a class="fn-backref" href="#id5">2</a>)</em> These are the indices according to the <strong>engine</strong>, using the &#8220;base index&#8221; provided in the engine functionality struct.</td></tr>
+<tr><td class="label">[2]</td><td><em>(<a class="fn-backref" href="#id6">1</a>, <a class="fn-backref" href="#id7">2</a>, <a class="fn-backref" href="#id8">3</a>)</em> These are the indices according to the <strong>engine</strong>, using the &#8220;base index&#8221; provided in the engine functionality struct.</td></tr>
 </tbody>
 </table>
 </div>

@@ -61,23 +61,31 @@ Struct: Alquimia Sizes
 The memory requirements and size of the various arrays that are being
 passed through the interface.
 
-+-------------------------+-------------+--------------------------------------------+
-| **variable**            | **storage** | **use**                                    |
-+=========================+=============+============================================+
-| num_primary             | int         | N_p, number of primary species             |
-+-------------------------+-------------+--------------------------------------------+
-| num_kinetic_minerals    | int         | N_m, number of kinetic minerals            |
-+-------------------------+-------------+--------------------------------------------+
-| num_aqueous_complexes   | int         | N_s, number of secondary aqueous complexes |
-+-------------------------+-------------+--------------------------------------------+
-| num_surface_sites       | int         | N_ss, number of surface sites              |
-+-------------------------+-------------+--------------------------------------------+
-| num_ion_exchange_sites  | int         | N_ix, number of ion exchange sites         |
-+-------------------------+-------------+--------------------------------------------+
-|    num_aux_integers     | int         | N_ai, number of auxiliary integers         |
-+-------------------------+-------------+--------------------------------------------+
-|     num_aux_doubles     | int         | N_ad, number of auxiliary doubles          |
-+-------------------------+-------------+--------------------------------------------+
++-------------------------+-------------+---------------------------------------------------------+
+| **variable**            | **storage** | **use**                                                 |
++=========================+=============+=========================================================+
+| num_primary             | int         | N_p, number of primary species                          |
++-------------------------+-------------+---------------------------------------------------------+
+| num_sorbed              | int         | N_sorb, number of sorbed species [3]_                   |
++-------------------------+-------------+---------------------------------------------------------+
+| num_kinetic_minerals    | int         | N_m, number of kinetic minerals                         |
++-------------------------+-------------+---------------------------------------------------------+
+| num_aqueous_complexes   | int         |       N_s, number of secondary aqueous complexes        |
++-------------------------+-------------+---------------------------------------------------------+
+| num_surface_sites       | int         | N_ss, number of surface sites                           |
++-------------------------+-------------+---------------------------------------------------------+
+| num_ion_exchange_sites  | int         | N_ix, number of ion exchange sites                      |
++-------------------------+-------------+---------------------------------------------------------+
+| num_isotherm_species    | int         | N_is, number of species involved in isotherm reactions  |
++-------------------------+-------------+---------------------------------------------------------+
+|    num_aux_integers     | int         | N_ai, number of auxiliary integers                      |
++-------------------------+-------------+---------------------------------------------------------+
+|     num_aux_doubles     | int         | N_ad, number of auxiliary doubles                       |
++-------------------------+-------------+---------------------------------------------------------+
+
+.. [3] Consider the number of sorbed species to be a flag requiring memory allocation for the immobile component of the primary species, generally assert (N_sorb == N_p || N_sorb == 0).
+
+
 
 Struct: Alquimia State
 ======================
@@ -97,7 +105,7 @@ Storage for spatially and temporally varying "state" data. Read/write (chemistry
 +-----------------------------------+----------------------+-------------------------+
 | total_mobile                      | vector<double, N_p>  |       [molarity]        |
 +-----------------------------------+----------------------+-------------------------+
-| total_immobile                    | vector<double, N_p>  |    [moles/m^3 bulk]     |
+| total_immobile                    |vector<double, N_sorb>|    [moles/m^3 bulk]     |
 +-----------------------------------+----------------------+-------------------------+
 | mineral_volume_fractions          | vector<double, N_m>  |           [-]           |
 +-----------------------------------+----------------------+-------------------------+
@@ -119,11 +127,11 @@ Storage for spatially variable "parameters", not changing in time. Read only (ch
 +==============+=======================+============+
 | volume       |        double         |   [m^3]    |
 +--------------+-----------------------+------------+
-| Isotherm Kd  |  vector<double, N_p>  | [?]        |
+| Isotherm Kd  | vector<double, N_is>  | [?]        |
 +--------------+-----------------------+------------+
-| Freundlich N |  vector<double, N_p>  | [?]        |
+| Freundlich N | vector<double, N_is>  | [?]        |
 +--------------+-----------------------+------------+
-| Langmuir b   |  vector<double, N_p>  | [?]        |
+| Langmuir b   | vector<double, N_is>  | [?]        |
 +--------------+-----------------------+------------+
 
 Struct: Alquimia Auxiliary Data
@@ -239,9 +247,12 @@ Problem specific meta data, e.g. primary species and mineral names.
 +-------------------------+---------------------+-------------------------------------------+
 | primary names           | vector<string, N_p> |names of the primary species               |
 +-------------------------+---------------------+-------------------------------------------+
-| kinetic mineral indices | vector<string, N_m> |indices of the kinetic minerals [2]_       |
+| kinetic mineral indices |  vector<int, N_m>   |indices of the kinetic minerals [2]_       |
 +-------------------------+---------------------+-------------------------------------------+
 | kinetic mineral names   | vector<string, N_m> |names of the kinetic minerals              |
++-------------------------+---------------------+-------------------------------------------+
+| isotherm species indices|  vector<int, N_is>  |indices of the primary species involved in |
+|                         |                     |isotherm reactions [2]_                    |
 +-------------------------+---------------------+-------------------------------------------+
 
 .. [2] These are the indices according to the **engine**, using the "base index" provided in the engine functionality struct.

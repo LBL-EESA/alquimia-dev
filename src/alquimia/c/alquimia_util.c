@@ -12,9 +12,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "alquimia_containers.h"
 #include "alquimia_interface.h"
+#include "alquimia_constants.h"
 
 /*******************************************************************************
  **
@@ -36,6 +38,43 @@ bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
   } // end else()
   return equal;
 }  // end AlquimiaCaseInsensitiveStringCompare()
+
+/*******************************************************************************
+ **
+ **  Mapping Species names - and indices
+ **
+ *******************************************************************************/
+void AlquimiaIndexFromName(const char* const name,
+                           const struct AlquimiaVectorString* const names,
+                           const struct AlquimiaVectorInt* const indices,
+                           int* index) {
+  int i;
+  *index = -1;
+  assert(names->size == indices->size);
+  for (i = 0; i < names->size; ++i) {
+    if (strncmp(name, names->data[i], kAlquimiaMaxStringLength)) {
+      *index = i;
+      break;
+    }
+  }
+}  // end AlquimiaIndexFromName()
+
+void AlquimiaNameFromIndex(const int index,
+                           const struct AlquimiaVectorString* const names,
+                           const struct AlquimiaVectorInt* const indices,
+                           char* name) {
+  int i;
+  assert(names->size == indices->size);
+  assert(index >= 0);
+  assert(index <= names->size);
+  for (i = 0; i < names->size; ++i) {
+    if (index == indices->data[i]) {
+      strncpy(name, names->data[i], kAlquimiaMaxStringLength);
+      break;
+    }
+  }
+}  // end AlquimiaNameFromIndex()
+
 
 /*******************************************************************************
  **
@@ -84,7 +123,7 @@ void PrintAlquimiaData(const struct AlquimiaData* const data) {
   PrintAlquimiaSizes(&data->sizes);
   PrintAlquimiaEngineFunctionality(&data->functionality);
   PrintAlquimiaState(&data->state);
-  //PrintAlquimiaMaterialProperties(&data->material_properties);
+  PrintAlquimiaMaterialProperties(&data->material_properties);
   PrintAlquimiaAuxiliaryData(&data->aux_data);
   PrintAlquimiaProblemMetaData(&data->meta_data);
   PrintAlquimiaAuxiliaryOutputData(&data->aux_output);
@@ -123,7 +162,16 @@ void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const me
   PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
   PrintAlquimiaVectorInt("mineral indices", &(meta_data->mineral_indices));
   PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names));
+  PrintAlquimiaVectorInt("isotherm species indicies", &(meta_data->isotherm_species_indices));
 }  // end PrintAlquimiaProblemMetaData()
+
+void PrintAlquimiaMaterialProperties(const struct AlquimiaMaterialProperties* const mat_prop) {
+
+  fprintf(stdout, "-- Alquimia Material Properties :\n");
+  PrintAlquimiaVectorDouble("isotherm kd", &(mat_prop->isotherm_kd));
+  PrintAlquimiaVectorDouble("freundlich n", &(mat_prop->freundlich_n));
+  PrintAlquimiaVectorDouble("langmuir b", &(mat_prop->langmuir_b));
+}  // end PrintAlquimiaMaterialProperties()
 
 void PrintAlquimiaState(const struct AlquimiaState* const state) {
 
