@@ -161,7 +161,8 @@ int main(int argc, char** argv) {
 
     // initialize the alquimia state and material properties with
     // appropriate values from the driver's memory.
-    CopyDemoStateToAlquimiaState(demo_state, &chem_data.state);
+    CopyDemoStateToAlquimiaState(demo_state, &chem_data.meta_data,
+                                 &chem_data.state);
     CopyDemoMaterialPropertiesToAlquimiaMaterials(
         demo_material_props, chem_data.meta_data, &chem_data.material_properties);
 
@@ -484,12 +485,41 @@ void WriteOutput(std::fstream* text_output, const double time,
  *******************************************************************************/
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
+    const AlquimiaProblemMetaData* const alquimia_meta_data,
     AlquimiaState* alquimia_state) {
   alquimia_state->water_density = demo_state.water_density;
   alquimia_state->saturation = demo_state.saturation;
   alquimia_state->porosity = demo_state.porosity;
   alquimia_state->temperature = demo_state.temperature;
   alquimia_state->aqueous_pressure = demo_state.aqueous_pressure;
+  assert(static_cast<int>(demo_state.cec.size()) == 
+         alquimia_state->cation_exchange_capacity.size);
+  for (size_t i = 0; i < demo_state.cec.size(); ++i) {
+    alquimia_state->cation_exchange_capacity.data[i] = demo_state.cec.at(i);
+  }
+  assert(static_cast<int>(demo_state.site_density.size()) == 
+         alquimia_state->surface_site_density.size);
+
+  char* name;
+  name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+  // loop through the *engine's* surface site list
+  for (int i = 0; i < alquimia_meta_data->surface_site_names.size; ++i) {
+    strncpy(name, alquimia_meta_data->surface_site_names.data[i],
+            kAlquimiaMaxStringLength);
+    std::map<std::string, double>::const_iterator site;
+    site = demo_state.site_density.find(name);
+    if (site != demo_state.site_density.end()) {
+      alquimia_state->surface_site_density.data[i] = site->second;
+    } else {
+      std::stringstream message;
+      message << "ERROR: chemistry engine expects surface site '" 
+              << alquimia_meta_data->surface_site_names.data[i]
+              << "', but it was not found in the driver state surface site list."
+              << std::endl;
+      throw std::runtime_error(message.str());
+    }
+  }
+  free(name);
 }  // end CopyDemoStateToAlquimiaState()
 
 void CopyDemoMaterialPropertiesToAlquimiaMaterials(

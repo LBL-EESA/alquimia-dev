@@ -35,13 +35,13 @@ AlquimiaEngineStatus.error against the following codes:
 Alquimia String Lengths
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-+----------+---------------+---------------+
++--------------------------+---------------+
 | **name**                 | **value**     |
-+----------+---------------+---------------+
++--------------------------+---------------+
 | kAlquimiaMaxStringLength | 512           |
-+----------+---------------+---------------+
++--------------------------+---------------+
 | kAlquimiaMaxWordLength   | 32            |
-+----------+---------------+---------------+
++--------------------------+---------------+
 
 
 Alquimia Strings
@@ -51,26 +51,28 @@ String comparisons should be case insensitive. The only exception is
 chemical symbols, which should follow standard conventions, i.e. "H+",
 not "h+", "CO" = carbon monoxide, "Co" = cobalt, "co" = undefined.
 
-+-----------------------------+----------------+
-| **name**                    | **value**      |
-+-----------------------------+----------------+
-| kAlquimiaStringPFloTran     | "PFloTran"     |
-+-----------------------------+----------------+
-|  kAlquimiaStringCrunchFlow  |  "CrunchFlow"  |
-+-----------------------------+----------------+
-| kAlquimiaStringTotal        | "total"        |
-+-----------------------------+----------------+
-| kAlquimiaStringTotalSorbed  | "total_sorbed" |
-+-----------------------------+----------------+
-| kAlquimiaStringFree         | "free"         |
-+-----------------------------+----------------+
-| kAlquimiaStringpH           | "pH"           |
-+-----------------------------+----------------+
-| kAlquimiaStringMineral      | "mineral"      |
-+-----------------------------+----------------+
-| kAlquimiaStringGas          | "gas"          |
-+-----------------------------+----------------+
-| kAlquimiaStringCharge       | "charge"       |
-+-----------------------------+----------------+
++--------------------------------------+----------------------------+
+| **name**                             | **value**                  |
++--------------------------------------+----------------------------+
+| kAlquimiaStringPFloTran              | "PFloTran"                 |
++--------------------------------------+----------------------------+
+|  kAlquimiaStringCrunchFlow           |  "CrunchFlow"              |
++--------------------------------------+----------------------------+
+| kAlquimiaStringTotalAqueous          | "total_aqueous"            |
++--------------------------------------+----------------------------+
+| kAlquimiaStringTotalSorbed           | "total_sorbed"             |
++--------------------------------------+----------------------------+
+| kAlquimiaStringTotalAqueousPlusSorbed| "total_aqueous_plus_sorbed"|
++--------------------------------------+----------------------------+
+| kAlquimiaStringFree                  | "free"                     |
++--------------------------------------+----------------------------+
+| kAlquimiaStringpH                    | "pH"                       |
++--------------------------------------+----------------------------+
+| kAlquimiaStringMineral               | "mineral"                  |
++--------------------------------------+----------------------------+
+| kAlquimiaStringGas                   | "gas"                      |
++--------------------------------------+----------------------------+
+| kAlquimiaStringCharge                | "charge"                   |
++--------------------------------------+----------------------------+
 
 

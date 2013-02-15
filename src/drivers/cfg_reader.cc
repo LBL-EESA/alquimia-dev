@@ -20,6 +20,7 @@ namespace utilities {
 
 const  std::string DemoConfigReader::kEqual("=:");
 const  std::string DemoConfigReader::kSpaces(" \t");
+const  std::string DemoConfigReader::kComma(",");
 
 const std::string DemoConfigReader::kSimulationSection("simulation_parameters");
 const std::string DemoConfigReader::kDescriptionString("description");
@@ -36,6 +37,8 @@ const std::string DemoConfigReader::kSaturationString("saturation");
 const std::string DemoConfigReader::kPorosityString("porosity");
 const std::string DemoConfigReader::kTemperatureString("temperature");
 const std::string DemoConfigReader::kPressureString("pressure");
+const std::string DemoConfigReader::kCECString("cec");
+const std::string DemoConfigReader::kSiteDensityString("site_density");
 
 const std::string DemoConfigReader::kMaterialPropertiesSection("material_properties");
 const std::string DemoConfigReader::kVolumeString("volume");
@@ -235,6 +238,19 @@ void DemoConfigReader::ParseStateSection(
           state->temperature = std::atof(value.c_str());
         } else if (util::CaseInsensitiveStringCompare(key, kPressureString)) {
           state->aqueous_pressure = std::atof(value.c_str());
+        } else if (util::CaseInsensitiveStringCompare(key, kCECString)) {
+          state->cec.push_back(std::atof(value.c_str()));
+        } else if (util::CaseInsensitiveStringCompare(key, kSiteDensityString)) {
+          util::StringTokenizer sites(value, kComma);
+          for (util::StringTokenizer::iterator i = sites.begin();
+               i != sites.end(); ++i) {
+            util::StringTokenizer site_data(*i, kSpaces);
+            util::RemoveLeadingAndTrailingWhitespace(&site_data.at(0));
+            state->site_density[site_data.at(0)] = std::atof(site_data.at(1).c_str());
+          }
+        } else {
+          std::cout << "ERROR: unknown parameter '" << key 
+                    << "' in state section." << std::endl;
         }
       }
     }  // end else(parameter line)
@@ -275,7 +291,7 @@ void DemoConfigReader::ParseMaterialPropertySection(
           // TODO(bja): can we check or deal with the order/species names
           // somehow....
           material_props->isotherm_species.push_back(key);
-          util::StringTokenizer vec_values(value, ",");
+          util::StringTokenizer vec_values(value, kComma);
           for (util::StringTokenizer::iterator s = vec_values.begin();
                s != vec_values.end(); ++s) {
             util::StringTokenizer data(*s, kSpaces);

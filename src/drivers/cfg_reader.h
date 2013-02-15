@@ -56,6 +56,7 @@ class DemoConfigReader {
   
   static const std::string kEqual;
   static const std::string kSpaces;
+  static const std::string kComma;
 
   static const std::string kSimulationSection;
   static const std::string kDescriptionString;
@@ -73,6 +74,8 @@ class DemoConfigReader {
   static const std::string kPorosityString;
   static const std::string kTemperatureString;
   static const std::string kPressureString;
+  static const std::string kCECString;
+  static const std::string kSiteDensityString;
   
   static const std::string kMaterialPropertiesSection;
   static const std::string kVolumeString;

@@ -66,7 +66,7 @@ clean :
 # clobber - Really clean up the directory.
 #
 clobber : clean
-	-rm -f .Makedepend *.o *.il *.mod $(LIBRARY)
+	-rm -f .Makedepend *.o *.il *.mod $(LIBRARY) $(UTIL_LIBRARY)
 
 #
 # FORCE - Null rule to force things to happen.

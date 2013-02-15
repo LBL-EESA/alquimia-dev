@@ -35,8 +35,9 @@ module AlquimiaContainers_module
   integer (c_int), parameter :: kAlquimiaErrorUnknownConstraintName = 2
   integer (c_int), parameter :: kAlquimiaErrorEngineIntegrity = 4577
 
-  character (5), parameter :: kAlquimiaStringTotal = 'total'
+  character (13), parameter :: kAlquimiaStringTotalAqueous = 'total_aqueous'
   character (12), parameter :: kAlquimiaStringTotalSorbed = 'total_sorbed'
+  character (25), parameter :: kAlquimiaStringTotalAqueousPlusSorbed = 'total_aqueous_plus_sorbed'
   character (4), parameter :: kAlquimiaStringFree = 'free'
   character (2), parameter :: kAlquimiaStringPH = 'pH'
   character (7), parameter :: kAlquimiaStringMineral = 'mineral'
@@ -80,8 +81,8 @@ module AlquimiaContainers_module
      type (AlquimiaVectorDouble) :: total_immobile
      type (AlquimiaVectorDouble) :: mineral_volume_fraction
      type (AlquimiaVectorDouble) :: mineral_specific_surface_area
-     type (AlquimiaVectorDouble) :: cation_exchange_capacity
      type (AlquimiaVectorDouble) :: surface_site_density
+     type (AlquimiaVectorDouble) :: cation_exchange_capacity
   end type AlquimiaState
 
   type, public, bind(c) :: AlquimiaMaterialProperties
@@ -120,6 +121,8 @@ module AlquimiaContainers_module
      type (AlquimiaVectorString) :: primary_names
      type (AlquimiaVectorInt) :: mineral_indices
      type (AlquimiaVectorString) :: mineral_names
+     type (AlquimiaVectorInt) :: surface_site_indices
+     type (AlquimiaVectorString) :: surface_site_names
      type (AlquimiaVectorInt) :: isotherm_species_indices
   end type AlquimiaProblemMetaData
 

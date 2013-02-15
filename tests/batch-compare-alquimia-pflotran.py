@@ -278,10 +278,10 @@ class TestManager(object):
             if time.time() - start > timeout:
                 proc.terminate()
                 time.sleep(0.1)
-                message = self._txtwrap.fill(
+                message = txtwrap.fill(
                     "ERROR: job '{0}' has exceeded timeout limit of "
                     "{1} seconds.".format(name, timeout))
-                print(''.join(['\n', message, '\n']), file=sys.stdout)
+                print(''.join(['\n', message, '\n']), file=self._test_log)
         run_stdout.close()
         return abs(proc.returncode)
 
@@ -312,12 +312,12 @@ class TestManager(object):
         status = self._run_job(test_name, command, timeout)
         if status != 0:
             message = txtwrap.fill(
-                "WARNING : {name} : alquimia driver return an error "
+                "ERROR : {name} : alquimia driver return an error "
                 "code ({status}) indicating the simulation may have "
                 "failed. Please check '{name}.stdout' for error "
                 "messages.".format(
                     name=test_name, status=status))
-            print("".join(['\n', message, '\n']), file=sys.stdout)
+            print("".join(['\n', message, '\n']), file=self._test_log)
         return status
 
 
@@ -349,12 +349,12 @@ class TestManager(object):
         if pflotran_status != PFLOTRAN_SUCCESS:
             status = 1
             message = txtwrap.fill(
-                "WARNING : {name} : pflotran return an error "
+                "ERROR : {name} : pflotran return an error "
                 "code ({status}) indicating the simulation may have "
                 "failed. Please check '{name}.out' and '{name}.stdout' "
                 "for error messages.".format(
                     name=test_name, status=status))
-            print("".join(['\n', message, '\n']), file=sys.stdout)
+            print("".join(['\n', message, '\n']), file=self._test_log)
         else:
             status = 0
         return status

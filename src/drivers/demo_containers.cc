@@ -32,12 +32,15 @@ void DemoSimulation::Print(void) const {
  *******************************************************************************/
 
 void DemoState::Print(void) const {
+  namespace util = alquimia::drivers::utilities;
   std::cout << "  -- State :" << std::endl;
   std::cout << "    density : " << this->water_density << std::endl;
   std::cout << "    saturation : " << this->saturation << std::endl;
   std::cout << "    porosity : " << this->porosity << std::endl;
   std::cout << "    temperature : " << this->temperature << std::endl;
   std::cout << "    pressure : " << this->aqueous_pressure << std::endl;
+  util::PrintVector("    cec", this->cec);
+  util::PrintMap("    site density", this->site_density);
   std::cout << std::endl;
 }  // end Print()
 

@@ -38,7 +38,8 @@ struct DemoState {
   double porosity;  // [-]
   double temperature;  // [celsius]
   double aqueous_pressure; // [Pa]
-
+  std::vector<double> cec;
+  std::map<std::string, double> site_density;
   void Print(void) const;
 };
 
