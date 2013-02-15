@@ -162,6 +162,8 @@ void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const me
   PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
   PrintAlquimiaVectorInt("mineral indices", &(meta_data->mineral_indices));
   PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names));
+  PrintAlquimiaVectorInt("surface site indices", &(meta_data->surface_site_indices));
+  PrintAlquimiaVectorString("surface site names", &(meta_data->surface_site_names));
   PrintAlquimiaVectorInt("isotherm species indicies", &(meta_data->isotherm_species_indices));
 }  // end PrintAlquimiaProblemMetaData()
 

@@ -111,9 +111,9 @@ Storage for spatially and temporally varying "state" data. Read/write (chemistry
 +-----------------------------------+----------------------+-------------------------+
 | mineral_specific_surface area     | vector<double, N_m>  |[m^2 mineral / m^3 bulk] |
 +-----------------------------------+----------------------+-------------------------+
-| cation_exchange_capacity          | vector<double, N_ix> |           [-]           |
-+-----------------------------------+----------------------+-------------------------+
 | surface_site_density              | vector<double, N_ss> |      [moles / m^3]      |
++-----------------------------------+----------------------+-------------------------+
+| cation_exchange_capacity          | vector<double, N_ix> |           [-]           |
 +-----------------------------------+----------------------+-------------------------+
 
 
@@ -251,6 +251,10 @@ Problem specific meta data, e.g. primary species and mineral names.
 +-------------------------+---------------------+-------------------------------------------+
 | kinetic mineral names   | vector<string, N_m> |names of the kinetic minerals              |
 +-------------------------+---------------------+-------------------------------------------+
+| surface site indices    | vector<int, N_ss>   |indices of the surface sites [2]_          |
++-------------------------+---------------------+-------------------------------------------+
+| surface site names      |vector<string, N_ss> |names of the surface sites                 |
++-------------------------+---------------------+-------------------------------------------+
 | isotherm species indices|  vector<int, N_is>  |indices of the primary species involved in |
 |                         |                     |isotherm reactions [2]_                    |
 +-------------------------+---------------------+-------------------------------------------+
@@ -320,8 +324,9 @@ An aqueous geochemical constraint is a struct with the following fields:
 
 Types of constraints supported:
 
-* total
+* total_aqueous
 * total_sorbed
+* total_aqueous_plus_sorbed (aqueous units!)
 * free
 * mineral
 * gas

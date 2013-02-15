@@ -35,6 +35,7 @@ void WriteOutput(std::fstream* text_output,
 
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
+    const AlquimiaProblemMetaData* const alquimia_meta_data,
     AlquimiaState* alquimia_state);
 
 void CopyDemoMaterialPropertiesToAlquimiaMaterials(

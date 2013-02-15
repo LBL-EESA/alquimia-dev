@@ -11,8 +11,9 @@ const size_t kAlquimiaMaxWordLength = 32;
 /* Geochemistry Engine Strings */
 const char* kAlquimiaStringPFloTran = "PFloTran";
 const char* kAlquimiaStringCrunchFlow = "CrunchFlow";
-const char* kAlquimiaStringTotal = "total";
+const char* kAlquimiaStringTotal = "total_aqueous";
 const char* kAlquimiaStringTotalSorbed = "total_sorbed";
+const char* kAlquimiaStringTotalAqueousPlusSorbed = "total_aqueous_plus_sorbed";
 const char* kAlquimiaStringFree = "free";
 const char* kAlquimiaStringPH = "pH";
 const char* kAlquimiaStringMineral = "mineral";

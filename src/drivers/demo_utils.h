@@ -3,6 +3,7 @@
 #define ALQUIMIA_DRIVERS_CCDEMOUTILS_H_
 
 #include <vector>
+#include <map>
 #include <string>
 #include <iomanip>
 #include <iostream>
@@ -49,6 +50,29 @@ void PrintVector(const std::string& name,
   for (typename std::vector<T>::const_iterator i = data.begin();
        i != data.end(); ++i) {
     std::cout << *i;
+    if (i != --data.end()) {
+      if (comma_seperated) {
+        std::cout << ", ";
+      } else {
+        std::cout << "  ";
+      }
+    }
+  }
+  std::cout << " }\n";
+}  // end PrintVector
+
+template <typename T>
+void PrintMap(const std::string& name, 
+              const std::map<std::string, T>& data,
+              const int precision = -1,
+              const bool comma_seperated = false) {
+  if (precision > 0) {
+    std::cout << std::setprecision(precision);
+  }
+  std::cout << name << " : { ";
+  for (typename std::map<std::string, T>::const_iterator i = data.begin();
+       i != data.end(); ++i) {
+    std::cout << "'" << i->first << "' : " << i->second;
     if (i != --data.end()) {
       if (comma_seperated) {
         std::cout << ", ";
