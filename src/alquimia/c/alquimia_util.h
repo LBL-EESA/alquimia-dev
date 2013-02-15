@@ -12,6 +12,16 @@ extern "C" {
   bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                             const char* const str2);
 
+  void AlquimiaIndexFromName(const char* const name,
+                             const struct AlquimiaVectorString* const names,
+                             const struct AlquimiaVectorInt* const indices,
+                             int* index);
+
+  void AlquimiaNameFromIndex(const int index,
+                             const struct AlquimiaVectorString* const names,
+                             const struct AlquimiaVectorInt* const indices,
+                             char* name);
+
   void PrintAlquimiaVectorDouble(const char* const name,
                                  const struct AlquimiaVectorDouble* const vector);
   void PrintAlquimiaVectorInt(const char* const name,
@@ -23,6 +33,8 @@ extern "C" {
   void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes);
   void PrintAlquimiaProblemMetaData(
       const struct AlquimiaProblemMetaData* const meta_data);
+  void PrintAlquimiaMaterialProperties(
+      const struct AlquimiaMaterialProperties* const mat_prop);
   void PrintAlquimiaEngineFunctionality(
       const struct AlquimiaEngineFunctionality* const functionality);
   void PrintAlquimiaState(const struct AlquimiaState* const state);

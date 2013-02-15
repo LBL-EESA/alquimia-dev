@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
     // appropriate values from the driver's memory.
     CopyDemoStateToAlquimiaState(demo_state, &chem_data.state);
     CopyDemoMaterialPropertiesToAlquimiaMaterials(
-        demo_material_props, &chem_data.material_properties);
+        demo_material_props, chem_data.meta_data, &chem_data.material_properties);
 
     PrintAlquimiaData(&chem_data);
 
@@ -215,8 +215,11 @@ int main(int argc, char** argv) {
                             &chem_data.aux_output,
                             &chem_status);
     // save the IC to our output file
-    WriteOutputHeader(&text_output, time_units, chem_data.meta_data);
-    WriteOutput(&text_output, time, chem_data.state, chem_data.aux_output);
+    bool write_pH;
+    WriteOutputHeader(&text_output, time_units,
+                      chem_data.meta_data, chem_data.sizes, &write_pH);
+    WriteOutput(&text_output, time,
+                chem_data.state, chem_data.aux_output, write_pH);
     std::cout << "Starting reaction stepping (OS) with dt = " << delta_t << " [s]\n";
     for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
       time += delta_t;
@@ -249,7 +252,8 @@ int main(int argc, char** argv) {
           return chem_status.error;
       }
       double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
-      WriteOutput(&text_output, out_time, chem_data.state, chem_data.aux_output);
+      WriteOutput(&text_output, out_time,
+                  chem_data.state, chem_data.aux_output, write_pH);
       std::cout << "  step = " << std::setw(6) << std::right << t 
                 << "    time = " << std::setw(8) << std::right
                 << time*time_units_conversion << " [" << time_units 
@@ -413,14 +417,27 @@ void SetTimeUnits(const std::string& output_time_units,
 }  // end SetTimeUnits()
 
 void WriteOutputHeader(std::fstream* text_output, const char time_units,
-                       const AlquimiaProblemMetaData& meta_data) {
+                       const AlquimiaProblemMetaData& meta_data,
+                       const AlquimiaSizes& sizes,
+                       bool* write_pH) {
   if (text_output->is_open()) {
     *text_output << "# \"Time [" << time_units << "]\"";
-    *text_output << " , \"pH\"";
+    int h_index;
+    AlquimiaIndexFromName("H+", &meta_data.primary_names,
+                          &meta_data.primary_indices, &h_index);
+    if (h_index > 0) {
+      *write_pH = true;
+      *text_output << " , \"pH\"";
+    }
     for (int i = 0; i < meta_data.primary_names.size; ++i) {
       *text_output <<  " , \"Total " << meta_data.primary_names.data[i] << " [M]\"";
     }
-    // TODO: sorbed header...
+
+    for (int i = 0; i < sizes.num_sorbed; ++i) {
+      *text_output << " , \"Total Sorbed " << meta_data.primary_names.data[i]
+                   << " [mol/m^3]\"";
+    }
+
     for (int i = 0; i < meta_data.mineral_names.size; ++i) {
       *text_output << " , \"" << meta_data.mineral_names.data[i] << " VF\"";
     }
@@ -433,13 +450,16 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
 
 void WriteOutput(std::fstream* text_output, const double time,
                  const AlquimiaState& state,
-                 const AlquimiaAuxiliaryOutputData& aux_output) {
+                 const AlquimiaAuxiliaryOutputData& aux_output,
+                 const bool write_pH) {
   if (text_output->is_open()) {
     std::string seperator("  ");
     *text_output << std::scientific << std::uppercase
                  << std::setprecision(6);
     *text_output << seperator << time;
-    *text_output << seperator << aux_output.pH;
+    if (write_pH) {
+      *text_output << seperator << aux_output.pH;
+    }
     for (int i = 0; i < state.total_mobile.size; ++i) {
       *text_output << seperator << state.total_mobile.data[i];
     }
@@ -474,9 +494,43 @@ void CopyDemoStateToAlquimiaState(
 
 void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
+    const AlquimiaProblemMetaData& alquimia_meta_data,
     AlquimiaMaterialProperties* alquimia_material_props) {
   alquimia_material_props->volume = demo_material_props.volume;
-  // TODO(bja) : loop through and copy vector based material properties!
+  
+  if (static_cast<size_t>(alquimia_meta_data.isotherm_species_indices.size) != 
+      demo_material_props.isotherm_species.size()) {
+    std::stringstream message;
+    message << "ERROR: chemistry engine expects " 
+            << alquimia_meta_data.isotherm_species_indices.size << " isotherm species. "
+            << " but input file only contains " 
+            << demo_material_props.isotherm_species.size() << std::endl;
+    throw std::runtime_error(message.str());
+  }
+
+  char* name;
+  name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+  // loop through each species in the *engine's* isotherm list
+  for (int i = 0; i < alquimia_meta_data.isotherm_species_indices.size; ++i) {
+    // save the isotherm species id
+    int species_id = alquimia_meta_data.isotherm_species_indices.data[i];
+    AlquimiaNameFromIndex(species_id, &alquimia_meta_data.primary_names,
+                          &alquimia_meta_data.primary_indices,
+                          name);
+    for (size_t j = 0; j < demo_material_props.isotherm_species.size(); ++j) {
+      if (demo_material_props.isotherm_species.at(j).compare(name) == 0) {
+        
+        alquimia_material_props->isotherm_kd.data[i] = 
+            demo_material_props.isotherm_kd.at(j);
+        alquimia_material_props->freundlich_n.data[i] = 
+            demo_material_props.freundlich_n.at(j);
+        alquimia_material_props->langmuir_b.data[i] = 
+            demo_material_props.langmuir_b.at(j);
+        break;
+      }
+    }
+  }
+  free(name);
 }  // end CopyDemoMaterialPropertiesToAlquimiaMaterials()
 
 

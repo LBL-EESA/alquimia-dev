@@ -23,12 +23,15 @@ void SetTimeUnits(const std::string& output_time_units,
 
 void WriteOutputHeader(std::fstream* text_output,
                        const char time_units,
-                       const AlquimiaProblemMetaData& meta_data);
+                       const AlquimiaProblemMetaData& meta_data,
+                       const AlquimiaSizes& sizes,
+                       bool* write_pH);
 
 void WriteOutput(std::fstream* text_output,
                  const double time,
                  const AlquimiaState& state,
-                 const AlquimiaAuxiliaryOutputData& aux_output);
+                 const AlquimiaAuxiliaryOutputData& aux_output,
+                 const bool write_pH);
 
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
@@ -36,6 +39,7 @@ void CopyDemoStateToAlquimiaState(
 
 void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     const alquimia::drivers::utilities::DemoMaterialProperties& material_props,
+    const AlquimiaProblemMetaData& alquimia_meta_data,
     AlquimiaMaterialProperties* alquimia_material_props);
 
 void CopyDemoConditionsToAlquimiaConditions(

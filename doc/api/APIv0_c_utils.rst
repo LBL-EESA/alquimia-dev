@@ -52,7 +52,7 @@ engine is contained in this function.
 Struct: Alquimia Data
 ~~~~~~~~~~~~~~~~~~~~~
 
-``AlquimiaData {...}`` is a convenience data structure holding all the log
+``AlquimiaData {...}`` is a convenience data structure holding all the long
 lived Alquimia data in a single structure. Eases storage of multiple
 copies of data (e.g. when threading with OpenMP), but not part of the
 formal alquimia API.

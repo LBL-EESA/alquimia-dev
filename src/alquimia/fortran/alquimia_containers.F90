@@ -65,6 +65,7 @@ module AlquimiaContainers_module
      integer (c_int) :: num_aqueous_complexes
      integer (c_int) :: num_surface_sites
      integer (c_int) :: num_ion_exchange_sites
+     integer (c_int) :: num_isotherm_species
      integer (c_int) :: num_aux_integers
      integer (c_int) :: num_aux_doubles
   end type AlquimiaSizes
@@ -119,6 +120,7 @@ module AlquimiaContainers_module
      type (AlquimiaVectorString) :: primary_names
      type (AlquimiaVectorInt) :: mineral_indices
      type (AlquimiaVectorString) :: mineral_names
+     type (AlquimiaVectorInt) :: isotherm_species_indices
   end type AlquimiaProblemMetaData
 
   type, public, bind(c) :: AlquimiaAuxiliaryOutputData
