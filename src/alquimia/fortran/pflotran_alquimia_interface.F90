@@ -844,7 +844,7 @@ subroutine InitializePFloTranReactions(option, input, reaction)
 
   ! pflotran
   use Reaction_module, only : ReactionInit, ReactionReadPass2
-  use Reaction_Aux_module, only : reaction_type
+  use Reaction_Aux_module, only : reaction_type, ACT_COEF_FREQUENCY_OFF
   use Database_module, only : DatabaseRead, BasisInit
   use Option_module, only : option_type
   use Input_module, only : input_type, InputFindStringInFile, InputError
@@ -1068,7 +1068,11 @@ function ConvertAlquimiaConditionToPflotran(&
        AqueousSpeciesConstraintCreate
   use Mineral_aux_module, only : mineral_constraint_type, MineralConstraintCreate
   use String_module, only : StringCompareIgnoreCase
-  use Constraint_module, only : tran_constraint_type, TranConstraintCreate
+  use Constraint_module, only : tran_constraint_type, TranConstraintCreate, &
+       CONSTRAINT_FREE, CONSTRAINT_TOTAL, CONSTRAINT_TOTAL_SORB, &
+       CONSTRAINT_TOTAL_SORB_AQ_BASED, CONSTRAINT_PH, CONSTRAINT_MINERAL, &
+       CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL
+
 
   implicit none
 

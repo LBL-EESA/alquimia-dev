@@ -443,7 +443,7 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
       *text_output << " , \"" << meta_data.mineral_names.data[i] << " VF\"";
     }
     for (int i = 0; i < meta_data.mineral_names.size; ++i) {
-      *text_output << " , \"" << meta_data.mineral_names.data[i] << " Rate [mol/sec]\"";
+      *text_output << " , \"" << meta_data.mineral_names.data[i] << " Rate [mol/m^3/sec]\"";
     }
     *text_output << std::endl;
   }
