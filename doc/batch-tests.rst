@@ -31,15 +31,17 @@ To run a single test by name:
 
 
 
+Mineral Dissolution and Precipitation
+-------------------------------------
 
 
-Calcite kinetics, short time, and pflotran native constraints
--------------------------------------------------------------
+Calcite, short time steps, and pflotran native constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Test the alquimia interface with mineral dissolution/precipitation for
-a short simulation time (no changes to calcite volume fraction). The
-initial condition is specified by name only, causing alquimia look for
-a pflotran native constraint with that name.
+a short simulation time and short time steps (no changes to calcite
+volume fraction). The initial condition is specified by name only,
+causing alquimia look for a pflotran native constraint with that name.
 
 **Status: fail** 
 
@@ -55,8 +57,8 @@ Status Notes: Looking at the time series, there are occasional differences in th
 NOTE: this is the same pflotran input file as
 calcite-short-dc!
 
-Calcite kinetics, short time, and driver generated constraints
---------------------------------------------------------------
+Calcite, short time steps, and alquimia generated constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Test the alquimia interface with mineral dissolution/precipitation for
 a short simulation time (no changes to calcite volume fraction). The
@@ -78,8 +80,8 @@ NOTE: this is the same pflotran input file as
 calcite-short-pc!
 
 
-Calcite kinetics w/ volume fraction updates and pflotran native constraints
----------------------------------------------------------------------------
+Volume fraction updates and pflotran native constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Test the alquimia interface with mineral dissolution/precipitation for
 a long simulation time, so that the mineral volume fractions are
@@ -96,13 +98,17 @@ Status Notes: slight initial numerical differences in rates accumulate error?
   ./pflotran -input_prefix calcite-vf
 
 
-Isotherms with pflotran native constraints
-------------------------------------------
+Equilibrium Sorption Isotherms
+------------------------------
 
 Test the alquimia interface with equilibrium sorption isotherms, Kd,
 langmuir, and freundlich. Because these are equilibrium isotherms, the
 initial equilibrium solution obtained when processing the geochemical
 constraint should not change during reaction stepping.
+
+
+PFloTran native constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Status: fails**
 
@@ -115,13 +121,8 @@ Status Notes: final significant figure is off for the "D" species.
 
 NOTE: this is the same pflotran input file as isotherms-ac.
 
-Isotherms with alquimia supplied constraints
---------------------------------------------
-
-Test the alquimia interface with equilibrium sorption isotherms, Kd,
-langmuir, and freundlich. Because these are equilibrium isotherms, the
-initial equilibrium solution obtained when processing the geochemical
-constraint should not change during reaction stepping.
+Alquimia supplied constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Status: fails**
 
@@ -133,4 +134,79 @@ Status Notes: final significant figure is off for the "D" species.
     ./pflotran -input_prefix isotherms
 
 NOTE: this is the same pflotran input file as isotherms-pc.
+
+Equilibrium Ion exchange
+------------------------
+
+Test the alquimia interface with equilibrium ion exchange. Because
+these are equilibrium reactions, the initial equilibrium solution
+obtained when processing the geochemical constraint should not change
+during reaction stepping.
+
+
+PFloTran supplied constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Status: pass**
+
+Status Notes: 
+
+.. code-block:: bash
+
+    ../src/drivers/batch_chem -d -i ion-exchange-valocchi-pc.cfg
+    ./pflotran -input_prefix ion-exchange-valocchi
+
+NOTE: this is the same pflotran input file as ion-exchange-valocchi-pc.
+
+Alquimia supplied constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Status: pass**
+
+Status Notes: 
+
+.. code-block:: bash
+
+    ../src/drivers/batch_chem -d -i ion-exchange-valocchi-ac.cfg
+    ./pflotran -input_prefix ion-exchange-valocchi
+
+NOTE: this is the same pflotran input file as ion-exchange-valocchi-pc.
+
+
+Equilibrium Surface Complexation
+--------------------------------
+
+Test the alquimia interface with equilibrium surface complexation for
+two surface sites. Because these are equilibrium reactions, the
+initial equilibrium solution obtained when processing the geochemical
+constraint should not change during reaction stepping.
+
+
+PFloTran supplied constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Status: fail**
+
+Status Notes: numerical differences in trailing significant figures
+
+.. code-block:: bash
+
+    ../src/drivers/batch_chem -d -i ion-exchange-valocchi-pc.cfg
+    ./pflotran -input_prefix ion-exchange-valocchi
+
+NOTE: this is the same pflotran input file as ion-exchange-valocchi-pc.
+
+Alquimia supplied constraints
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Status: fail**
+
+Status Notes: numerical differences in trailing significant figures
+
+.. code-block:: bash
+
+    ../src/drivers/batch_chem -d -i ion-exchange-valocchi-ac.cfg
+    ./pflotran -input_prefix ion-exchange-valocchi
+
+NOTE: this is the same pflotran input file as ion-exchange-valocchi-pc.
 
