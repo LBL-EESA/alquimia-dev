@@ -78,19 +78,19 @@ extern "C" {
   struct AlquimiaEngineStatus {
     int error;
     char* message;
-    _Bool converged;
+    bool converged;
     int num_rhs_evaluations;
     int num_jacobian_evaluations;
     int num_newton_iterations;
   };
   
   struct AlquimiaEngineFunctionality {
-    _Bool thread_safe;
-    _Bool temperature_dependent;
-    _Bool pressure_dependent;
-    _Bool porosity_update;
-    _Bool operator_splitting;
-    _Bool global_implicit;
+    bool thread_safe;
+    bool temperature_dependent;
+    bool pressure_dependent;
+    bool porosity_update;
+    bool operator_splitting;
+    bool global_implicit;
     int index_base;
   };
   
