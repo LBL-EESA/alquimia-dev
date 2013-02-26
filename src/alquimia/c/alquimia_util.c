@@ -13,6 +13,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #include "alquimia_containers.h"
 #include "alquimia_interface.h"
@@ -23,9 +24,9 @@
  **  Strings
  **
  *******************************************************************************/
-bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
+_Bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                           const char* const str2) {
-  bool equal = true;
+  _Bool equal = true;
   if (strlen(str1) != strlen(str2)) {
     equal = false;
   } else {
@@ -44,36 +45,36 @@ bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
  **  Mapping Species names - and indices
  **
  *******************************************************************************/
-void AlquimiaIndexFromName(const char* const name,
-                           const struct AlquimiaVectorString* const names,
-                           const struct AlquimiaVectorInt* const indices,
-                           int* index) {
+void AlquimiaEngineIndexFromName(const char* const name,
+                                 const struct AlquimiaVectorString* const names,
+                                 const struct AlquimiaVectorInt* const indices,
+                                 int* index) {
   int i;
   *index = -1;
   assert(names->size == indices->size);
   for (i = 0; i < names->size; ++i) {
-    if (strncmp(name, names->data[i], kAlquimiaMaxStringLength)) {
-      *index = i;
+    if (strncmp(name, names->data[i], kAlquimiaMaxStringLength) == 0) {
+      *index = indices->data[i];
       break;
     }
   }
-}  // end AlquimiaIndexFromName()
+}  // end AlquimiaEngineIndexFromName()
 
-void AlquimiaNameFromIndex(const int index,
-                           const struct AlquimiaVectorString* const names,
-                           const struct AlquimiaVectorInt* const indices,
-                           char* name) {
+void AlquimiaNameFromEngineIndex(const int index,
+                                 const struct AlquimiaVectorString* const names,
+                                 const struct AlquimiaVectorInt* const indices,
+                                 char* name) {
   int i;
   assert(names->size == indices->size);
   assert(index >= 0);
-  assert(index <= names->size);
+  name[0] = '\0';
   for (i = 0; i < names->size; ++i) {
     if (index == indices->data[i]) {
       strncpy(name, names->data[i], kAlquimiaMaxStringLength);
       break;
     }
   }
-}  // end AlquimiaNameFromIndex()
+}  // end AlquimiaNameFromEngineIndex()
 
 
 /*******************************************************************************

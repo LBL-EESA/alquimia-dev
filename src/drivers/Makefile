@@ -102,11 +102,6 @@ libdemoutils.a : $(HEADERS_DEMOUTIL) $(OBJS_DEMOUTIL)
 batch_chem : $(HEADERS_BATCH) $(OBJS_BATCH) $(DEPEND_LIBS_BATCH)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS_BATCH) $(LIBS_BATCH) $(LDFLAGS)
 
-#
-# test program
-#
-test_alquimia_interface_factory : $(OBJS_TEST) $(DEPEND_LIBS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS_TEST) $(LIBS) $(LDFLAGS)
 
 #
 # clean - Clean up the directory.
