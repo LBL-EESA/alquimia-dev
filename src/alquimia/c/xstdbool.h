@@ -8,6 +8,7 @@
 
 #ifndef __cplusplus
 
+#define	bool	_Bool
 typedef	int   _Bool;
 
 #define	false 0
