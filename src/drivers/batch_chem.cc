@@ -27,9 +27,9 @@
 
 #include "alquimia_memory.h"
 #include "alquimia_util.h"
+#include "alquimia_constants.h"
 #include "alquimia_containers.h"
 #include "alquimia_interface.h"
-#include "alquimia_constants.h"
 
 #include "cfg_reader.h"
 #include "demo_containers.h"
@@ -584,7 +584,7 @@ void CopyDemoConditionsToAlquimiaConditions(
                                          demo_cond->second.aqueous_constraints.size(),
                                          demo_cond->second.mineral_constraints.size(),
                                          condition);
-    unsigned int max_copy_length = std::min(kAlquimiaMaxStringLength, demo_cond->first.size());
+    unsigned int max_copy_length = std::min(kAlquimiaMaxStringLength, static_cast<int>(demo_cond->first.size()));
     strncpy(condition->name, demo_cond->first.c_str(), max_copy_length);
     CopyDemoAqueousConstraintsToAlquimia(demo_cond->second.aqueous_constraints,
                                          &condition->aqueous_constraints);
@@ -612,21 +612,21 @@ void CopyDemoAqueousConstraintsToAlquimia(
 
     // name
     int max_copy_length = std::min(kAlquimiaMaxStringLength,
-                                   demo_aqueous_constraints.at(i).primary_species_name.size());
+                                   static_cast<int>(demo_aqueous_constraints.at(i).primary_species_name.size()));
     std::strncpy(constraint->primary_species_name,
                  demo_aqueous_constraints.at(i).primary_species_name.c_str(),
                  max_copy_length);
 
     // constraint type
     max_copy_length = std::min(kAlquimiaMaxStringLength,
-                               demo_aqueous_constraints.at(i).constraint_type.size());
+                               static_cast<int>(demo_aqueous_constraints.at(i).constraint_type.size()));
     std::strncpy(constraint->constraint_type,
                  demo_aqueous_constraints.at(i).constraint_type.c_str(),
                  max_copy_length);
 
     // associated species
     max_copy_length = std::min(kAlquimiaMaxStringLength,
-                               demo_aqueous_constraints.at(i).associated_species.size());
+                               static_cast<int>(demo_aqueous_constraints.at(i).associated_species.size()));
     std::strncpy(constraint->associated_species,
                  demo_aqueous_constraints.at(i).associated_species.c_str(),
                  max_copy_length);
@@ -658,7 +658,7 @@ void CopyDemoMineralConstraintsToAlquimia(
 
     // name
     int max_copy_length = std::min(kAlquimiaMaxStringLength,
-                                   demo_mineral_constraints.at(i).mineral_name.size());
+                                   static_cast<int>(demo_mineral_constraints.at(i).mineral_name.size()));
     std::strncpy(constraint->mineral_name,
                  demo_mineral_constraints.at(i).mineral_name.c_str(),
                  max_copy_length);

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "alquimia_constants.h"
 #include "alquimia_containers.h"
 
 #include "demo_containers.h"

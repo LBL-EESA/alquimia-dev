@@ -29,7 +29,7 @@ bool CaseInsensitiveStringCompare(const std::string& string1,
   std::string::const_iterator char1, char2;
   for (char1 = string1.begin(), char2 = string2.begin(); 
        char1 != string1.end(); ++char1, ++char2) {
-    if (std::tolower(*char1) != std::tolower(*char2)) {
+    if (tolower(*char1) != tolower(*char2)) {
       return false;
     }
   }
@@ -70,7 +70,7 @@ bool CompareFabs(const double& a, const double& b) {
 void LowerCaseString(const std::string& in, std::string* out) {
   *out = in;
   for (std::string::iterator c = out->begin(); c != out->end(); ++c) {
-    *c = std::tolower(*c);
+    *c = tolower(*c);
   }
 }
 
