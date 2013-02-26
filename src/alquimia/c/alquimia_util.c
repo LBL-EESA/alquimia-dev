@@ -14,6 +14,12 @@
 #include <ctype.h>
 #include <assert.h>
 
+#ifdef WINDOWS
+#include "xstdbool.h"
+#else
+#include <stdbool.h>
+#endif
+
 #include "alquimia_containers.h"
 #include "alquimia_interface.h"
 #include "alquimia_constants.h"
@@ -23,14 +29,14 @@
  **  Strings
  **
  *******************************************************************************/
-bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
+_Bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                           const char* const str2) {
   int i;
-  bool equal = true;
+  _Bool equal = true;
   if (strlen(str1) != strlen(str2)) {
     equal = false;
   } else {
-    for (i = 0; i < strlen(str1); ++i) {
+    for (i = 0; i < (int)strlen(str1); ++i) {
       if (tolower(str1[i]) != tolower(str2[i])) {
         equal = false;
         break;

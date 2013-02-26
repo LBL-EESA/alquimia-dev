@@ -11,9 +11,11 @@
  **
  ******************************************************************************/
 
-#define bool int
-#define false 0
-#define true 1
+#ifdef WINDOWS
+#include "xstdbool.h"
+#else
+#include <stdbool.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,19 +78,19 @@ extern "C" {
   struct AlquimiaEngineStatus {
     int error;
     char* message;
-    bool converged;
+    _Bool converged;
     int num_rhs_evaluations;
     int num_jacobian_evaluations;
     int num_newton_iterations;
   };
   
   struct AlquimiaEngineFunctionality {
-    bool thread_safe;
-    bool temperature_dependent;
-    bool pressure_dependent;
-    bool porosity_update;
-    bool operator_splitting;
-    bool global_implicit;
+    _Bool thread_safe;
+    _Bool temperature_dependent;
+    _Bool pressure_dependent;
+    _Bool porosity_update;
+    _Bool operator_splitting;
+    _Bool global_implicit;
     int index_base;
   };
   
