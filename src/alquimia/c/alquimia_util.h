@@ -15,7 +15,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  _Bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
+  bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                             const char* const str2);
 
   void AlquimiaFindIndexFromName(const char* const name,
