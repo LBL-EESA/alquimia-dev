@@ -213,6 +213,12 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   AllocateAlquimiaVectorString(sizes->num_surface_sites,
                                &(meta_data->surface_site_names));
 
+  AllocateAlquimiaVectorInt(sizes->num_ion_exchange_sites,
+                            &(meta_data->ion_exchange_indices));
+  
+  AllocateAlquimiaVectorString(sizes->num_ion_exchange_sites,
+                               &(meta_data->ion_exchange_names));
+
   AllocateAlquimiaVectorInt(sizes->num_isotherm_species,
                             &(meta_data->isotherm_species_indices));
 
@@ -227,6 +233,8 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
     FreeAlquimiaVectorString(&(meta_data->mineral_names));
     FreeAlquimiaVectorInt(&(meta_data->surface_site_indices));
     FreeAlquimiaVectorString(&(meta_data->surface_site_names));
+    FreeAlquimiaVectorInt(&(meta_data->ion_exchange_indices));
+    FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
     FreeAlquimiaVectorInt(&(meta_data->isotherm_species_indices));
   }
 }  // end FreeAlquimiaProblemMetaData()

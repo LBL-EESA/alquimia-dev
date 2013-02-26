@@ -17,20 +17,24 @@ Alquimia Error Codes
 Every alquimia function call should be followed by checking the
 AlquimiaEngineStatus.error against the following codes:
 
-+------------------------------------+-----------+-----------------------------------+
-| **name**                           | **value** | **meaning**                       |
-+------------------------------------+-----------+-----------------------------------+
-| kAlquimiaNoError                   | 0         |no error                           |
-+------------------------------------+-----------+-----------------------------------+
-| kAlquimiaErrorInvalidEngine        | 1         |unknown engine requested           |
-+------------------------------------+-----------+-----------------------------------+
-| kAlquimiaErrorUnknownConstraintName| 2         |the user requested a named         |
-|                                    |           |constraint which could not be found|
-|                                    |           |in the constraint list             |
-+------------------------------------+-----------+-----------------------------------+
-| kAlquimiaErrorEngineIntegrity      | 4577      |pointer to the engine's internal   |
-|                                    |           |state did not pass integrity check |
-+------------------------------------+-----------+-----------------------------------+
++---------------------------------------+-----------+-----------------------------------+
+| **name**                              | **value** | **meaning**                       |
++---------------------------------------+-----------+-----------------------------------+
+| kAlquimiaNoError                      | 0         |no error                           |
++---------------------------------------+-----------+-----------------------------------+
+| kAlquimiaErrorInvalidEngine           | 1         |unknown engine requested           |
++---------------------------------------+-----------+-----------------------------------+
+| kAlquimiaErrorUnknownConstraintName   | 2         |the user requested a named         |
+|                                       |           |constraint which could not be found|
+|                                       |           |in the constraint list             |
++---------------------------------------+-----------+-----------------------------------+
+| kAlquimiaErrorUnsupportedFunctionality| 3         |the user requested functionality   |
+|                                       |           |that is not supported with the     |
+|                                       |           |current engine                     |
++---------------------------------------+-----------+-----------------------------------+
+| kAlquimiaErrorEngineIntegrity         | 4577      |pointer to the engine's internal   |
+|                                       |           |state did not pass integrity check |
++---------------------------------------+-----------+-----------------------------------+
 
 Alquimia String Lengths
 ~~~~~~~~~~~~~~~~~~~~~~~

@@ -33,6 +33,7 @@ module AlquimiaContainers_module
   integer (c_int), parameter :: kAlquimiaNoError = 0
   integer (c_int), parameter :: kAlquimiaErrorInvalidEngine = 1
   integer (c_int), parameter :: kAlquimiaErrorUnknownConstraintName = 2
+  integer (c_int), parameter :: kAlquimiaErrorUnsupportedFunctionality = 3
   integer (c_int), parameter :: kAlquimiaErrorEngineIntegrity = 4577
 
   character (13), parameter :: kAlquimiaStringTotalAqueous = 'total_aqueous'
@@ -123,6 +124,8 @@ module AlquimiaContainers_module
      type (AlquimiaVectorString) :: mineral_names
      type (AlquimiaVectorInt) :: surface_site_indices
      type (AlquimiaVectorString) :: surface_site_names
+     type (AlquimiaVectorString) :: ion_exchange_indices
+     type (AlquimiaVectorInt) :: ion_exchange_names
      type (AlquimiaVectorInt) :: isotherm_species_indices
   end type AlquimiaProblemMetaData
 
