@@ -169,14 +169,11 @@ void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
 void AllocateAlquimiaMaterialProperties(
     const struct AlquimiaSizes* const sizes,
     struct AlquimiaMaterialProperties* material_props) {
-  /* NOTE(bja) : need to be smarter about how we allocate memory for
-     isotherms. (1) Only allocate if isotherms are used in chemistry, and
-     (2) only allocate for the primary species that are being sorbed. */
-  AllocateAlquimiaVectorDouble(sizes->num_primary,
+  AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
                                &(material_props->isotherm_kd));
-  AllocateAlquimiaVectorDouble(sizes->num_primary,
+  AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
                                &(material_props->freundlich_n));
-  AllocateAlquimiaVectorDouble(sizes->num_primary,
+  AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
                                &(material_props->langmuir_b));
 
 }  // end AllocateAlquimiaMaterialProperties()
@@ -199,22 +196,27 @@ void FreeAlquimiaMaterialProperties(
 void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
                                      struct AlquimiaProblemMetaData* meta_data) {
 
-  if (sizes->num_primary > 0) {
-    AllocateAlquimiaVectorInt(sizes->num_primary, &(meta_data->primary_indices));
-    assert(meta_data->primary_indices.data != NULL);
+  AllocateAlquimiaVectorInt(sizes->num_primary, &(meta_data->primary_indices));
+  assert(meta_data->primary_indices.data != NULL);
 
-    AllocateAlquimiaVectorString(sizes->num_primary, &(meta_data->primary_names));
-    assert(meta_data->primary_names.data != NULL);
-  }
+  AllocateAlquimiaVectorString(sizes->num_primary, &(meta_data->primary_names));
+  assert(meta_data->primary_names.data != NULL);
 
-  if (sizes->num_kinetic_minerals > 0) {
-    AllocateAlquimiaVectorInt(sizes->num_kinetic_minerals,
-                              &(meta_data->mineral_indices));
-    assert(meta_data->mineral_indices.data != NULL);
+  AllocateAlquimiaVectorInt(sizes->num_kinetic_minerals,
+                            &(meta_data->mineral_indices));
+  
+  AllocateAlquimiaVectorString(sizes->num_kinetic_minerals,
+                               &(meta_data->mineral_names));
 
-    AllocateAlquimiaVectorString(sizes->num_kinetic_minerals, &(meta_data->mineral_names));
-    assert(meta_data->mineral_names.data != NULL);
-  }
+  AllocateAlquimiaVectorInt(sizes->num_surface_sites,
+                            &(meta_data->surface_site_indices));
+  
+  AllocateAlquimiaVectorString(sizes->num_surface_sites,
+                               &(meta_data->surface_site_names));
+
+  AllocateAlquimiaVectorInt(sizes->num_isotherm_species,
+                            &(meta_data->isotherm_species_indices));
+
 }  // end AllocateAlquimiaProblemMetaData()
 
 void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
@@ -224,6 +226,9 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
     FreeAlquimiaVectorString(&(meta_data->primary_names));
     FreeAlquimiaVectorInt(&(meta_data->mineral_indices));
     FreeAlquimiaVectorString(&(meta_data->mineral_names));
+    FreeAlquimiaVectorInt(&(meta_data->surface_site_indices));
+    FreeAlquimiaVectorString(&(meta_data->surface_site_names));
+    FreeAlquimiaVectorInt(&(meta_data->isotherm_species_indices));
   }
 }  // end FreeAlquimiaProblemMetaData()
 

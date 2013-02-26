@@ -42,6 +42,7 @@ extern "C" {
     int num_aqueous_complexes;
     int num_surface_sites;
     int num_ion_exchange_sites;
+    int num_isotherm_species;
     int num_aux_integers;
     int num_aux_doubles;
   };
@@ -56,8 +57,8 @@ extern "C" {
     struct AlquimiaVectorDouble total_immobile;  // [moles/m^3 bulk]
     struct AlquimiaVectorDouble mineral_volume_fraction;  // [-]
     struct AlquimiaVectorDouble mineral_specific_surface_area; // [m^2 mineral/m^3 bulk]
-    struct AlquimiaVectorDouble cation_exchange_capacity;  // [moles/m^3 bulk]
     struct AlquimiaVectorDouble surface_site_density;  // [moles/m^3 bulk]
+    struct AlquimiaVectorDouble cation_exchange_capacity;  // [moles/m^3 bulk]
   };
   
   struct AlquimiaMaterialProperties {
@@ -96,6 +97,9 @@ extern "C" {
     struct AlquimiaVectorString primary_names;
     struct AlquimiaVectorInt mineral_indices;
     struct AlquimiaVectorString mineral_names;
+    struct AlquimiaVectorInt surface_site_indices;
+    struct AlquimiaVectorString surface_site_names;
+    struct AlquimiaVectorInt isotherm_species_indices;
     //char** auxiliary_output_names;
   };
   

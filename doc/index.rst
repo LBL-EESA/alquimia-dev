@@ -26,6 +26,7 @@ Contents:
    api/APIv0_constants
    api/APIv0_c_utils
 
+   batch-tests
 
 Indices and tables
 ==================

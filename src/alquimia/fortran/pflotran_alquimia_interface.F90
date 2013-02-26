@@ -59,7 +59,9 @@ module PFloTranAlquimiaInterface_module
        CopyAuxVarsToAlquimia, &
        GetAuxiliaryDataSizes, &
        PackAlquimiaAuxiliaryData, &
-       UnpackAlquimiaAuxiliaryData
+       UnpackAlquimiaAuxiliaryData, &
+       PrintTranConstraint, &
+       PrintAqueousSpeciesConstraint
 
   integer(kind=8), private, parameter :: integrity_check_value = 5784429996817932654_8
   !integer(kind=int64), private, parameter :: integrity_check_value = &
@@ -298,12 +300,15 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
+  real (c_double), pointer :: data(:)
   character (kAlquimiaMaxStringLength) :: name
   type(tran_constraint_type), pointer :: tran_constraint
   real (c_double) :: constraint_value
   PetscReal :: porosity, volume
   integer :: i
   type(PFloTranEngineState), pointer :: engine_state
+  PetscInt, parameter :: phase_index = 1
+  logical, parameter :: copy_auxdata = .false.
 
   !write (*, '(a)') "PFloTranAlquimiaInterface::ProcessCondition() : "
 
@@ -315,13 +320,11 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
      return
   end if
 
-  ! NOTE(bja): do NOT call CopyAlquimiaToAuxVars() here because most
-  ! of that data is uninitialized in alquimia!
-  engine_state%global_auxvar%den_kg = state%water_density
-  engine_state%global_auxvar%sat = state%saturation
-  engine_state%global_auxvar%temp = state%temperature
-  engine_state%global_auxvar%pres = state%aqueous_pressure
-  porosity = state%porosity
+  ! NOTE(bja): the data stored in alquimia's aux_data is uninitialized
+  ! at this point, so don't want to copy it! (copy_auxdata = false)
+  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
+       engine_state%reaction, engine_state%global_auxvar, engine_state%rt_auxvar, &
+       porosity, volume)
 
   !
   ! process the condition
@@ -365,6 +368,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   end if
 
   if (associated(tran_constraint)) then
+     !call PrintTranConstraint(tran_constraint)
      ! tran_constraint should be valid. Now we can ask pflotran to
      ! process it...
      call ProcessPFloTranConstraint( &
@@ -415,7 +419,9 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   type(PFloTranEngineState), pointer :: engine_state
   PetscReal :: porosity, volume, vol_frac_prim
   PetscReal :: tran_xx(state%total_mobile%size)
-  PetscInt :: i, phase_index
+  PetscInt :: i
+  PetscInt, parameter :: phase_index = 1
+  logical, parameter :: copy_auxdata = .true.
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
@@ -429,13 +435,11 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   !call PrintState(engine_state%reaction, state)
 
-  call CopyAlquimiaToAuxVars(state, aux_data, material_properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
        engine_state%reaction, engine_state%global_auxvar, engine_state%rt_auxvar, &
        porosity, volume)
 
   ! copy total primaries into dummy transport variable
-  phase_index = 1
-  
   do i = 1, state%total_mobile%size
      tran_xx(i) = engine_state%rt_auxvar%total(i, phase_index)
   enddo
@@ -505,6 +509,7 @@ subroutine GetAuxiliaryOutput( &
   integer :: i, ph_index
   real (c_double), pointer :: local_array(:)
   PetscReal :: porosity, volume
+  logical, parameter :: copy_auxdata = .true.
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
@@ -520,7 +525,7 @@ subroutine GetAuxiliaryOutput( &
   ! still in the auxvars. We are assuming that the driver has called
   ! GetAuxiliaryOutput immediately after reaction step...!
 
-  !call CopyAlquimiaToAuxVars(state, aux_data, material_properties, &
+  !call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
   !     engine_state%reaction, engine_state%global_auxvar, engine_state%rt_auxvar, &
   !     porosity, volume)
 
@@ -638,6 +643,42 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
           name, kAlquimiaMaxStringLength)     
   end do
 
+  !
+  ! surface sites
+  !
+  if (meta_data%surface_site_indices%size /= &
+       engine_state%reaction%surface_complexation%nsrfcplxrxn) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%surface_site_indices%size (", &
+          meta_data%surface_site_indices%size, ") != pflotran%reaction%surface_complexation%nsrfcplxrxn(", &
+          engine_state%reaction%surface_complexation%nsrfcplxrxn, ")"
+  end if
+
+  list_size = meta_data%surface_site_indices%size
+  call c_f_pointer(meta_data%surface_site_indices%data, local_indices, (/list_size/))
+  do i = 1, list_size
+     local_indices(i) = i
+  end do
+
+  pflotran_names => engine_state%reaction%surface_complexation%srfcplxrxn_site_names
+
+  call c_f_pointer(meta_data%surface_site_names%data, name_list, (/list_size/))
+  do i = 1, list_size
+     call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
+     call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
+          name, kAlquimiaMaxStringLength)     
+  end do
+
+
+  !
+  ! isotherm indices
+  !
+  list_size = meta_data%isotherm_species_indices%size
+  call c_f_pointer(meta_data%isotherm_species_indices%data, local_indices, &
+       (/list_size/))
+  do i = 1, list_size
+     local_indices(i) = engine_state%reaction%eqkdspecid(i)
+  end do
+
   status%error = 0
 end subroutine GetProblemMetaData
 
@@ -748,11 +789,16 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   type (AlquimiaSizes), intent(out) :: sizes
 
   sizes%num_primary = reaction%ncomp
-  sizes%num_sorbed = 0 ! FIXME(bja): need some sort of if (using_sorption)...
+  if (reaction%nsorb > 0) then
+     sizes%num_sorbed = reaction%ncomp
+  else
+     sizes%num_sorbed = 0
+  end if
   sizes%num_kinetic_minerals = reaction%mineral%nkinmnrl
   sizes%num_aqueous_complexes = reaction%neqcplx
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
+  sizes%num_isotherm_species = reaction%neqkdrxn
   call GetAuxiliaryDataSizes(reaction, &
        sizes%num_aux_integers, sizes%num_aux_doubles)
 
@@ -798,7 +844,7 @@ subroutine InitializePFloTranReactions(option, input, reaction)
 
   ! pflotran
   use Reaction_module, only : ReactionInit, ReactionReadPass2
-  use Reaction_Aux_module, only : reaction_type
+  use Reaction_Aux_module, only : reaction_type, ACT_COEF_FREQUENCY_OFF
   use Database_module, only : DatabaseRead, BasisInit
   use Option_module, only : option_type
   use Input_module, only : input_type, InputFindStringInFile, InputError
@@ -1022,7 +1068,11 @@ function ConvertAlquimiaConditionToPflotran(&
        AqueousSpeciesConstraintCreate
   use Mineral_aux_module, only : mineral_constraint_type, MineralConstraintCreate
   use String_module, only : StringCompareIgnoreCase
-  use Constraint_module, only : tran_constraint_type, TranConstraintCreate
+  use Constraint_module, only : tran_constraint_type, TranConstraintCreate, &
+       CONSTRAINT_FREE, CONSTRAINT_TOTAL, CONSTRAINT_TOTAL_SORB, &
+       CONSTRAINT_TOTAL_SORB_AQ_BASED, CONSTRAINT_PH, CONSTRAINT_MINERAL, &
+       CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL
+
 
   implicit none
 
@@ -1052,7 +1102,8 @@ function ConvertAlquimiaConditionToPflotran(&
 
   tran_constraint => TranConstraintCreate(option)
   tran_constraint%name = trim(name)
-  tran_constraint%requires_equilibration = PETSC_TRUE
+  ! NOTE(bja): requires_equilibration not used in pflotran?
+  tran_constraint%requires_equilibration = PETSC_FALSE
 
   !
   ! aqueous species
@@ -1086,11 +1137,14 @@ function ConvertAlquimiaConditionToPflotran(&
      if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
         pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_FREE
 
-     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotal)) then
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueous)) then
         pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL
 
      else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalSorbed)) then
         pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL_SORB
+
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueousPlusSorbed)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL_SORB_AQ_BASED
 
      else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringPH)) then
         pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_PH
@@ -1149,7 +1203,7 @@ end function ConvertAlquimiaConditionToPflotran
 
 
 ! **************************************************************************** !
-subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
+subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   reaction, global_auxvar, rt_auxvar, porosity, volume)
 
   use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
@@ -1164,6 +1218,7 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   implicit none
 
   ! function parameters
+  logical, intent(in) :: copy_auxdata
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaMaterialProperties), intent(in) :: material_prop
@@ -1175,11 +1230,10 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
 
   ! local variables
   real (c_double), pointer :: data(:)
-  integer :: i, phase_index
+  integer :: i
+  PetscInt, parameter :: phase_index = 1
 
   !write (*, '(a)') "PFloTran_Alquimia_CopyAlquimiaToAuxVars() :"
-
-  phase_index = 1
 
   !
   ! state
@@ -1199,6 +1253,14 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   do i = 1, reaction%naqcomp
      rt_auxvar%total(i, phase_index) = data(i)
   end do
+
+  ! sorbed primary
+  if (reaction%neqsorb > 0) then
+     call c_f_pointer(state%total_immobile%data, data, (/reaction%naqcomp/))
+     do i = 1, reaction%naqcomp
+        rt_auxvar%total_sorb_eq(i) = data(i)
+     end do
+  end if
 
   !
   ! minerals
@@ -1234,10 +1296,29 @@ subroutine CopyAlquimiaToAuxVars(state, aux_data, material_prop, &
   end do
 
   !
-  ! isotherms, TODO(bja): copy out of material_props into reaction (not auxvar)
+  ! isotherms
   !
+  call c_f_pointer(material_prop%isotherm_kd%data, data, &
+       (/material_prop%isotherm_kd%size/))
+  do i = 1, material_prop%isotherm_kd%size
+     reaction%eqkddistcoef(i) = data(i)
+  end do
 
-  call UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
+  call c_f_pointer(material_prop%langmuir_b%data, data, &
+       (/material_prop%langmuir_b%size/))
+  do i = 1, material_prop%langmuir_b%size
+     reaction%eqkdlangmuirb(i) = data(i)
+  end do
+
+  call c_f_pointer(material_prop%freundlich_n%data, data, &
+       (/material_prop%freundlich_n%size/))
+  do i = 1, material_prop%freundlich_n%size
+     reaction%eqkdfreundlichn(i) = data(i)
+  end do
+
+  if (copy_auxdata) then
+     call UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
+  end if
 
 end subroutine CopyAlquimiaToAuxVars
 
@@ -1266,9 +1347,8 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
 
   ! local variables
   real (c_double), pointer :: data(:)
-  integer :: i, phase_index
-
-  phase_index = 1 ! TODO(bja): grab from pflotran?
+  integer :: i
+  PetscInt, parameter :: phase_index = 1
 
   !write (*, '(a)') "PFloTran_Alquimia_CopyAuxVarsToAlquimia() :"
 
@@ -1293,11 +1373,12 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   !
   ! sorbed
   !
-  call c_f_pointer(state%total_immobile%data, data, (/reaction%neqsorb/))
-  do i = 1, reaction%neqsorb
-     data(i) = rt_auxvar%total_sorb_eq(i)
-  end do
-
+  if (reaction%neqsorb > 0) then
+     call c_f_pointer(state%total_immobile%data, data, (/reaction%naqcomp/))
+     do i = 1, reaction%naqcomp
+        data(i) = rt_auxvar%total_sorb_eq(i)
+     end do
+  end if
   !
   ! minerals
   !
@@ -1330,6 +1411,9 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
      data(i) = reaction%surface_complexation%srfcplxrxn_site_density(i)
   end do
+
+  ! NOTE(bja): isotherms are material properties, and can't be changed
+  ! by chemistry. We don't need to copy theme here!
 
   call PackAlquimiaAuxiliaryData(reaction, rt_auxvar, aux_data)
 
@@ -1389,9 +1473,7 @@ subroutine PackAlquimiaAuxiliaryData(reaction, rt_auxvar, aux_data)
   ! local variables
   integer (c_int) :: num_ints, num_doubles
   real (c_double), pointer :: data(:)
-  integer :: i, dindex, phase_index
-
-  phase_index = 1 ! TODO(bja): grab from pflotran?
+  integer :: i, dindex
 
   call GetAuxiliaryDataSizes(reaction, num_ints, num_doubles)
 
@@ -1447,7 +1529,7 @@ subroutine UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
   ! local variables
   integer (c_int) :: num_ints, num_doubles
   real (c_double), pointer :: data(:)
-  integer :: i, dindex, phase_index
+  integer :: i, dindex
 
   call GetAuxiliaryDataSizes(reaction, num_ints, num_doubles)
 
@@ -1615,4 +1697,75 @@ subroutine PrintStatus(status)
 
 end subroutine PrintStatus
 
+
+! **************************************************************************** !
+subroutine PrintTranConstraint(tran_constraint)
+
+  use Constraint_module, only : tran_constraint_type
+
+  implicit none
+
+#include "definitions.h"
+
+  ! function parameters
+  type (tran_constraint_type), pointer :: tran_constraint
+
+  write (*, '(a)') "TranConstraint :"
+  write (*, '(a i4)') "    id : ", tran_constraint%id
+  write (*, '(a a)') "    name : ", tran_constraint%name
+  write (*, '(a L1)') "    requires equilibration : ", tran_constraint%requires_equilibration
+  call PrintAqueousSpeciesConstraint(tran_constraint%aqueous_species)
+  call PrintMineralConstraint(tran_constraint%minerals)
+!    type(mineral_constraint_type), pointer :: minerals
+!    type(srfcplx_constraint_type), pointer :: surface_complexes
+!    type(colloid_constraint_type), pointer :: colloids
+!    type(immobile_constraint_type), pointer :: immobile_species
+
+
+end subroutine PrintTranConstraint
+
+subroutine PrintAqueousSpeciesConstraint(aqueous_species)
+
+  use Reaction_aux_module, only : aq_species_constraint_type
+
+  implicit none
+
+  type (aq_species_constraint_type), pointer :: aqueous_species 
+
+  write (*, '(a)') "    Aqueous species :"
+  write (*, '(a)') aqueous_species%names
+  write (*, '(a)') "    Constraint Conc :"
+  write (*, '(f18.8)') aqueous_species%constraint_conc(:)
+  write (*, '(a)') "    Constraint basis molarity :"
+  write (*, '(f18.8)') aqueous_species%basis_molarity(:)
+  write (*, '(a)') "    Constraint type :"
+  write (*, '(i4)') aqueous_species%constraint_type(:)
+  write (*, '(a)') "    Constraint spec id :"
+  write (*, '(i4)') aqueous_species%constraint_spec_id(:)
+  write (*, '(a)') "    Constraint aux string :"
+  write (*, '(a)') aqueous_species%constraint_aux_string(:)
+
+end subroutine PrintAqueousSpeciesConstraint
+
+subroutine PrintMineralConstraint(minerals)
+
+  use Mineral_aux_module, only : mineral_constraint_type
+
+  implicit none
+
+  type (mineral_constraint_type), pointer :: minerals
+
+  write (*, '(a)') "    Mineral species :"
+  write (*, '(a)') minerals%names
+  write (*, '(a)') "    volume fraction :"
+  write (*, '(f18.8)') minerals%constraint_vol_frac(:)
+  write (*, '(a)') "    Constraint area :"
+  write (*, '(f18.8)') minerals%constraint_area(:)
+  write (*, '(a)') "    Constraint aux string :"
+  write (*, '(a)') minerals%constraint_aux_string(:)
+
+end subroutine PrintMineralConstraint
+
+
 end module PFloTranAlquimiaInterface_module
+
