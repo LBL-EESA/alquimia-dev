@@ -59,210 +59,54 @@ int main(int argc, char** argv) {
   char help[] = "petsc help string";
   PetscInitialize(&argc, &argv, (char*)0, help);
 
-  //
-  // Read the demo driver input file
-  //
-  util::DemoConfigReader cfg_reader;
-
-  if (!template_file_name.empty()) {
-    cfg_reader.WriteTemplateFile(template_file_name);
-    exit(EXIT_SUCCESS);
-  }
-
-  util::DemoSimulation demo_simulation;
-  util::DemoState demo_state;
-  util::DemoMaterialProperties demo_material_props;
-  util::DemoConditions demo_conditions;
-
-  if (!input_file_name.empty()) {
-    cfg_reader.set_debug(false);
-    cfg_reader.ReadInputFile(input_file_name,
-                             &demo_simulation, &demo_state,
-                             &demo_material_props, &demo_conditions);
-    if (debug_batch_driver) {
-      std::cout << "- Input File ---------------------------------------------------------\n";
-      demo_simulation.Print();
-      demo_state.Print();
-      demo_material_props.Print();
-      util::PrintGeochemicalConditions(demo_conditions);
-      std::cout << "--------------------------------------------------------- Input File -\n";
-    }
-  }
-
-  //
-  // open the output file
-  //
-  std::fstream text_output;
-  size_t position = input_file_name.find_last_of('.');
-  std::string text_output_name = input_file_name.substr(0, position) + ".txt";
-  text_output.open(text_output_name.c_str(), std::fstream::out);
-
-  //
-  // Create the alquimia structures.  NOTE: chem_data are for a single
-  // grid cell. For openmp/threaded code, you'll need one chem_status
-  // and chem_data per thead, but we don't know if the engine is
-  // thread safe until after the call to Setup()!
-  //
-  struct AlquimiaInterface chem;
-  AlquimiaEngineStatus chem_status;
-  AlquimiaData chem_data;
-  AlquimiaGeochemicalConditionVector alquimia_conditions;
-
   try {
-    // All alquimia function calls require a status object.
-    AllocateAlquimiaEngineStatus(&chem_status);
-    // Create the chemistry engine
-    CreateAlquimiaInterface(demo_simulation.engine.c_str(), &chem, &chem_status);
-    if (chem_status.error != 0) {
-      std::cout << chem_status.message << std::endl;
-      return chem_status.error;
+    //
+    // Read the demo driver input file
+    //
+    util::DemoConfigReader cfg_reader;
+
+    if (!template_file_name.empty()) {
+      cfg_reader.WriteTemplateFile(template_file_name);
+      exit(EXIT_SUCCESS);
     }
 
-    // setup the engine and get the memory requirements
-    chem.Setup(demo_simulation.engine_inputfile.c_str(),
-               &chem_data.engine_state,
-               &chem_data.sizes,
-               &chem_data.functionality,
-               &chem_status);
-    if (chem_status.error != 0) {
-      std::cout << chem_status.message << std::endl;
-      PrintAlquimiaSizes(&chem_data.sizes);
-      return chem_status.error;
+    util::DemoSimulation demo_simulation;
+    util::DemoState demo_state;
+    util::DemoMaterialProperties demo_material_props;
+    util::DemoConditions demo_conditions;
+
+    if (!input_file_name.empty()) {
+      cfg_reader.set_debug(false);
+      cfg_reader.ReadInputFile(input_file_name,
+                               &demo_simulation, &demo_state,
+                               &demo_material_props, &demo_conditions);
+      if (debug_batch_driver) {
+        std::cout << "- Input File ---------------------------------------------------------\n";
+        demo_simulation.Print();
+        demo_state.Print();
+        demo_material_props.Print();
+        util::PrintGeochemicalConditions(demo_conditions);
+        std::cout << "--------------------------------------------------------- Input File -\n";
+      }
     }
-
-    // if you want multiple copies of the chemistry engine with
-    // OpenMP, verify: chem_data.functionality.thread_safe == true,
-    // then create the appropriate number of chem status and data
-    // objects
-
-    // chem_data.sizes was set by Setup(), so now we can allocate
-    // memory for alquimia data transfer containers.
-    AllocateAlquimiaData(&chem_data);
-
-    // allocate the remaining memory in the driver (mesh dependent)
-
-    // get the problem meta data (species and mineral names, etc)
-    chem.GetProblemMetaData(&chem_data.engine_state,
-                            &chem_data.meta_data,
-                            &chem_status);
-    if (chem_status.error != 0) {
-      std::cout << chem_status.message << std::endl;
-      PrintAlquimiaProblemMetaData(&chem_data.meta_data);
-      return chem_status.error;
-    }
-    //PrintAlquimiaProblemMetaData(&chem_data.meta_data);
-
-    // finish initializing the driver, e.g. verify material
-    // properties, species names, etc
 
     //
-    // prepare for constraint processing
+    // open the output file
     //
+    std::fstream text_output;
+    size_t position = input_file_name.find_last_of('.');
+    std::string text_output_name = input_file_name.substr(0, position) + ".txt";
+    text_output.open(text_output_name.c_str(), std::fstream::out);
 
-    // initialize the alquimia state and material properties with
-    // appropriate values from the driver's memory.
-    CopyDemoStateToAlquimiaState(demo_state, &chem_data.meta_data,
-                                 &chem_data.state);
-    CopyDemoMaterialPropertiesToAlquimiaMaterials(
-        demo_material_props, chem_data.meta_data, &chem_data.material_properties);
+    //
+    // run the demo batch chemistry
+    //
+    error = BatchChemWithAlquimia(demo_simulation, demo_state,
+                                  demo_material_props, demo_conditions,
+                                  &text_output);
 
-    PrintAlquimiaData(&chem_data);
+    text_output.close();
 
-    // Read the geochemical conditions from the driver's native format
-    // and store them in alquimia's format
-    CopyDemoConditionsToAlquimiaConditions(demo_conditions, &alquimia_conditions);
-
-    PrintAlquimiaGeochemicalConditionVector(&alquimia_conditions);
-
-    for (int i = 0; i < alquimia_conditions.size; ++i) {
-      // ask the engine to process the geochemical conditions
-      if (demo_simulation.initial_condition.compare(
-              alquimia_conditions.data[i].name) == 0) {
-        // for batch, only care about the IC. If the conditions have
-        // spatially dependent values, then the state and material
-        // properties need to be updated here!
-        chem.ProcessCondition(&chem_data.engine_state,
-                              &(alquimia_conditions.data[i]),
-                              &chem_data.material_properties,
-                              &chem_data.state,
-                              &chem_data.aux_data,
-                              &chem_status);
-        if (chem_status.error != 0) {
-          PrintAlquimiaData(&chem_data);
-          PrintAlquimiaGeochemicalCondition(&(alquimia_conditions.data[i]));
-          std::cout << chem_status.message << std::endl;
-          return chem_status.error;
-        }
-      }
-      // store the processed geochemical conditions in driver's memory
-    }
-    // we are done with the conditions (data is stored in driver state
-    // vectors at this point).
-    FreeAlquimiaGeochemicalConditionVector(&alquimia_conditions);
-
-    char time_units;
-    double time_units_conversion;  // [time_units / sec]
-    SetTimeUnits(demo_simulation.time_units,
-                 &time_units, &time_units_conversion);
-
-    // set delta t: [time_units]/[time_units/sec] = [sec]
-    double delta_t = demo_simulation.delta_t / time_units_conversion;
-    double time = 0.0;
-    // get initial pH
-    chem.GetAuxiliaryOutput(&chem_data.engine_state,
-                            &chem_data.material_properties,
-                            &chem_data.state,
-                            &chem_data.aux_data,
-                            &chem_data.aux_output,
-                            &chem_status);
-    // save the IC to our output file
-    bool write_pH;
-    WriteOutputHeader(&text_output, time_units,
-                      chem_data.meta_data, chem_data.sizes, &write_pH);
-    WriteOutput(&text_output, time,
-                chem_data.state, chem_data.aux_output, write_pH);
-    std::cout << "Starting reaction stepping (OS) with dt = " << delta_t << " [s]\n";
-    for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
-      time += delta_t;
-      //std::cout << "reaction step : " << t << "  time: " << time << std::endl;
-      if (false) {
-        PrintAlquimiaState(&chem_data.state);
-        PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
-      }
-      // unpack from driver memory, since this is batch, no unpacking
-      chem.ReactionStepOperatorSplit(&chem_data.engine_state,
-                                     &delta_t,
-                                     &chem_data.material_properties,
-                                     &chem_data.state,
-                                     &chem_data.aux_data,
-                                     &chem_status);
-      if (chem_status.error != 0) {
-          std::cout << chem_status.message << std::endl;
-          PrintAlquimiaState(&chem_data.state);
-          PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
-          return chem_status.error;
-      }
-      chem.GetAuxiliaryOutput(&chem_data.engine_state,
-                              &chem_data.material_properties,
-                              &chem_data.state,
-                              &chem_data.aux_data,
-                              &chem_data.aux_output,
-                              &chem_status);
-      if (chem_status.error != 0) {
-          std::cout << chem_status.message << std::endl;
-          return chem_status.error;
-      }
-      double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
-      WriteOutput(&text_output, out_time,
-                  chem_data.state, chem_data.aux_output, write_pH);
-      std::cout << "  step = " << std::setw(6) << std::right << t 
-                << "    time = " << std::setw(8) << std::right
-                << time*time_units_conversion << " [" << time_units 
-                << "]    newton = " << std::setw(4) << std::right 
-                << chem_status.num_newton_iterations << std::endl; 
-      // repack into driver memory...
-    }
-    std::cout << std::endl;
   } catch (const std::runtime_error& rt_error) {
     std::cout << rt_error.what();
     error = EXIT_FAILURE;
@@ -274,23 +118,204 @@ int main(int argc, char** argv) {
     error = EXIT_FAILURE;
   }
 
-  if (!error) {
+  PetscInt petsc_error = PetscFinalize();
+
+  if (error == 0 && petsc_error == 0) {
     std::cout << "Success!\n";
   } else {
     std::cout << "Failed!\n";
   }
 
-  text_output.close();
+  return error;
+}  // end main()
+
+
+/*******************************************************************************
+ **
+ **  Demonstrate setting up the alquimia interface and data objects,
+ **  then running simple batch chemistry reaction steps.
+ **
+ *******************************************************************************/
+int BatchChemWithAlquimia(
+    const alquimia::drivers::utilities::DemoSimulation& demo_simulation,
+    const alquimia::drivers::utilities::DemoState& demo_state,
+    const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
+    const alquimia::drivers::utilities::DemoConditions& demo_conditions,
+    std::fstream* text_output) {
+  //
+  // Create the alquimia structures.  NOTE: chem_data are for a single
+  // grid cell. For openmp/threaded code, you'll need one chem_status
+  // and chem_data per thead, but we don't know if the engine is
+  // thread safe until after the call to Setup()!
+  //
+  AlquimiaInterface chem;
+  AlquimiaEngineStatus chem_status;
+  AlquimiaData chem_data;
+  AlquimiaGeochemicalConditionVector alquimia_conditions;
+
+  // All alquimia function calls require a status object.
+  AllocateAlquimiaEngineStatus(&chem_status);
+  // Create the chemistry engine
+  CreateAlquimiaInterface(demo_simulation.engine.c_str(), &chem, &chem_status);
+  if (chem_status.error != 0) {
+    std::cout << chem_status.message << std::endl;
+    return chem_status.error;
+  }
+
+  // setup the engine and get the memory requirements
+  chem.Setup(demo_simulation.engine_inputfile.c_str(),
+             &chem_data.engine_state,
+             &chem_data.sizes,
+             &chem_data.functionality,
+             &chem_status);
+  if (chem_status.error != 0) {
+    std::cout << chem_status.message << std::endl;
+    PrintAlquimiaSizes(&chem_data.sizes);
+    return chem_status.error;
+  }
+
+  // if you want multiple copies of the chemistry engine with
+  // OpenMP, verify: chem_data.functionality.thread_safe == true,
+  // then create the appropriate number of chem status and data
+  // objects
+
+  // chem_data.sizes was set by Setup(), so now we can allocate
+  // memory for alquimia data transfer containers.
+  AllocateAlquimiaData(&chem_data);
+
+  // allocate the remaining memory in the driver (mesh dependent)
+
+  // get the problem meta data (species and mineral names, etc)
+  chem.GetProblemMetaData(&chem_data.engine_state,
+                          &chem_data.meta_data,
+                          &chem_status);
+  if (chem_status.error != 0) {
+    std::cout << chem_status.message << std::endl;
+    PrintAlquimiaProblemMetaData(&chem_data.meta_data);
+    return chem_status.error;
+  }
+  //PrintAlquimiaProblemMetaData(&chem_data.meta_data);
+
+  // finish initializing the driver, e.g. verify material
+  // properties, species names, etc
+
+  //
+  // prepare for constraint processing
+  //
+
+  // initialize the alquimia state and material properties with
+  // appropriate values from the driver's memory.
+  CopyDemoStateToAlquimiaState(demo_state, &chem_data.meta_data,
+                               &chem_data.state);
+  CopyDemoMaterialPropertiesToAlquimiaMaterials(
+      demo_material_props, chem_data.meta_data, &chem_data.material_properties);
+
+  PrintAlquimiaData(&chem_data);
+
+  // Read the geochemical conditions from the driver's native format
+  // and store them in alquimia's format
+  CopyDemoConditionsToAlquimiaConditions(demo_conditions, &alquimia_conditions);
+
+  PrintAlquimiaGeochemicalConditionVector(&alquimia_conditions);
+
+  for (int i = 0; i < alquimia_conditions.size; ++i) {
+    // ask the engine to process the geochemical conditions
+    if (demo_simulation.initial_condition.compare(
+            alquimia_conditions.data[i].name) == 0) {
+      // for batch, only care about the IC. If the conditions have
+      // spatially dependent values, then the state and material
+      // properties need to be updated here!
+      chem.ProcessCondition(&chem_data.engine_state,
+                            &(alquimia_conditions.data[i]),
+                            &chem_data.material_properties,
+                            &chem_data.state,
+                            &chem_data.aux_data,
+                            &chem_status);
+      if (chem_status.error != 0) {
+        PrintAlquimiaData(&chem_data);
+        PrintAlquimiaGeochemicalCondition(&(alquimia_conditions.data[i]));
+        std::cout << chem_status.message << std::endl;
+        return chem_status.error;
+      }
+    }
+    // store the processed geochemical conditions in driver's memory
+  }
+  // we are done with the conditions (data is stored in driver state
+  // vectors at this point).
+  FreeAlquimiaGeochemicalConditionVector(&alquimia_conditions);
+
+  char time_units;
+  double time_units_conversion;  // [time_units / sec]
+  SetTimeUnits(demo_simulation.time_units,
+               &time_units, &time_units_conversion);
+
+  // set delta t: [time_units]/[time_units/sec] = [sec]
+  double delta_t = demo_simulation.delta_t / time_units_conversion;
+  double time = 0.0;
+  // get initial pH
+  chem.GetAuxiliaryOutput(&chem_data.engine_state,
+                          &chem_data.material_properties,
+                          &chem_data.state,
+                          &chem_data.aux_data,
+                          &chem_data.aux_output,
+                          &chem_status);
+  // save the IC to our output file
+  bool write_pH;
+  WriteOutputHeader(text_output, time_units,
+                    chem_data.meta_data, chem_data.sizes, &write_pH);
+  WriteOutput(text_output, time,
+              chem_data.state, chem_data.aux_output, write_pH);
+  std::cout << "Starting reaction stepping (OS) with dt = " << delta_t << " [s]\n";
+  for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
+    time += delta_t;
+    //std::cout << "reaction step : " << t << "  time: " << time << std::endl;
+    if (false) {
+      PrintAlquimiaState(&chem_data.state);
+      PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
+    }
+    // unpack from driver memory, since this is batch, no unpacking
+    chem.ReactionStepOperatorSplit(&chem_data.engine_state,
+                                   &delta_t,
+                                   &chem_data.material_properties,
+                                   &chem_data.state,
+                                   &chem_data.aux_data,
+                                   &chem_status);
+    if (chem_status.error != 0) {
+      std::cout << chem_status.message << std::endl;
+      PrintAlquimiaState(&chem_data.state);
+      PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
+      return chem_status.error;
+    }
+    chem.GetAuxiliaryOutput(&chem_data.engine_state,
+                            &chem_data.material_properties,
+                            &chem_data.state,
+                            &chem_data.aux_data,
+                            &chem_data.aux_output,
+                            &chem_status);
+    if (chem_status.error != 0) {
+      std::cout << chem_status.message << std::endl;
+      return chem_status.error;
+    }
+    double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
+    WriteOutput(text_output, out_time,
+                chem_data.state, chem_data.aux_output, write_pH);
+    std::cout << "  step = " << std::setw(6) << std::right << t 
+              << "    time = " << std::setw(8) << std::right
+              << time*time_units_conversion << " [" << time_units 
+              << "]    newton = " << std::setw(4) << std::right 
+              << chem_status.num_newton_iterations << std::endl; 
+    // repack into driver memory...
+  }
+  std::cout << std::endl;
 
   // cleanup memory
   chem.Shutdown(&chem_data.engine_state, &chem_status);
   FreeAlquimiaData(&chem_data);
   FreeAlquimiaEngineStatus(&chem_status);
 
-  error = PetscFinalize();
+  return 0;
 
-  return error;
-}  // end main()
+} // end BatchChemWithAlquimia()
 
 /*******************************************************************************
  **
@@ -425,7 +450,7 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
     *text_output << "# \"Time [" << time_units << "]\"";
     int h_index;
     AlquimiaEngineIndexFromName("H+", &meta_data.primary_names,
-                          &meta_data.primary_indices, &h_index);
+                                &meta_data.primary_indices, &h_index);
     if (h_index > 0) {
       *write_pH = true;
       *text_output << " , \"pH\"";
@@ -545,8 +570,8 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     // save the isotherm species id
     int species_id = alquimia_meta_data.isotherm_species_indices.data[i];
     AlquimiaNameFromEngineIndex(species_id, &alquimia_meta_data.primary_names,
-                          &alquimia_meta_data.primary_indices,
-                          name);
+                                &alquimia_meta_data.primary_indices,
+                                name);
     for (size_t j = 0; j < demo_material_props.isotherm_species.size(); ++j) {
       if (demo_material_props.isotherm_species.at(j).compare(name) == 0) {
         
