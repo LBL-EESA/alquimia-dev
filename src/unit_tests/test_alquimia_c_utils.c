@@ -86,37 +86,25 @@ void test_AlquimiaVectors(void) {
 void test_AlquimiaNameIndexMapping(void) {
   int i, id, size;
   char* name;
-  struct AlquimiaVectorInt indices;
   struct AlquimiaVectorString names;
 
   name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
-
   size = 5;
-  AllocateAlquimiaVectorInt(size, &indices);
   AllocateAlquimiaVectorString(size, &names);
   for (i = 0; i < size; ++i) {
-    indices.data[i] = i + 10;
-    snprintf(names.data[i], kAlquimiaMaxStringLength, "name_%d", i + 10);
+    snprintf(names.data[i], kAlquimiaMaxStringLength, "name_%d", i+10);
   }
-  //PrintAlquimiaVectorInt("indices", &indices);
   //PrintAlquimiaVectorString("names", &names);
 
-  id = 12;
-  AlquimiaNameFromEngineIndex(id, &names, &indices, name);
-  assert(strncmp(name, "name_12", kAlquimiaMaxStringLength) == 0);
-
-  id = 1;
-  AlquimiaNameFromEngineIndex(id, &names, &indices, name);
-  assert(strncmp(name, "", kAlquimiaMaxStringLength) == 0);
-
   strncpy(name, "foo", kAlquimiaMaxStringLength);
-  AlquimiaEngineIndexFromName(name, &names, &indices, &id);
+  AlquimiaFindIndexFromName(name, &names, &id);
   assert(id == -1);
 
   strncpy(name, "name_13", kAlquimiaMaxStringLength);
-  AlquimiaEngineIndexFromName(name, &names, &indices, &id);
-  assert(id == 13);
+  AlquimiaFindIndexFromName(name, &names, &id);
+  assert(id == 3);
 
+  FreeAlquimiaVectorString(&names);
 }  // end test_AlquimiaNameIndexMapping()
 
 void test_CreateAlquimiaInterface(void) {
