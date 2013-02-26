@@ -1,3 +1,4 @@
+: -*-  mode: pflotran; indent-tabs-mode: nil -*-
 :Description: Batch calcite dissolution, with changes to calcite volume fraction.
 
 :=========================== chemistry ========================================
@@ -50,7 +51,7 @@ GRID
 END
 
 :=========================== fluid properties =================================
-FLUID_PROPERTY 
+FLUID_PROPERTY
   DIFFUSION_COEFFICIENT 1.d-9
 /
 
@@ -99,8 +100,8 @@ END
 CONSTRAINT initial
   CONCENTRATIONS
     H+     1.d-2     T
-    HCO3-  1.d-2      T
     Ca++   1.d-19      T
+    HCO3-  1.d-2      T
   /
   MINERALS
     Calcite  0.2 1.0 cm^2/cm^3
@@ -119,5 +120,3 @@ STRATA
   REGION all
   MATERIAL soil1
 END
-
-
