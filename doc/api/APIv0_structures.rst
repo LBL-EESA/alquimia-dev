@@ -243,19 +243,23 @@ Problem specific meta data, e.g. primary species and mineral names.
 +-------------------------+---------------------+-------------------------------------------+
 | **variable**            | **storage**         |**comment**                                |
 +=========================+=====================+===========================================+
-| primary indices         | vector<int, N_p>    |indices of the named primaries [2]_        |
+| primary_indices         | vector<int, N_p>    |indices of the named primaries [2]_        |
 +-------------------------+---------------------+-------------------------------------------+
-| primary names           | vector<string, N_p> |names of the primary species               |
+| primary_names           | vector<string, N_p> |names of the primary species               |
 +-------------------------+---------------------+-------------------------------------------+
-| kinetic mineral indices |  vector<int, N_m>   |indices of the kinetic minerals [2]_       |
+| kinetic_mineral_indices |  vector<int, N_m>   |indices of the kinetic minerals [2]_       |
 +-------------------------+---------------------+-------------------------------------------+
-| kinetic mineral names   | vector<string, N_m> |names of the kinetic minerals              |
+| kinetic_mineral_names   | vector<string, N_m> |names of the kinetic minerals              |
 +-------------------------+---------------------+-------------------------------------------+
-| surface site indices    | vector<int, N_ss>   |indices of the surface sites [2]_          |
+| surface_site_indices    | vector<int, N_ss>   |indices of the surface sites [2]_          |
 +-------------------------+---------------------+-------------------------------------------+
-| surface site names      |vector<string, N_ss> |names of the surface sites                 |
+| surface_site_names      |vector<string, N_ss> |names of the surface sites                 |
 +-------------------------+---------------------+-------------------------------------------+
-| isotherm species indices|  vector<int, N_is>  |indices of the primary species involved in |
+| ion_exchange_indices    | vector<int, N_ix>   |indices of the ion exchange sites [2]_     |
++-------------------------+---------------------+-------------------------------------------+
+| ion_exchange_names      |vector<string, N_ix> |names of the ion exchange sites            |
++-------------------------+---------------------+-------------------------------------------+
+|isotherm_species_indices |  vector<int, N_is>  |indices of the primary species involved in |
 |                         |                     |isotherm reactions [2]_                    |
 +-------------------------+---------------------+-------------------------------------------+
 

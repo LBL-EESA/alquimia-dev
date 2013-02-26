@@ -97,6 +97,8 @@ extern "C" {
     struct AlquimiaVectorString mineral_names;
     struct AlquimiaVectorInt surface_site_indices;
     struct AlquimiaVectorString surface_site_names;
+    struct AlquimiaVectorInt ion_exchange_indices;
+    struct AlquimiaVectorString ion_exchange_names;
     struct AlquimiaVectorInt isotherm_species_indices;
     //char** auxiliary_output_names;
   };
