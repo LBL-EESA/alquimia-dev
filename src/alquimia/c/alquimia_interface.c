@@ -50,6 +50,9 @@ void CreateAlquimiaInterface(const char* const engine_name,
                                                   kAlquimiaStringCrunchFlow)) {
 #ifdef HAVE_CRUNCH
     //interface->Setup = ...;
+    status->error = kAlquimiaErrorInvalidEngine;
+    snprintf(status->message, kAlquimiaMaxStringLength,
+             "\nERROR : CreateAlquimiaInterface() : CrunchFlow interface requested, but has not been implemented!\n");
 #else
     status->error = kAlquimiaErrorInvalidEngine;
     snprintf(status->message, kAlquimiaMaxStringLength,

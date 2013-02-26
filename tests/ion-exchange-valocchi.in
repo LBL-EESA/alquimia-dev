@@ -21,7 +21,7 @@ CHEMISTRY
       MINERAL Halite
       CEC 750. eq/m^3
       CATIONS
-        Na+   1.
+        Na+   1.0
         Ca++  0.2953  ! 1.84
         Mg++  0.1666  ! 2.45
       /
@@ -31,7 +31,7 @@ CHEMISTRY
   LOG_FORMULATION
 
   OUTPUT
-    all
+    ALL
     TOTAL_SORBED
   /
 END
@@ -54,7 +54,7 @@ GRID
 END
 
 :=========================== fluid properties =================================
-FLUID_PROPERTY 
+FLUID_PROPERTY
   DIFFUSION_COEFFICIENT 1.d-9
 /
 
@@ -115,7 +115,7 @@ END
 :CONSTRAINT inlet
 :  CONCENTRATIONS
 :    Na+     9.4d-3  T
-:    Ca++    5.d-4   T 
+:    Ca++    5.d-4   T
 :    Mg++    2.13d-3 T
 :    Cl-     1.d-2  Z
 :  /
@@ -133,5 +133,3 @@ STRATA
   REGION all
   MATERIAL soil1
 END
-
-

@@ -16,6 +16,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#ifdef HAVE_PFLOTRAN
   void pflotran_alquimia_setup(
       const char* input_filename,
       void* pft_engine_state,
@@ -50,6 +51,8 @@ extern "C" {
       void* pft_engine_state,
       struct AlquimiaProblemMetaData* meta_data,
       struct AlquimiaEngineStatus* status);
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

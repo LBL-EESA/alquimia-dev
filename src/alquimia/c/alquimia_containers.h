@@ -95,13 +95,11 @@ extern "C" {
   };
   
   struct AlquimiaProblemMetaData {
-    struct AlquimiaVectorInt primary_indices;
     struct AlquimiaVectorString primary_names;
-    struct AlquimiaVectorInt mineral_indices;
     struct AlquimiaVectorString mineral_names;
-    struct AlquimiaVectorInt surface_site_indices;
     struct AlquimiaVectorString surface_site_names;
-    struct AlquimiaVectorInt isotherm_species_indices;
+    struct AlquimiaVectorString ion_exchange_names;
+    struct AlquimiaVectorString isotherm_species_names;
     //char** auxiliary_output_names;
   };
   
