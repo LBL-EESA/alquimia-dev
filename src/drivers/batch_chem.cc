@@ -449,9 +449,8 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
   if (text_output->is_open()) {
     *text_output << "# \"Time [" << time_units << "]\"";
     int h_index;
-    AlquimiaEngineIndexFromName("H+", &meta_data.primary_names,
-                                &meta_data.primary_indices, &h_index);
-    if (h_index > 0) {
+    AlquimiaFindIndexFromName("H+", &meta_data.primary_names, &h_index);
+    if (h_index >= 0) {
       *write_pH = true;
       *text_output << " , \"pH\"";
     }
@@ -553,11 +552,11 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     AlquimiaMaterialProperties* alquimia_material_props) {
   alquimia_material_props->volume = demo_material_props.volume;
   
-  if (static_cast<size_t>(alquimia_meta_data.isotherm_species_indices.size) != 
+  if (static_cast<size_t>(alquimia_meta_data.isotherm_species_names.size) != 
       demo_material_props.isotherm_species.size()) {
     std::stringstream message;
     message << "ERROR: chemistry engine expects " 
-            << alquimia_meta_data.isotherm_species_indices.size << " isotherm species. "
+            << alquimia_meta_data.isotherm_species_names.size << " isotherm species. "
             << " but input file only contains " 
             << demo_material_props.isotherm_species.size() << std::endl;
     throw std::runtime_error(message.str());
@@ -566,12 +565,10 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
   char* name;
   name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
   // loop through each species in the *engine's* isotherm list
-  for (int i = 0; i < alquimia_meta_data.isotherm_species_indices.size; ++i) {
+  for (int i = 0; i < alquimia_meta_data.isotherm_species_names.size; ++i) {
     // save the isotherm species id
-    int species_id = alquimia_meta_data.isotherm_species_indices.data[i];
-    AlquimiaNameFromEngineIndex(species_id, &alquimia_meta_data.primary_names,
-                                &alquimia_meta_data.primary_indices,
-                                name);
+    strncpy(name, alquimia_meta_data.isotherm_species_names.data[i],
+            kAlquimiaMaxStringLength);
     for (size_t j = 0; j < demo_material_props.isotherm_species.size(); ++j) {
       if (demo_material_props.isotherm_species.at(j).compare(name) == 0) {
         
