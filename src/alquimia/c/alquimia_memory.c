@@ -196,39 +196,31 @@ void FreeAlquimiaMaterialProperties(
 void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
                                      struct AlquimiaProblemMetaData* meta_data) {
 
-  AllocateAlquimiaVectorInt(sizes->num_primary, &(meta_data->primary_indices));
-  assert(meta_data->primary_indices.data != NULL);
-
   AllocateAlquimiaVectorString(sizes->num_primary, &(meta_data->primary_names));
   assert(meta_data->primary_names.data != NULL);
 
-  AllocateAlquimiaVectorInt(sizes->num_kinetic_minerals,
-                            &(meta_data->mineral_indices));
-  
   AllocateAlquimiaVectorString(sizes->num_kinetic_minerals,
                                &(meta_data->mineral_names));
 
-  AllocateAlquimiaVectorInt(sizes->num_surface_sites,
-                            &(meta_data->surface_site_indices));
-  
   AllocateAlquimiaVectorString(sizes->num_surface_sites,
                                &(meta_data->surface_site_names));
 
-  AllocateAlquimiaVectorInt(sizes->num_isotherm_species,
-                            &(meta_data->isotherm_species_indices));
+  AllocateAlquimiaVectorString(sizes->num_ion_exchange_sites,
+                               &(meta_data->ion_exchange_names));
+
+  AllocateAlquimiaVectorString(sizes->num_isotherm_species,
+                               &(meta_data->isotherm_species_names));
 
 }  // end AllocateAlquimiaProblemMetaData()
 
 void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
 
   if (meta_data != NULL) {
-    FreeAlquimiaVectorInt(&(meta_data->primary_indices));
     FreeAlquimiaVectorString(&(meta_data->primary_names));
-    FreeAlquimiaVectorInt(&(meta_data->mineral_indices));
     FreeAlquimiaVectorString(&(meta_data->mineral_names));
-    FreeAlquimiaVectorInt(&(meta_data->surface_site_indices));
     FreeAlquimiaVectorString(&(meta_data->surface_site_names));
-    FreeAlquimiaVectorInt(&(meta_data->isotherm_species_indices));
+    FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
+    FreeAlquimiaVectorString(&(meta_data->isotherm_species_names));
   }
 }  // end FreeAlquimiaProblemMetaData()
 

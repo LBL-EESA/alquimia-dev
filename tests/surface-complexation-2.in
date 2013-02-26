@@ -35,7 +35,7 @@ CHEMISTRY
       COMPLEXES
         >FeOH2+_w
         >FeO-_w
-	>FeOHZn+_w
+        >FeOHZn+_w
       /
     /
     SURFACE_COMPLEXATION_RXN
@@ -45,7 +45,7 @@ CHEMISTRY
       COMPLEXES
         >FeOH2+_s
         >FeO-_s
-	>FeOHZn+_s
+        >FeOHZn+_s
       /
     /
   /
@@ -77,7 +77,7 @@ GRID
 END
 
 :=========================== fluid properties =================================
-FLUID_PROPERTY 
+FLUID_PROPERTY
   DIFFUSION_COEFFICIENT 1.d-9
 /
 
@@ -148,5 +148,3 @@ STRATA
   REGION all
   MATERIAL soil1
 END
-
-
