@@ -12,15 +12,15 @@ extern "C" {
   bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                             const char* const str2);
 
-  void AlquimiaIndexFromName(const char* const name,
-                             const struct AlquimiaVectorString* const names,
-                             const struct AlquimiaVectorInt* const indices,
-                             int* index);
+  void AlquimiaEngineIndexFromName(const char* const name,
+                                   const struct AlquimiaVectorString* const names,
+                                   const struct AlquimiaVectorInt* const indices,
+                                   int* index);
 
-  void AlquimiaNameFromIndex(const int index,
-                             const struct AlquimiaVectorString* const names,
-                             const struct AlquimiaVectorInt* const indices,
-                             char* name);
+  void AlquimiaNameFromEngineIndex(const int index,
+                                   const struct AlquimiaVectorString* const names,
+                                   const struct AlquimiaVectorInt* const indices,
+                                   char* name);
 
   void PrintAlquimiaVectorDouble(const char* const name,
                                  const struct AlquimiaVectorDouble* const vector);

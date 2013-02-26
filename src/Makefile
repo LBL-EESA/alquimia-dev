@@ -3,6 +3,7 @@
 #
 SUBDIRS = \
 	alquimia \
+	unit_tests \
 	drivers
 
 # MAKECMDGOALS is the make option: make 'clobber' or 'all'
