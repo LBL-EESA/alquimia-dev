@@ -2,6 +2,13 @@
 WORKSPACE_PATH := $(shell expr $(PWD) : '\(.*\/src\)/.*' \| $(PWD))
 include $(WORKSPACE_PATH)/Makefile.inc 
 
+INCLUDES = -I.
+
+CFLAGS += $(INCLUDES)
+
+#
+# alquimia c library
+#
 HEADERS = \
 	alquimia_constants.h \
 	alquimia_containers.h \
@@ -16,6 +23,9 @@ OBJS = \
 
 LIBRARY = libalquimia_c.a
 
+#
+# alquimia c utilities library
+#
 UTIL_HEADERS = \
 	alquimia_interface.h \
 	alquimia_memory.h \
@@ -31,10 +41,6 @@ UTIL_OBJS = \
 
 UTIL_LIBRARY = libalquimia_cutils.a
 
-INCLUDES = -I../ -I.
-
-CXXFLAGS += $(INCLUDES)
-
 #
 # Generic rules to generate object files.
 #
@@ -42,15 +48,14 @@ CXXFLAGS += $(INCLUDES)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 
-all : $(LIBRARY) $(UTIL_LIBRARY)
+all : $(LIBRARY) $(UTIL_LIBRARY) $(UTIL_TEST)
 
 libalquimia_c.a : $(HEADERS) $(OBJS) $(DEPEND_LIBS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 
-libalquimia_cutils.a : $(UTIL_HEADERS) $(UTIL_OBJS) $(DEPEND_LIBS)
+libalquimia_cutils.a : $(HEADERS) $(UTIL_HEADERS) $(UTIL_OBJS) $(DEPEND_LIBS)
 	$(AR) $(ARFLAGS) $@ $(UTIL_OBJS)
-
 
 #
 # clean - Clean up the directory.

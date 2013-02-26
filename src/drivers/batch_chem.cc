@@ -424,7 +424,7 @@ void WriteOutputHeader(std::fstream* text_output, const char time_units,
   if (text_output->is_open()) {
     *text_output << "# \"Time [" << time_units << "]\"";
     int h_index;
-    AlquimiaIndexFromName("H+", &meta_data.primary_names,
+    AlquimiaEngineIndexFromName("H+", &meta_data.primary_names,
                           &meta_data.primary_indices, &h_index);
     if (h_index > 0) {
       *write_pH = true;
@@ -544,7 +544,7 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
   for (int i = 0; i < alquimia_meta_data.isotherm_species_indices.size; ++i) {
     // save the isotherm species id
     int species_id = alquimia_meta_data.isotherm_species_indices.data[i];
-    AlquimiaNameFromIndex(species_id, &alquimia_meta_data.primary_names,
+    AlquimiaNameFromEngineIndex(species_id, &alquimia_meta_data.primary_names,
                           &alquimia_meta_data.primary_indices,
                           name);
     for (size_t j = 0; j < demo_material_props.isotherm_species.size(); ++j) {
