@@ -49,7 +49,7 @@ GRID
 END
 
 :=========================== fluid properties =================================
-FLUID_PROPERTY 
+FLUID_PROPERTY
   DIFFUSION_COEFFICIENT 1.d-9
 /
 
@@ -97,9 +97,9 @@ END
 :=========================== constraints ======================================
 CONSTRAINT initial
   CONCENTRATIONS
-    H+     -1.d-5     T
     HCO3-   1.d-5      T
     Ca++    1.d-5      T
+    H+     -1.d-5     T
   /
   MINERALS
     Calcite  0.2 100.0 m^2/m^3
@@ -118,5 +118,3 @@ STRATA
   REGION all
   MATERIAL soil1
 END
-
-

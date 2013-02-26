@@ -238,28 +238,26 @@ Information about the functionality of the supported by the geochemistry engine
 Struct: Alquimia Problem Meta Data
 ==================================
 
-Problem specific meta data, e.g. primary species and mineral names.
+Problem specific meta data, e.g. primary species and mineral
+names. Species are in the order that the chemistry engine expects to
+receive data.
 
 +-------------------------+---------------------+-------------------------------------------+
 | **variable**            | **storage**         |**comment**                                |
 +=========================+=====================+===========================================+
-| primary indices         | vector<int, N_p>    |indices of the named primaries [2]_        |
+| primary_names           | vector<string, N_p> |names of the primary species               |
 +-------------------------+---------------------+-------------------------------------------+
-| primary names           | vector<string, N_p> |names of the primary species               |
+| kinetic_mineral_names   | vector<string, N_m> |names of the kinetic minerals              |
 +-------------------------+---------------------+-------------------------------------------+
-| kinetic mineral indices |  vector<int, N_m>   |indices of the kinetic minerals [2]_       |
+| surface_site_names      |vector<string, N_ss> |names of the surface sites                 |
 +-------------------------+---------------------+-------------------------------------------+
-| kinetic mineral names   | vector<string, N_m> |names of the kinetic minerals              |
+| ion_exchange_names      |vector<string, N_ix> |names of the ion exchange sites            |
 +-------------------------+---------------------+-------------------------------------------+
-| surface site indices    | vector<int, N_ss>   |indices of the surface sites [2]_          |
-+-------------------------+---------------------+-------------------------------------------+
-| surface site names      |vector<string, N_ss> |names of the surface sites                 |
-+-------------------------+---------------------+-------------------------------------------+
-| isotherm species indices|  vector<int, N_is>  |indices of the primary species involved in |
-|                         |                     |isotherm reactions [2]_                    |
+| isotherm_species_names  |vector<string, N_is> |names of the primary species involved in   |
+|                         |                     |isotherm reactions                         |
 +-------------------------+---------------------+-------------------------------------------+
 
-.. [2] These are the indices according to the **engine**, using the "base index" provided in the engine functionality struct.
+
 
 .. _AlquimiaAuxiliaryOutputData:
 

@@ -26,6 +26,7 @@ extern const char* kAlquimiaStringCharge;
 extern const int kAlquimiaNoError;
 extern const int kAlquimiaErrorInvalidEngine;
 extern const int kAlquimiaErrorUnknownConstraintName;
+extern const int kAlquimiaErrorUnsupportedFunctionality;
 extern const int kAlquimiaErrorEngineIntegrity;
 
 #ifdef __cplusplus
