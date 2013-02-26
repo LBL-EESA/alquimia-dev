@@ -45,36 +45,18 @@ _Bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
  **  Mapping Species names - and indices
  **
  *******************************************************************************/
-void AlquimiaEngineIndexFromName(const char* const name,
-                                 const struct AlquimiaVectorString* const names,
-                                 const struct AlquimiaVectorInt* const indices,
-                                 int* index) {
+void AlquimiaFindIndexFromName(const char* const name,
+                           const struct AlquimiaVectorString* const names,
+                           int* index) {
   int i;
   *index = -1;
-  assert(names->size == indices->size);
   for (i = 0; i < names->size; ++i) {
     if (strncmp(name, names->data[i], kAlquimiaMaxStringLength) == 0) {
-      *index = indices->data[i];
+      *index = i;
       break;
     }
   }
-}  // end AlquimiaEngineIndexFromName()
-
-void AlquimiaNameFromEngineIndex(const int index,
-                                 const struct AlquimiaVectorString* const names,
-                                 const struct AlquimiaVectorInt* const indices,
-                                 char* name) {
-  int i;
-  assert(names->size == indices->size);
-  assert(index >= 0);
-  name[0] = '\0';
-  for (i = 0; i < names->size; ++i) {
-    if (index == indices->data[i]) {
-      strncpy(name, names->data[i], kAlquimiaMaxStringLength);
-      break;
-    }
-  }
-}  // end AlquimiaNameFromEngineIndex()
+}  // end AlquimiaFindIndexFromName()
 
 
 /*******************************************************************************
@@ -159,15 +141,11 @@ void PrintAlquimiaEngineFunctionality(
 void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const meta_data) {
 
   fprintf(stdout, "-- Alquimia Problem Meta Data :\n");
-  PrintAlquimiaVectorInt("primary indices", &(meta_data->primary_indices));
   PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
-  PrintAlquimiaVectorInt("mineral indices", &(meta_data->mineral_indices));
   PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names));
-  PrintAlquimiaVectorInt("surface site indices", &(meta_data->surface_site_indices));
   PrintAlquimiaVectorString("surface site names", &(meta_data->surface_site_names));
-  PrintAlquimiaVectorInt("ion exchange indices", &(meta_data->ion_exchange_indices));
   PrintAlquimiaVectorString("ion exchange names", &(meta_data->ion_exchange_names));
-  PrintAlquimiaVectorInt("isotherm species indicies", &(meta_data->isotherm_species_indices));
+  PrintAlquimiaVectorString("isotherm species names", &(meta_data->isotherm_species_names));
 }  // end PrintAlquimiaProblemMetaData()
 
 void PrintAlquimiaMaterialProperties(const struct AlquimiaMaterialProperties* const mat_prop) {

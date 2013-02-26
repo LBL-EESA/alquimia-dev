@@ -578,12 +578,11 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
-  integer (c_int), pointer :: local_indices(:)
   type (c_ptr), pointer :: name_list(:)
   character (len=kAlquimiaMaxWordLength), pointer :: pflotran_names(:)
   character (len=kAlquimiaMaxWordLength) :: dummy_names(1)
   character (c_char), pointer :: name
-  integer :: i, list_size
+  integer :: i, list_size, id
   type(PFloTranEngineState), pointer :: engine_state
 
   !write (*, '(a)') "PFloTran_Alquimia_GetEngineMetaData() :"
@@ -607,20 +606,12 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   end if
   list_size = meta_data%primary_names%size
 
-  ! associate indices with the C memory
-  call c_f_pointer(meta_data%primary_indices%data, local_indices, (/list_size/))
-  ! NOTE(bja) : if the order in reaction%primary_species_names always
-  ! is not correct we need to modifiy this...
-  do i = 1, list_size
-     local_indices(i) = i
-  enddo
-
   pflotran_names => engine_state%reaction%primary_species_names
 
   call c_f_pointer(meta_data%primary_names%data, name_list, (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
-     call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
+     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     call f_c_string_chars(trim(pflotran_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
 
@@ -635,45 +626,33 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   end if
   list_size = meta_data%mineral_names%size
 
-  ! associate indices with the C memory
-  call c_f_pointer(meta_data%mineral_indices%data, local_indices, (/list_size/))
-  ! NOTE(bja) : if the order in reaction%mineral_names always
-  ! is not correct we need to modifiy this...
-  do i = 1, list_size
-     local_indices(i) = i
-  enddo
-
   pflotran_names => engine_state%reaction%mineral%mineral_names
 
   call c_f_pointer(meta_data%mineral_names%data, name_list, (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
-     call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
+     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     call f_c_string_chars(trim(pflotran_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
 
   !
   ! surface sites
   !
-  if (meta_data%surface_site_indices%size /= &
+  if (meta_data%surface_site_names%size /= &
        engine_state%reaction%surface_complexation%nsrfcplxrxn) then
-     write (*, '(a, i3, a, i3, a)') "meta_data%surface_site_indices%size (", &
-          meta_data%surface_site_indices%size, ") != pflotran%reaction%surface_complexation%nsrfcplxrxn(", &
+     write (*, '(a, i3, a, i3, a)') "meta_data%surface_site_names%size (", &
+          meta_data%surface_site_names%size, ") != pflotran%reaction%surface_complexation%nsrfcplxrxn(", &
           engine_state%reaction%surface_complexation%nsrfcplxrxn, ")"
   end if
 
-  list_size = meta_data%surface_site_indices%size
-  call c_f_pointer(meta_data%surface_site_indices%data, local_indices, (/list_size/))
-  do i = 1, list_size
-     local_indices(i) = i
-  end do
+  list_size = meta_data%surface_site_names%size
 
   pflotran_names => engine_state%reaction%surface_complexation%srfcplxrxn_site_names
 
   call c_f_pointer(meta_data%surface_site_names%data, name_list, (/list_size/))
   do i = 1, list_size
      call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
-     call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
+     call f_c_string_chars(trim(pflotran_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
 
@@ -682,26 +661,21 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   ! ion exchange
   !
   ! FIXME(bja): only support a single ion exchange site
-  if (meta_data%ion_exchange_indices%size /= &
+  if (meta_data%ion_exchange_names%size /= &
        engine_state%reaction%neqionxrxn) then
-     write (*, '(a, i3, a, i3, a)') "meta_data%ion_exchange_indices%size (", &
-          meta_data%ion_exchange_indices%size, ") != pflotran%reaction%neqionxrxn(", &
+     write (*, '(a, i3, a, i3, a)') "meta_data%ion_exchange_names%size (", &
+          meta_data%ion_exchange_names%size, ") != pflotran%reaction%neqionxrxn(", &
           engine_state%reaction%neqionxrxn, ")"
   end if
 
-  list_size = meta_data%ion_exchange_indices%size
-  print *, list_size
-  call c_f_pointer(meta_data%ion_exchange_indices%data, local_indices, (/list_size/))
-  do i = 1, list_size
-     local_indices(i) = i
-  end do
+  list_size = meta_data%ion_exchange_names%size
 
   dummy_names(1) = "X-"
 
   call c_f_pointer(meta_data%ion_exchange_names%data, name_list, (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
-     call f_c_string_chars(trim(dummy_names(local_indices(i))), &
+     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     call f_c_string_chars(trim(dummy_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
 
@@ -709,11 +683,15 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   !
   ! isotherm indices
   !
-  list_size = meta_data%isotherm_species_indices%size
-  call c_f_pointer(meta_data%isotherm_species_indices%data, local_indices, &
+  list_size = meta_data%isotherm_species_names%size
+  call c_f_pointer(meta_data%isotherm_species_names%data, name_list, &
        (/list_size/))
   do i = 1, list_size
-     local_indices(i) = engine_state%reaction%eqkdspecid(i)
+     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     id = engine_state%reaction%eqkdspecid(i)
+     call f_c_string_chars( &
+          trim(engine_state%reaction%primary_species_names(id)), &
+          name, kAlquimiaMaxStringLength)
   end do
 
   status%error = 0
@@ -1697,17 +1675,12 @@ subroutine PrintProblemMetaData(meta_data)
   type (AlquimiaProblemMetaData), intent(in) :: meta_data
 
   ! local variables
-  integer (c_int), pointer :: indices(:)
   type (c_ptr), pointer :: names(:)
   character(len=kAlquimiaMaxStringLength) :: name
   integer (c_int) :: i
 
   write (*, '(a)') "meta_data : "
-  write (*, '(a)') "  primary indices : "
-  call c_f_pointer(meta_data%primary_indices%data, indices, (/meta_data%primary_indices%size/))
-  do i=1, meta_data%primary_indices%size
-     write (*, '(i4)') indices(i)
-  end do
+  write (*, '(a)') "  primary names : "
   call c_f_pointer(meta_data%primary_names%data, names, (/meta_data%primary_names%size/))
   do i=1, meta_data%primary_names%size
      call c_f_string_ptr(names(i), name)
