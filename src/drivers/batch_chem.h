@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "alquimia_containers.h"
 
@@ -32,6 +33,13 @@ void WriteOutput(std::fstream* text_output,
                  const AlquimiaState& state,
                  const AlquimiaAuxiliaryOutputData& aux_output,
                  const bool write_pH);
+
+int BatchChemWithAlquimia(
+    const alquimia::drivers::utilities::DemoSimulation& demo_simulation,
+    const alquimia::drivers::utilities::DemoState& demo_state,
+    const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
+    const alquimia::drivers::utilities::DemoConditions& demo_conditions,
+    std::fstream* text_output);
 
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,
