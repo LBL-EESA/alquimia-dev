@@ -24,7 +24,7 @@
 !
 !    as a consequence we can't call the alquimia interface directly
 !    from C, but need to use the simple wrappers in
-!    pflotran_alquimia.F90!
+!    pflotran_alquimia_wrappers.F90!
 !
 ! **************************************************************************** !
 
@@ -476,6 +476,8 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
        engine_state%rt_auxvar, &
        porosity, &
        state, aux_data)
+
+  !TODO(bja): solver num iterations, function evaluations, etc into status
 
   status%error = kAlquimiaNoError
 
