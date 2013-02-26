@@ -19,12 +19,12 @@ CHEMISTRY
       B
         TYPE LANGMUIR
         : Csorb = K Caq b / ( 1 + K Caq )
-        DISTRIBUTION_COEFFICIENT 30.d0 
+        DISTRIBUTION_COEFFICIENT 30.d0
         LANGMUIR_B 0.1
       /
       D
         TYPE FREUNDLICH
-	: Csorb = KD Caq^(1/n)
+        : Csorb = KD Caq^(1/n)
         DISTRIBUTION_COEFFICIENT 1.5
         FREUNDLICH_N  0.8 : 1/n = 1.25
       /
@@ -35,7 +35,7 @@ CHEMISTRY
   LOG_FORMULATION
   ACTIVITY_COEFFICIENTS OFF
   OUTPUT
-    All
+    ALL
     TOTAL_SORBED
   /
 END
@@ -58,7 +58,7 @@ GRID
 END
 
 :=========================== fluid properties =================================
-FLUID_PROPERTY 
+FLUID_PROPERTY
   DIFFUSION_COEFFICIENT 1.d-9
 /
 
@@ -125,5 +125,3 @@ STRATA
   REGION all
   MATERIAL soil1
 END
-
-
