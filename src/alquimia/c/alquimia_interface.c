@@ -7,6 +7,11 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef WINDOWS
+#define snprintf _snprintf
+#endif
+
+
 #include "pflotran_alquimia_interface.h"
 
 #include "alquimia_util.h"

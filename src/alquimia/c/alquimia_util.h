@@ -2,6 +2,12 @@
 #ifndef ALQUIMIA_C_UTIL_H_
 #define ALQUIMIA_C_UTIL_H_
 
+#ifdef WINDOWS
+#include "xstdbool.h"
+#else
+#include <stdbool.h>
+#endif
+
 #include "alquimia_containers.h"
 #include "alquimia_interface.h"
 
@@ -9,7 +15,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
+  _Bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                             const char* const str2);
 
   void AlquimiaIndexFromName(const char* const name,

@@ -10,8 +10,6 @@
 
 #include "alquimia_containers.h"
 
-#define snprintf _snprintf
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
