@@ -196,6 +196,14 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   call InputDestroy(input)
 
   call SetAlquimiaSizes(reaction, sizes)
+  !FIXME(bja): need some way to identify pflotran ion exchange sites
+  !when there are more than one. Use the mineral name?
+  if (sizes%num_ion_exchange_sites > 1) then
+     status%error = kAlquimiaErrorUnsupportedFunctionality
+     call f_c_string_ptr("ERROR: pflotran interface only supports a single ion exchange site!", &
+          status%message, kAlquimiaMaxStringLength)
+     return
+  end if
 
   call SetEngineFunctionality(reaction, option, functionality)
 
@@ -573,6 +581,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   integer (c_int), pointer :: local_indices(:)
   type (c_ptr), pointer :: name_list(:)
   character (len=kAlquimiaMaxWordLength), pointer :: pflotran_names(:)
+  character (len=kAlquimiaMaxWordLength) :: dummy_names(1)
   character (c_char), pointer :: name
   integer :: i, list_size
   type(PFloTranEngineState), pointer :: engine_state
@@ -665,6 +674,34 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   do i = 1, list_size
      call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
      call f_c_string_chars(trim(pflotran_names(local_indices(i))), &
+          name, kAlquimiaMaxStringLength)     
+  end do
+
+
+  !
+  ! ion exchange
+  !
+  ! FIXME(bja): only support a single ion exchange site
+  if (meta_data%ion_exchange_indices%size /= &
+       engine_state%reaction%neqionxrxn) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%ion_exchange_indices%size (", &
+          meta_data%ion_exchange_indices%size, ") != pflotran%reaction%neqionxrxn(", &
+          engine_state%reaction%neqionxrxn, ")"
+  end if
+
+  list_size = meta_data%ion_exchange_indices%size
+  print *, list_size
+  call c_f_pointer(meta_data%ion_exchange_indices%data, local_indices, (/list_size/))
+  do i = 1, list_size
+     local_indices(i) = i
+  end do
+
+  dummy_names(1) = "X-"
+
+  call c_f_pointer(meta_data%ion_exchange_names%data, name_list, (/list_size/))
+  do i = 1, list_size
+     call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
+     call f_c_string_chars(trim(dummy_names(local_indices(i))), &
           name, kAlquimiaMaxStringLength)     
   end do
 

@@ -24,5 +24,6 @@ const char* kAlquimiaStringCharge = "charge";
 const int kAlquimiaNoError = 0;
 const int kAlquimiaErrorInvalidEngine = 1;
 const int kAlquimiaErrorUnknownConstraintName = 2;
+const int kAlquimiaErrorUnsupportedFunctionality = 3;
 const int kAlquimiaErrorEngineIntegrity = 4577;
 
