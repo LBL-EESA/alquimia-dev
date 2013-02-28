@@ -34,7 +34,6 @@ struct DemoSimulation {
 
 struct DemoState {
   double water_density;  // [kg/m^3]
-  double saturation;  // [-]
   double porosity;  // [-]
   double temperature;  // [celsius]
   double aqueous_pressure; // [Pa]
@@ -45,6 +44,7 @@ struct DemoState {
 
 struct DemoMaterialProperties {
   double volume;  // [m^3]
+  double saturation;  // [-]
   std::vector<std::string> isotherm_species;
   std::vector<double> isotherm_kd;  // [?]
   std::vector<double> freundlich_n; // [?]

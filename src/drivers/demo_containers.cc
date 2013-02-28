@@ -35,7 +35,6 @@ void DemoState::Print(void) const {
   namespace util = alquimia::drivers::utilities;
   std::cout << "  -- State :" << std::endl;
   std::cout << "    density : " << this->water_density << std::endl;
-  std::cout << "    saturation : " << this->saturation << std::endl;
   std::cout << "    porosity : " << this->porosity << std::endl;
   std::cout << "    temperature : " << this->temperature << std::endl;
   std::cout << "    pressure : " << this->aqueous_pressure << std::endl;
@@ -54,6 +53,7 @@ void DemoMaterialProperties::Print(void) const {
   namespace util = alquimia::drivers::utilities;
   std::cout << "  -- Material Properties :" << std::endl;
   std::cout << "    volume : " << this->volume << std::endl;
+  std::cout << "    saturation : " << this->saturation << std::endl;
   util::PrintVector("    isotherm_species", this->isotherm_species);
   util::PrintVector("    isotherm_kd", this->isotherm_kd);
   util::PrintVector("    freundlich_n", this->freundlich_n);

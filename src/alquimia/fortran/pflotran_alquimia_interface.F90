@@ -1256,7 +1256,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   ! state
   !
   global_auxvar%den_kg(1) = state%water_density
-  global_auxvar%sat(1) = state%saturation
+  global_auxvar%sat(1) = material_prop%saturation
   global_auxvar%temp(1) = state%temperature
   global_auxvar%pres(1) = state%aqueous_pressure
 
@@ -1373,7 +1373,6 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   ! state
   !
   state%water_density = global_auxvar%den_kg(1)
-  state%saturation = global_auxvar%sat(1)
   state%temperature = global_auxvar%temp(1)
   state%aqueous_pressure = global_auxvar%pres(1)
 
@@ -1631,7 +1630,6 @@ subroutine PrintState(state)
 
   write (*, '(a)') "state : "
   write (*, '(a, 1es13.6)') "  density water : ", state%water_density
-  write (*, '(a, 1es13.6)') "  saturation : ", state%saturation
   write (*, '(a, 1es13.6)') "  porosity : ", state%porosity
   write (*, '(a, 1es13.6)') "  temperature : ", state%temperature
   write (*, '(a, 1es13.6)') "  aqueous pressure : ", state%aqueous_pressure
