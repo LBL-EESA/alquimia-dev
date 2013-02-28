@@ -49,7 +49,7 @@ void CreateAlquimiaInterface(const char* const engine_name,
   } else if (AlquimiaCaseInsensitiveStringCompare(engine_name,
                                                   kAlquimiaStringCrunchFlow)) {
 #ifdef HAVE_CRUNCH
-    //interface->Setup = ...;
+    /* interface->Setup = ...; */
     status->error = kAlquimiaErrorInvalidEngine;
     snprintf(status->message, kAlquimiaMaxStringLength,
              "\nERROR : CreateAlquimiaInterface() : CrunchFlow interface requested, but has not been implemented!\n");
@@ -66,4 +66,4 @@ void CreateAlquimiaInterface(const char* const engine_name,
              engine_name, kAlquimiaStringPFloTran, kAlquimiaStringCrunchFlow);
   }
 
-}  // end CreateAlquimiaInterface()
+}  /* end CreateAlquimiaInterface() */

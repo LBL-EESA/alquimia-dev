@@ -58,4 +58,4 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-#endif  // ALQUIMIA_PFLOTRAN_INTERFACE_H_
+#endif  /* ALQUIMIA_PFLOTRAN_INTERFACE_H_ */

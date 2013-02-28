@@ -21,12 +21,17 @@
 #include "alquimia_constants.h"
 #include "alquimia_containers.h"
 
+void test_AlquimiaCaseInsensitiveStringCompare(void);
+void test_AlquimiaVectors(void);
+void test_AlquimiaNameIndexMapping(void);
+void test_CreateAlquimiaInterface(void);
+
 void test_AlquimiaCaseInsensitiveStringCompare(void) {
   char* str1;
   char* str2;
   
-  str1 = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
-  str2 = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+  str1 = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
+  str2 = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
   
   strncpy(str1, "Hello", kAlquimiaMaxStringLength);
   strncpy(str2, "World", kAlquimiaMaxStringLength);
@@ -41,7 +46,7 @@ void test_AlquimiaCaseInsensitiveStringCompare(void) {
 
   strncpy(str2, "hELLO", kAlquimiaMaxStringLength);
   assert(AlquimiaCaseInsensitiveStringCompare(str1, str2) == true);
-}  // end test_AlquimiaCaseInsensitiveStringCompare
+}  /* end test_AlquimiaCaseInsensitiveStringCompare */
 
 void test_AlquimiaVectors(void) {
   int size;
@@ -81,20 +86,20 @@ void test_AlquimiaVectors(void) {
   assert(svector.size == size);
   assert(svector.data != NULL);
   FreeAlquimiaVectorString(&svector);
-}  // end test_AlquimiaVectors()
+}  /* end test_AlquimiaVectors() */
 
 void test_AlquimiaNameIndexMapping(void) {
   int i, id, size;
   char* name;
   struct AlquimiaVectorString names;
 
-  name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+  name = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
   size = 5;
   AllocateAlquimiaVectorString(size, &names);
   for (i = 0; i < size; ++i) {
     snprintf(names.data[i], kAlquimiaMaxStringLength, "name_%d", i+10);
   }
-  //PrintAlquimiaVectorString("names", &names);
+  /*PrintAlquimiaVectorString("names", &names); */
 
   strncpy(name, "foo", kAlquimiaMaxStringLength);
   AlquimiaFindIndexFromName(name, &names, &id);
@@ -105,7 +110,7 @@ void test_AlquimiaNameIndexMapping(void) {
   assert(id == 3);
 
   FreeAlquimiaVectorString(&names);
-}  // end test_AlquimiaNameIndexMapping()
+}  /* end test_AlquimiaNameIndexMapping() */
 
 void test_CreateAlquimiaInterface(void) {
   struct AlquimiaEngineStatus status;
@@ -113,7 +118,7 @@ void test_CreateAlquimiaInterface(void) {
   char* name;
 
   AllocateAlquimiaEngineStatus(&status);
-  name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+  name = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
 
   strncpy(name, "junk", kAlquimiaMaxStringLength);
   CreateAlquimiaInterface(name, &interface, &status);
@@ -156,7 +161,7 @@ void test_CreateAlquimiaInterface(void) {
   assert(interface.GetProblemMetaData == NULL);
 
 
-}  // end test_CreateAlquimiaInterface()
+}  /* end test_CreateAlquimiaInterface() */
 
 int main(int argc, char** argv) {
   (void) argc;
@@ -171,4 +176,4 @@ int main(int argc, char** argv) {
 
   printf("All tests passed.\n");
   return EXIT_SUCCESS;
-}  // end main()
+}  /* end main() */
