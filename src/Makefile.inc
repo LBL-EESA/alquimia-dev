@@ -7,7 +7,8 @@ include ${PETSC_DIR}/conf/variables
 
 CFLAGS += -g -W -Wall -std=c99 -pedantic -Werror
 CXXFLAGS += -g -W -Wall
-FCFLAGS += -g -W -Wall -std=gnu -Wno-unused-variable
+FCFLAGS += -g -W -Wall -std=f2003 -pedantic -Wno-unused-variable -Wno-unused-parameter
+
 
 DEPEND_LIBS = 
 
