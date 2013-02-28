@@ -73,7 +73,7 @@ void AlquimiaFindIndexFromName(const char* const name,
 void PrintAlquimiaVectorDouble(const char* const name,
                                const struct AlquimiaVectorDouble* const vector) {
   int i;
-  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
+  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
   fprintf(stdout, "   [ ");
   for (i = 0; i < vector->size; ++i) {
     fprintf(stdout, "%e, ", vector->data[i]);
@@ -84,7 +84,7 @@ void PrintAlquimiaVectorDouble(const char* const name,
 void PrintAlquimiaVectorInt(const char* const name,
                             const struct AlquimiaVectorInt* const vector) {
   int i;
-  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
+  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
   fprintf(stdout, "   [ ");
   for (i = 0; i < vector->size; ++i) {
     fprintf(stdout, "%d, ", vector->data[i]);
@@ -95,7 +95,7 @@ void PrintAlquimiaVectorInt(const char* const name,
 void PrintAlquimiaVectorString(const char* const name,
                                const struct AlquimiaVectorString* const vector) {
   int i;
-  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, &(vector->data));
+  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
   fprintf(stdout, "   [ ");
   for (i = 0; i < vector->size; ++i) {
     fprintf(stdout, "'%s', ", vector->data[i]);
