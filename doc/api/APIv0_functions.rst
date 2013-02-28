@@ -29,6 +29,8 @@ pseudocode. Implementations should be described in header files
 ``XXX_alquimia_interface.F90`` and compiled into ``libalquimia_c.a``
 or ``libalquimia_fortran.a`` respectively.
 
+NOTE: the **driver** is responsible for allocating the memory used in the data transfer containers!
+
 Alquimia: Setup
 ~~~~~~~~~~~~~~~
 
