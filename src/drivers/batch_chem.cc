@@ -512,7 +512,6 @@ void CopyDemoStateToAlquimiaState(
     const AlquimiaProblemMetaData* const alquimia_meta_data,
     AlquimiaState* alquimia_state) {
   alquimia_state->water_density = demo_state.water_density;
-  alquimia_state->saturation = demo_state.saturation;
   alquimia_state->porosity = demo_state.porosity;
   alquimia_state->temperature = demo_state.temperature;
   alquimia_state->aqueous_pressure = demo_state.aqueous_pressure;
@@ -551,7 +550,8 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     const AlquimiaProblemMetaData& alquimia_meta_data,
     AlquimiaMaterialProperties* alquimia_material_props) {
   alquimia_material_props->volume = demo_material_props.volume;
-  
+  alquimia_material_props->saturation = demo_material_props.saturation;
+
   if (static_cast<size_t>(alquimia_meta_data.isotherm_species_names.size) != 
       demo_material_props.isotherm_species.size()) {
     std::stringstream message;

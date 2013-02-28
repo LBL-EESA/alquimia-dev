@@ -160,6 +160,8 @@ void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const me
 void PrintAlquimiaMaterialProperties(const struct AlquimiaMaterialProperties* const mat_prop) {
 
   fprintf(stdout, "-- Alquimia Material Properties :\n");
+  fprintf(stdout, "     volume : %f\n", mat_prop->volume);
+  fprintf(stdout, "     saturation : %f\n", mat_prop->saturation);
   PrintAlquimiaVectorDouble("isotherm kd", &(mat_prop->isotherm_kd));
   PrintAlquimiaVectorDouble("freundlich n", &(mat_prop->freundlich_n));
   PrintAlquimiaVectorDouble("langmuir b", &(mat_prop->langmuir_b));
@@ -169,7 +171,6 @@ void PrintAlquimiaState(const struct AlquimiaState* const state) {
 
   fprintf(stdout, "-- Alquimia State:\n");
   fprintf(stdout, "     water density : %f\n", state->water_density);
-  fprintf(stdout, "     saturation : %f\n", state->saturation);
   fprintf(stdout, "     porosity : %f\n", state->porosity);
   fprintf(stdout, "     temperature : %f\n", state->temperature);
   fprintf(stdout, "     aqueous_pressure : %f\n", state->aqueous_pressure);
