@@ -230,8 +230,6 @@ void DemoConfigReader::ParseStateSection(
         //std::cout << "Parsing ----->  '" << param.at(0) << "'" << std::endl;
         if (util::CaseInsensitiveStringCompare(key, kDensityString)) {
           state->water_density = std::atof(value.c_str());
-        } else if (util::CaseInsensitiveStringCompare(key, kSaturationString)) {
-          state->saturation = std::atof(value.c_str());
         } else if (util::CaseInsensitiveStringCompare(key, kPorosityString)) {
           state->porosity = std::atof(value.c_str());
         } else if (util::CaseInsensitiveStringCompare(key, kTemperatureString)) {
@@ -285,6 +283,8 @@ void DemoConfigReader::ParseMaterialPropertySection(
         // single valued parameters go first
         if (util::CaseInsensitiveStringCompare(key, kVolumeString)) {
           material_props->volume = std::atof(value.c_str());
+        } else if (util::CaseInsensitiveStringCompare(key, kSaturationString)) {
+          material_props->saturation = std::atof(value.c_str());
         } else {
           // now we deal with vector parameters.
 

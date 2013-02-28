@@ -51,7 +51,6 @@ extern "C" {
   
   struct AlquimiaState {
     double water_density;  /* [kg/m^3] */
-    double saturation;  /* [-] */
     double porosity;  /* [-] */
     double temperature;  /* [celsius] */
     double aqueous_pressure; /* [Pa] */
@@ -65,6 +64,7 @@ extern "C" {
   
   struct AlquimiaMaterialProperties {
     double volume;  /* [m^3] */
+    double saturation;  /* [-] */
     struct AlquimiaVectorDouble isotherm_kd;  /* [?] */
     struct AlquimiaVectorDouble freundlich_n; /* [?] */
     struct AlquimiaVectorDouble langmuir_b;  /* [?] */

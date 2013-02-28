@@ -74,7 +74,6 @@ module AlquimiaContainers_module
 
   type, public, bind(c) :: AlquimiaState
      real (c_double) :: water_density
-     real (c_double) :: saturation
      real (c_double) :: porosity
      real (c_double) :: temperature
      real (c_double) :: aqueous_pressure
@@ -88,6 +87,7 @@ module AlquimiaContainers_module
 
   type, public, bind(c) :: AlquimiaMaterialProperties
      real (c_double) :: volume
+     real (c_double) :: saturation
      type (AlquimiaVectorDouble) :: isotherm_kd
      type (AlquimiaVectorDouble) :: freundlich_n
      type (AlquimiaVectorDouble) :: langmuir_b
