@@ -5,7 +5,7 @@
 include ${PETSC_DIR}/conf/variables
 #include ${PETSC_DIR}/conf/rules
 
-CFLAGS += -g -W -Wall -std=c99
+CFLAGS += -g -W -Wall -std=c99 -pedantic -Werror
 CXXFLAGS += -g -W -Wall
 FCFLAGS += -g -W -Wall -std=gnu -Wno-unused-variable
 

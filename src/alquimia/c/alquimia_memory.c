@@ -37,13 +37,13 @@
 void AllocateAlquimiaVectorDouble(const int size, struct AlquimiaVectorDouble* vector) {
   if (size > 0) {
     vector->size = size;
-    vector->data = (double*) calloc(size, sizeof(double));
+    vector->data = (double*) calloc((unsigned int)size, sizeof(double));
     assert(NULL != vector->data);
   } else {
     vector->size = 0;
     vector->data = NULL;
   }
-}  // end AllocateAlquimiaVectorDouble()
+}  /* end AllocateAlquimiaVectorDouble() */
 
 void FreeAlquimiaVectorDouble(struct AlquimiaVectorDouble* vector) {
   if (vector != NULL) {
@@ -51,18 +51,18 @@ void FreeAlquimiaVectorDouble(struct AlquimiaVectorDouble* vector) {
     vector->data = NULL;
     vector->size = 0;
   }
-}  // end FreeAlquimiaVectorDouble()
+}  /* end FreeAlquimiaVectorDouble() */
 
 void AllocateAlquimiaVectorInt(const int size, struct AlquimiaVectorInt* vector) {
   if (size > 0) {
     vector->size = size;
-    vector->data = (int*) calloc(size, sizeof(int));
+    vector->data = (int*) calloc((unsigned int)size, sizeof(int));
     assert(NULL != vector->data);
   } else {
     vector->size = 0;
     vector->data = NULL;
   }
-}  // end AllocateAlquimiaVectorInt()
+}  /* end AllocateAlquimiaVectorInt() */
  
 void FreeAlquimiaVectorInt(struct AlquimiaVectorInt* vector) {
   if (vector != NULL) {
@@ -70,23 +70,23 @@ void FreeAlquimiaVectorInt(struct AlquimiaVectorInt* vector) {
     vector->data = NULL;
     vector->size = 0;
   }
-}  // end FreeAlquimiaVectorInt()
+}  /* end FreeAlquimiaVectorInt() */
 
 void AllocateAlquimiaVectorString(const int size, struct AlquimiaVectorString* vector) {
   int i;
   if (size > 0) {
     vector->size = size;
-    vector->data = (char**) calloc(size, sizeof(char*));
+    vector->data = (char**) calloc((unsigned int)size, sizeof(char*));
     assert(NULL != vector->data);
     for (i = 0; i < vector->size; ++i) {
-      vector->data[i] = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+      vector->data[i] = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
       assert(NULL != vector->data[i]);
     }
   } else {
     vector->size = 0;
     vector->data = NULL;
   }
-}  // end AllocateAlquimiaVectorString()
+}  /* end AllocateAlquimiaVectorString() */
  
 void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector) {
   int i;
@@ -98,7 +98,7 @@ void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector) {
     vector->data = NULL;
     vector->size = 0;
   }
-}  // end FreeAlquimiaVectorString()
+}  /* end FreeAlquimiaVectorString() */
 
 /*******************************************************************************
  **
@@ -124,7 +124,7 @@ void AllocateAlquimiaState(const struct AlquimiaSizes* const sizes,
 
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(state->mineral_specific_surface_area));
-}  // end AllocateAlquimiaState()
+}  /* end AllocateAlquimiaState() */
 
 void FreeAlquimiaState(struct AlquimiaState* state) {
   if (state != NULL) {
@@ -135,7 +135,7 @@ void FreeAlquimiaState(struct AlquimiaState* state) {
     FreeAlquimiaVectorDouble(&(state->cation_exchange_capacity));
     FreeAlquimiaVectorDouble(&(state->surface_site_density));
   }
-}  // end FreeAlquimiaState()
+}  /* end FreeAlquimiaState() */
 
 /*******************************************************************************
  **
@@ -151,14 +151,14 @@ void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes* const sizes,
   AllocateAlquimiaVectorDouble(sizes->num_aux_doubles,
                                &(aux_data->aux_doubles));
 
-}  // end AllocateAlquimiaAuxiliaryData()
+}  /* end AllocateAlquimiaAuxiliaryData() */
 
 void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
   if (aux_data != NULL) {
     FreeAlquimiaVectorInt(&(aux_data->aux_ints));
     FreeAlquimiaVectorDouble(&(aux_data->aux_doubles));
   }
-}  // end FreeAlquimiaAuxiliaryData()
+}  /* end FreeAlquimiaAuxiliaryData() */
 
 /*******************************************************************************
  **
@@ -176,7 +176,7 @@ void AllocateAlquimiaMaterialProperties(
   AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
                                &(material_props->langmuir_b));
 
-}  // end AllocateAlquimiaMaterialProperties()
+}  /* end AllocateAlquimiaMaterialProperties() */
 
 void FreeAlquimiaMaterialProperties(
     struct AlquimiaMaterialProperties* material_props) {
@@ -185,7 +185,7 @@ void FreeAlquimiaMaterialProperties(
     FreeAlquimiaVectorDouble(&(material_props->freundlich_n));
     FreeAlquimiaVectorDouble(&(material_props->langmuir_b));
   }
-}  // end FreeAlquimiaMaterialProperties()
+}  /* end FreeAlquimiaMaterialProperties() */
 
 /*******************************************************************************
  **
@@ -211,7 +211,7 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   AllocateAlquimiaVectorString(sizes->num_isotherm_species,
                                &(meta_data->isotherm_species_names));
 
-}  // end AllocateAlquimiaProblemMetaData()
+}  /* end AllocateAlquimiaProblemMetaData() */
 
 void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
 
@@ -222,7 +222,7 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
     FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
     FreeAlquimiaVectorString(&(meta_data->isotherm_species_names));
   }
-}  // end FreeAlquimiaProblemMetaData()
+}  /* end FreeAlquimiaProblemMetaData() */
 
 /*******************************************************************************
  **
@@ -240,7 +240,7 @@ void AllocateAlquimiaAuxiliaryOutputData(
                                &(aux_output->mineral_reaction_rate));
 
 
-}  // end AllocateAlquimiaAuxiliaryOutputData()
+}  /* end AllocateAlquimiaAuxiliaryOutputData() */
 
 void FreeAlquimiaAuxiliaryOutputData(
     struct AlquimiaAuxiliaryOutputData* aux_output) {
@@ -248,7 +248,7 @@ void FreeAlquimiaAuxiliaryOutputData(
     FreeAlquimiaVectorDouble(&(aux_output->mineral_saturation_index));
     FreeAlquimiaVectorDouble(&(aux_output->mineral_reaction_rate));
   }
-}  // end FreeAlquimiaAuxiliaryOutputData()
+}  /* end FreeAlquimiaAuxiliaryOutputData() */
 
 /*******************************************************************************
  **
@@ -258,11 +258,11 @@ void FreeAlquimiaAuxiliaryOutputData(
 
 void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
 
-  status->message = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+  status->message = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
   if (NULL == status->message) {
-    // TODO(bja): error handling
+    /* TODO(bja): error handling */
   }
-}  // end AllocateAlquimiaEngineStatus()
+}  /* end AllocateAlquimiaEngineStatus() */
 
 void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
   if (status != NULL) {
@@ -270,7 +270,7 @@ void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
   }
   status->message = NULL;
 
-}  // end FreeAlquimiaEngineStatus()
+}  /* end FreeAlquimiaEngineStatus() */
 
 
 
@@ -283,64 +283,64 @@ void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus* status) {
 void AllocateAlquimiaGeochemicalConditionVector(
     const int num_conditions,
     struct AlquimiaGeochemicalConditionVector* condition_list) {
-  // NOTE: we are only allocating pointers to N conditions here, not
-  // the actual conditions themselves.
+  /* NOTE: we are only allocating pointers to N conditions here, not
+     the actual conditions themselves. */
   fprintf(stdout, " AllocateAlquimiaGeochemicalConditionList() : %d\n",
           num_conditions);
   condition_list->size = num_conditions;
 
   if (condition_list->size > 0) {
     condition_list->data = (struct AlquimiaGeochemicalCondition*)
-        calloc(condition_list->size, 
+        calloc((unsigned int)condition_list->size, 
                sizeof(struct AlquimiaGeochemicalCondition));
   }
-}  // end AllocateAlquimiaGeochemicalConditionVector()
+}  /* end AllocateAlquimiaGeochemicalConditionVector() */
 
 void AllocateAlquimiaGeochemicalCondition(
     const int size_name,
     const int num_aqueous_constraints, const int num_mineral_constraints,
     struct AlquimiaGeochemicalCondition* condition) {
-  // NOTE: we are only allocating pointers to N constraints here, not
-  // the actual condstraints themselves.
+  /* NOTE: we are only allocating pointers to N constraints here, not
+     the actual condstraints themselves. */
   if (condition != NULL) {
-    // size_name + 1 to include the null character!
-    condition->name = (char*) calloc(size_name+1, sizeof(char));
+    /* size_name + 1 to include the null character! */
+    condition->name = (char*) calloc((unsigned int)size_name+1, sizeof(char));
 
     condition->aqueous_constraints.size = num_aqueous_constraints;
     if (condition->aqueous_constraints.size > 0) {
       condition->aqueous_constraints.data = (struct AlquimiaAqueousConstraint*)
-          calloc(condition->aqueous_constraints.size, 
+          calloc((unsigned int)condition->aqueous_constraints.size, 
                  sizeof(struct AlquimiaAqueousConstraint));
     }
 
     condition->mineral_constraints.size = num_mineral_constraints;
     if (condition->mineral_constraints.size > 0) {
       condition->mineral_constraints.data = (struct AlquimiaMineralConstraint*)
-          calloc(condition->mineral_constraints.size, 
+          calloc((unsigned int)condition->mineral_constraints.size, 
                  sizeof(struct AlquimiaMineralConstraint));
     }
 
   }
-}  // end AllocateAlquimiaGeochemicalCondition()
+}  /* end AllocateAlquimiaGeochemicalCondition() */
 
 void AllocateAlquimiaAqueousConstraint(
     struct AlquimiaAqueousConstraint* constraint) {
   constraint->primary_species_name =
-      (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+      (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
   constraint->constraint_type =
-      (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+      (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
   constraint->associated_species =
-      (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+      (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
   constraint->value = 0.0;
-}  // end AllocateAlquimiaAqueousConstraint()
+}  /* end AllocateAlquimiaAqueousConstraint() */
 
 void AllocateAlquimiaMineralConstraint(
     struct AlquimiaMineralConstraint* constraint) {
   constraint->mineral_name =
-      (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
+      (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
   constraint->volume_fraction = -1.0;
   constraint->specific_surface_area = -1.0;
-}  // end AllocateAlquimiaMineralConstraint()
+}  /* end AllocateAlquimiaMineralConstraint() */
 
 void FreeAlquimiaGeochemicalConditionVector(
     struct AlquimiaGeochemicalConditionVector* condition_list) {
@@ -353,7 +353,7 @@ void FreeAlquimiaGeochemicalConditionVector(
     condition_list->data = NULL;
     condition_list->size = 0;
   }
-}  // end FreeAlquimiaGeochemicalConditionList()
+}  /* end FreeAlquimiaGeochemicalConditionList() */
 
 void FreeAlquimiaGeochemicalCondition(
     struct AlquimiaGeochemicalCondition* condition) {
@@ -363,7 +363,7 @@ void FreeAlquimiaGeochemicalCondition(
     FreeAlquimiaAqueousConstraintVector(&(condition->aqueous_constraints));
     FreeAlquimiaMineralConstraintVector(&(condition->mineral_constraints));
   }
-}  // end FreeAlquimiaGeochemicalCondition()
+}  /* end FreeAlquimiaGeochemicalCondition() */
 
 void FreeAlquimiaAqueousConstraintVector(
     struct AlquimiaAqueousConstraintVector* vector) {
@@ -376,7 +376,7 @@ void FreeAlquimiaAqueousConstraintVector(
     vector->data = NULL;
     vector->size = 0;
   }
-}  // end FreeAlquimiaAqueousConstraintVector()
+}  /* end FreeAlquimiaAqueousConstraintVector() */
 
 void FreeAlquimiaAqueousConstraint(
     struct AlquimiaAqueousConstraint* constraint) {
@@ -386,7 +386,7 @@ void FreeAlquimiaAqueousConstraint(
   constraint->constraint_type = NULL;
   free(constraint->associated_species);
   constraint->associated_species = NULL;
-}  // end FreeAlquimiaAqueousConstraint()
+}  /* end FreeAlquimiaAqueousConstraint() */
 
 void FreeAlquimiaMineralConstraintVector(
     struct AlquimiaMineralConstraintVector* vector) {
@@ -399,13 +399,13 @@ void FreeAlquimiaMineralConstraintVector(
     vector->data = NULL;
     vector->size = 0;
   }
-}  // end FreeAlquimiaMineralConstraintVector()
+}  /* end FreeAlquimiaMineralConstraintVector() */
 
 void FreeAlquimiaMineralConstraint(
     struct AlquimiaMineralConstraint* constraint) {
   free(constraint->mineral_name);
   constraint->mineral_name = NULL;
-}  // end FreeAlquimiaMineralConstraint()
+}  /* end FreeAlquimiaMineralConstraint() */
 
 
 /*******************************************************************************
@@ -419,7 +419,7 @@ void AllocateAlquimiaData(struct AlquimiaData* data) {
     AllocateAlquimiaAuxiliaryData(&data->sizes, &data->aux_data);
     AllocateAlquimiaProblemMetaData(&data->sizes, &data->meta_data);
     AllocateAlquimiaAuxiliaryOutputData(&data->sizes, &data->aux_output);
-}  // end AllocateAlquimiaData()
+}  /* end AllocateAlquimiaData() */
 
 
 void FreeAlquimiaData(struct AlquimiaData* data) {
@@ -428,4 +428,4 @@ void FreeAlquimiaData(struct AlquimiaData* data) {
   FreeAlquimiaAuxiliaryData(&data->aux_data);
   FreeAlquimiaProblemMetaData(&data->meta_data);
   FreeAlquimiaAuxiliaryOutputData(&data->aux_output);
-}  // end FreeAlquimiaData()
+}  /* end FreeAlquimiaData() */

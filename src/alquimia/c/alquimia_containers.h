@@ -32,7 +32,7 @@ extern "C" {
   };
 
   struct AlquimiaVectorString {
-    // NOTE: this is a vector of strings
+    /* NOTE: this is a vector of strings */
     int size;
     char** data;
   };
@@ -50,29 +50,29 @@ extern "C" {
   };
   
   struct AlquimiaState {
-    double water_density;  // [kg/m^3]
-    double saturation;  // [-]
-    double porosity;  // [-]
-    double temperature;  // [celsius]
-    double aqueous_pressure; // [Pa]
-    struct AlquimiaVectorDouble total_mobile;  // [molarity]
-    struct AlquimiaVectorDouble total_immobile;  // [moles/m^3 bulk]
-    struct AlquimiaVectorDouble mineral_volume_fraction;  // [-]
-    struct AlquimiaVectorDouble mineral_specific_surface_area; // [m^2 mineral/m^3 bulk]
-    struct AlquimiaVectorDouble surface_site_density;  // [moles/m^3 bulk]
-    struct AlquimiaVectorDouble cation_exchange_capacity;  // [moles/m^3 bulk]
+    double water_density;  /* [kg/m^3] */
+    double saturation;  /* [-] */
+    double porosity;  /* [-] */
+    double temperature;  /* [celsius] */
+    double aqueous_pressure; /* [Pa] */
+    struct AlquimiaVectorDouble total_mobile;  /* [molarity] */
+    struct AlquimiaVectorDouble total_immobile;  /* [moles/m^3 bulk] */
+    struct AlquimiaVectorDouble mineral_volume_fraction;  /* [-] */
+    struct AlquimiaVectorDouble mineral_specific_surface_area; /* [m^2 mineral/m^3 bulk] */
+    struct AlquimiaVectorDouble surface_site_density;  /* [moles/m^3 bulk] */
+    struct AlquimiaVectorDouble cation_exchange_capacity;  /* [moles/m^3 bulk] */
   };
   
   struct AlquimiaMaterialProperties {
-    double volume;  // [m^3]
-    struct AlquimiaVectorDouble isotherm_kd;  // [?]
-    struct AlquimiaVectorDouble freundlich_n; // [?]
-    struct AlquimiaVectorDouble langmuir_b;  // [?]
+    double volume;  /* [m^3] */
+    struct AlquimiaVectorDouble isotherm_kd;  /* [?] */
+    struct AlquimiaVectorDouble freundlich_n; /* [?] */
+    struct AlquimiaVectorDouble langmuir_b;  /* [?] */
   };
   
   struct AlquimiaAuxiliaryData {
-    struct AlquimiaVectorInt aux_ints;  // [-]
-    struct AlquimiaVectorDouble aux_doubles;  // [-]
+    struct AlquimiaVectorInt aux_ints;  /* [-] */
+    struct AlquimiaVectorDouble aux_doubles;  /* [-] */
   };
   
   struct AlquimiaEngineStatus {
@@ -100,13 +100,13 @@ extern "C" {
     struct AlquimiaVectorString surface_site_names;
     struct AlquimiaVectorString ion_exchange_names;
     struct AlquimiaVectorString isotherm_species_names;
-    //char** auxiliary_output_names;
+    /*char** auxiliary_output_names;*/
   };
   
   struct AlquimiaAuxiliaryOutputData {
     double pH;
-    struct AlquimiaVectorDouble mineral_saturation_index;  // [-]
-    struct AlquimiaVectorDouble mineral_reaction_rate;  // [?]
+    struct AlquimiaVectorDouble mineral_saturation_index;  /* [-] */
+    struct AlquimiaVectorDouble mineral_reaction_rate;  /* [?] */
   };
 
   /* 
@@ -152,4 +152,4 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif  // ALQUIMIA_CONTAINERS_H_
+#endif  /* ALQUIMIA_CONTAINERS_H_ */
