@@ -653,7 +653,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   call c_f_pointer(meta_data%surface_site_names%data, name_list, (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, kAlquimiaMaxStringLength)
+     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
      call f_c_string_chars(trim(pflotran_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
@@ -1723,9 +1723,9 @@ subroutine PrintTranConstraint(tran_constraint)
   type (tran_constraint_type), pointer :: tran_constraint
 
   write (*, '(a)') "TranConstraint :"
-  write (*, '(a i4)') "    id : ", tran_constraint%id
-  write (*, '(a a)') "    name : ", tran_constraint%name
-  write (*, '(a L1)') "    requires equilibration : ", tran_constraint%requires_equilibration
+  write (*, '(a, i4)') "    id : ", tran_constraint%id
+  write (*, '(a, a)') "    name : ", tran_constraint%name
+  write (*, '(a, L1)') "    requires equilibration : ", tran_constraint%requires_equilibration
   call PrintAqueousSpeciesConstraint(tran_constraint%aqueous_species)
   call PrintMineralConstraint(tran_constraint%minerals)
 !    type(mineral_constraint_type), pointer :: minerals
