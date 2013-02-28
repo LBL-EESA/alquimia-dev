@@ -1,8 +1,11 @@
 Alquimia Data Transfer Containers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These are the containers that alquimia will used to pass data between the
-driver code and engine.
+These are the containers that alquimia will used to pass data between
+the driver code and engine. The **driver** is responsible for
+allocating and freeing the memory used in the data transfer
+containers!
+
 
 **Implementation notes**:
  

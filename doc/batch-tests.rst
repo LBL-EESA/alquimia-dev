@@ -16,7 +16,7 @@ names should be the same, but the order doesn't matter. So for
 example, if "Total H+ [M]", "Total Sorbed A [mol/m^3]" or "Calcite
 Rate [mol/sec]" is on one file, it must be in the other.
 
-To run a all tests in a particular config file:
+To run all tests in a particular config file:
 
 .. code-block:: bash
 
@@ -28,6 +28,54 @@ To run a single test by name:
 .. code-block:: bash
 
     python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ../src/drivers/batch_chem -t calcite-volume-fractions-pflotran-constraint
+
+
+
+General Aqueous Reactions
+-------------------------
+
+The general aqueous reaction problems are the simplest possible tests
+of the alquimia interface. They track only changes in the aqeous
+concentrations due to aqueous reactions. There is no mineral or sorbed
+phase interaction.
+
+General reaction, pflotran native constraint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Test the alquimia interface with pflotran's general aqueous reaction, using pflotran supplied constraint.
+
+**Status: pass** 
+
+Status Notes: 
+
+.. code-block:: bash
+
+  ../install/bin/batch_chem -d -i general-reaction-pc.cfg
+
+  ./pflotran -input_prefix calcite-short
+
+
+NOTE: this is the same pflotran input file as
+general-reaction-ac!
+
+General reaction, alquimia supplied constraint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Test the alquimia interface with pflotran's general aqueous reaction, using alquimia supplied constraint.
+
+**Status: pass** 
+
+Status Notes: 
+
+.. code-block:: bash
+
+  ../install/bin/batch_chem -d -i general-reaction-ac.cfg
+
+  ./pflotran -input_prefix calcite-short
+
+
+NOTE: this is the same pflotran input file as
+general-reaction-pc!
 
 
 
@@ -55,7 +103,7 @@ Status Notes: Looking at the time series, there are occasional differences in th
 
 
 NOTE: this is the same pflotran input file as
-calcite-short-dc!
+calcite-short-ac!
 
 Calcite, short time steps, and alquimia generated constraints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

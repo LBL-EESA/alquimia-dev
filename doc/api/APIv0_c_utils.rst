@@ -131,25 +131,19 @@ Compare two alquimia strings. True if they are equivalent, false otherwis.
 Species Name-Index Mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Determine the **engine index** for a particular species name. Sets ``index = -1``
+Determine the **C** index for a particular species name. Sets ``index = -1``
 if the name is not in the provided list.
 
 .. code-block:: c
 
-  void AlquimiaIndexFromName(const char* const name,
-                             const struct AlquimiaVectorString* const names,
-                             const struct AlquimiaVectorInt* const indices,
-                             int* index);
+  void AlquimiaFindIndexFromName(const char* const name,
+                                 const struct AlquimiaVectorString* const names,
+                                 int* index);
 
 
-Determine the species name associated with a particular **engine
-index**. Sets name to the empty string if the index is not in the
-provided list.
+If the **engine** index is needed, then the driver needs to use the index_base offset from the AlquimiaEngineFunctionality structure, i.e.
 
 .. code-block:: c
 
-  void AlquimiaNameFromIndex(const int index,
-                             const struct AlquimiaVectorString* const names,
-                             const struct AlquimiaVectorInt* const indices,
-                             char* name);
+  engine_index = c_index + functionality.index_base;
 
