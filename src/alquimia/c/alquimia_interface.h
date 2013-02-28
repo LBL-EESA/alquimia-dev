@@ -91,4 +91,4 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif  // ALQUIMIA_INTERFACE_H_
+#endif  /* ALQUIMIA_INTERFACE_H_ */
