@@ -1,9 +1,9 @@
 Alquimia C Utilities Library
 ============================
 
-Alquimia provies an optional C utility library,
+Alquimia provides an optional C utility library,
 ``libalquimia_cutils.a``. This is not a required part of the alquimia
-API, but a collection of reuseable code for common operations when
+API, but a collection of reusable code for common operations when
 working with alquimia from C or C++.
 
 Alquimia Interface
@@ -15,7 +15,7 @@ and ``alquimia_interface.c``.
 Struct: Alquimia Interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``AlquimiaInterface {...}`` is a C struct containing function pointers
+``AlquimiaInterface {...}`` is a C structure containing function pointers
  to the alquimia interface functions for the desired engine.
  
 +---------------------------+------------------+
@@ -38,8 +38,8 @@ Creating an Alquimia Interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The function ``CreateAlquimiaInterface(...)``, will create an alquimia
-interface struct with the correct function pointers for a given
-engine.  All ``#ifdef HAVE_XXX`` code for a particulare geochemistry
+interface structure with the correct function pointers for a given
+engine.  All ``#ifdef HAVE_XXX`` code for a particular geochemistry
 engine is contained in this function.
 
 .. code-block:: c
@@ -119,7 +119,7 @@ Calling ``PrintAlquimiaXXX`` will pretty-print the contents of alquimia data str
 Strings
 ~~~~~~~
 
-Compare two alquimia strings. True if they are equivalent, false otherwis.
+Compare two alquimia strings. True if they are equivalent, false otherwise.
 
 .. code-block:: c
 

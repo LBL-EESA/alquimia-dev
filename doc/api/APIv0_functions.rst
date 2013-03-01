@@ -4,7 +4,7 @@ Alquimia Functions
 Details of the engine independent API and wrapper interface.
 
 Alquimia is intended for mixed language environments: a C/C++ based
-driver can call a fortran based engine or vice versa. The common
+driver can call a FORTRAN based engine or vice versa. The common
 language for mixed language programming is pure C. All function
 parameters must be either:
 
@@ -12,19 +12,19 @@ parameters must be either:
 
 * structures containing POD. Nested structures are OK. The ordering
   and size of data contained in the structures is important. It must
-  be the same for C and Fortran. All structures must defined on the
+  be the same for C and FORTRAN. All structures must defined on the
   :doc:`structures <APIv0_structures>` page.
 
 * strings should be c style strings, i.e. null terminated arrays of characters.
 
-* Fortran expects all function parameters to be pass by value. All C
+* FORTRAN expects all function parameters to be pass by value. All C
   function parameters must be pointers.
 
 * Because of name mangling, interfaces contained in C++ classes or
-  Fortran modules must also provide wrapper functions.
+  FORTRAN modules must also provide wrapper functions.
 
 All function interfaces are described in a language independent
-pseudocode. Implementations should be described in header files
+pseudo-code. Implementations should be described in header files
 ``XXX_alquimia_interface.h`` or module files
 ``XXX_alquimia_interface.F90`` and compiled into ``libalquimia_c.a``
 or ``libalquimia_fortran.a`` respectively.
@@ -53,7 +53,7 @@ information for allocating memory and input file validation.
 
 One of the output variables from Setup is a void pointer to the
 engines internal representation of the reaction network. **The actual
-struct will be different for different engines. The client driver
+structure will be different for different engines. The client driver
 should store this and return it on all subsequent alquimia function
 calls, but should not use it for anything else. Do NOT rely on any
 particular form of the engine's internal state.** If the engine is
@@ -161,7 +161,7 @@ NOTE: This will not be implemented in version 1.0.0 of the alquimia API. By not 
 
 NOTE: need to keep track of whether driver and engine are using row-major or column-major ordering....
 
-Return the function evaluation and jacobian information for a GI step
+Return the function evaluation and Jacobian information for a GI step
 
 .. code-block:: none
 
