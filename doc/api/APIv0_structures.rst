@@ -9,26 +9,26 @@ containers!
 
 **Implementation notes**:
  
-* In order to pass data between C/C++ and Fortran, all containers
-  should be **implemented** as structs or derived types of plain old
+* In order to pass data between C/C++ and FORTRAN, all containers
+  should be **implemented** as structures or derived types of plain old
   data (integers, doubles, characters, bool/logical) and pointers to
   arrays.
-* Structs may be nested.
-* The ordering and size of the data contained in the structs is
-  important. It must be the same on both sides of the C/Fortran
+* Structures may be nested.
+* The ordering and size of the data contained in the structures is
+  important. It must be the same on both sides of the C/FORTRAN
   interface.
 * Check your units.
 
 
 The implementations of these structures are contained in
 ``alquimia_containers.h`` and ``alquimia_containers.F90`` for C/C++
-and Fortran respectively.
+and FORTRAN respectively.
 
 Struct: Alquimia Vectors
 ========================
 
 All arrays used in Alquimia will be AlquimiaVectors, grouping the size
-and data into a single struct. AlquimiaVectorTYPE is denoted in the
+and data into a single structure. AlquimiaVectorTYPE is denoted in the
 following tables as "vector<type, size>".
 
 +--------------+---------------+
@@ -96,7 +96,7 @@ Struct: Alquimia State
 Storage for spatially and temporally varying "state" data. Read/write (chemistry may change these values).
 
 +-----------------------------------+----------------------+-------------------------+
-| **variable**                      |     **storange**     |        **units**        |
+| **variable**                      |     **storage**      |        **units**        |
 +===================================+======================+=========================+
 | water_density                     |        double        |           [kg/m^3]      |
 +-----------------------------------+----------------------+-------------------------+
@@ -151,7 +151,7 @@ need to do anything else with them, they do not need to be
 transported. Persistent data that is not mesh dependent should be
 stored in the engine state variable.
 
-This structure is intened for things like free ion concentrations,
+This structure is intended for things like free ion concentrations,
 primary and secondary activity coefficients, surface complex free site
 concentration [1]_, ion exchange reference cation concentration [1]_,
 etc. The engine is responsible for packing and unpacking this data as
@@ -207,7 +207,11 @@ operation.
 Struct: Alquimia Engine Functionality
 =====================================
 
-Information about the functionality of the supported by the geochemistry engine
+Information about the functionality of the supported by the
+geochemistry engine. This is **not** necessarily a hard coded
+list. For example, the engine may support temperature dependent
+chemistry for a particular problem only if the user supplied database
+contains the appropriate data.
 
 +-------------------------+---------------------+-------------------------------------------+
 | **variable**            | **storage**         |**comment**                                |
@@ -236,7 +240,7 @@ Information about the functionality of the supported by the geochemistry engine
 +-------------------------+---------------------+-------------------------------------------+
 | base index              | int                 |base index for vectors passed between the  |
 |                         |                     |driver and engine i.e. if the engine is C  |
-|                         |                     |based, base index = 0, if fortran based,   |
+|                         |                     |based, base index = 0, if FORTRAN based,   |
 |                         |                     |base index = 1                             |
 +-------------------------+---------------------+-------------------------------------------+
 
@@ -295,7 +299,9 @@ reference minerals as well....
 Struct: Alquimia Geochemical Condition
 ======================================
 
-Geochemical Condition is a struct containing a name string and a vector of geochemical constraints. There must be one constraint for each primary species.
+Geochemical Condition is a structure containing a name string and a
+vector of geochemical constraints. There must be one constraint for
+each primary species and each kinetic mineral.
 
 +---------------------+---------------------------------+
 |    **variable**     |            **type**             |
@@ -311,7 +317,7 @@ Geochemical Condition is a struct containing a name string and a vector of geoch
 Struct: Alquimia Aqueous Constraint
 ===================================
 
-An aqueous geochemical constraint is a struct with the following fields:
+An aqueous geochemical constraint is a structure with the following fields:
 
 +--------------------+----------+
 | **variable**       | **type** |
@@ -325,6 +331,10 @@ An aqueous geochemical constraint is a struct with the following fields:
 | value              | double   |
 +--------------------+----------+
 
+"Associated species" is the name of the mineral or gas associated with
+that constraint, e.g. Ca++ is constrained by equilibrium with the
+mineral calcite or HCO3- is constrained by equilibrium with CO2 gas.
+
 Types of constraints supported:
 
 * total_aqueous
@@ -336,14 +346,20 @@ Types of constraints supported:
 * pH
 * charge
 
-"Associated species" is the name of the mineral or gas associated with
-that constraint, e.g. Ca++ is constrained by equilibrium with the
-mineral calcite or HCO3- is constrained by equilibrium with CO2 gas.
+These are named alquimia string constants, :ref:`AlquimiaStrings`.
+
+If an engine does not support a particular type of constraint, it
+should report and error.
+
+If a constraint type does not require a supplied value, e.g. charge,
+then the user/driver should supply either a safe initial guess (1.0e-9 for
+example) that the engine can use, or a very small non-zero value
+(1.0e-20). The engine may use this or chose to ignore it.
 
 Struct: Alquimia Mineral Constraint
 ===================================
 
-A mineral geochemical constraint is a struct with the following fields:
+A mineral geochemical constraint is a structure with the following fields:
 
 +---------------------+----------+-----------+
 | **variable**        | **type** | **units** |

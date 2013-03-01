@@ -47,6 +47,7 @@ Alquimia String Lengths
 | kAlquimiaMaxWordLength   | 32            |
 +--------------------------+---------------+
 
+.. _AlquimiaStrings:
 
 Alquimia Strings
 ~~~~~~~~~~~~~~~~

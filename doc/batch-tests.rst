@@ -9,7 +9,7 @@ the text file output) at every time step.
 Automated test driver
 ---------------------
 
-The automated test driver compares the pflotran observation data for
+The automated test driver compares the PFloTran observation data for
 the problem with a similarly structured alquimia batch_chem output
 file. The number of columns in each file must be the same. Variable
 names should be the same, but the order doesn't matter. So for
@@ -35,14 +35,14 @@ General Aqueous Reactions
 -------------------------
 
 The general aqueous reaction problems are the simplest possible tests
-of the alquimia interface. They track only changes in the aqeous
+of the alquimia interface. They track only changes in the aqueous
 concentrations due to aqueous reactions. There is no mineral or sorbed
 phase interaction.
 
-General reaction, pflotran native constraint
+General reaction, PFloTran native constraint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Test the alquimia interface with pflotran's general aqueous reaction, using pflotran supplied constraint.
+Test the alquimia interface with PFloTran's general aqueous reaction, using PFloTran supplied constraint.
 
 **Status: pass** 
 
@@ -55,13 +55,13 @@ Status Notes:
   ./pflotran -input_prefix calcite-short
 
 
-NOTE: this is the same pflotran input file as
+NOTE: this is the same PFloTran input file as
 general-reaction-ac!
 
 General reaction, alquimia supplied constraint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Test the alquimia interface with pflotran's general aqueous reaction, using alquimia supplied constraint.
+Test the alquimia interface with PFloTran's general aqueous reaction, using alquimia supplied constraint.
 
 **Status: pass** 
 
@@ -74,7 +74,7 @@ Status Notes:
   ./pflotran -input_prefix calcite-short
 
 
-NOTE: this is the same pflotran input file as
+NOTE: this is the same PFloTran input file as
 general-reaction-pc!
 
 
@@ -83,13 +83,13 @@ Mineral Dissolution and Precipitation
 -------------------------------------
 
 
-Calcite, short time steps, and pflotran native constraints
+Calcite, short time steps, and PFloTran native constraints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Test the alquimia interface with mineral dissolution/precipitation for
 a short simulation time and short time steps (no changes to calcite
 volume fraction). The initial condition is specified by name only,
-causing alquimia look for a pflotran native constraint with that name.
+causing alquimia look for a PFloTran native constraint with that name.
 
 **Status: fail** 
 
@@ -102,7 +102,7 @@ Status Notes: Looking at the time series, there are occasional differences in th
   ./pflotran -input_prefix calcite-short
 
 
-NOTE: this is the same pflotran input file as
+NOTE: this is the same PFloTran input file as
 calcite-short-ac!
 
 Calcite, short time steps, and alquimia generated constraints
@@ -111,7 +111,7 @@ Calcite, short time steps, and alquimia generated constraints
 Test the alquimia interface with mineral dissolution/precipitation for
 a short simulation time (no changes to calcite volume fraction). The
 initial condition is fully specified by the driver and processed by
-pflotran.
+PFloTran.
 
 **Status: fail**
 
@@ -124,16 +124,16 @@ Status Notes: Looking at the time series, there are occasional differences in th
   ./pflotran -input_prefix calcite-short
 
 
-NOTE: this is the same pflotran input file as
+NOTE: this is the same PFloTran input file as
 calcite-short-pc!
 
 
-Volume fraction updates and pflotran native constraints
+Volume fraction updates and PFloTran native constraints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Test the alquimia interface with mineral dissolution/precipitation for
 a long simulation time, so that the mineral volume fractions are
-updated during reaction stepping. Uses pflotran native constraints.
+updated during reaction stepping. Uses PFloTran native constraints.
 
 **Status: fails**
 
@@ -167,7 +167,7 @@ Status Notes: final significant figure is off for the "D" species.
     ../src/drivers/batch_chem -d -i isotherms-pc.cfg
     ./pflotran -input_prefix isotherms
 
-NOTE: this is the same pflotran input file as isotherms-ac.
+NOTE: this is the same PFloTran input file as isotherms-ac.
 
 Alquimia supplied constraints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -181,7 +181,7 @@ Status Notes: final significant figure is off for the "D" species.
     ../src/drivers/batch_chem -d -i isotherms-ac.cfg
     ./pflotran -input_prefix isotherms
 
-NOTE: this is the same pflotran input file as isotherms-pc.
+NOTE: this is the same PFloTran input file as isotherms-pc.
 
 Equilibrium Ion exchange
 ------------------------
@@ -204,7 +204,7 @@ Status Notes:
     ../src/drivers/batch_chem -d -i ion-exchange-valocchi-pc.cfg
     ./pflotran -input_prefix ion-exchange-valocchi
 
-NOTE: this is the same pflotran input file as ion-exchange-valocchi-pc.
+NOTE: this is the same PFloTran input file as ion-exchange-valocchi-pc.
 
 Alquimia supplied constraints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -218,7 +218,7 @@ Status Notes:
     ../src/drivers/batch_chem -d -i ion-exchange-valocchi-ac.cfg
     ./pflotran -input_prefix ion-exchange-valocchi
 
-NOTE: this is the same pflotran input file as ion-exchange-valocchi-pc.
+NOTE: this is the same PFloTran input file as ion-exchange-valocchi-pc.
 
 
 Equilibrium Surface Complexation
@@ -242,7 +242,7 @@ Status Notes: numerical differences in trailing significant figures
     ../src/drivers/batch_chem -d -i ion-exchange-valocchi-pc.cfg
     ./pflotran -input_prefix ion-exchange-valocchi
 
-NOTE: this is the same pflotran input file as ion-exchange-valocchi-pc.
+NOTE: this is the same PFloTran input file as ion-exchange-valocchi-pc.
 
 Alquimia supplied constraints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -256,5 +256,5 @@ Status Notes: numerical differences in trailing significant figures
     ../src/drivers/batch_chem -d -i ion-exchange-valocchi-ac.cfg
     ./pflotran -input_prefix ion-exchange-valocchi
 
-NOTE: this is the same pflotran input file as ion-exchange-valocchi-pc.
+NOTE: this is the same PFloTran input file as ion-exchange-valocchi-pc.
 
