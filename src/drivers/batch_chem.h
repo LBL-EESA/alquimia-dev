@@ -10,6 +10,7 @@
 #include "alquimia_containers.h"
 
 #include "demo_containers.h"
+#include "demo_output.h"
 
 int CommandLineOptions(int argc, char** argv,
                        std::string* verbosity_name,
@@ -23,24 +24,12 @@ void SetTimeUnits(const std::string& output_time_units,
                   char* time_units,
                   double* time_units_conversion);
 
-void WriteOutputHeader(std::fstream* text_output,
-                       const char time_units,
-                       const AlquimiaProblemMetaData& meta_data,
-                       const AlquimiaSizes& sizes,
-                       bool* write_pH);
-
-void WriteOutput(std::fstream* text_output,
-                 const double time,
-                 const AlquimiaState& state,
-                 const AlquimiaAuxiliaryOutputData& aux_output,
-                 const bool write_pH);
-
 int BatchChemWithAlquimia(
     const alquimia::drivers::utilities::DemoSimulation& demo_simulation,
     const alquimia::drivers::utilities::DemoState& demo_state,
     const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,
-    std::fstream* text_output);
+    alquimia::drivers::utilities::DemoOutput* output);
 
 void CopyDemoStateToAlquimiaState(
     const alquimia::drivers::utilities::DemoState& demo_state,

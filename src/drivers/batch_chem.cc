@@ -93,19 +93,25 @@ int main(int argc, char** argv) {
     //
     // open the output file
     //
-    std::fstream text_output;
-    size_t position = input_file_name.find_last_of('.');
-    std::string text_output_name = input_file_name.substr(0, position) + ".txt";
-    text_output.open(text_output_name.c_str(), std::fstream::out);
+    util::DemoOutput* output;
+    if (util::CaseInsensitiveStringCompare(demo_simulation.engine,
+                                           kAlquimiaStringPFloTran)) {
+      output = new util::DemoOutputPFloTran();
+    } else {
+      std::stringstream message;
+      message << "ERROR: unknown chemistry engine name '" 
+              << demo_simulation.engine << "'.\n";
+      throw std::runtime_error(message.str());      
+    }
+    output->Setup(input_file_name);
 
     //
     // run the demo batch chemistry
     //
     error = BatchChemWithAlquimia(demo_simulation, demo_state,
                                   demo_material_props, demo_conditions,
-                                  &text_output);
-
-    text_output.close();
+                                  output);
+    delete output;
 
   } catch (const std::runtime_error& rt_error) {
     std::cout << rt_error.what();
@@ -141,7 +147,7 @@ int BatchChemWithAlquimia(
     const alquimia::drivers::utilities::DemoState& demo_state,
     const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,
-    std::fstream* text_output) {
+    alquimia::drivers::utilities::DemoOutput* output) {
   //
   // Create the alquimia structures.  NOTE: chem_data are for a single
   // grid cell. For openmp/threaded code, you'll need one chem_status
@@ -199,10 +205,6 @@ int BatchChemWithAlquimia(
   // finish initializing the driver, e.g. verify material
   // properties, species names, etc
 
-  //
-  // prepare for constraint processing
-  //
-
   // initialize the alquimia state and material properties with
   // appropriate values from the driver's memory.
   CopyDemoStateToAlquimiaState(demo_state, &chem_data.meta_data,
@@ -211,6 +213,10 @@ int BatchChemWithAlquimia(
       demo_material_props, chem_data.meta_data, &chem_data.material_properties);
 
   PrintAlquimiaData(&chem_data);
+
+  //
+  // prepare for constraint processing
+  //
 
   // Read the geochemical conditions from the driver's native format
   // and store them in alquimia's format
@@ -260,11 +266,8 @@ int BatchChemWithAlquimia(
                           &chem_data.aux_output,
                           &chem_status);
   // save the IC to our output file
-  bool write_pH;
-  WriteOutputHeader(text_output, time_units,
-                    chem_data.meta_data, chem_data.sizes, &write_pH);
-  WriteOutput(text_output, time,
-              chem_data.state, chem_data.aux_output, write_pH);
+  output->WriteHeader(time_units, chem_data.meta_data, chem_data.sizes);
+  output->Write(time, chem_data.state, chem_data.aux_output);
   std::cout << "Starting reaction stepping (OS) with dt = " << delta_t << " [s]\n";
   for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
     time += delta_t;
@@ -297,8 +300,7 @@ int BatchChemWithAlquimia(
       return chem_status.error;
     }
     double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
-    WriteOutput(text_output, out_time,
-                chem_data.state, chem_data.aux_output, write_pH);
+    output->Write(out_time, chem_data.state, chem_data.aux_output);
     std::cout << "  step = " << std::setw(6) << std::right << t 
               << "    time = " << std::setw(8) << std::right
               << time*time_units_conversion << " [" << time_units 
@@ -441,65 +443,6 @@ void SetTimeUnits(const std::string& output_time_units,
   // base units of driver are seconds, so we actually want 1.0/conversion
   *time_units_conversion = 1.0 / (*time_units_conversion);
 }  // end SetTimeUnits()
-
-void WriteOutputHeader(std::fstream* text_output, const char time_units,
-                       const AlquimiaProblemMetaData& meta_data,
-                       const AlquimiaSizes& sizes,
-                       bool* write_pH) {
-  if (text_output->is_open()) {
-    *text_output << "# \"Time [" << time_units << "]\"";
-    int h_index;
-    AlquimiaFindIndexFromName("H+", &meta_data.primary_names, &h_index);
-    if (h_index >= 0) {
-      *write_pH = true;
-      *text_output << " , \"pH\"";
-    }
-    for (int i = 0; i < meta_data.primary_names.size; ++i) {
-      *text_output <<  " , \"Total " << meta_data.primary_names.data[i] << " [M]\"";
-    }
-
-    for (int i = 0; i < sizes.num_sorbed; ++i) {
-      *text_output << " , \"Total Sorbed " << meta_data.primary_names.data[i]
-                   << " [mol/m^3]\"";
-    }
-
-    for (int i = 0; i < meta_data.mineral_names.size; ++i) {
-      *text_output << " , \"" << meta_data.mineral_names.data[i] << " VF\"";
-    }
-    for (int i = 0; i < meta_data.mineral_names.size; ++i) {
-      *text_output << " , \"" << meta_data.mineral_names.data[i] << " Rate [mol/m^3/sec]\"";
-    }
-    *text_output << std::endl;
-  }
-}  // end WriteOutputHeader()
-
-void WriteOutput(std::fstream* text_output, const double time,
-                 const AlquimiaState& state,
-                 const AlquimiaAuxiliaryOutputData& aux_output,
-                 const bool write_pH) {
-  if (text_output->is_open()) {
-    std::string seperator("  ");
-    *text_output << std::scientific << std::uppercase
-                 << std::setprecision(6);
-    *text_output << seperator << time;
-    if (write_pH) {
-      *text_output << seperator << aux_output.pH;
-    }
-    for (int i = 0; i < state.total_mobile.size; ++i) {
-      *text_output << seperator << state.total_mobile.data[i];
-    }
-    for (int i = 0; i < state.total_immobile.size; ++i) {
-      *text_output << seperator << state.total_immobile.data[i];
-    }
-    for (int i = 0; i < state.mineral_volume_fraction.size; ++i) {
-      *text_output << seperator << state.mineral_volume_fraction.data[i];
-    }
-    for (int i = 0; i < aux_output.mineral_reaction_rate.size; ++i) {
-      *text_output << seperator << aux_output.mineral_reaction_rate.data[i];
-    }
-    *text_output << std::endl;
-  }
-}  // end WriteOutput()
 
 
 /*******************************************************************************

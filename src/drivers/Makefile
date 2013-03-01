@@ -35,6 +35,7 @@ DEPEND_LIBS += \
 SRCS_DEMOUTIL = \
 	demo_utils.cc \
 	demo_containers.cc \
+	demo_output.cc \
 	cfg_reader.cc \
 	string_tokenizer.cc
 
@@ -44,6 +45,7 @@ OBJS_DEMOUTIL = \
 HEADERS_DEMOUTIL = \
 	demo_utils.h \
 	demo_containers.h \
+	demo_output.h \
 	cfg_reader.h \
 	string_tokenizer.h
 
