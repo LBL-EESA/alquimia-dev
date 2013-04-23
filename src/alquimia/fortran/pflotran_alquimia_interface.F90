@@ -1087,7 +1087,7 @@ function ConvertAlquimiaConditionToPflotran(&
   use String_module, only : StringCompareIgnoreCase
   use Constraint_module, only : tran_constraint_type, TranConstraintCreate, &
        CONSTRAINT_FREE, CONSTRAINT_TOTAL, CONSTRAINT_TOTAL_SORB, &
-       CONSTRAINT_TOTAL_SORB_AQ_BASED, CONSTRAINT_PH, CONSTRAINT_MINERAL, &
+       CONSTRAINT_PH, CONSTRAINT_MINERAL, &
        CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL
 
 
@@ -1159,10 +1159,6 @@ function ConvertAlquimiaConditionToPflotran(&
 
      else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalSorbed)) then
         pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL_SORB
-
-     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueousPlusSorbed)) then
-        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL_SORB_AQ_BASED
-
      else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringPH)) then
         pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_PH
 
