@@ -411,7 +411,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   use AlquimiaContainers_module
 
   ! pflotran
-  use Reaction_module, only : RReact, RUpdateSolution, RTAuxVarCompute
+  use Reaction_module, only : RReact, RUpdateKineticState, RTAuxVarCompute
 
   implicit none
 
@@ -467,7 +467,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
        status%num_newton_iterations, &
        engine_state%reaction, engine_state%option, vol_frac_prim)
 
-  call RUpdateSolution(engine_state%rt_auxvar, engine_state%global_auxvar, &
+  call RUpdateKineticState(engine_state%rt_auxvar, engine_state%global_auxvar, &
        engine_state%reaction, engine_state%option)
 
   call CopyAuxVarsToAlquimia( &
