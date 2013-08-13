@@ -65,9 +65,7 @@ not "h+", "CO" = carbon monoxide, "Co" = cobalt, "co" = undefined.
 +--------------------------------------+----------------------------+
 | kAlquimiaStringTotalAqueous          | "total_aqueous"            |
 +--------------------------------------+----------------------------+
-| kAlquimiaStringTotalSorbed           | "total_sorbed"             |
-+--------------------------------------+----------------------------+
-| kAlquimiaStringTotalAqueousPlusSorbed| "total_aqueous_plus_sorbed"|
+| kAlquimiaStringTotalSorbed           | "total_sorb"               |
 +--------------------------------------+----------------------------+
 | kAlquimiaStringFree                  | "free"                     |
 +--------------------------------------+----------------------------+
