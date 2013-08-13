@@ -338,8 +338,7 @@ mineral calcite or HCO3- is constrained by equilibrium with CO2 gas.
 Types of constraints supported:
 
 * total_aqueous
-* total_sorbed
-* total_aqueous_plus_sorbed (aqueous units!)
+* total_sorb
 * free
 * mineral
 * gas
