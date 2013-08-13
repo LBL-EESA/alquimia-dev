@@ -6,17 +6,18 @@
 #include <vector>
 #include <fstream>
 
+#include "petscsys.h"
+
 #include "alquimia_constants.h"
 #include "alquimia_containers.h"
 
 #include "demo_containers.h"
 #include "demo_output.h"
 
-int CommandLineOptions(int argc, char** argv,
-                       std::string* verbosity_name,
+int CommandLineOptions(char const * const argv,
                        std::string* input_file_name,
                        std::string* template_file_name,
-                       bool* debug_batch_driver);
+                       PetscBool* debug_batch_driver);
 
 void SetupChemistryOutput(void);
 
