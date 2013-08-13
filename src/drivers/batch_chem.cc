@@ -42,7 +42,7 @@
 
 #include <mpi.h>
 
-#include <petscsys.h>
+#include "petscsys.h"
 
 #include "alquimia_memory.h"
 #include "alquimia_util.h"
@@ -61,10 +61,12 @@ int main(int argc, char** argv) {
   // require it (pflotran).
   char help[] = "alquimia batch chemistry demonstration driver";
   PetscInitialize(&argc, &argv, (char*)0, help);
+  PetscInitializeFortran();
 
   namespace util = alquimia::drivers::utilities;
   std::stringstream message;
 
+  PetscInt petsc_error;
   PetscBool debug_batch_driver = PETSC_FALSE;
   std::string input_file_name("");
   std::string template_file_name("");
@@ -143,9 +145,9 @@ int main(int argc, char** argv) {
     error = EXIT_FAILURE;
   }
 
-  PetscInt petsc_error = PetscFinalize();
+  petsc_error = PetscFinalize();
 
-  if (error == 0 && petsc_error == 0) {
+  if (error == EXIT_SUCCESS && petsc_error == 0) {
     std::cout << "Success!\n";
   } else {
     std::cout << "Failed!\n";
