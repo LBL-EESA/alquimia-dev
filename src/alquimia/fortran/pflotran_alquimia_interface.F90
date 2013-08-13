@@ -566,8 +566,13 @@ subroutine GetAuxiliaryOutput( &
 
   ph_index = engine_state%reaction%species_idx%h_ion_id
   ! FIXME(bja): this violates the no geochemistry calculations in alquimia rule.
-  aux_output%pH = -log10(engine_state%rt_auxvar%pri_act_coef(ph_index) * &
-       engine_state%rt_auxvar%pri_molal(ph_index))
+  if (ph_index > 0) then
+     aux_output%pH = -log10(engine_state%rt_auxvar%pri_act_coef(ph_index) * &
+          engine_state%rt_auxvar%pri_molal(ph_index))
+  else
+     ! FIXME(bja, 2013-07) need a meaningful N/A value
+     aux_output%pH = -100.d0
+  end if
 
   call c_f_pointer(aux_output%mineral_reaction_rate%data, local_array, &
        (/aux_output%mineral_reaction_rate%size/))
