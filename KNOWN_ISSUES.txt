@@ -1,0 +1,118 @@
+large malloc problem
+====================
+
+Description
+-----------
+
+alquimia >= r144 8e9ef8e 
+running: batch_chem -i general-reaction-pc.cfg -d
+
+alquimia <= r143 2e6ed9f
+running: batch_chem -i general-reaction-ac.cfg -d
+
+
+cause an attempt to malloc huge (~1.3-1.8GB) of memory during a
+function call in pflotran:database_module%basisinit to
+database_aux_module%DatabaseRxnCreateFromRxnString at
+~database.F90:2898
+
+screen output
+~~~~~~~~~~~~~
+PFloTran_Alquimia_Setup() : 
+  Reading : general-reaction.in
+ WARNING: Card (NONISOTHERMAL) not found in input file.batch_chem(48324) malloc: *** mmap(size=132224767150366720) failed (error code=12)
+*** error: can't allocate region
+*** set a breakpoint in malloc_error_break to debug
+Operating system error: Cannot allocate memory
+Memory allocation failed
+
+backtrace
+~~~~~~~~~
+#5  0x00007fff97f9d1b3 in malloc_zone_malloc ()
+   from /usr/lib/system/libsystem_c.dylib
+#6  0x00007fff97f9dc07 in malloc () from /usr/lib/system/libsystem_c.dylib
+#7  0x00000001004335a9 in _gfortrani_get_mem ()
+   from /opt/local/lib/gcc46/libgfortran.3.dylib
+#8  0x000000010050a1b0 in _gfortran_internal_pack ()
+   from /opt/local/lib/gcc46/libgfortran.3.dylib
+#9  0x000000010005eafb in __database_module_MOD_basisinit (reaction=..., 
+    option=...) at database.F90:2898
+#10 0x000000010000eb84 in __pflotranalquimiainterface_module_MOD_initializepflotranreactions (option=0x101020a00, input=0x101022400, reaction=0x101028c00)
+    at pflotran_alquimia_interface.F90:902
+#11 0x000000010001123f in __pflotranalquimiainterface_module_MOD_setup (
+    input_filename=..., pft_engine_state=0x400, sizes=..., functionality=..., 
+    status=..., _input_filename=1) at pflotran_alquimia_interface.F90:163
+#12 0x00000001000115b7 in pflotran_alquimia_setup (input_filename=..., 
+    pft_engine_state=0x400, sizes=..., functionality=..., status=...)
+    at pflotran_alquimia_wrappers.F90:46
+#13 0x0000000100002924 in BatchChemWithAlquimia (demo_simulation=..., 
+    demo_state=..., demo_material_props=..., demo_conditions=..., 
+    output=<optimized out>) at batch_chem.cc:176
+
+
+Notes
+-----
+
+* Using Mac OS X 10.8.4, gcc 4.7.3, mpich-3.0.4, I've worked back
+through the alquimia history from r143(2e6ed9f)--r112(57432fd) and
+general-reaction-ac.cfg exhibits this error in all versions.
+
+* Not using the debug flag '-d' does not generate this error. Harding
+coding the internal debug flag to on and leaving the command line flag
+off does not generate this error. --> implies an issue with command
+line processing.
+
+    * getopt, petsc, and mpi all touch the command line flags.
+    
+    * Commenting out the getopt calls and simply hard coding the values,
+    passing no command line args --> ok. passing command line args -->
+    fails. Not a problem with getopt
+    
+    * passing command line args and using PetscInitializeNoArguements() -->
+    ok, appears to be a problem with petsc or mpi commandline processing.
+    
+    * passing commandline args but adding a call to
+    PetscOptionsView(PETSC_STDOUT_VIEWER?) immediately after
+    PetscInitialize() --> ok. Moving PetscOptionsView(...) down eventually
+    causes the same error when it comes after cfg_reader.ReadInputFile().
+
+
+
+
+
+
+Platform Status
+---------------
+
+Mac OS X
+~~~~~~~~
+
+alquimia(639283b202dd) : pflotran(8083548d3f59) : petsc(61d360f)
+
+mpich-3.0.4-106
+openmpi-1.6.4
+
+gcc46 @4.6.4_1
+gcc47 @4.7.3_1
+gcc48 @4.8.1_1
+
+Darwin 12.4.0 = OS X v10.8.4
+
+PASS : gcc4.6-openmpi-gr-pc : Darwin 12.4.0 : Xcode 4.6.3
+FAIL : gcc4.6-mpich-gr-pc : Darwin 12.4.0 : Xcode 4.6.3
+PASS : gcc4.7-openmpi-gr-pc : Darwin 12.4.0 : Xcode 4.6.3
+FAIL : gcc4.7-mpich-gr-pc : Darwin 12.4.0 : Xcode 4.6.3
+PASS : gcc4.8-openmpi-gr-pc : Darwin 12.4.0 : Xcode 4.6.3
+PASS : gcc4.8-mpich-gr-pc : Darwin 12.4.0 : Xcode 4.6.3
+
+Darwin 11.4.2 = Mac OS X v10.7.5
+
+PASS : gcc4.6-openmpi-gr-pc : Darwin 11.4.2 : Xcode 4.4.1
+PASS : gcc4.6-mpich-gr-pc : Darwin 11.4.2 : Xcode 4.4.1
+PASS : gcc4.7-openmpi-gr-pc : Darwin 11.4.2 : Xcode 4.4.1
+PASS : gcc4.7-mpich-gr-pc : Darwin 11.4.2 : Xcode 4.4.1
+PASS : gcc4.8-openmpi-gr-pc : Darwin 11.4.2 : Xcode 4.4.1
+PASS : gcc4.8-mpich-gr-pc : Darwin 11.4.2 : Xcode 4.4.1
+
+Linux Mint 14 Nadia
+~~~~~~~~~~~~~~~~~~~
