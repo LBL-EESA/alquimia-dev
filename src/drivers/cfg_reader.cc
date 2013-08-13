@@ -430,6 +430,8 @@ void DemoConfigReader::WriteTemplateFile(const std::string& file_name)
               << "\' could not be opened." << std::endl;
     abort();
   }
+  std::cout << "Writing template to : " << file_name << std::endl;
+
   template_file << "[" << kSimulationSection << "]" << std::endl;
   template_file << kDescriptionString << " = " << std::endl;
   template_file << kEngineString << " = " << std::endl;
