@@ -106,7 +106,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 
   use, intrinsic :: iso_c_binding, only : c_char, c_ptr
 
-  use c_interface_module, only : c_f_string, f_c_string_ptr
+  use c_f_interface_module, only : f_c_string_ptr
 
   use AlquimiaContainers_module
 
@@ -235,7 +235,7 @@ subroutine Shutdown(pft_engine_state, status)
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_f_pointer
 
-  use c_interface_module, only : f_c_string_ptr
+  use c_f_interface_module, only : f_c_string_ptr
 
   use AlquimiaContainers_module
 
@@ -286,7 +286,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_f_pointer
 
-  use c_interface_module, only : c_f_string, f_c_string_ptr
+  use c_f_interface_module, only : c_f_string_ptr, f_c_string_ptr
 
   use AlquimiaContainers_module
 
@@ -337,7 +337,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   !
   ! process the condition
   !
-  call  c_f_string(condition%name, name)
+  call  c_f_string_ptr(condition%name, name)
   write (*, '(a, a)') "processing : ", trim(name)
 
   if (condition%aqueous_constraints%size > 0) then
@@ -406,7 +406,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
 
-  use c_interface_module, only : f_c_string_ptr
+  use c_f_interface_module, only : f_c_string_ptr
 
   use AlquimiaContainers_module
 
@@ -497,7 +497,7 @@ subroutine GetAuxiliaryOutput( &
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
 
-  use c_interface_module, only : f_c_string_ptr
+  use c_f_interface_module, only : f_c_string_ptr
 
   use AlquimiaContainers_module
 
@@ -568,7 +568,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   use, intrinsic :: iso_c_binding, only : c_int, c_char, c_f_pointer
 
-  use c_interface_module, only : f_c_string_ptr, f_c_string_chars
+  use c_f_interface_module, only : f_c_string_ptr, f_c_string_chars
 
   use AlquimiaContainers_module
 
@@ -711,7 +711,7 @@ subroutine SetupPFloTranOptions(input_filename, option)
 
   use, intrinsic :: iso_c_binding, only : c_char
 
-  use c_interface_module, only : c_f_string
+  use c_f_interface_module, only : c_f_string_chars
 
   use Option_module, only : option_type
 
@@ -729,7 +729,7 @@ subroutine SetupPFloTranOptions(input_filename, option)
   PetscErrorCode :: ierr
 
   ! set the pflotran input file name
-  call c_f_string(input_filename,   option%input_filename)
+  call c_f_string_chars(input_filename, option%input_filename)
 
   option%global_prefix = option%input_filename
 
@@ -1075,7 +1075,7 @@ function ConvertAlquimiaConditionToPflotran(&
      option, reaction, alquimia_condition)
   use, intrinsic :: iso_c_binding
 
-  use c_interface_module, only : c_f_string
+  use c_f_interface_module, only : c_f_string_ptr
 
   use AlquimiaContainers_module
 
@@ -1114,7 +1114,7 @@ function ConvertAlquimiaConditionToPflotran(&
   type (AlquimiaMineralConstraint), pointer :: alq_mineral_constraints(:)
 
 
-  call c_f_string(alquimia_condition%name, name)
+  call c_f_string_ptr(alquimia_condition%name, name)
   write (*, '(a, a)') "building : ", trim(name)
 
   tran_constraint => TranConstraintCreate(option)
@@ -1141,14 +1141,14 @@ function ConvertAlquimiaConditionToPflotran(&
        alq_aqueous_constraints, (/alquimia_condition%aqueous_constraints%size/))
 
   do i = 1, alquimia_condition%aqueous_constraints%size
-     call c_f_string(alq_aqueous_constraints(i)%primary_species_name, name)
+     call c_f_string_ptr(alq_aqueous_constraints(i)%primary_species_name, name)
      pft_aq_species_constraint%names(i) = trim(name)
 
      pft_aq_species_constraint%constraint_conc(i) = alq_aqueous_constraints(i)%value
 
-     call c_f_string(alq_aqueous_constraints(i)%constraint_type, constraint_type)
+     call c_f_string_ptr(alq_aqueous_constraints(i)%constraint_type, constraint_type)
 
-     call c_f_string(alq_aqueous_constraints(i)%associated_species, &
+     call c_f_string_ptr(alq_aqueous_constraints(i)%associated_species, &
           associated_species)
 
      if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
@@ -1202,7 +1202,7 @@ function ConvertAlquimiaConditionToPflotran(&
   call c_f_pointer(alquimia_condition%mineral_constraints%data, &
        alq_mineral_constraints, (/alquimia_condition%mineral_constraints%size/))
   do i = 1, alquimia_condition%mineral_constraints%size
-     call c_f_string(alq_mineral_constraints(i)%mineral_name, name)
+     call c_f_string_ptr(alq_mineral_constraints(i)%mineral_name, name)
      pft_mineral_constraint%names(i) = trim(name)
      pft_mineral_constraint%constraint_vol_frac(i) = &
           alq_mineral_constraints(i)%volume_fraction
@@ -1660,7 +1660,7 @@ subroutine PrintProblemMetaData(meta_data)
 
   use, intrinsic :: iso_c_binding, only : c_int, c_ptr, c_f_pointer
 
-  use c_interface_module, only : c_f_string_ptr
+  use c_f_interface_module, only : c_f_string_ptr
 
   use AlquimiaContainers_module, only : &
        AlquimiaProblemMetaData, kAlquimiaMaxStringLength
