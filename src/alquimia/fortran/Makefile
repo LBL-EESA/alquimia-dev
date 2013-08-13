@@ -5,7 +5,7 @@ include $(WORKSPACE_PATH)/Makefile.inc
 HEADERS = 
 
 SRCS = \
-	c_interface_module.F90 \
+	c_f_interface_module.F90 \
 	alquimia_containers.F90
 
 ifdef PFLOTRAN_DIR
