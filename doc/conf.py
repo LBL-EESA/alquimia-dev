@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Alquimia'
-copyright = u'2013, Lawrence Berkeley National Lab, Ben Andre'
+copyright = u'Alquimia Copyright (c) 2013, The Regents of the University of California, through Lawrence Berkeley National Laboratory. All rights reserved. Author: Benjamin Andre'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
