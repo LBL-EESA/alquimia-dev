@@ -1,12 +1,6 @@
 /* -*-  mode: c++; c-default-style: "google"; indent-tabs-mode: nil -*- */
 #include "batch_chem.h"
 
-#ifdef WINDOWS
-#include "xgetopt.h"
-#else
-#include <unistd.h>
-#endif
-
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
@@ -37,27 +31,27 @@
 #include "string_tokenizer.h"
 
 int main(int argc, char** argv) {
+
+  // initialize petsc/mpi for command line options and engines that
+  // require it (pflotran).
+  char help[] = "alquimia batch chemistry demonstration driver";
+  PetscInitialize(&argc, &argv, (char*)0, help);
+
   namespace util = alquimia::drivers::utilities;
   std::stringstream message;
 
-  bool debug_batch_driver(false);
-  std::string verbosity_name("");
+  PetscBool debug_batch_driver = PETSC_FALSE;
   std::string input_file_name("");
   std::string template_file_name("");
   int error = EXIT_SUCCESS;
 
-  error = CommandLineOptions(argc, argv,
-                             &verbosity_name,
+  error = CommandLineOptions(argv[0],
                              &input_file_name,
                              &template_file_name,
                              &debug_batch_driver);
   if (error != EXIT_SUCCESS) {
     exit(error);
   }
-
-  // initialize petsc/mpi for engines that require it (pflotran)
-  char help[] = "petsc help string";
-  PetscInitialize(&argc, &argv, (char*)0, help);
 
   try {
     //
@@ -321,70 +315,48 @@ int BatchChemWithAlquimia(
 
 /*******************************************************************************
  **
- **  Commandline
+ **  CommandLineOptions
+ **
+ **  Note: PetscOptions does not change the value of a variable if an
+ **  option is NOT found (no default), so a reasonable default must be
+ **  provided by the driver?
  **
  *******************************************************************************/
-int CommandLineOptions(int argc, char** argv,
-                       std::string* verbosity_name,
+int CommandLineOptions(char const * const prog_name,
                        std::string* input_file_name,
                        std::string* template_file_name,
-                       bool* debug_batch_driver)
+                       PetscBool* debug_batch_driver)
 {
-  int error = -2;
-  int option;
-  extern char* optarg;
-  std::stringstream help_message;
-  help_message << argv[0]
-               << " alquimia batch chemistry demonstration driver.\n";
-  help_message << "  command line options:" << std::endl;
-  help_message << "    -d" << std::endl;
-  help_message << "         debugging flag for batch driver" << std::endl;
-  help_message << "    -i string " << std::endl;
-  help_message << "         input file name" << std::endl;
-  help_message << std::endl;
-  help_message << "    -t string" << std::endl;
-  help_message << "         write a template input file" << std::endl;
-  help_message << std::endl;
+  int error = EXIT_SUCCESS;
+  PetscBool value_set = PETSC_FALSE;
+  char temp_str[kAlquimiaMaxStringLength];
 
-  while ((option = getopt(argc, argv, "di:ht:?")) != -1) {
-    switch (option) {
-      case 'd': {
-        *debug_batch_driver = true;
-        break;
-      }
-      case 'i': {
-        /* input file name */
-        input_file_name->assign(optarg);
-        error = EXIT_SUCCESS;
-        break;
-      }
-      case 't': {
-        /* template file name */
-        template_file_name->assign(optarg);
-        error = EXIT_SUCCESS;
-        break;
-      }
-      case 'v': {
-        verbosity_name->assign(optarg);
-        break;
-      }
-      case '?':
-      case 'h': {  /* help mode */
-        /* print some help stuff and exit without doing anything */
-        std::cout << help_message.str();
-        error = -1;
-        break;
-      }
-      default: {
-        /* no options */
-        break;
-      }
-    }
-  }
+  PetscOptionsHasName(NULL, "-d", debug_batch_driver);
 
-  if (!input_file_name->c_str() && !template_file_name->c_str()) {
-    std::cout << "An input or template file name must be specified." << std::endl;
-    std::cout << "Run \"" <<  argv[0] << " -h \" for help." << std::endl;
+  PetscOptionsGetString(NULL, "-i", temp_str, kAlquimiaMaxStringLength, &value_set);
+  input_file_name->assign(temp_str);
+  PetscStrncpy(temp_str, "", kAlquimiaMaxStringLength);
+
+  PetscOptionsGetString(NULL, "-t", temp_str, kAlquimiaMaxStringLength, &value_set);
+  template_file_name->assign(temp_str);
+  PetscStrncpy(temp_str, "", kAlquimiaMaxStringLength);
+
+  if (input_file_name->empty() && template_file_name->empty()) {
+    error = EXIT_FAILURE;
+    std::stringstream help_message;
+    help_message << prog_name
+                 << " : alquimia batch chemistry demonstration driver.\n";
+    help_message << "  command line options:" << std::endl;
+    help_message << "    -d" << std::endl;
+    help_message << "         debugging flag for batch driver" << std::endl;
+    help_message << "    -i string " << std::endl;
+    help_message << "         input file name" << std::endl;
+    help_message << std::endl;
+    help_message << "    -t string" << std::endl;
+    help_message << "         write a template input file" << std::endl;
+    help_message << "\n An input or template file name must be specified." << std::endl;
+    help_message << std::endl;
+    std::cout << help_message.str();
   }
 
   if (*debug_batch_driver) {
@@ -397,9 +369,7 @@ int CommandLineOptions(int argc, char** argv,
     message << std::endl << std::endl;
     std::cout << message.str();
   }
-  if (error == -2) {
-    std::cout << help_message.str();
-  }
+
   return error;
 }  // end commandLineOptions()
 

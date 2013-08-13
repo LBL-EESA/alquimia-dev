@@ -4,7 +4,7 @@ large malloc problem
 Description
 -----------
 
-alquimia >= r144 8e9ef8e 
+alquimia >= r144 8e9ef8e, <= r148 
 running: batch_chem -i general-reaction-pc.cfg -d
 
 alquimia <= r143 2e6ed9f
@@ -76,8 +76,12 @@ line processing.
     PetscInitialize() --> ok. Moving PetscOptionsView(...) down eventually
     causes the same error when it comes after cfg_reader.ReadInputFile().
 
-
-
+    * Doing commandline processing in petsc using PetscOptionsGetXXX()
+    seems to side step this problem with when running
+    general-reaction-pc.cfg with debug. It's not clear if this
+    actually fixes the problem, or is a bandaid like the
+    PetscOptionsView() described above. This "fix" will be committed
+    as r149 as part of the work to remove getopt/xgetopt.
 
 
 
