@@ -34,7 +34,39 @@
 Welcome to alquimia's documentation!
 ====================================
 
-Alquimia will use `Semantic Versioning <http://semver.org/>`_ for its public API.
+Description
+-----------
+
+Alquimia is an biogeochemistry API and wrapper library. The aim is to
+provide a unified interface to the biogeochemistry routines from high
+quality reactive transport simulators such as `PFLOTRAN
+<https://bitbucket.org/pflotran/pflotran-dev>`_ or `CrunchFlow
+<http://www.csteefel.com/CrunchFlowIntroduction.html>`_ , allowing any
+subsurface flow and transport simulator to access a range of
+functionality.
+
+It is not an implementation of a biogeochemistry reaction library, and
+does not do any geochemical calculations.
+
+Availability
+------------
+
+The official repository for Alquimia API documentation and reference
+API is `<https://bitbucket.org/berkeleylab/alquimia>`_.
+
+The alquimia API is intended to be open and implemented by anyone. The
+reference implementation developed by `Lawrence Berkeley National
+Laboratory <http://www.lbl.gov>`_ is open source, licensed under a BSD
+:ref:`license`.
+
+Versioning
+----------
+
+Alquimia API and reference implementation use `Semantic Versioning
+<http://semver.org/>`_.
+
+Style Guide
+-----------
 
 The Alquimia API and library will use the `Google C++ style guide
 <http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml>`_
@@ -43,7 +75,8 @@ followed consistently on both sides (driver and engine) of the
 interface wrapper code. Engines are obviously allowed to use their own
 internal coding styles in their own code.
 
-Contents:
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
