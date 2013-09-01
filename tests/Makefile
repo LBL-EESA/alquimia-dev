@@ -3,6 +3,9 @@
 # through Lawrence Berkeley National Laboratory (subject to receipt of any 
 # required approvals from the U.S. Dept. of Energy).  All rights reserved.
 # 
+# Alquimia is available under a BSD license. See LICENSE.txt for more
+# information.
+#
 # If you have questions about your rights to use or distribute this software, 
 # please contact Berkeley Lab's Technology Transfer and Intellectual Property 
 # Management at TTD@lbl.gov referring to Alquimia (LBNL Ref. 2013-119).
