@@ -27,8 +27,8 @@
 ** Authors: Benjamin Andre <bandre@lbl.gov>
 */
 
-#ifndef ALQUIMIA_STRINGS_H_
-#define ALQUIMIA_STRINGS_H_
+#ifndef ALQUIMIA_CONSTANTS_H_
+#define ALQUIMIA_CONSTANTS_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,4 +61,4 @@ extern const int kAlquimiaErrorEngineIntegrity;
 }
 #endif /* __cplusplus */
 
-#endif     /* ALQUIMIA_STRINGS_H_ */
+#endif     /* ALQUIMIA_CONSTANTS_H_ */

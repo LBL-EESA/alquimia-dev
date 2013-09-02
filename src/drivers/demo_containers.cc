@@ -116,7 +116,7 @@ void DemoMineralConstraint::Print(void) const {
 void DemoGeochemicalCondition::Print(void) const {
   
   std::vector<DemoAqueousConstraint>::const_iterator ac;
-  for (ac = this->aqueous_constraints.begin(); ac != aqueous_constraints.end(); ++ac) {
+  for (ac = this->aqueous_constraints.begin(); ac != this->aqueous_constraints.end(); ++ac) {
     ac->Print();
   }
 
