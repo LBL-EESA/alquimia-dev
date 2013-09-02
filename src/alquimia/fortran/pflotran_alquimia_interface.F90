@@ -869,7 +869,7 @@ subroutine InitializeTemperatureDependence(option, input)
 #include "finclude/petsclog.h"
 
   ! function parameters
-  type(option_type), pointer, intent(in) :: option
+  type(option_type), pointer, intent(inout) :: option
   type(input_type), pointer, intent(in) :: input
 
   ! local variables
