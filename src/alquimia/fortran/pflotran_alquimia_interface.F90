@@ -577,6 +577,9 @@ subroutine GetAuxiliaryOutput( &
      aux_output%pH = -100.d0
   end if
 
+  !
+  ! mineral data
+  !
   call c_f_pointer(aux_output%mineral_reaction_rate%data, local_array, &
        (/aux_output%mineral_reaction_rate%size/))
     do i = 1, aux_output%mineral_reaction_rate%size
@@ -589,6 +592,37 @@ subroutine GetAuxiliaryOutput( &
      local_array(i) = RMineralSaturationIndex(i, engine_state%rt_auxvar, &
           engine_state%global_auxvar, &
           engine_state%reaction, engine_state%option)
+  end do
+
+  !
+  ! primary data
+  !
+  call c_f_pointer(aux_output%primary_free_ion_concentration%data, local_array, &
+       (/aux_output%primary_free_ion_concentration%size/))
+  do i = 1, aux_output%primary_free_ion_concentration%size
+     local_array(i) = engine_state%rt_auxvar%pri_molal(i)
+  end do
+
+  call c_f_pointer(aux_output%primary_activity_coeff%data, local_array, &
+       (/aux_output%primary_activity_coeff%size/))
+  do i = 1, aux_output%primary_activity_coeff%size
+     local_array(i) = engine_state%rt_auxvar%pri_act_coef(i)
+  end do
+
+  !
+  ! secondary aqueous complex data
+  !
+  call c_f_pointer(aux_output%secondary_free_ion_concentration%data, local_array, &
+       (/aux_output%secondary_free_ion_concentration%size/))
+  do i = 1, aux_output%secondary_free_ion_concentration%size
+     local_array(i) = engine_state%rt_auxvar%sec_molal(i)
+  end do
+
+
+  call c_f_pointer(aux_output%secondary_activity_coeff%data, local_array, &
+       (/aux_output%secondary_activity_coeff%size/))
+  do i = 1, aux_output%secondary_activity_coeff%size
+     local_array(i) = engine_state%rt_auxvar%sec_act_coef(i)
   end do
 
   status%error = kAlquimiaNoError

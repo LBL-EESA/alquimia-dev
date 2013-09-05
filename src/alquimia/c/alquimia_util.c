@@ -232,6 +232,14 @@ void PrintAlquimiaAuxiliaryOutputData(
                             &(aux_output->mineral_saturation_index));
   PrintAlquimiaVectorDouble("mineral reaction rate",
                             &(aux_output->mineral_reaction_rate));
+  PrintAlquimiaVectorDouble("primary free ion concentrations",
+                            &(aux_output->primary_free_ion_concentration));
+  PrintAlquimiaVectorDouble("primary activity coeff",
+                            &(aux_output->primary_activity_coeff));
+  PrintAlquimiaVectorDouble("secondary free ion concentrations",
+                            &(aux_output->secondary_free_ion_concentration));
+  PrintAlquimiaVectorDouble("secondary activity coeff",
+                            &(aux_output->secondary_activity_coeff));
 }  /* end PrintAlquimiaAuxiliaryOutputData() */
 
 void PrintAlquimiaGeochemicalConditionVector(

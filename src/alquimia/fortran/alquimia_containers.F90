@@ -157,6 +157,10 @@ module AlquimiaContainers_module
      real (c_double) :: pH
      type (AlquimiaVectorDouble) :: mineral_saturation_index
      type (AlquimiaVectorDouble) :: mineral_reaction_rate
+     type (AlquimiaVectorDouble) :: primary_free_ion_concentration
+     type (AlquimiaVectorDouble) :: primary_activity_coeff
+     type (AlquimiaVectorDouble) :: secondary_free_ion_concentration
+     type (AlquimiaVectorDouble) :: secondary_activity_coeff
   end type AlquimiaAuxiliaryOutputData
 
   type, public, bind(c) :: AlquimiaAqueousConstraint

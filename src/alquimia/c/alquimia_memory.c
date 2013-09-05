@@ -267,6 +267,15 @@ void AllocateAlquimiaAuxiliaryOutputData(
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(aux_output->mineral_reaction_rate));
 
+  AllocateAlquimiaVectorDouble(sizes->num_primary,
+                               &(aux_output->primary_free_ion_concentration));
+  AllocateAlquimiaVectorDouble(sizes->num_primary,
+                               &(aux_output->primary_activity_coeff));
+
+  AllocateAlquimiaVectorDouble(sizes->num_aqueous_complexes,
+                               &(aux_output->secondary_free_ion_concentration));
+  AllocateAlquimiaVectorDouble(sizes->num_aqueous_complexes,
+                               &(aux_output->secondary_activity_coeff));
 
 }  /* end AllocateAlquimiaAuxiliaryOutputData() */
 
@@ -275,6 +284,10 @@ void FreeAlquimiaAuxiliaryOutputData(
   if (aux_output != NULL) {
     FreeAlquimiaVectorDouble(&(aux_output->mineral_saturation_index));
     FreeAlquimiaVectorDouble(&(aux_output->mineral_reaction_rate));
+    FreeAlquimiaVectorDouble(&(aux_output->primary_free_ion_concentration));
+    FreeAlquimiaVectorDouble(&(aux_output->primary_activity_coeff));
+    FreeAlquimiaVectorDouble(&(aux_output->secondary_free_ion_concentration));
+    FreeAlquimiaVectorDouble(&(aux_output->secondary_activity_coeff));
   }
 }  /* end FreeAlquimiaAuxiliaryOutputData() */
 
