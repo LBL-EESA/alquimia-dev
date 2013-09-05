@@ -122,29 +122,29 @@ Struct: Alquimia State
 
 Storage for spatially and temporally varying "state" data. Read/write (chemistry may change these values).
 
-+-----------------------------------+----------------------+---------------------------+
-| **variable**                      |     **storage**      |        **units**          |
-+===================================+======================+===========================+
-| water_density                     |        double        |           [kg/m^3]        |
-+-----------------------------------+----------------------+---------------------------+
-| porosity                          |        double        |[m^3 pore space / m^3 bulk]|
-+-----------------------------------+----------------------+---------------------------+
-| temperature                       |        double        |          [deg C]          |
-+-----------------------------------+----------------------+---------------------------+
-| aqueous_pressure                  |        double        |           [Pa]            |
-+-----------------------------------+----------------------+---------------------------+
-| total_mobile                      | vector<double, N_p>  |       [molarity]          |
-+-----------------------------------+----------------------+---------------------------+
-| total_immobile                    |vector<double, N_sorb>|    [moles/m^3 bulk]       |
-+-----------------------------------+----------------------+---------------------------+
-| mineral_volume_fractions          | vector<double, N_m>  |           [-]             |
-+-----------------------------------+----------------------+---------------------------+
-| mineral_specific_surface area     | vector<double, N_m>  |[m^2 mineral / m^3 bulk]   |
-+-----------------------------------+----------------------+---------------------------+
-| surface_site_density              | vector<double, N_ss> | [moles / m^3 bulk]        |
-+-----------------------------------+----------------------+---------------------------+
-| cation_exchange_capacity          | vector<double, N_ix> | [moles / m^3 bulk]        |
-+-----------------------------------+----------------------+---------------------------+
++-----------------------------------+------------------------+-----------------------------+
+| **variable**                      |      **storage**       |        **units**            |
++===================================+========================+=============================+
+| water_density                     |         double         |           [kg/m^3]          |
++-----------------------------------+------------------------+-----------------------------+
+| porosity                          |         double         | [m^3 pore space / m^3 bulk] |
++-----------------------------------+------------------------+-----------------------------+
+| temperature                       |         double         |           [deg C]           |
++-----------------------------------+------------------------+-----------------------------+
+| aqueous_pressure                  |         double         |            [Pa]             |
++-----------------------------------+------------------------+-----------------------------+
+| total_mobile                      |  vector<double, N_p>   |       [molarity]            |
++-----------------------------------+------------------------+-----------------------------+
+| total_immobile                    | vector<double, N_sorb> |    [moles/m^3 bulk]         |
++-----------------------------------+------------------------+-----------------------------+
+| mineral_volume_fractions          |  vector<double, N_m>   |           [-]               |
++-----------------------------------+------------------------+-----------------------------+
+| mineral_specific_surface area     |  vector<double, N_m>   | [m^2 mineral / m^3 bulk]    |
++-----------------------------------+------------------------+-----------------------------+
+| surface_site_density              |  vector<double, N_ss>  | [moles / m^3 bulk]          |
++-----------------------------------+------------------------+-----------------------------+
+| cation_exchange_capacity          |  vector<double, N_ix>  | [moles / m^3 bulk]          |
++-----------------------------------+------------------------+-----------------------------+
 
 
 Struct: Alquimia Material Properties
@@ -234,11 +234,11 @@ operation.
 Struct: Alquimia Engine Functionality
 =====================================
 
-Information about the functionality of the supported by the
-geochemistry engine. This is **not** necessarily a hard coded
-list. For example, the engine may support temperature dependent
-chemistry for a particular problem only if the user supplied database
-contains the appropriate data.
+Information about the functionality supported by the geochemistry
+engine. This is **not** necessarily a hard coded list. For example,
+the engine may support temperature dependent chemistry for a
+particular problem only if the user supplied database contains the
+appropriate data.
 
 +-------------------------+---------------------+-------------------------------------------+
 | **variable**            | **storage**         |**comment**                                |
@@ -278,21 +278,20 @@ Problem specific meta data, e.g. primary species and mineral
 names. Species are in the order that the chemistry engine expects to
 receive data.
 
-+-------------------------+---------------------+-------------------------------------------+
-| **variable**            | **storage**         |**comment**                                |
-+=========================+=====================+===========================================+
-| primary_names           | vector<string, N_p> |names of the primary species               |
-+-------------------------+---------------------+-------------------------------------------+
-| kinetic_mineral_names   | vector<string, N_m> |names of the kinetic minerals              |
-+-------------------------+---------------------+-------------------------------------------+
-| surface_site_names      |vector<string, N_ss> |names of the surface sites                 |
-+-------------------------+---------------------+-------------------------------------------+
-| ion_exchange_names      |vector<string, N_ix> |names of the ion exchange sites            |
-+-------------------------+---------------------+-------------------------------------------+
-| isotherm_species_names  |vector<string, N_is> |names of the primary species involved in   |
-|                         |                     |isotherm reactions                         |
-+-------------------------+---------------------+-------------------------------------------+
-
++------------------------+---------------------+-------------------------------------------+
+| **variable**           | **storage**         | **comment**                               |
++========================+=====================+===========================================+
+| primary_names          | vector<string, N_p> |names of the primary species               |
++------------------------+---------------------+-------------------------------------------+
+| kinetic_mineral_names  | vector<string, N_m> |names of the kinetic minerals              |
++------------------------+---------------------+-------------------------------------------+
+| surface_site_names     |vector<string, N_ss> |names of the surface sites                 |
++------------------------+---------------------+-------------------------------------------+
+| ion_exchange_names     |vector<string, N_ix> |names of the ion exchange sites            |
++------------------------+---------------------+-------------------------------------------+
+| isotherm_species_names |vector<string, N_is> |names of the primary species involved in   |
+|                        |                     |isotherm reactions                         |
++------------------------+---------------------+-------------------------------------------+
 
 
 .. _AlquimiaAuxiliaryOutputData:
@@ -305,15 +304,25 @@ files. The engine ignores any value passed in with these arrays and
 over writes it with the current value. If the driver does not want
 data in a particular array, it should set the size to zero.
 
-+--------------------------+------------------------+-----------+
-|       **variable**       |        **type**        | **units** |
-+==========================+========================+===========+
-| pH                       |         double         | [-]       |
-+--------------------------+------------------------+-----------+
-| mineral_saturation_index |  vector<double, N_m>   | [-]       |
-+--------------------------+------------------------+-----------+
-|  mineral_reaction_rate   |  vector<double, N_m>   | [?]       |
-+--------------------------+------------------------+-----------+
++----------------------------------+------------------------+------------------------+
+|       **variable**               |        **type**        |       **units**        |
++==================================+========================+========================+
+| pH                               |         double         | [-]                    |
++----------------------------------+------------------------+------------------------+
+| mineral_saturation_index         |  vector<double, N_m>   | [-]                    |
++----------------------------------+------------------------+------------------------+
+| mineral_reaction_rate            |  vector<double, N_m>   | [mol / sec / m^3 bulk] |
+|                                  |                        |                        |
++----------------------------------+------------------------+------------------------+
+| primary_free_ion_concentration   |  vector<double, N_p>   |       [molality]       |
++----------------------------------+------------------------+------------------------+
+|      primary_activity_coeff      |  vector<double, N_p>   | [-]                    |
++----------------------------------+------------------------+------------------------+
+| secondary_free_ion_concentration |  vector<double, N_s>   |       [molality]       |
++----------------------------------+------------------------+------------------------+
+|     secondary_activity_coeff     |  vector<double, N_s>   | [-]                    |
++----------------------------------+------------------------+------------------------+
+
 
 TODO(bja): to keep things simple, we just write out all the mineral
 data. If the driver only wants a subset, then they can grab the ones
@@ -375,7 +384,12 @@ Types of constraints supported:
 These are named alquimia string constants, :ref:`AlquimiaStrings`.
 
 If an engine does not support a particular type of constraint, it
-should report and error.
+should report an error.
+
+The units for a constraint value depend on the constraint type, and
+should agree with the units defined above, e.g. total_aqueous should
+agree with total_mobile from AlquimiaState, free ion concentration
+should agree with free ion units from AquimiaAuxOutput.
 
 If a constraint type does not require a supplied value, e.g. charge,
 then the user/driver should supply either a safe initial guess (1.0e-9 for
@@ -387,13 +401,12 @@ Struct: Alquimia Mineral Constraint
 
 A mineral geochemical constraint is a structure with the following fields:
 
-+---------------------+----------+-----------+
-| **variable**        | **type** | **units** |
-+=====================+==========+===========+
-| mineral_name        | string   | [-]       |
-+---------------------+----------+-----------+
-| volume_fraction     | double   | [-]       |
-+---------------------+----------+-----------+
-|specific_surface_area| double   | [?]       |
-+---------------------+----------+-----------+
-
++---------------------+----------+---------------------------+
+| **variable**        | **type** |         **units**         |
++=====================+==========+===========================+
+| mineral_name        | string   | [-]                       |
++---------------------+----------+---------------------------+
+| volume_fraction     | double   | [-]                       |
++---------------------+----------+---------------------------+
+|specific_surface_area| double   | [m^2 mineral / m^3 bulk]  |
++---------------------+----------+---------------------------+
