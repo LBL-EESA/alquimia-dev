@@ -5,10 +5,25 @@
 include ${PETSC_DIR}/conf/variables
 #include ${PETSC_DIR}/conf/rules
 
-CFLAGS += -g -W -Wall -std=c99 -pedantic -Werror
-CXXFLAGS += -g -W -Wall
-FCFLAGS += -g -W -Wall -std=gnu -pedantic -Wno-unused-variable -Wno-unused-parameter
+ifeq ($(COMPILER), generic)
+     CFLAGS += -W
+     CXXFLAGS += -W
+     FCFLAGS += -W
+else
+     CFLAGS += -W -Wall -std=c99 -pedantic -Werror
+     CXXFLAGS += -W -Wall
+     FCFLAGS += -W -Wall -std=gnu -pedantic -Wno-unused-variable -Wno-unused-parameter
+endif
 
+ifdef RELEASE
+      CFLAGS += -O2
+      CXXFLAGS += -O2
+      FCFLAGS += -O2
+else
+      CFLAGS += -g
+      CXXFLAGS += -g
+      FCFLAGS += -g
+endif
 
 DEPEND_LIBS = 
 
@@ -29,8 +44,3 @@ ifdef CRUNCH_DIR
 #       LDFLAGS += -L$(CRUNCH_DIR)/src -lcrunch_chem
 endif
 
-ifdef DEBUG
-      CFLAGS += -g
-      CXXFLAGS += -g
-      FCFLAGS += -g
-endif
