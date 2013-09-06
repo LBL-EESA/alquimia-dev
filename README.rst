@@ -49,16 +49,40 @@ Building
 --------
 
 To build alquimia, you must have petsc installed, with the PETSC_DIR
-and PETSC_ARCH environment variables set.
+and PETSC_ARCH environment variables set. Compilers are obtained from
+the petsc variables.
+
+PFLOTRAN_DIR=/path/to/pflotran/dir must be defined to link pflotran. 
 
 ::
 
     cd ${ALQUIMIA_DIR}/src
-    CC=openmpicc CXX=openmpicxx FC=openmpif90 PFLOTRAN_DIR=${PFLOTRAN_DIR} \
-        make all
+    export PFLOTRAN_DIR=${HOME}/projects/pflotran-dev
+    make all
 
-    cd ${ALQUIMIA_DIR}/examples
-    ../src/drivers/batch_chem -d -i calcite-kinetics-vf-pc.cfg
 
+Test your build by running the batch chemistry demo driver.
+
+::
+    cd ${ALQUIMIA_DIR}/tests
+    ln -s ../src/drivers/batch_chem .
+    ./batch_chem -d -i calcite-short-pc.cfg
+
+
+Builds are debug by default. To build without debug symbols and with
+optimization:
+
+::
+
+    make RELEASE=1 all
+
+
+The default compiler is assumed to be GCC (or compatible LLVM?). And
+uses GCC specific build options. To build with minimal generic build
+flags:
+
+::
+
+   make COMPILER=generic all
 
 
