@@ -47,14 +47,14 @@ To run all tests in a particular config file:
 
 .. code-block:: bash
 
-    python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ../src/drivers/batch_chem
+    python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ./batch_chem
 
 
 To run a single test by name:
 
 .. code-block:: bash
 
-    python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ../src/drivers/batch_chem -t calcite-volume-fractions-pflotran-constraint
+    python ./batch-compare-alquimia-pflotran.py -c alquimia-pflotran-tests.cfg -p ./pflotran -a ./batch_chem -t calcite-volume-fractions-pflotran-constraint
 
 
 
@@ -77,9 +77,9 @@ Status Notes:
 
 .. code-block:: bash
 
-  ../install/bin/batch_chem -d -i general-reaction-pc.cfg
+  ./batch_chem -d -i general-reaction-pc.cfg
 
-  ./pflotran -input_prefix calcite-short
+  ./pflotran -input_prefix general-reaction
 
 
 NOTE: this is the same PFloTran input file as
@@ -96,9 +96,9 @@ Status Notes:
 
 .. code-block:: bash
 
-  ../install/bin/batch_chem -d -i general-reaction-ac.cfg
+  ./batch_chem -d -i general-reaction-ac.cfg
 
-  ./pflotran -input_prefix calcite-short
+  ./pflotran -input_prefix general-reaction
 
 
 NOTE: this is the same PFloTran input file as
@@ -124,7 +124,7 @@ Status Notes: Looking at the time series, there are occasional differences in th
 
 .. code-block:: bash
 
-  ../install/bin/batch_chem -d -i calcite-short-pc.cfg
+  ./batch_chem -d -i calcite-short-pc.cfg
 
   ./pflotran -input_prefix calcite-short
 
@@ -146,7 +146,7 @@ Status Notes: Looking at the time series, there are occasional differences in th
 
 .. code-block:: bash
 
-  ../install/bin/batch_chem -d -i calcite-short-dc.cfg
+  ./batch_chem -d -i calcite-short-dc.cfg
 
   ./pflotran -input_prefix calcite-short
 
@@ -168,7 +168,7 @@ Status Notes: slight initial numerical differences in rates accumulate error?
 
 .. code-block:: bash
 
-  ../install/bin/batch_chem -d -i calcite-vf-pc.cfg
+  ./batch_chem -d -i calcite-vf-pc.cfg
 
   ./pflotran -input_prefix calcite-vf
 
@@ -191,7 +191,7 @@ Status Notes: final significant figure is off for the "D" species.
 
 .. code-block:: bash
 
-    ../src/drivers/batch_chem -d -i isotherms-pc.cfg
+    ./batch_chem -d -i isotherms-pc.cfg
     ./pflotran -input_prefix isotherms
 
 NOTE: this is the same PFloTran input file as isotherms-ac.
@@ -205,7 +205,7 @@ Status Notes: final significant figure is off for the "D" species.
 
 .. code-block:: bash
 
-    ../src/drivers/batch_chem -d -i isotherms-ac.cfg
+    ./batch_chem -d -i isotherms-ac.cfg
     ./pflotran -input_prefix isotherms
 
 NOTE: this is the same PFloTran input file as isotherms-pc.
@@ -228,7 +228,7 @@ Status Notes:
 
 .. code-block:: bash
 
-    ../src/drivers/batch_chem -d -i ion-exchange-valocchi-pc.cfg
+    ./batch_chem -d -i ion-exchange-valocchi-pc.cfg
     ./pflotran -input_prefix ion-exchange-valocchi
 
 NOTE: this is the same PFloTran input file as ion-exchange-valocchi-pc.
@@ -242,7 +242,7 @@ Status Notes:
 
 .. code-block:: bash
 
-    ../src/drivers/batch_chem -d -i ion-exchange-valocchi-ac.cfg
+    ./batch_chem -d -i ion-exchange-valocchi-ac.cfg
     ./pflotran -input_prefix ion-exchange-valocchi
 
 NOTE: this is the same PFloTran input file as ion-exchange-valocchi-pc.
@@ -266,7 +266,7 @@ Status Notes: numerical differences in trailing significant figures
 
 .. code-block:: bash
 
-    ../src/drivers/batch_chem -d -i ion-exchange-valocchi-pc.cfg
+    ./batch_chem -d -i ion-exchange-valocchi-pc.cfg
     ./pflotran -input_prefix ion-exchange-valocchi
 
 NOTE: this is the same PFloTran input file as ion-exchange-valocchi-pc.
@@ -280,7 +280,7 @@ Status Notes: numerical differences in trailing significant figures
 
 .. code-block:: bash
 
-    ../src/drivers/batch_chem -d -i ion-exchange-valocchi-ac.cfg
+    ./batch_chem -d -i ion-exchange-valocchi-ac.cfg
     ./pflotran -input_prefix ion-exchange-valocchi
 
 NOTE: this is the same PFloTran input file as ion-exchange-valocchi-pc.
