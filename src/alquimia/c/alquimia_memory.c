@@ -261,6 +261,7 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
 void AllocateAlquimiaAuxiliaryOutputData(
     const struct AlquimiaSizes* const sizes,
     struct AlquimiaAuxiliaryOutputData* aux_output) {
+  aux_output->pH = -999.9;
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(aux_output->mineral_saturation_index));
 
