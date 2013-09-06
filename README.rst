@@ -64,6 +64,7 @@ PFLOTRAN_DIR=/path/to/pflotran/dir must be defined to link pflotran.
 Test your build by running the batch chemistry demo driver.
 
 ::
+
     cd ${ALQUIMIA_DIR}/tests
     ln -s ../src/drivers/batch_chem .
     ./batch_chem -d -i calcite-short-pc.cfg
