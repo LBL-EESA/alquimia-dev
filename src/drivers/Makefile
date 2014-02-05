@@ -25,7 +25,6 @@
 # Authors: Benjamin Andre <bandre@lbl.gov>
 
 # include the generic file for controlling paths to dependency libraries
-WORKSPACE_PATH := $(shell expr $(PWD) : '\(.*\/alquimia\/src\/drivers\)/.*' \| $(PWD))
 include $(WORKSPACE_PATH)/Makefile.inc 
 
 # TODO(bja): cleanup dependencies using something like makedepend

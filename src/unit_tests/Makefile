@@ -25,7 +25,6 @@
 # Authors: Benjamin Andre <bandre@lbl.gov>
 
 # include the generic file for controlling paths to dependency libraries
-WORKSPACE_PATH := $(shell expr $(PWD) : '\(.*\/alquimia\/src\/unit_tests\)/.*' \| $(PWD))
 include $(WORKSPACE_PATH)/Makefile.inc 
 
 INCLUDES = -I../alquimia/c -I.

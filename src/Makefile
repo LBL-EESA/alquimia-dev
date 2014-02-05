@@ -46,7 +46,7 @@ endif
 ifdef SUBDIRS
 $(SUBDIRS) : FORCE
 	@if [ -d $@ ]; then \
-		$(MAKE) --directory=$@ $(TARGET); \
+		$(MAKE) WORKSPACE_PATH=$(PWD) --directory=$@ $(TARGET); \
 	fi
 endif
 	@echo Build complete: $@ : $(shell date)
