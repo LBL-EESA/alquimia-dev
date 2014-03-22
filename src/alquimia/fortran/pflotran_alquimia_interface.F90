@@ -184,6 +184,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   write (*, '(a, a)') "  Reading : ", trim(option%input_filename)
   input => InputCreate(IN_UNIT, option%input_filename, option)
 
+  call InitializeScreenOutput(option, input)
+
   !
   ! initialize chemistry
   !
@@ -321,6 +323,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   ! pflotran
   use String_module, only : StringCompareIgnoreCase
   use Constraint_module, only : tran_constraint_type, TranConstraintAddToList
+  use Option_module, only : printMsg
 
   implicit none
 
@@ -366,7 +369,8 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   ! process the condition
   !
   call  c_f_string_ptr(condition%name, name)
-  write (*, '(a, a)') "processing : ", trim(name)
+  engine_state%option%io_buffer = "processing : " // trim(name)
+  call printMsg(engine_state%option)
 
   if (condition%aqueous_constraints%size > 0) then
      ! the driver is supplying the constraint data, so we need to
@@ -380,7 +384,8 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   else
      ! the driver just supplied a name, so we check for a constraint
      ! with that name in the pflotran input file and use that.
-     write (*, '(a, a)') "Looking for pflotran constraint : ", trim(name)
+     engine_state%option%io_buffer = "Looking for pflotran constraint : " // trim(name)
+     call printMsg(engine_state%option)
      tran_constraint => engine_state%transport_constraints%first
      do
         if (associated(tran_constraint)) then
@@ -891,6 +896,70 @@ subroutine SetAlquimiaSizes(reaction, sizes)
 end subroutine SetAlquimiaSizes
 
 ! **************************************************************************** !
+subroutine InitializeScreenOutput(option, input)
+
+  ! pflotran
+  use Option_module, only : option_type, printMsg, printErrMsg
+  use Input_module, only : input_type, InputReadFlotranString, InputReadWord, &
+       InputCheckExit, InputError, InputErrorMsg, InputReadStringErrorMsg
+  use String_module, only : StringToUpper
+
+  implicit none
+
+#include "definitions.h"
+#include "finclude/petsclog.h"
+
+  ! function parameters
+  type(option_type), pointer, intent(inout) :: option
+  type(input_type), pointer, intent(in) :: input
+
+  ! local variables
+  character(len=MAXSTRINGLENGTH) :: string
+  character(len=MAXWORDLENGTH) :: word, card
+
+  ! default value: option%print_to_screen = PETSC_TRUE
+
+  rewind(input%fid)
+
+  do
+    call InputReadFlotranString(input, option)
+    if (InputError(input)) exit
+
+    call InputReadWord(input, option, word, PETSC_FALSE)
+    call StringToUpper(word)
+    card = trim(word)
+
+    select case(trim(card))
+!....................
+      case ('OUTPUT')
+        do
+          call InputReadFlotranString(input, option)
+          call InputReadStringErrorMsg(input, option, card)
+          if (InputCheckExit(input, option)) exit
+          call InputReadWord(input, option, word, PETSC_TRUE)
+          call InputErrorMsg(input, option, 'keyword', 'OUTPUT')
+          call StringToUpper(word)
+          select case(trim(word))
+            case('SCREEN')
+              call InputReadWord(input, option, word, PETSC_TRUE)
+              call InputErrorMsg(input, option, 'time increment', 'OUTPUT,SCREEN')
+              call StringToUpper(word)
+              select case(trim(word))
+                case('OFF')
+                  option%print_to_screen = PETSC_FALSE
+                case default
+                  option%io_buffer = 'Keyword: ' // trim(word) // &
+                                     ' not recognized in OUTPUT,SCREEN for alquimia-pflotran interface.'
+                  call printErrMsg(option)
+               end select
+            end select
+         end do
+      end select
+   end do
+
+end subroutine InitializeScreenOutput
+
+! **************************************************************************** !
 subroutine InitializeTemperatureDependence(option, input)
 
   ! pflotran
@@ -1147,7 +1216,7 @@ function ConvertAlquimiaConditionToPflotran(&
   use AlquimiaContainers_module
 
   ! pflotran
-  use Option_module, only : option_type, printErrMsg
+  use Option_module, only : option_type, printErrMsg, printMsg
   use Reaction_aux_module, only : reaction_type, aq_species_constraint_type, &
        AqueousSpeciesConstraintCreate
   use Mineral_aux_module, only : mineral_constraint_type, MineralConstraintCreate
@@ -1182,8 +1251,8 @@ function ConvertAlquimiaConditionToPflotran(&
 
 
   call c_f_string_ptr(alquimia_condition%name, name)
-  write (*, '(a, a)') "building : ", trim(name)
-
+  option%io_buffer = "building : " // trim(name)
+  call printMsg(option)
   tran_constraint => TranConstraintCreate(option)
   tran_constraint%name = trim(name)
   ! NOTE(bja): requires_equilibration not used in pflotran?
