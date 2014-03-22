@@ -151,7 +151,6 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   implicit none
 
 #include "definitions.h"
-#include "finclude/petsclog.h"
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
@@ -328,7 +327,6 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   implicit none
 
 #include "definitions.h"
-#include "finclude/petsclog.h"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -790,7 +788,6 @@ subroutine SetupPFloTranOptions(input_filename, option)
   implicit none
 
 #include "definitions.h"
-#include "finclude/petsclog.h"
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
@@ -907,7 +904,6 @@ subroutine InitializeScreenOutput(option, input)
   implicit none
 
 #include "definitions.h"
-#include "finclude/petsclog.h"
 
   ! function parameters
   type(option_type), pointer, intent(inout) :: option
@@ -969,7 +965,6 @@ subroutine InitializeTemperatureDependence(option, input)
   implicit none
 
 #include "definitions.h"
-#include "finclude/petsclog.h"
 
   ! function parameters
   type(option_type), pointer, intent(inout) :: option
@@ -1005,7 +1000,6 @@ subroutine InitializePFloTranReactions(option, input, reaction)
   implicit none
 
 #include "definitions.h"
-#include "finclude/petsclog.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1066,7 +1060,6 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
   implicit none
 
 #include "definitions.h"
-#include "finclude/petsclog.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1137,7 +1130,6 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
   implicit none
 
 #include "definitions.h"
-#include "finclude/petsclog.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
