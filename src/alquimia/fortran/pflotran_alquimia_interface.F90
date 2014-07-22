@@ -682,7 +682,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   call c_f_pointer(meta_data%primary_names%data, name_list, (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(pflotran_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
@@ -702,7 +702,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   call c_f_pointer(meta_data%mineral_names%data, name_list, (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(pflotran_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
@@ -723,7 +723,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   call c_f_pointer(meta_data%surface_site_names%data, name_list, (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(pflotran_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
@@ -746,7 +746,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   call c_f_pointer(meta_data%ion_exchange_names%data, name_list, (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(dummy_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
@@ -759,7 +759,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   call c_f_pointer(meta_data%isotherm_species_names%data, name_list, &
        (/list_size/))
   do i = 1, list_size
-     call c_f_pointer(name_list(i), name, (/kAlquimiaMaxStringLength/))
+     call c_f_pointer(name_list(i), name)
      id = engine_state%reaction%eqkdspecid(i)
      call f_c_string_chars( &
           trim(engine_state%reaction%primary_species_names(id)), &
