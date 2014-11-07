@@ -39,7 +39,8 @@ ifdef PFLOTRAN_DIR
 endif
 
 ifdef CRUNCH_DIR
-	SRCS += crunch_alquimia.F90
+	SRCS += crunch_alquimia_interface.F90
+	SRCS += crunch_alquimia_wrappers.F90
 endif
 
 OBJS = \

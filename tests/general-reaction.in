@@ -53,7 +53,8 @@ OBSERVATION
 
 :=========================== output options ===================================
 OUTPUT
-  SCREEN OFF
+  PERIODIC_OBSERVATION TIMESTEP 1
+  :SCREEN OFF
 /
 
 :=========================== times ============================================

@@ -41,6 +41,7 @@
 
 
 #include "pflotran_alquimia_interface.h"
+#include "crunch_alquimia_interface.h"
 
 #include "alquimia_util.h"
 #include "alquimia_containers.h"
@@ -78,9 +79,15 @@ void CreateAlquimiaInterface(const char* const engine_name,
                                                   kAlquimiaStringCrunchFlow)) {
 #ifdef HAVE_CRUNCH
     /* interface->Setup = ...; */
-    status->error = kAlquimiaErrorInvalidEngine;
+    interface->Setup = &crunch_alquimia_setup;
+    interface->Shutdown = &crunch_alquimia_shutdown;
+    interface->ProcessCondition = &crunch_alquimia_processcondition;
+    interface->ReactionStepOperatorSplit = &crunch_alquimia_reactionstepoperatorsplit;
+    interface->GetAuxiliaryOutput = &crunch_alquimia_getauxiliaryoutput;
+    interface->GetProblemMetaData = &crunch_alquimia_getproblemmetadata;
+    status->error = kAlquimiaNoError;
     snprintf(status->message, kAlquimiaMaxStringLength,
-             "\nERROR : CreateAlquimiaInterface() : CrunchFlow interface requested, but has not been implemented!\n");
+             "CreateAlquimiaInterface() : successfully created CrunchFlow interface.\n");
 #else
     status->error = kAlquimiaErrorInvalidEngine;
     snprintf(status->message, kAlquimiaMaxStringLength,
