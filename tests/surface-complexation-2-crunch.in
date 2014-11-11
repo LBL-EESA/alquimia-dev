@@ -4,8 +4,8 @@ END
 
 RUNTIME
 time_units      years
-timestep_max    1.0d-1
-timestep_init   1.0d-1
+timestep_max    1.0d0
+timestep_init   1.0d0
 time_tolerance  0.01
 coordinate      rectangular
 correction_max  1.0
@@ -64,6 +64,11 @@ Condition initial
 units            mol/kg
 temperature      25.0
 !equilibrate_surface
+!H+   2.9260e-3
+!Cl-  6.9029e+0
+!Na+  7.0029e+0
+!NO3- 1.0000e-1
+!Zn++ 6.5138e-6
 pH               6.0
 Cl-              Halite
 Na+              charge

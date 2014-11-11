@@ -60,9 +60,13 @@ Na+              8.65d-2
 Ca++             1.82d-2
 Mg++             1.11d-2
 Cl-              charge
-X-       -cec    3.46686914E-04
+!X-       -cec    3.46686914E-04
+X-       -cec    3.33333333E-04
 !                eq / g solid
-!SolidDensity     3000
+! for cec on specific mineral, such as Halite use molar volume and molecular weight to calc CEC, instead of SolidDensity
+! pflotran CEC 750 eq/m3 solid
+! 750 eq/m3 solid * 27.015 cm3/mol / 58.4425 g/mol / 1e6 cm3/m3 = 3.46686914E-04 eq/g solid
+SolidDensity     3000
 !                Kg solid / m3 solid
 Halite           1.0d-5   bulk_surface_area 1.0
 END
