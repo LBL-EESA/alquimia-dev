@@ -30,8 +30,10 @@
 !
 ! CruncFlow Alquimia Inteface module
 !
-! Author: Sergi Molins <smolins@lbl.gov>
-! using plfotran_alquimia_interface by Ben Andre as template
+! Authors: 
+!        interface: Sergi Molins <smolins@lbl.gov>
+!        CrunchFlow: Carl Steefel
+!        template (plfotran_alquimia_interface): Benjamin Andre
 !
 ! Notes:
 !
@@ -633,7 +635,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
 
   !write (*, '(a)') "F_CrunchAlquimiaInterface::ReactionStepOperatorSplit() :"
 
-  !call PrintState(engine_state%reaction, state)
+  !call PrintState(state)
 
   ! 1st: GET ENGINE STATE FROM ALQUIMIA AND UPDATE CRUNCHFLOW VARIABLES WITH ALQUIMIA STATE
   

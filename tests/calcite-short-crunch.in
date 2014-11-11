@@ -18,6 +18,7 @@ screen_output   1
 hindmarsh       false
 gimrt           false
 graphics        tecplot
+RunIsothermal   true
 END
 
 OUTPUT
