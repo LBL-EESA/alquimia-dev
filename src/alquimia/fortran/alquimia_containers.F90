@@ -96,6 +96,7 @@ module AlquimiaContainers_module
      integer (c_int) :: num_surface_sites
      integer (c_int) :: num_ion_exchange_sites
      integer (c_int) :: num_isotherm_species
+     integer (c_int) :: num_gas_species
      integer (c_int) :: num_aux_integers
      integer (c_int) :: num_aux_doubles
   end type AlquimiaSizes
@@ -111,6 +112,8 @@ module AlquimiaContainers_module
      type (AlquimiaVectorDouble) :: mineral_specific_surface_area
      type (AlquimiaVectorDouble) :: surface_site_density
      type (AlquimiaVectorDouble) :: cation_exchange_capacity
+     type (AlquimiaVectorDouble) :: total_gas
+     type (AlquimiaVectorDouble) :: gas_concentration
   end type AlquimiaState
 
   type, public, bind(c) :: AlquimiaMaterialProperties
@@ -151,6 +154,7 @@ module AlquimiaContainers_module
      type (AlquimiaVectorString) :: surface_site_names
      type (AlquimiaVectorString) :: ion_exchange_names
      type (AlquimiaVectorString) :: isotherm_species_names
+     type (AlquimiaVectorString) :: gas_names
   end type AlquimiaProblemMetaData
 
   type, public, bind(c) :: AlquimiaAuxiliaryOutputData
