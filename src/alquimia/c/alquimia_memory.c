@@ -152,6 +152,10 @@ void AllocateAlquimiaState(const struct AlquimiaSizes* const sizes,
 
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(state->mineral_specific_surface_area));
+  AllocateAlquimiaVectorDouble(sizes->num_primary,
+                               &(state->total_gas));
+  AllocateAlquimiaVectorDouble(sizes->num_gas_species,
+                               &(state->gas_concentration));
 }  /* end AllocateAlquimiaState() */
 
 void FreeAlquimiaState(struct AlquimiaState* state) {
@@ -239,6 +243,9 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   AllocateAlquimiaVectorString(sizes->num_isotherm_species,
                                &(meta_data->isotherm_species_names));
 
+  AllocateAlquimiaVectorString(sizes->num_gas_species,
+                               &(meta_data->gas_names));
+
 }  /* end AllocateAlquimiaProblemMetaData() */
 
 void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
@@ -249,6 +256,7 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
     FreeAlquimiaVectorString(&(meta_data->surface_site_names));
     FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
     FreeAlquimiaVectorString(&(meta_data->isotherm_species_names));
+	FreeAlquimiaVectorString(&(meta_data->gas_names));
   }
 }  /* end FreeAlquimiaProblemMetaData() */
 

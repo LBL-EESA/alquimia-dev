@@ -294,7 +294,11 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
 
   ! number of unknowns
   neqn = ncomp + nexchange + nsurf + npot
-    
+
+  if (ngas > 0) then
+    isaturate = 1
+  end if
+   
   ! allocate vars for OS3D, gases too if needed
   call AllocateOS3D(ncomp,nspec,ngas,nrct,nexchange,nsurf,nsurf_sec,npot,neqn,nx,ny,nz)
   if (isaturate == 1) call AllocateGasesOS3D(nx,ny,nz,ncomp)
@@ -1125,6 +1129,26 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
           name, kAlquimiaMaxStringLength)
   end do
 
+  !
+  ! copy gas indices and names
+  !
+
+  if (meta_data%gas_names%size /= engine_state%ngas) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%gas_names%size (", &
+          meta_data%gas_names%size, ") != crunchflow%ngas(", &
+          engine_state%ngas, ")"
+  end if
+  list_size = meta_data%gas_names%size
+
+  ! namg : name of gas species
+
+  call c_f_pointer(meta_data%gas_names%data, name_list, (/list_size/))
+  do i = 1, list_size
+     call c_f_pointer(name_list(i), name)
+     call f_c_string_chars(trim(namg(i)), &
+          name, kAlquimiaMaxStringLength)
+  end do
+
   status%error = 0
 end subroutine GetProblemMetaData
 
@@ -1241,6 +1265,7 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   sizes%num_aqueous_complexes = nspec
   sizes%num_surface_sites = nsurf
   sizes%num_ion_exchange_sites = nexchange
+  sizes%num_gas_species = ngas
   ! number of retardation species are not tracked explicitly in CF outside start98
   ! the array distrib (declared in concentration.f90) is allocated for ncomp
   ! with distrib(i) = kd if i retarded, and distrib(i) = 0 if not 
@@ -1883,6 +1908,25 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   end do
 
   !
+  ! total gas concentrations
+  !
+  if (ngas > 0) then
+    call c_f_pointer(state%total_gas%data, data, (/ncomp/))
+    do i = 1, ncomp
+       sgasn(i,jx,jy,jz) = data(i) ! CF will not use this, will use LogTotalSurface (in auxiliary for consistency)
+    end do
+  end if
+
+  !
+  ! equilibrium surface complexation
+  !
+  call c_f_pointer(state%gas_concentration%data, data, (/ngas/))
+  do i = 1, ngas
+     spgas10(i,jx,jy,jz) = data(i) ! CF will not use this, will use LogTotalSurface (in auxiliary for consistency)
+  end do
+
+
+  !
   ! isotherms (smr) leave out for now, see distrib
   !
   !call c_f_pointer(material_prop%isotherm_kd%data, data, &
@@ -2017,6 +2061,23 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   call c_f_pointer(state%surface_site_density%data, data, (/nsurf/))
   do i = 1, nsurf
      data(i) = ssurfn(i,jx,jy,jz) 
+  end do
+
+  !
+  ! total gas concentrations
+  !
+  if (ngas > 0) then
+    call c_f_pointer(state%total_gas%data, data, (/ncomp/))
+    do i = 1, ncomp
+       data(i) = sgasn(i,jx,jy,jz) 
+    end do
+
+  !
+  ! gas species concentrations
+  !
+  call c_f_pointer(state%gas_concentration%data, data, (/ngas/))
+  do i = 1, ngas
+     data(i) = spgas10(i,jx,jy,jz) 
   end do
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
@@ -2286,6 +2347,7 @@ subroutine PrintSizes(sizes)
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
+  write (*, '(a, i4)') "  num gas species : ", sizes%num_gas_species
 end subroutine PrintSizes
 
 
