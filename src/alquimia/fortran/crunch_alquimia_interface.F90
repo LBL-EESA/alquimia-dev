@@ -858,6 +858,10 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
       xgramOld = xgram
       ! end straight from CrunchFlow.f90
       
+      ! update density
+      CALL density(jx,jy,jz)
+      !!roOld = ro
+
       ! send state variables back to Alquimia state with solution of this solve
       call CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                                  nexchange, nsurf, ndecay, npot, &
@@ -1237,7 +1241,7 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   else
      sizes%num_sorbed = 0
   end if
-  sizes%num_kinetic_minerals = nkin ! or nrct -- need to check what each one is
+  sizes%num_kinetic_minerals = nrct ! nkin
   sizes%num_aqueous_complexes = nspec
   sizes%num_surface_sites = nsurf
   sizes%num_ion_exchange_sites = nexchange
