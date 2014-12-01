@@ -146,6 +146,7 @@ module CrunchAlquimiaInterface_module
      integer(i4b)             :: ndecay
      integer(i4b)             :: ikin
      integer(i4b)             :: neqn
+     integer(i4b)             :: nretard
      integer(i4b)             :: nx
      integer(i4b)             :: ny
      integer(i4b)             :: nz
@@ -214,6 +215,7 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
   integer(i4b)          :: ndecay
   integer(i4b)          :: ikin
   integer(i4b)          :: neqn
+  integer(i4b)          :: nretard
   integer(i4b)          :: nx
   integer(i4b)          :: ny
   integer(i4b)          :: nz
@@ -305,7 +307,7 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
   ! Alquimia sizes
   call SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
                         nexchange, nsurf, ndecay, npot, &
-                        sizes)
+                        nretard, sizes)
 
   ! Engine functionality
   ! note: no need to pass anything for now
@@ -331,6 +333,7 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
   engine_state%ndecay = ndecay
   engine_state%ikin = ikin
   engine_state%neqn = neqn
+  engine_state%nretard = nretard
   ! domain size (start98-alquimia sets it to nx=ny=nz=1)
   engine_state%nx = nx
   engine_state%ny = ny
@@ -409,7 +412,7 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
   use crunchtype
   
   use runtime, only: nchem
-  use concentration, only: condlabel, stmp
+  use concentration, only: condlabel, stmp, jinit
 
   implicit none
 
@@ -448,6 +451,7 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
   integer(i4b)          :: ndecay
   integer(i4b)          :: ikin
   integer(i4b)          :: neqn
+  integer(i4b)          :: nretard
 
   !write (*, '(a)') "CrunchAlquimiaInterface::ProcessCondition() : "
 
@@ -473,11 +477,12 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
   ndecay = engine_state%ndecay
   ikin = engine_state%ikin
   neqn = engine_state%neqn
+  nretard = engine_state%nretard
 
   ! NOTE(bja): the data stored in alquimia's aux_data is uninitialized
   ! at this point, so don't want to copy it! (copy_auxdata = false)
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
-                             ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot)
+  !!call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
+  !!                           ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
   !
   ! process the condition
   !
@@ -527,11 +532,16 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
 
   end if
 
+  ! move here for now, we need to know now what condition we are dealing with
+  jinit(1,1,1) = nco
+  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
+                             ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
+
   if (allocated(stmp)) DEALLOCATE(stmp) !! to revisit ?
   allocate(stmp(ncomp))
 
 ! call to crunchflow subroutines are packaged in ProcessCrunchConstraint for clarity
-!     
+!
   call ProcessCrunchConstraint(engine_state, nco)
 
   if (allocated(stmp)) DEALLOCATE(stmp) !! to revisit ?
@@ -540,7 +550,7 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
 !
   call CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
-                             state, aux_data )
+                             nretard, state, aux_data )
   status%error = kAlquimiaNoError
 
 end subroutine ProcessCondition
@@ -598,6 +608,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   integer(i4b)          :: ndecay
   integer(i4b)          :: ikin
   integer(i4b)          :: neqn
+  integer(i4b)          :: nretard
   integer(i4b)          :: nx
   integer(i4b)          :: ny
   integer(i4b)          :: nz
@@ -653,6 +664,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   ndecay = engine_state%ndecay
   ikin = engine_state%ikin
   neqn = engine_state%neqn
+  nretard = engine_state%nretard
   ! domain size (start98-alquimia sets it to nx=ny=nz=1)
   nx = engine_state%nx
   ny = engine_state%ny
@@ -665,7 +677,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   time = engine_state%time
 
   call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
-                             ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot)
+                             ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
 
   IF (nexchange > 0) THEN
     CALL UpdateExchanger(nx,ny,nz,nexchange)
@@ -865,7 +877,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
       ! send state variables back to Alquimia state with solution of this solve
       call CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                                  nexchange, nsurf, ndecay, npot, &
-                                 state, aux_data )
+                                 nretard, state, aux_data )
     
       ! write stats of solve into status
       status%num_newton_iterations = iterat
@@ -1005,7 +1017,8 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
 
   use concentration, only: ulab, &
                            namsurf, &
-                           namexc
+                           namexc, &
+                           distrib
   use mineral, only: umin
 
   implicit none
@@ -1018,7 +1031,7 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
   ! local variables
   type (c_ptr), pointer :: name_list(:)
   character (c_char), pointer :: name
-  integer :: i, list_size
+  integer :: i, list_size, j
   type(CrunchEngineState), pointer :: engine_state
 
   !write (*, '(a)') "Crunch_Alquimia_GetEngineMetaData() :"
@@ -1117,16 +1130,27 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
   ! isotherm indices
   !
   ! list_size = 0 for now
-  ! CF does not track individual Kd species, it is all primary or none
-  ! (smr) TODO
+  ! CF does not track individual Kd species, can only tell by distrib
+  !
   list_size = meta_data%isotherm_species_names%size
   call c_f_pointer(meta_data%isotherm_species_names%data, name_list, &
        (/list_size/))
-  do i = 1, list_size
-     call c_f_pointer(name_list(i), name)
-     call f_c_string_chars( &
-          trim(ulab(i)), &
-          name, kAlquimiaMaxStringLength)
+  i = 0
+  do j = 1, engine_state%ncomp
+     
+     if(distrib(j) > 0.0d0) then       
+       i = i + 1
+       if (i > engine_state%nretard) then
+         write (*, '(a, i3, a, i3, a)') "meta_data%isotherm_species_names%size (", &
+         meta_data%isotherm_species_names%size, ") != crunchflow%nretard(", &
+         engine_state%nretard, ")"
+       end if
+       call c_f_pointer(name_list(i), name)
+       call f_c_string_chars( &
+            trim(ulab(j)), &  ! name of component, note index j
+            name, kAlquimiaMaxStringLength)
+     end if
+
   end do
 
   status%error = 0
@@ -1213,13 +1237,14 @@ end subroutine SetEngineFunctionality
 ! **************************************************************************** !
 subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
                             nexchange, nsurf, ndecay, npot, &
-                            sizes)
+                            nretard, sizes)
 
 ! note(smr): zeros denote unavailable processes for now, aug 8 2014
 
   use AlquimiaContainers_module, only : AlquimiaSizes
-
+  
   use crunchtype
+  use concentration, only: distrib
 
   implicit none
 
@@ -1233,10 +1258,13 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   integer(i4b), intent(in) :: nsurf
   integer(i4b), intent(in) :: ndecay
   integer(i4b), intent(in) :: npot
+  integer(i4b), intent(inout) :: nretard
   type (AlquimiaSizes), intent(out) :: sizes
 
+  integer(i4b)             :: i
+
   sizes%num_primary = ncomp
-  if (nsurf > 0 .or. nexchange > 0) then
+  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
      sizes%num_sorbed = ncomp ! as per alquimia convention
   else
      sizes%num_sorbed = 0
@@ -1247,10 +1275,14 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   sizes%num_ion_exchange_sites = nexchange
   ! number of retardation species are not tracked explicitly in CF outside start98
   ! the array distrib (declared in concentration.f90) is allocated for ncomp
-  ! with distrib(i) = kd if i retarded, and distrib(i) = 0 if not 
-  ! set to zero for now and figure out things later 
-  !! TODO (smr)
-  sizes%num_isotherm_species = 0
+  ! with distrib(i) = kd (L/Kg) if species i is retarded, and distrib(i) = 0 if not 
+  nretard = 0
+  do i=1,ncomp
+   if (distrib(i) > 0.0d0)  then
+     nretard = nretard + 1     
+   end if    
+  end do
+  sizes%num_isotherm_species = nretard
   call GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
                              sizes%num_aux_integers, sizes%num_aux_doubles)
@@ -1779,7 +1811,8 @@ end subroutine ProcessCrunchConstraint
 ! **************************************************************************** !
 subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
                                  ncomp, nspec, nkin, nrct, ngas, &
-                                 nexchange, nsurf, ndecay, npot)
+                                 nexchange, nsurf, ndecay, npot, &
+                                 nretard )
 
   use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
 
@@ -1794,7 +1827,10 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
                             ssurfold, &
                             sexold, &
                             exchangesites, &
-                            ssurfn
+                            ssurfn, &
+                            distrib, &
+                            SolidDensity, &
+                            jinit
 
   use mineral, only : volfx, area
 
@@ -1814,10 +1850,11 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   integer(i4b), intent(in) :: nsurf
   integer(i4b), intent(in) :: ndecay
   integer(i4b), intent(in) :: npot
+  integer(i4b), intent(in) :: nretard
 
   ! local variables
   real (c_double), pointer :: data(:)
-  integer :: i
+  integer :: i, iret
   integer(i4b), parameter :: jx=1
   integer(i4b), parameter :: jy=1
   integer(i4b), parameter :: jz=1
@@ -1844,7 +1881,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   end do
 
   ! sorbed primary
-  if (nsurf > 0 .or. nexchange > 0) then
+  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
      call c_f_pointer(state%total_immobile%data, data, (/ncomp/))
      do i = 1, ncomp
         ! don't send anything back to crunch, rely on data stored on global vars for now
@@ -1887,13 +1924,24 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   end do
 
   !
-  ! isotherms (smr) leave out for now, see distrib
+  ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
   !
-  !call c_f_pointer(material_prop%isotherm_kd%data, data, &
-  !     (/material_prop%isotherm_kd%size/))
-  !do i = 1, material_prop%isotherm_kd%size
-  !   reaction%eqkddistcoef(i) = data(i)
-  !end do
+  call c_f_pointer(material_prop%isotherm_kd%data, data, (/nretard/))
+  iret = 0
+  do i = 1, ncomp
+              
+     if (distrib(i) > 0.0d0) then
+       iret = iret + 1
+       distrib(i) = data(iret) * por(jx,jy,jz) / (1.0d0 - por(jx,jy,jz)) &
+                               / SolidDensity(jinit(jx,jy,jz)) / ro(jx,jy,jz)  * 1.d3       
+     end if
+
+  end do
+  if (iret /= nretard) then
+    write(*,*)'number of isotherm species is not that in crunchflows input file'
+    write(*,*)'current number: ',iret,' input file number: ',nretard
+    stop
+  end if
 
   !call c_f_pointer(material_prop%langmuir_b%data, data, &
   !     (/material_prop%langmuir_b%size/))
@@ -1918,7 +1966,7 @@ end subroutine CopyAlquimiaToAuxVars
 ! **************************************************************************** !
 subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                                  nexchange, nsurf, ndecay, npot, &
-                                 state, aux_data)
+                                 nretard, state, aux_data)
 
   use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
 
@@ -1927,13 +1975,17 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   ! crunch
   use crunchtype
   use temperature, only : t, ro
-  !!use transport, only : satliq
+  use transport, only : satliq
   use medium, only : por !!, porin
   use concentration, only : sn, &
                              ssurfold, &
                              sexold, &
                              exchangesites, &
-                             ssurfn
+                             ssurfn, &
+                             jinit, &
+                             SolidDensity, &
+                             distrib, &
+                             xgram
   use mineral, only : volfx, area
 
   implicit none
@@ -1948,6 +2000,7 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   integer(i4b), intent(in) :: nsurf
   integer(i4b), intent(in) :: ndecay
   integer(i4b), intent(in) :: npot
+  integer(i4b), intent(in) :: nretard
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
 
@@ -1957,7 +2010,8 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   integer(i4b), parameter :: jx=1
   integer(i4b), parameter :: jy=1
   integer(i4b), parameter :: jz=1
-  
+  real(dp)                :: retardation
+
   !write (*, '(a)') "Crunch_Alquimia_CopyAuxVarsToAlquimia() :"
 
   !
@@ -1979,7 +2033,7 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   !
   ! sorbed
   !
-  if (nsurf > 0 .or. nexchange > 0) then
+  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
      call c_f_pointer(state%total_immobile%data, data, (/ncomp/))
      do i = 1, ncomp
         ! send it to alquimia for plotting etc but cannot make it back through total_immobile
@@ -1989,6 +2043,10 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
         end if
         if (nsurf > 0) then
           data(i) = data(i) + ssurfold(i,jx,jy,jz)
+        end if
+        if (nretard > 0) then
+          Retardation = 0.001d0*SolidDensity(jinit(jx,jy,jz))*(1.0-por(jx,jy,jz))/por(jx,jy,jz)
+          data(i) = data(i) + xgram(jx,jy,jz) * satliq(jx,jy,jz) * ro(jx,jy,jz) * sn(i,jx,jy,jz) * Retardation * distrib(i)           
         end if
         !! write(*,*)'i, ssurfold(i,jx,jy,jz) ', i, sexold(i,jx,jy,jz)    
      end do
