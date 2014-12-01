@@ -1952,7 +1952,6 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
 
   !
   ! total gas concentrations
-  ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
   !
   if (ngas > 0) then
     call c_f_pointer(state%total_gas%data, data, (/ncomp/))
@@ -1969,8 +1968,8 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
      spgas10(i,jx,jy,jz) = data(i) ! CF will not use this, will use LogTotalSurface (in auxiliary for consistency)
   end do
 
-
   !
+  ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
   !
   call c_f_pointer(material_prop%isotherm_kd%data, data, (/nretard/))
   iret = 0
@@ -2089,14 +2088,6 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
         end if
         if (nsurf > 0) then
           data(i) = data(i) + ssurfold(i,jx,jy,jz)
-        end if
-        if (nretard > 0) then
-          Retardation = 0.001d0*SolidDensity(jinit(jx,jy,jz))*(1.0-por(jx,jy,jz))/por(jx,jy,jz)
-          data(i) = data(i) + xgram(jx,jy,jz) * satliq(jx,jy,jz) * ro(jx,jy,jz) * sn(i,jx,jy,jz) * Retardation * distrib(i)           
-        end if
-        if (nretard > 0) then
-          Retardation = 0.001d0*SolidDensity(jinit(jx,jy,jz))*(1.0-por(jx,jy,jz))/por(jx,jy,jz)
-          data(i) = data(i) + xgram(jx,jy,jz) * satliq(jx,jy,jz) * ro(jx,jy,jz) * sn(i,jx,jy,jz) * Retardation * distrib(i)           
         end if
         if (nretard > 0) then
           Retardation = 0.001d0*SolidDensity(jinit(jx,jy,jz))*(1.0-por(jx,jy,jz))/por(jx,jy,jz)
