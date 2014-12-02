@@ -1022,7 +1022,8 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
   use concentration, only: ulab, &
                            namsurf, &
                            namexc, &
-                           distrib
+                           distrib, &
+                           namg
   use mineral, only: umin
 
   implicit none
@@ -1160,7 +1161,6 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
   !
   ! copy gas indices and names
   !
-
   if (meta_data%gas_names%size /= engine_state%ngas) then
      write (*, '(a, i3, a, i3, a)') "meta_data%gas_names%size (", &
           meta_data%gas_names%size, ") != crunchflow%ngas(", &
@@ -1175,8 +1175,6 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
      call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(namg(i)), &
             name, kAlquimiaMaxStringLength)
-     end if
-
   end do
 
   status%error = 0
@@ -1299,6 +1297,11 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   sizes%num_aqueous_complexes = nspec
   sizes%num_surface_sites = nsurf
   sizes%num_ion_exchange_sites = nexchange
+  if (ngas > 0) then
+     sizes%num_total_gas = ncomp ! as per alquimia convention
+  else
+     sizes%num_total_gas = 0
+  end if  
   sizes%num_gas_species = ngas
   ! number of retardation species are not tracked explicitly in CF outside start98
   ! the array distrib (declared in concentration.f90) is allocated for ncomp
@@ -1857,7 +1860,9 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
                             ssurfn, &
                             distrib, &
                             SolidDensity, &
-                            jinit
+                            jinit, &
+                            sgasn, &
+                            spgas10
 
   use mineral, only : volfx, area
 
@@ -1956,16 +1961,16 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   if (ngas > 0) then
     call c_f_pointer(state%total_gas%data, data, (/ncomp/))
     do i = 1, ncomp
-       sgasn(i,jx,jy,jz) = data(i) ! CF will not use this, will use LogTotalSurface (in auxiliary for consistency)
+       sgasn(i,jx,jy,jz) = data(i)
     end do
   end if
 
   !
-  ! equilibrium surface complexation
+  ! gas concentrations
   !
   call c_f_pointer(state%gas_concentration%data, data, (/ngas/))
   do i = 1, ngas
-     spgas10(i,jx,jy,jz) = data(i) ! CF will not use this, will use LogTotalSurface (in auxiliary for consistency)
+     spgas10(i,jx,jy,jz) = data(i)
   end do
 
   !
@@ -2030,7 +2035,9 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                              jinit, &
                              SolidDensity, &
                              distrib, &
-                             xgram
+                             xgram, &
+                             sgasn, &
+                             spgas10
   use mineral, only : volfx, area
 
   implicit none
@@ -2134,6 +2141,7 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
     do i = 1, ncomp
        data(i) = sgasn(i,jx,jy,jz) 
     end do
+  end if
 
   !
   ! gas species concentrations

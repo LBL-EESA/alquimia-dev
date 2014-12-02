@@ -73,6 +73,7 @@ extern "C" {
     int num_surface_sites;
     int num_ion_exchange_sites;
     int num_isotherm_species;
+	int num_total_gases;
 	int num_gas_species;
     int num_aux_integers;
     int num_aux_doubles;
