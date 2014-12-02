@@ -152,8 +152,10 @@ void AllocateAlquimiaState(const struct AlquimiaSizes* const sizes,
 
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(state->mineral_specific_surface_area));
-  AllocateAlquimiaVectorDouble(sizes->num_primary,
+  
+  AllocateAlquimiaVectorDouble(sizes->num_total_gases,
                                &(state->total_gas));
+  
   AllocateAlquimiaVectorDouble(sizes->num_gas_species,
                                &(state->gas_concentration));
 }  /* end AllocateAlquimiaState() */
@@ -166,6 +168,8 @@ void FreeAlquimiaState(struct AlquimiaState* state) {
     FreeAlquimiaVectorDouble(&(state->mineral_specific_surface_area));
     FreeAlquimiaVectorDouble(&(state->cation_exchange_capacity));
     FreeAlquimiaVectorDouble(&(state->surface_site_density));
+    FreeAlquimiaVectorDouble(&(state->total_gas));
+    FreeAlquimiaVectorDouble(&(state->gas_concentration));
   }
 }  /* end FreeAlquimiaState() */
 

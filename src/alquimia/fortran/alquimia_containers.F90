@@ -96,6 +96,7 @@ module AlquimiaContainers_module
      integer (c_int) :: num_surface_sites
      integer (c_int) :: num_ion_exchange_sites
      integer (c_int) :: num_isotherm_species
+     integer (c_int) :: num_total_gases
      integer (c_int) :: num_gas_species
      integer (c_int) :: num_aux_integers
      integer (c_int) :: num_aux_doubles

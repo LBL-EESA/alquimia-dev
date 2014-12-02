@@ -158,6 +158,7 @@ void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes) {
   fprintf(stdout, "     num aqueous complexes : %d\n", sizes->num_aqueous_complexes);
   fprintf(stdout, "     num surface sites : %d\n", sizes->num_surface_sites);
   fprintf(stdout, "     num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
+  fprintf(stdout, "     num total gas components : %d\n", sizes->num_total_gases);
   fprintf(stdout, "     num gas species : %d\n", sizes->num_gas_species);
   fprintf(stdout, "     num auxiliary integers : %d\n", sizes->num_aux_integers);
   fprintf(stdout, "     num auxiliary doubles : %d\n", sizes->num_aux_doubles);
