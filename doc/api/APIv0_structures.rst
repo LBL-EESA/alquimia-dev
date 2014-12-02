@@ -133,7 +133,7 @@ Storage for spatially and temporally varying "state" data. Read/write (chemistry
 +-----------------------------------+------------------------+-----------------------------+
 | aqueous_pressure                  |         double         |            [Pa]             |
 +-----------------------------------+------------------------+-----------------------------+
-| total_mobile                      |  vector<double, N_p>   |       [molarity]            |
+| total_mobile                      |  vector<double, N_p>   |   [molarity: moles/L]       |
 +-----------------------------------+------------------------+-----------------------------+
 | total_immobile                    | vector<double, N_sorb> |    [moles/m^3 bulk]         |
 +-----------------------------------+------------------------+-----------------------------+
@@ -314,11 +314,11 @@ data in a particular array, it should set the size to zero.
 | mineral_reaction_rate            |  vector<double, N_m>   | [mol / sec / m^3 bulk] |
 |                                  |                        |                        |
 +----------------------------------+------------------------+------------------------+
-| primary_free_ion_concentration   |  vector<double, N_p>   |       [molality]       |
+| primary_free_ion_concentration   |  vector<double, N_p>   | [molality: mol/kg H2O] |
 +----------------------------------+------------------------+------------------------+
 |      primary_activity_coeff      |  vector<double, N_p>   | [-]                    |
 +----------------------------------+------------------------+------------------------+
-| secondary_free_ion_concentration |  vector<double, N_s>   |       [molality]       |
+| secondary_free_ion_concentration |  vector<double, N_s>   | [molality: mol/kg H2O] |
 +----------------------------------+------------------------+------------------------+
 |     secondary_activity_coeff     |  vector<double, N_s>   | [-]                    |
 +----------------------------------+------------------------+------------------------+
