@@ -289,6 +289,9 @@ void AllocateAlquimiaAuxiliaryOutputData(
                                &(aux_output->secondary_free_ion_concentration));
   AllocateAlquimiaVectorDouble(sizes->num_aqueous_complexes,
                                &(aux_output->secondary_activity_coeff));
+  
+  AllocateAlquimiaVectorDouble(sizes->num_gas_species,
+                               &(aux_output->gas_partial_pressure));
 
 }  /* end AllocateAlquimiaAuxiliaryOutputData() */
 
@@ -301,6 +304,7 @@ void FreeAlquimiaAuxiliaryOutputData(
     FreeAlquimiaVectorDouble(&(aux_output->primary_activity_coeff));
     FreeAlquimiaVectorDouble(&(aux_output->secondary_free_ion_concentration));
     FreeAlquimiaVectorDouble(&(aux_output->secondary_activity_coeff));
+	FreeAlquimiaVectorDouble(&(aux_output->gas_partial_pressure));
   }
 }  /* end FreeAlquimiaAuxiliaryOutputData() */
 

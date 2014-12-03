@@ -144,6 +144,7 @@ extern "C" {
     struct AlquimiaVectorDouble primary_activity_coeff; /* [-] */
     struct AlquimiaVectorDouble secondary_free_ion_concentration; /* [molality] */
     struct AlquimiaVectorDouble secondary_activity_coeff; /* [-] */
+	struct AlquimiaVectorDouble gas_partial_pressure; /* [-] */
   };
 
   /* 

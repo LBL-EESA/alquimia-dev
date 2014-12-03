@@ -913,7 +913,7 @@ subroutine GetAuxiliaryOutput( &
   ! crunchflow
   use params, only: secyr, clg
   use concentration, only: sp10, sp, &
-                           gam
+                           gam, spgas10
   use mineral, only: dppt, &
                      silog
 
@@ -1004,6 +1004,16 @@ subroutine GetAuxiliaryOutput( &
   do i = 1, aux_output%secondary_activity_coeff%size
      local_array(i) = gam(engine_state%ncomp+i,jx,jy,jz)
   end do
+
+  !
+  ! gas pressure in bars
+  !
+  call c_f_pointer(aux_output%gas_partial_pressure%data, local_array, &
+       (/aux_output%gas_partial_pressure%size/))
+  do i = 1, aux_output%gas_partial_pressure%size
+     ! violates no calculations!
+     local_array(i) = spgas10(i,jx,jy,jz) * 8.314d0 * (state%temperature + 273.15d0) * 1.0d-5
+  end do  
 
   status%error = kAlquimiaNoError
 end subroutine GetAuxiliaryOutput
@@ -1288,19 +1298,19 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   integer(i4b)             :: i
 
   sizes%num_primary = ncomp
-  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
-     sizes%num_sorbed = ncomp ! as per alquimia convention
-  else
-     sizes%num_sorbed = 0
-  end if
+!!  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
+!!     sizes%num_sorbed = ncomp ! as per alquimia convention
+!!  else
+!!     sizes%num_sorbed = 0
+!!  end if
   sizes%num_kinetic_minerals = nrct ! nkin
   sizes%num_aqueous_complexes = nspec
   sizes%num_surface_sites = nsurf
   sizes%num_ion_exchange_sites = nexchange
   if (ngas > 0) then
-     sizes%num_total_gas = ncomp ! as per alquimia convention
+     sizes%num_total_gases = ncomp ! as per alquimia convention
   else
-     sizes%num_total_gas = 0
+     sizes%num_total_gases = 0
   end if  
   sizes%num_gas_species = ngas
   ! number of retardation species are not tracked explicitly in CF outside start98
@@ -1313,6 +1323,11 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
    end if    
   end do
   sizes%num_isotherm_species = nretard
+  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
+     sizes%num_sorbed = ncomp ! as per alquimia convention
+  else
+     sizes%num_sorbed = 0
+  end if
   call GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
                              sizes%num_aux_integers, sizes%num_aux_doubles)

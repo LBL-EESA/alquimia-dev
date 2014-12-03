@@ -18,6 +18,7 @@ screen_output   1
 hindmarsh       false
 gimrt           false
 graphics        tecplot
+fix_saturation  0.8
 END
 
 OUTPUT
