@@ -166,6 +166,7 @@ module AlquimiaContainers_module
      type (AlquimiaVectorDouble) :: primary_activity_coeff
      type (AlquimiaVectorDouble) :: secondary_free_ion_concentration
      type (AlquimiaVectorDouble) :: secondary_activity_coeff
+     type (AlquimiaVectorDouble) :: gas_partial_pressure
   end type AlquimiaAuxiliaryOutputData
 
   type, public, bind(c) :: AlquimiaAqueousConstraint

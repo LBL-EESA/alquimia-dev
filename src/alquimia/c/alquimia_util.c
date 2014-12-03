@@ -245,6 +245,8 @@ void PrintAlquimiaAuxiliaryOutputData(
                             &(aux_output->secondary_free_ion_concentration));
   PrintAlquimiaVectorDouble("secondary activity coeff",
                             &(aux_output->secondary_activity_coeff));
+  PrintAlquimiaVectorDouble("gas partial pressure",
+                            &(aux_output->gas_partial_pressure));
 }  /* end PrintAlquimiaAuxiliaryOutputData() */
 
 void PrintAlquimiaGeochemicalConditionVector(

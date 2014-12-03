@@ -131,6 +131,12 @@ void DemoOutputPFloTran::Write(const double time,
     for (int i = 0; i < aux_output.mineral_reaction_rate.size; ++i) {
       this->output << seperator << aux_output.mineral_reaction_rate.data[i];
     }
+	for (int i = 0; i < state.total_gas.size; ++i) {
+      this->output << seperator << state.total_gas.data[i];
+    }
+    for (int i = 0; i < state.gas_concentration.size; ++i) {
+      this->output << seperator << state.gas_concentration.data[i];
+    }
     this->output << std::endl;
   }
 }  // end DemoOutputPFloTran::Write()
