@@ -1,0 +1,474 @@
+{
+   opal_hwloc132_hwloc_topology_load
+   Memcheck:Cond
+   fun:opal_hwloc132_hwloc_topology_load
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   param writev
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   fun:mca_oob_tcp_peer_send
+   fun:mca_oob_tcp_send_nb
+   fun:orte_rml_oob_send
+   fun:orte_rml_oob_send_buffer
+   fun:modex
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   open_mpi_init_thread
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:param_lookup
+   fun:mca_base_param_check_exclusive_string
+   obj:*
+   fun:mca_base_components_open
+   fun:mca_btl_base_open
+   obj:*
+   fun:mca_base_components_open
+   fun:mca_pml_base_open
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+}
+{
+   orte_grpcomm_base_get_proc_attr
+   Memcheck:Leak
+   fun:malloc
+   fun:orte_grpcomm_base_get_proc_attr
+   fun:ompi_comm_cid_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   openmpi_init_thread_strdup
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:mca_pml_base_open
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   petsc_init_openmpi_init_thread_base_open_strdup
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:mca_pml_base_open
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   petsc_init_openmpi_init_thread_reg_string_name
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:param_lookup
+   fun:param_register
+   fun:mca_base_param_reg_string_name
+   fun:opal_hwloc_base_open
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   openmpi_mca_base_param_lookup_string
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:param_lookup
+   fun:mca_base_param_lookup_string
+   obj:*
+   fun:mca_base_components_open
+   fun:mca_pml_base_open
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   openmpi_mca_bml_base_init
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   fun:mca_btl_base_select
+   obj:*
+   fun:mca_bml_base_init
+   obj:*
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   openmpi_mca_coll_base_find_available
+   Memcheck:Leak
+   fun:malloc
+   fun:ompi_proc_all
+   obj:*
+   fun:mca_coll_base_find_available
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   openmpi_proc_world
+   Memcheck:Leak
+   fun:malloc
+   fun:ompi_proc_world
+   fun:ompi_comm_cid_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   openmpi_init_base_app_setup_mca_base_param_reg_string_name
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:param_lookup
+   fun:param_register
+   fun:mca_base_param_reg_string_name
+   fun:orte_notifier_base_open
+   fun:orte_ess_base_app_setup
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+}
+{
+   openmpi_path_access
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_os_path
+   fun:opal_path_access
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   opal_event_base_loop
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_dss_unpack_string
+   fun:opal_dss_unpack_buffer
+   fun:opal_dss_unpack
+   fun:orte_grpcomm_base_update_modex_entries
+   fun:orte_grpcomm_base_modex_unpack
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:opal_event_base_loop
+}
+{
+   orte_ess_base_session_dir
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:orte_session_dir_get_name
+   fun:orte_session_dir
+   fun:orte_ess_base_app_setup
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   mca_base_param_reg_string_name
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:param_lookup
+   fun:param_register
+   fun:mca_base_param_reg_string_name
+   fun:opal_net_init
+   fun:opal_init_util
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   ompi_attr_create_predefined_create_keyval
+   Memcheck:Leak
+   fun:malloc
+   fun:ompi_attr_create_keyval_impl
+   fun:ompi_attr_create_keyval
+   fun:ompi_attr_create_predefined
+   fun:ompi_attr_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   ompi_attr_create_keyval_impl
+   Memcheck:Leak
+   fun:malloc
+   fun:ompi_attr_create_keyval_impl
+   fun:ompi_attr_create_keyval
+   fun:ompi_attr_create_predefined
+   fun:ompi_attr_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   petscinit_openmpi_comm_init
+   Memcheck:Leak
+   fun:malloc
+   fun:ompi_comm_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   openmpi_mca_base_components_open
+   Memcheck:Leak
+   fun:malloc
+   fun:mca_base_components_open
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   openmpi_opal_argv_append_nosize
+   Memcheck:Leak
+   fun:realloc
+   fun:opal_argv_append_nosize
+   fun:opal_argv_append
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   orte_init_register_params
+   Memcheck:Leak
+   fun:malloc
+   fun:vasprintf_l
+   fun:asprintf
+   fun:orte_register_params
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   fun:orte_rml_base_select
+   fun:orte_ess_base_app_setup
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_dss_buffer_extend
+   fun:opal_dss_pack
+   fun:ompi_modex_send_key_value
+   fun:ompi_proc_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   obj:*
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:modex_lookup_orte_proc
+   fun:orte_grpcomm_base_update_modex_entries
+   fun:orte_grpcomm_base_modex_unpack
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:opal_event_base_loop
+   fun:opal_progress
+   obj:*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:ompi_free_list_grow
+   obj:*
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_ifinit
+   fun:opal_ifcount
+   obj:*
+   fun:mca_oob_base_init
+   obj:*
+   fun:orte_rml_base_select
+   fun:orte_ess_base_app_setup
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   fun:mca_base_components_open
+   fun:mca_pml_base_open
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_free_list_grow
+   obj:*
+   fun:mca_oob_base_init
+   obj:*
+   fun:orte_rml_base_select
+   fun:orte_ess_base_app_setup
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_hash_table_set_value_uint64
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:orte_routed_base_register_sync
+   obj:*
+   fun:orte_ess_base_app_setup
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_hash_table_init
+   obj:*
+   fun:mca_oob_base_init
+   obj:*
+   fun:orte_rml_base_select
+   fun:orte_ess_base_app_setup
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_hash_table_init
+   obj:*
+   fun:mca_oob_base_init
+   obj:*
+   fun:orte_rml_base_select
+   fun:orte_ess_base_app_setup
+   obj:*
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   obj:*
+   fun:mca_base_components_open
+   fun:mca_pml_base_open
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   obj:*
+   fun:mca_base_components_open
+   fun:mca_pml_base_open
+   fun:ompi_mpi_init
+   fun:MPI_Init_thread
+   fun:PetscInitialize
+   fun:main
+}
