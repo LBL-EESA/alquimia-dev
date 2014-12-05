@@ -158,6 +158,8 @@ void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes) {
   fprintf(stdout, "     num aqueous complexes : %d\n", sizes->num_aqueous_complexes);
   fprintf(stdout, "     num surface sites : %d\n", sizes->num_surface_sites);
   fprintf(stdout, "     num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
+  fprintf(stdout, "     num total gas components : %d\n", sizes->num_total_gases);
+  fprintf(stdout, "     num gas species : %d\n", sizes->num_gas_species);
   fprintf(stdout, "     num auxiliary integers : %d\n", sizes->num_aux_integers);
   fprintf(stdout, "     num auxiliary doubles : %d\n", sizes->num_aux_doubles);
 }  /* end PrintAlquimiaSizes() */
@@ -183,6 +185,7 @@ void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const me
   PrintAlquimiaVectorString("surface site names", &(meta_data->surface_site_names));
   PrintAlquimiaVectorString("ion exchange names", &(meta_data->ion_exchange_names));
   PrintAlquimiaVectorString("isotherm species names", &(meta_data->isotherm_species_names));
+  PrintAlquimiaVectorString("gas species names", &(meta_data->gas_names));
 }  /* end PrintAlquimiaProblemMetaData() */
 
 void PrintAlquimiaMaterialProperties(const struct AlquimiaMaterialProperties* const mat_prop) {
@@ -213,6 +216,8 @@ void PrintAlquimiaState(const struct AlquimiaState* const state) {
                             &(state->cation_exchange_capacity));
   PrintAlquimiaVectorDouble("surface_site_density",
                             &(state->surface_site_density));
+  PrintAlquimiaVectorDouble("total_gas", &(state->total_gas));
+  PrintAlquimiaVectorDouble("gas_concentration", &(state->gas_concentration));
 }  /* end PrintAlquimiaState() */
 
 void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_data) {
@@ -240,6 +245,8 @@ void PrintAlquimiaAuxiliaryOutputData(
                             &(aux_output->secondary_free_ion_concentration));
   PrintAlquimiaVectorDouble("secondary activity coeff",
                             &(aux_output->secondary_activity_coeff));
+  PrintAlquimiaVectorDouble("gas partial pressure",
+                            &(aux_output->gas_partial_pressure));
 }  /* end PrintAlquimiaAuxiliaryOutputData() */
 
 void PrintAlquimiaGeochemicalConditionVector(

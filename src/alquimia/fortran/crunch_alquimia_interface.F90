@@ -296,7 +296,11 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
 
   ! number of unknowns
   neqn = ncomp + nexchange + nsurf + npot
-    
+
+  if (ngas > 0) then
+    isaturate = 1
+  end if
+   
   ! allocate vars for OS3D, gases too if needed
   call AllocateOS3D(ncomp,nspec,ngas,nrct,nexchange,nsurf,nsurf_sec,npot,neqn,nx,ny,nz)
   if (isaturate == 1) call AllocateGasesOS3D(nx,ny,nz,ncomp)
@@ -909,7 +913,7 @@ subroutine GetAuxiliaryOutput( &
   ! crunchflow
   use params, only: secyr, clg
   use concentration, only: sp10, sp, &
-                           gam
+                           gam, spgas10
   use mineral, only: dppt, &
                      silog
 
@@ -1001,6 +1005,16 @@ subroutine GetAuxiliaryOutput( &
      local_array(i) = gam(engine_state%ncomp+i,jx,jy,jz)
   end do
 
+  !
+  ! gas pressure in bars
+  !
+  call c_f_pointer(aux_output%gas_partial_pressure%data, local_array, &
+       (/aux_output%gas_partial_pressure%size/))
+  do i = 1, aux_output%gas_partial_pressure%size
+     ! violates no calculations!
+     local_array(i) = spgas10(i,jx,jy,jz) * 8.314d0 * (state%temperature + 273.15d0) * 1.0d-5
+  end do  
+
   status%error = kAlquimiaNoError
 end subroutine GetAuxiliaryOutput
 
@@ -1018,7 +1032,8 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
   use concentration, only: ulab, &
                            namsurf, &
                            namexc, &
-                           distrib
+                           distrib, &
+                           namg
   use mineral, only: umin
 
   implicit none
@@ -1151,6 +1166,25 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
             name, kAlquimiaMaxStringLength)
      end if
 
+  end do
+
+  !
+  ! copy gas indices and names
+  !
+  if (meta_data%gas_names%size /= engine_state%ngas) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%gas_names%size (", &
+          meta_data%gas_names%size, ") != crunchflow%ngas(", &
+          engine_state%ngas, ")"
+  end if
+  list_size = meta_data%gas_names%size
+
+  ! namg : name of gas species
+
+  call c_f_pointer(meta_data%gas_names%data, name_list, (/list_size/))
+  do i = 1, list_size
+     call c_f_pointer(name_list(i), name)
+     call f_c_string_chars(trim(namg(i)), &
+            name, kAlquimiaMaxStringLength)
   end do
 
   status%error = 0
@@ -1837,6 +1871,8 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
                             SolidDensity, &
                             jinit, &
                             xgram
+                            sgasn, &
+                            spgas10
 
   use mineral, only : volfx, area
 
@@ -1930,6 +1966,24 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   end do
 
   !
+  ! total gas concentrations
+  !
+  if (ngas > 0) then
+    call c_f_pointer(state%total_gas%data, data, (/ncomp/))
+    do i = 1, ncomp
+       sgasn(i,jx,jy,jz) = data(i)
+    end do
+  end if
+
+  !
+  ! gas concentrations
+  !
+  call c_f_pointer(state%gas_concentration%data, data, (/ngas/))
+  do i = 1, ngas
+     spgas10(i,jx,jy,jz) = data(i)
+  end do
+
+  !
   ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
   !
   call c_f_pointer(material_prop%isotherm_kd%data, data, (/nretard/))
@@ -1991,7 +2045,9 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                              jinit, &
                              SolidDensity, &
                              distrib, &
-                             xgram
+                             xgram, &
+                             sgasn, &
+                             spgas10
   use mineral, only : volfx, area
 
   implicit none
@@ -2085,6 +2141,24 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   call c_f_pointer(state%surface_site_density%data, data, (/nsurf/))
   do i = 1, nsurf
      data(i) = ssurfn(i,jx,jy,jz) 
+  end do
+
+  !
+  ! total gas concentrations
+  !
+  if (ngas > 0) then
+    call c_f_pointer(state%total_gas%data, data, (/ncomp/))
+    do i = 1, ncomp
+       data(i) = sgasn(i,jx,jy,jz) 
+    end do
+  end if
+
+  !
+  ! gas species concentrations
+  !
+  call c_f_pointer(state%gas_concentration%data, data, (/ngas/))
+  do i = 1, ngas
+     data(i) = spgas10(i,jx,jy,jz) 
   end do
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
@@ -2354,6 +2428,7 @@ subroutine PrintSizes(sizes)
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
+  write (*, '(a, i4)') "  num gas species : ", sizes%num_gas_species
 end subroutine PrintSizes
 
 

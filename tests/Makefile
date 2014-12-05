@@ -33,7 +33,7 @@ clean :
 		,* .emacs_* \
 		tags TAGS \
 		make.log MakeOut \
-		*.old *.stdout *.out *.alquimia *.tec *.txt *.testlog
+		*.old *.stdout *.out *.alquimia *.tec *.txt *.testlog *.rst PestControl.ant
 
 #
 # clobber - Really clean up the directory.

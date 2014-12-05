@@ -95,6 +95,15 @@ void DemoOutputPFloTran::WriteHeader(const char time_units,
     for (int i = 0; i < meta_data.mineral_names.size; ++i) {
       this->output << " , \"" << meta_data.mineral_names.data[i] << " Rate [mol/m^3/sec]\"";
     }
+
+	for (int i = 0; i < sizes.num_total_gases; ++i) {
+      this->output << " , \"Total Gaseous " << meta_data.primary_names.data[i]
+                   << " [mol/m^3 gas]\"";
+    }
+	for (int i = 0; i < meta_data.gas_names.size; ++i) {
+      this->output << " , \"" << meta_data.gas_names.data[i] << " [mol/m^3 gas]\"";
+    }
+
     this->output << std::endl;
   }
 }  // end DemoOutputPFloTran::WriteHeader()
@@ -121,6 +130,12 @@ void DemoOutputPFloTran::Write(const double time,
     }
     for (int i = 0; i < aux_output.mineral_reaction_rate.size; ++i) {
       this->output << seperator << aux_output.mineral_reaction_rate.data[i];
+    }
+	for (int i = 0; i < state.total_gas.size; ++i) {
+      this->output << seperator << state.total_gas.data[i];
+    }
+    for (int i = 0; i < state.gas_concentration.size; ++i) {
+      this->output << seperator << state.gas_concentration.data[i];
     }
     this->output << std::endl;
   }

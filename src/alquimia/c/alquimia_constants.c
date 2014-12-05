@@ -45,6 +45,7 @@ const char* kAlquimiaStringPH = "pH";
 const char* kAlquimiaStringMineral = "mineral";
 const char* kAlquimiaStringGas = "gas";
 const char* kAlquimiaStringCharge = "charge";
+const char* kAlquimiaStringTotalGaseous = "total_gaseous";
 
 /* Error Codes */
 const int kAlquimiaNoError = 0;
