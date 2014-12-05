@@ -51,8 +51,8 @@ END
 Condition initial
 units            mol/kg
 temperature      25.0
-A                1.0d-3
-C                1.0d-3
+A                1.00293346236581d-03
+C                1.00293346236581d-03
 SolidDensity     2650.0d0
 !                kg/m3
 END

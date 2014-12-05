@@ -56,9 +56,9 @@ END
 Condition initial
 units            mol/kg
 temperature      25.0
-HCO3-            1.0d-5
-Ca++             1.0e-5
-H+              -1.0d-5
+HCO3-            1.00293346236581d-05
+Ca++             1.00293346236581d-05
+H+              -1.00293346236581d-05
 Calcite          0.2      bulk_surface_area 100.0
 END
  

@@ -25,7 +25,7 @@ END
 OUTPUT
 time_units            years
 spatial_profile       1.0
-time_series           surface-complexation-crunch-cc.out  1 1 1 
+time_series           surface-complexation-cc.out  1 1 1 
 time_series_print     pH  Cl- Na+  NO3-  Zn++
 time_series_interval  1
 END
@@ -67,8 +67,8 @@ temperature      25.0
 pH               6.0
 Cl-              Halite
 Na+              charge
-NO3-             1.0d-1 
-Zn++             1.0d-6
+NO3-             1.00293346236581d-01
+Zn++             1.00293346236581E-06
 !Site name     <site density mol/m**2> multiplied by 1 m2/m3 surface area, i.e. equiv. to mol/m3  
 >FeOH_w          7.6355d-1
 >FeOH_s          1.908d-2
