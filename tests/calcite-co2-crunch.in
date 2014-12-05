@@ -1,0 +1,81 @@
+TITLE
+Batch calcite dissolution - CrunchFlow
+END
+
+RUNTIME
+time_units      days
+timestep_max    1.0d-1
+timestep_init   1.0d-1
+time_tolerance  0.01
+coordinate      rectangular
+correction_max  1.0
+debye-huckel    true
+database        calcite.dbs
+master          H+
+speciate_only   false
+database_sweep  false
+screen_output   1
+hindmarsh       false
+gimrt           false
+graphics        tecplot
+fix_saturation  0.8
+END
+
+OUTPUT
+time_units  days
+spatial_profile       4.0
+time_series           calcite-co2-cc.out  1 1 1 
+time_series_print     pH  H+  HCO3-  Ca++
+time_series_interval  1
+END
+
+PRIMARY_SPECIES
+H+
+HCO3-
+Ca++
+END
+
+SECONDARY_SPECIES 
+OH-
+CO3--
+CO2(aq)
+CaOH+
+CaHCO3+                                                                 
+CaCO3(aq)
+END
+
+MINERALS
+Calcite             -label default    -rate  -9.0
+END
+
+GASES
+CO2(g)
+END
+ 
+DISCRETIZATION
+distance_units  meters
+xzones  1  1.0
+END
+ 
+Condition initial
+units            mol/kg
+temperature      25.0
+!!HCO3-            1.0d-2 
+HCO3-            CO2(g)   3.15E-4
+Ca++             1.0e-19
+H+               charge
+Calcite          0.2      bulk_surface_area 100.0
+END
+ 
+INITIAL_CONDITIONS
+initial    1-1  1-1
+END
+ 
+POROSITY
+fix_porosity     0.5
+porosity_update  false
+END
+ 
+TEMPERATURE
+set_temperature  25.0
+END

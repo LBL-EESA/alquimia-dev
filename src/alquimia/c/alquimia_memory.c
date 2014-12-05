@@ -152,6 +152,12 @@ void AllocateAlquimiaState(const struct AlquimiaSizes* const sizes,
 
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(state->mineral_specific_surface_area));
+  
+  AllocateAlquimiaVectorDouble(sizes->num_total_gases,
+                               &(state->total_gas));
+  
+  AllocateAlquimiaVectorDouble(sizes->num_gas_species,
+                               &(state->gas_concentration));
 }  /* end AllocateAlquimiaState() */
 
 void FreeAlquimiaState(struct AlquimiaState* state) {
@@ -162,6 +168,8 @@ void FreeAlquimiaState(struct AlquimiaState* state) {
     FreeAlquimiaVectorDouble(&(state->mineral_specific_surface_area));
     FreeAlquimiaVectorDouble(&(state->cation_exchange_capacity));
     FreeAlquimiaVectorDouble(&(state->surface_site_density));
+    FreeAlquimiaVectorDouble(&(state->total_gas));
+    FreeAlquimiaVectorDouble(&(state->gas_concentration));
   }
 }  /* end FreeAlquimiaState() */
 
@@ -239,6 +247,9 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   AllocateAlquimiaVectorString(sizes->num_isotherm_species,
                                &(meta_data->isotherm_species_names));
 
+  AllocateAlquimiaVectorString(sizes->num_gas_species,
+                               &(meta_data->gas_names));
+
 }  /* end AllocateAlquimiaProblemMetaData() */
 
 void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
@@ -249,6 +260,7 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
     FreeAlquimiaVectorString(&(meta_data->surface_site_names));
     FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
     FreeAlquimiaVectorString(&(meta_data->isotherm_species_names));
+	FreeAlquimiaVectorString(&(meta_data->gas_names));
   }
 }  /* end FreeAlquimiaProblemMetaData() */
 
@@ -277,6 +289,9 @@ void AllocateAlquimiaAuxiliaryOutputData(
                                &(aux_output->secondary_free_ion_concentration));
   AllocateAlquimiaVectorDouble(sizes->num_aqueous_complexes,
                                &(aux_output->secondary_activity_coeff));
+  
+  AllocateAlquimiaVectorDouble(sizes->num_gas_species,
+                               &(aux_output->gas_partial_pressure));
 
 }  /* end AllocateAlquimiaAuxiliaryOutputData() */
 
@@ -289,6 +304,7 @@ void FreeAlquimiaAuxiliaryOutputData(
     FreeAlquimiaVectorDouble(&(aux_output->primary_activity_coeff));
     FreeAlquimiaVectorDouble(&(aux_output->secondary_free_ion_concentration));
     FreeAlquimiaVectorDouble(&(aux_output->secondary_activity_coeff));
+	FreeAlquimiaVectorDouble(&(aux_output->gas_partial_pressure));
   }
 }  /* end FreeAlquimiaAuxiliaryOutputData() */
 

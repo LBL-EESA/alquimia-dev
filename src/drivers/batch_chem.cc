@@ -302,6 +302,7 @@ int BatchChemWithAlquimia(
     if (false) {
       PrintAlquimiaState(&chem_data.state);
       PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
+	  PrintAlquimiaAuxiliaryOutputData(&chem_data.aux_output);
     }
     // unpack from driver memory, since this is batch, no unpacking
     chem.ReactionStepOperatorSplit(&chem_data.engine_state,

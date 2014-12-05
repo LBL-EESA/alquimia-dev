@@ -885,6 +885,8 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
   sizes%num_isotherm_species = reaction%neqkdrxn
+  sizes%num_total_gases = 0 ! placeholder - gas capabilities not available for pflotran yet
+  sizes%num_gas_species = 0 ! placeholder - gas capabilities not available for pflotran yet
   call GetAuxiliaryDataSizes(reaction, &
        sizes%num_aux_integers, sizes%num_aux_doubles)
 
@@ -1733,6 +1735,7 @@ subroutine PrintSizes(sizes)
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
+  write (*, '(a, i4)') "  num gas species : ", sizes%num_gas_species
 end subroutine PrintSizes
 
 
