@@ -24,7 +24,7 @@ END
 OUTPUT
 time_units            years
 spatial_profile       1.0
-time_series           ion-exchange-valocchi-crunch-cc.out  1 1 1 
+time_series           ion-exchange-valocchi-cc.out  1 1 1 
 time_series_print     Na+  Ca++  Mg++  Cl-
 time_series_interval  1
 END
@@ -56,12 +56,12 @@ END
 Condition initial
 units            mol/kg
 temperature      25.0
-Na+              8.65d-2
-Ca++             1.82d-2
-Mg++             1.11d-2
+Na+              8.67537444946422d-02
+Ca++             1.82533890150577d-02
+Mg++             1.11325614322604d-02
 Cl-              charge
 !X-       -cec    3.46686914E-04
-X-       -cec    3.33333333E-04
+X-       -cec    3.33333333d-04
 !                eq / g solid
 ! for cec on specific mineral, such as Halite use molar volume and molecular weight to calc CEC, instead of SolidDensity
 ! pflotran CEC 750 eq/m3 solid

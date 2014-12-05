@@ -25,7 +25,7 @@ END
 OUTPUT
 time_units            days
 spatial_profile       50.0
-time_series           general-reaction-crunch-cc.out  1 1 1 
+time_series           general-reaction-cc.out  1 1 1 
 time_series_print     A(aq)  B(aq)
 time_series_interval  1
 END
@@ -54,8 +54,8 @@ END
 Condition initial
 units            mol/kg
 temperature      25.0
-A(aq)            1.d-4
-B(aq)            2.d-5
+A(aq)            1.00293346236581d-04
+B(aq)            2.00586692473161d-05
 END
  
 INITIAL_CONDITIONS

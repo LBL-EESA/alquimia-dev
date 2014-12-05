@@ -1264,11 +1264,11 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   integer(i4b)             :: i
 
   sizes%num_primary = ncomp
-  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
-     sizes%num_sorbed = ncomp ! as per alquimia convention
-  else
-     sizes%num_sorbed = 0
-  end if
+!!  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
+!!     sizes%num_sorbed = ncomp ! as per alquimia convention
+!!  else
+!!     sizes%num_sorbed = 0
+!!  end if
   sizes%num_kinetic_minerals = nrct ! nkin
   sizes%num_aqueous_complexes = nspec
   sizes%num_surface_sites = nsurf
@@ -1283,6 +1283,11 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
    end if    
   end do
   sizes%num_isotherm_species = nretard
+  if (nsurf > 0 .or. nexchange > 0 .or. nretard > 0) then
+     sizes%num_sorbed = ncomp ! as per alquimia convention
+  else
+     sizes%num_sorbed = 0
+  end if
   call GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
                              sizes%num_aux_integers, sizes%num_aux_doubles)
@@ -1830,7 +1835,8 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
                             ssurfn, &
                             distrib, &
                             SolidDensity, &
-                            jinit
+                            jinit, &
+                            xgram
 
   use mineral, only : volfx, area
 
@@ -1876,7 +1882,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   !
   call c_f_pointer(state%total_mobile%data, data, (/ncomp/))
   do i = 1, ncomp
-     sn(i,jx,jy,jz) = data(i) ! fixed point for nonlinear problem is in 'sn'
+     sn(i,jx,jy,jz) = data(i) / ro(jx,jy,jz) / xgram(jx,jy,jz) * 1.d3  ! fixed point for nonlinear problem is in 'sn'
      !!write(*,*)'receive sn(i,jx,jy,jz): ',sn(i,jx,jy,jz),i
   end do
 
@@ -2027,7 +2033,7 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   !
   call c_f_pointer(state%total_mobile%data, data, (/ncomp/))
   do i = 1, ncomp
-     data(i) = sn(i,jx,jy,jz)
+     data(i) = sn(i,jx,jy,jz) * ro(jx,jy,jz) * xgram(jx,jy,jz) / 1.d3
      !!write(*,*)'sn(i,jx,jy,jz): ',sn(i,jx,jy,jz)
   end do  
   !
