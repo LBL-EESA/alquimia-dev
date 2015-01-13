@@ -33,6 +33,7 @@ CHEMISTRY
   OUTPUT
     ALL
     TOTAL_SORBED
+    TOTAL
   /
 END
 
