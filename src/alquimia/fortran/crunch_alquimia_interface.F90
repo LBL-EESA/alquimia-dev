@@ -2275,7 +2275,7 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   use concentration, only : sp10, sp, gam, &
                             spex, spex10, &
                             spsurf, LogTotalSurface, &
-                            spexold, ssurfold
+                            sexold, ssurfold
   use mineral, only : LogPotential
 
   ! function parameters  
