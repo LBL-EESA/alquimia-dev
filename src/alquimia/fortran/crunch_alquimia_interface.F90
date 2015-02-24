@@ -539,6 +539,7 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
 
   if (allocated(stmp)) DEALLOCATE(stmp) !! to revisit ?
   allocate(stmp(ncomp))
+  stmp = 0.0d0
 
 ! call to crunchflow subroutines are packaged in ProcessCrunchConstraint for clarity
 !
@@ -1184,7 +1185,7 @@ subroutine SetupCrunchOptions(input_filename) !, inputfilename)
   !PetscErrorCode :: ierr
   integer(i4b) :: ls
   
-  ! set the pflotran input file name
+  ! set the crunchflow input file name
   call c_f_string_chars(input_filename, inputfilename)
   
   CALL stringlen(inputfilename,ls)
@@ -1469,8 +1470,10 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
   tk = tempc + 273.15d0
   denmol = 1.e05/(8.314*tk)   ! P/RT = n/V, with pressure converted from bars to Pascals
  
+  if (ngas > 0) then !smr (if)
   spgastmp10 = spgastmp10*denmol
   spgastmp = DLOG(spgastmp10)
+  end if !smr
 
   DO ik = 1,ncomp+nspec
     spcond(ik,nco) = sptmp(ik)
@@ -2137,9 +2140,11 @@ subroutine GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
   num_doubles = &
        3 * ncomp + &
        nspec + &
-       nexchange + &
+       2 * nexchange + &
+       ncomp + &
        2 * nsurf + &
-       npot
+       npot + &
+       ncomp
 
 end subroutine GetAuxiliaryDataSizes
 
@@ -2154,8 +2159,9 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
 
   use crunchtype
   use concentration, only : sp10, sp, gam, &
-                            spex, spsurf, &
-                            LogTotalSurface
+                            spex, spex10, &
+                            spsurf, LogTotalSurface, &
+                            sexold, ssurfold
   use mineral, only : LogPotential
 
   ! function parameters  
@@ -2215,6 +2221,18 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
      data(dindex) = spex(i,jx,jy,jz)
   end do  
 
+  ! ion exchange
+  do i = 1, nexchange
+     dindex = dindex + 1
+     data(dindex) = spex10(i,jx,jy,jz)
+  end do  
+
+  ! ion exchange
+  do i = 1, ncomp
+     dindex = dindex + 1
+     data(dindex) = sexold(i,jx,jy,jz)
+  end do  
+
   ! surface primary
   do i = 1, nsurf
      dindex = dindex + 1
@@ -2234,6 +2252,12 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
      data(dindex) = LogPotential(i,jx,jy,jz) 
   end do
 
+! surface 
+  do i = 1, ncomp
+     dindex = dindex + 1
+     data(dindex) = ssurfold(i,jx,jy,jz) 
+  end do
+
   return
 
 end subroutine PackAlquimiaAuxiliaryData
@@ -2249,8 +2273,9 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   
   use crunchtype
   use concentration, only : sp10, sp, gam, &
-                            spex, spsurf, &
-                            LogTotalSurface
+                            spex, spex10, &
+                            spsurf, LogTotalSurface, &
+                            spexold, ssurfold
   use mineral, only : LogPotential
 
   ! function parameters  
@@ -2286,7 +2311,7 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
      sp10(i,jx,jy,jz) = data(dindex)
   end do
 
-  ! sp10 (primary species log concs)
+  ! sp (primary species log concs)
   do i = 1, ncomp
      dindex = dindex + 1
      sp(i,jx,jy,jz) = data(dindex)
@@ -2310,7 +2335,19 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
      spex(i,jx,jy,jz) = data(dindex)
   end do
 
-  ! equilibrium surface complexation
+  ! ion exchange
+  do i = 1, nexchange
+     dindex = dindex + 1
+     spex10(i,jx,jy,jz) = data(dindex)
+  end do
+
+ ! ion exchange
+  do i = 1, ncomp
+     dindex = dindex + 1
+     sexold(i,jx,jy,jz) = data(dindex)
+  end do
+
+! equilibrium surface complexation
   do i = 1, nsurf
      dindex = dindex + 1
      spsurf(i,jx,jy,jz) = data(dindex)
@@ -2326,6 +2363,12 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   do i = 1, npot
      dindex = dindex + 1
      LogPotential(i,jx,jy,jz) = data(dindex)
+  end do
+
+  ! equilibrium surface complexation
+  do i = 1, ncomp
+     dindex = dindex + 1
+     ssurfold(i,jx,jy,jz) = data(dindex)
   end do
 
   return
