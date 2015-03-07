@@ -2152,7 +2152,7 @@ subroutine GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
        ncomp + &
        2 * nsurf + &
        npot + &
-       ncomp + 
+       ncomp + &
        1
 
 end subroutine GetAuxiliaryDataSizes
