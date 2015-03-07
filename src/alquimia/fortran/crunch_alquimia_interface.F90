@@ -1326,7 +1326,7 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
                      mintype, LogPotential
   use medium, only: AqueousToBulkCond, SaturationCond, constantpor, &
                     porin, por, porOld, porcond, isaturate                   
-  use temperature, only: tempcond, rocond, ro
+  use temperature, only: t, tempcond, rocond, ro
   use transport, only: activecell
 
   implicit none
@@ -1445,6 +1445,10 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
   END DO
 
   LogPotential_tmp = 0.0
+  if (ngas > 0) then ! (smr) if
+  spgastmp = -100.0d0
+  spgastmp10 = 1.0D-35
+  end if ! (smr) if
 
   CALL species_init(ncomp,nspec)
   CALL gases_init(ncomp,ngas,tempc)
@@ -1635,6 +1639,10 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
       DO is = 1,nsurf
         spsurf(is,jx,jy,jz) = LOG(convert*spcondsurf10(is,jinit(jx,jy,jz)))
       END DO
+
+!     also temperature
+      t(jx,jy,jz) = tempcond(jinit(jx,jy,jz))
+
 ! end: this is straight from CrunchFlow start98 ---------------------------------------------------
 
 ! some more initializations, from CrunchFlow.f90 this time
@@ -2135,7 +2143,7 @@ subroutine GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
   integer (c_int), intent(out) :: num_ints
   integer (c_int), intent(out) :: num_doubles
 
-  num_ints = 0
+  num_ints = 1
 
   num_doubles = &
        3 * ncomp + &
@@ -2144,7 +2152,8 @@ subroutine GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
        ncomp + &
        2 * nsurf + &
        npot + &
-       ncomp
+       ncomp + 
+       1
 
 end subroutine GetAuxiliaryDataSizes
 
@@ -2159,10 +2168,12 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
 
   use crunchtype
   use concentration, only : sp10, sp, gam, &
-                            spex, spex10, &
-                            spsurf, LogTotalSurface, &
-                            sexold, ssurfold
+                                           spex, spex10, &
+                                           spsurf, LogTotalSurface, &
+                                           sexold, ssurfold, &
+                                           jinit
   use mineral, only : LogPotential
+  use medium, only : porin
 
   ! function parameters  
   integer(i4b), intent(in) :: ncomp
@@ -2178,18 +2189,28 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
 
   ! local variables
   integer (c_int) :: num_ints, num_doubles
+  integer(c_int), pointer :: idata(:)
   real (c_double), pointer :: data(:)
-  integer :: i, dindex
+  integer :: i, dindex, idindex
   integer(i4b), parameter :: jx=1
   integer(i4b), parameter :: jy=1
   integer(i4b), parameter :: jz=1
 
-  call c_f_pointer(aux_data%aux_doubles%data, data, (/num_doubles/))
-  dindex = 0
-  
   call GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
                              num_ints, num_doubles)
+
+! integers
+  call c_f_pointer(aux_data%aux_ints%data, idata, (/num_ints/))
+  idindex = 0
+
+ ! jinit
+  idindex = idindex + 1
+  idata(idindex) = jinit(jx,jy,jz)
+
+! doubles
+  call c_f_pointer(aux_data%aux_doubles%data, data, (/num_doubles/))
+  dindex = 0
 
   ! sp10 (primary species concs)
   do i = 1, ncomp
@@ -2258,6 +2279,10 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
      data(dindex) = ssurfold(i,jx,jy,jz) 
   end do
 
+! initial porosity 
+  dindex = dindex + 1
+  data(dindex) = porin(jx,jy,jz) 
+
   return
 
 end subroutine PackAlquimiaAuxiliaryData
@@ -2275,8 +2300,10 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   use concentration, only : sp10, sp, gam, &
                             spex, spex10, &
                             spsurf, LogTotalSurface, &
-                            sexold, ssurfold
+                            sexold, ssurfold, & 
+                            jinit
   use mineral, only : LogPotential
+  use medium, only: porin
 
   ! function parameters  
   integer(i4b), intent(in) :: ncomp
@@ -2292,8 +2319,9 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
 
   ! local variables
   integer (c_int) :: num_ints, num_doubles
+  integer (c_int), pointer :: idata(:)
   real (c_double), pointer :: data(:)
-  integer :: i, dindex
+  integer :: i, dindex, idindex
   integer(i4b), parameter :: jx=1
   integer(i4b), parameter :: jy=1
   integer(i4b), parameter :: jz=1
@@ -2302,6 +2330,15 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
                              num_ints, num_doubles)
 
+! integers
+  call c_f_pointer(aux_data%aux_ints%data, idata, (/num_ints/))
+  idindex = 0
+
+ ! jinit
+  idindex = idindex + 1
+  jinit(jx,jy,jz) = idata(idindex)
+
+! doubles
   call c_f_pointer(aux_data%aux_doubles%data, data, (/num_doubles/))
   dindex = 0
 
@@ -2371,6 +2408,10 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
      ssurfold(i,jx,jy,jz) = data(dindex)
   end do
 
+! initial porosity 
+  dindex = dindex + 1
+  porin(jx,jy,jz) = data(dindex)
+
   return
 
 end subroutine UnpackAlquimiaAuxiliaryData
@@ -2397,6 +2438,10 @@ subroutine PrintSizes(sizes)
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
+  write (*, '(a, i4)') "  num aux integers : ", sizes%num_aux_integers
+  write (*, '(a, i4)') "  num aux doubles : ", sizes%num_aux_doubles
+  return
+
 end subroutine PrintSizes
 
 
