@@ -859,6 +859,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
         DO jy = 1,ny
           DO jx = 1,nx
             CALL oldcon(ncomp,nspec,nexchange,nexch_sec,nsurf,nsurf_sec,jx,jy,jz)  
+            CALL oldkd(ncomp,jx,jy,jz)  ! smr
             IF (isaturate == 1) THEN
               CALL oldcongas(ncomp,ngas,jx,jy,jz)
             END IF
@@ -1661,6 +1662,7 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
 
 ! initialize old concentrations 
   CALL oldcon(ncomp,nspec,nexchange,nexch_sec,nsurf,nsurf_sec,jx,jy,jz)  
+  CALL oldkd(ncomp,jx,jy,jz)  
   IF (isaturate == 1) THEN
     CALL oldcongas(ncomp,ngas,jx,jy,jz)
   END IF
@@ -1840,8 +1842,8 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   use transport, only : satliq
   use medium, only : por
   use concentration, only : sn, &
-                            ssurfold, &
-                            sexold, &
+!                            ssurfold, &
+!                            sexold, &
                             exchangesites, &
                             ssurfn, &
                             distrib, &
@@ -1949,7 +1951,9 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
               
      if (distrib(i) > 0.0d0) then
        iret = iret + 1
-       distrib(i) = data(iret) * por(jx,jy,jz) / (1.0d0 - por(jx,jy,jz)) &
+!       distrib(i) = data(iret) * por(jx,jy,jz) / (1.0d0 - por(jx,jy,jz)) &
+!                               / SolidDensity(jinit(jx,jy,jz)) / ro(jx,jy,jz)  * 1.d3       
+       distrib(i) = data(iret) / (1.0d0 - por(jx,jy,jz)) &
                                / SolidDensity(jinit(jx,jy,jz)) / ro(jx,jy,jz)  * 1.d3       
      end if
 
@@ -1997,6 +2001,7 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   use concentration, only : sn, &
                              ssurfold, &
                              sexold, &
+                             skdold, &
                              exchangesites, &
                              ssurfn, &
                              jinit, &
@@ -2062,8 +2067,9 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
           data(i) = data(i) + ssurfold(i,jx,jy,jz)
         end if
         if (nretard > 0) then
-          Retardation = 0.001d0*SolidDensity(jinit(jx,jy,jz))*(1.0-por(jx,jy,jz))/por(jx,jy,jz)
-          data(i) = data(i) + xgram(jx,jy,jz) * satliq(jx,jy,jz) * ro(jx,jy,jz) * sn(i,jx,jy,jz) * Retardation * distrib(i)           
+          data(i) = data(i) + skdold(i,jx,jy,jz)
+!          Retardation = 0.001d0*SolidDensity(jinit(jx,jy,jz))*(1.0-por(jx,jy,jz))/por(jx,jy,jz)
+!          data(i) = data(i) + xgram(jx,jy,jz) * satliq(jx,jy,jz) * ro(jx,jy,jz) * sn(i,jx,jy,jz) * Retardation * distrib(i)           
         end if
         !! write(*,*)'i, ssurfold(i,jx,jy,jz) ', i, sexold(i,jx,jy,jz)    
      end do
@@ -2152,7 +2158,7 @@ subroutine GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
        ncomp + &
        2 * nsurf + &
        npot + &
-       ncomp + &
+       2 * ncomp + &
        1
 
 end subroutine GetAuxiliaryDataSizes
@@ -2171,6 +2177,7 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
                                            spex, spex10, &
                                            spsurf, LogTotalSurface, &
                                            sexold, ssurfold, &
+                                           skdold, &
                                            jinit
   use mineral, only : LogPotential
   use medium, only : porin
@@ -2279,6 +2286,12 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
      data(dindex) = ssurfold(i,jx,jy,jz) 
   end do
 
+! surface 
+  do i = 1, ncomp
+     dindex = dindex + 1
+     data(dindex) = skdold(i,jx,jy,jz) 
+  end do
+
 ! initial porosity 
   dindex = dindex + 1
   data(dindex) = porin(jx,jy,jz) 
@@ -2301,6 +2314,7 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
                             spex, spex10, &
                             spsurf, LogTotalSurface, &
                             sexold, ssurfold, & 
+                            skdold, &
                             jinit
   use mineral, only : LogPotential
   use medium, only: porin
@@ -2406,6 +2420,12 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   do i = 1, ncomp
      dindex = dindex + 1
      ssurfold(i,jx,jy,jz) = data(dindex)
+  end do
+
+  ! equilibrium surface complexation
+  do i = 1, ncomp
+     dindex = dindex + 1
+     skdold(i,jx,jy,jz) = data(dindex)
   end do
 
 ! initial porosity 
