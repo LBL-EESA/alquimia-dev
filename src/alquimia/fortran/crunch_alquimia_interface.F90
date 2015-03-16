@@ -1953,8 +1953,9 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
        iret = iret + 1
 !       distrib(i) = data(iret) * por(jx,jy,jz) / (1.0d0 - por(jx,jy,jz)) &
 !                               / SolidDensity(jinit(jx,jy,jz)) / ro(jx,jy,jz)  * 1.d3       
-       distrib(i) = data(iret) / (1.0d0 - por(jx,jy,jz)) &
-                               / SolidDensity(jinit(jx,jy,jz)) / ro(jx,jy,jz)  * 1.d3       
+!       distrib(i) = data(iret) / (1.0d0 - por(jx,jy,jz)) &
+!                               / SolidDensity(jinit(jx,jy,jz)) / ro(jx,jy,jz)  * 1.d3       
+!        TO FIX: enable previous line when things have been figured out 
      end if
 
   end do
