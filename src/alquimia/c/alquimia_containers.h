@@ -124,6 +124,7 @@ extern "C" {
   
   struct AlquimiaProblemMetaData {
     struct AlquimiaVectorString primary_names;
+    struct AlquimiaVectorInt    positivity;
     struct AlquimiaVectorString mineral_names;
     struct AlquimiaVectorString surface_site_names;
     struct AlquimiaVectorString ion_exchange_names;
