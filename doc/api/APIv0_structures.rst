@@ -283,6 +283,8 @@ receive data.
 +========================+=====================+===========================================+
 | primary_names          | vector<string, N_p> |names of the primary species               |
 +------------------------+---------------------+-------------------------------------------+
+| positivity             | vector<int, N_p>    |positivity of the primary species (1 or 0) |
++------------------------+---------------------+-------------------------------------------+
 | kinetic_mineral_names  | vector<string, N_m> |names of the kinetic minerals              |
 +------------------------+---------------------+-------------------------------------------+
 | surface_site_names     |vector<string, N_ss> |names of the surface sites                 |
@@ -293,6 +295,9 @@ receive data.
 |                        |                     |isotherm reactions                         |
 +------------------------+---------------------+-------------------------------------------+
 
+The positivity array is the same size as primary_names, and its ith entry 
+contains 1 if the ith primary species must be positive, 0 if it has no 
+such positivity constraint.
 
 .. _AlquimiaAuxiliaryOutputData:
 
