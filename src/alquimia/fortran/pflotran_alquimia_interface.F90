@@ -472,7 +472,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   type(PFloTranEngineState), pointer :: engine_state
   PetscReal :: porosity, volume, vol_frac_prim
   PetscReal :: tran_xx(state%total_mobile%size)
-  PetscInt :: i
+  PetscInt :: i, num_newton_iterations
   PetscInt, parameter :: phase_index = 1
   logical, parameter :: copy_auxdata = .true.
 
@@ -509,7 +509,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   call RReact(engine_state%rt_auxvar, engine_state%global_auxvar, &
        engine_state%material_auxvar, tran_xx, &
-       status%num_newton_iterations, engine_state%reaction, &
+       num_newton_iterations, engine_state%reaction, &
        engine_state%option)
 
   call RUpdateKineticState(engine_state%rt_auxvar, engine_state%global_auxvar, &
@@ -522,9 +522,15 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
        porosity, &
        state, aux_data)
 
-  !TODO(bja): solver num iterations, function evaluations, etc into status
-
+  ! Copy the diagnostic information into the status object.
+  ! PFlotran doesn't do anything really fancy in its Newton step, so
+  ! the numbers of RHS evaluations, Jacobian evaluations, and Newton 
+  ! iterations are all the same.
   status%error = kAlquimiaNoError
+  status%converged = .true.
+  status%num_rhs_evaluations = num_newton_iterations
+  status%num_jacobian_evaluations = num_newton_iterations
+  status%num_newton_iterations = num_newton_iterations
 
 end subroutine ReactionStepOperatorSplit
 
