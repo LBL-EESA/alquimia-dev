@@ -227,6 +227,9 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   AllocateAlquimiaVectorString(sizes->num_primary, &(meta_data->primary_names));
   assert(meta_data->primary_names.data != NULL);
 
+  AllocateAlquimiaVectorInt(sizes->num_primary, &(meta_data->positivity));
+  memset(meta_data->positivity.data, 0, sizeof(int) * sizes->num_primary);
+
   AllocateAlquimiaVectorString(sizes->num_kinetic_minerals,
                                &(meta_data->mineral_names));
 
@@ -245,6 +248,7 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
 
   if (meta_data != NULL) {
     FreeAlquimiaVectorString(&(meta_data->primary_names));
+    FreeAlquimiaVectorInt(&(meta_data->positivity));
     FreeAlquimiaVectorString(&(meta_data->mineral_names));
     FreeAlquimiaVectorString(&(meta_data->surface_site_names));
     FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
