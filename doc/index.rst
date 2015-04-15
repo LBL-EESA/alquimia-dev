@@ -75,6 +75,14 @@ followed consistently on both sides (driver and engine) of the
 interface wrapper code. Engines are obviously allowed to use their own
 internal coding styles in their own code.
 
+Guidance for use
+----------------
+
+.. toctree::
+   :maxdepth: 2
+
+   guidance
+
 Contents
 --------
 
