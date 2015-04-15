@@ -147,6 +147,7 @@ module AlquimiaContainers_module
 
   type, public, bind(c) :: AlquimiaProblemMetaData
      type (AlquimiaVectorString) :: primary_names
+     type (AlquimiaVectorInt)    :: positivity
      type (AlquimiaVectorString) :: mineral_names
      type (AlquimiaVectorString) :: surface_site_names
      type (AlquimiaVectorString) :: ion_exchange_names
