@@ -22,7 +22,8 @@
    works, distribute copies to the public, perform publicly and display publicly, 
    and to permit others to do so.
    
-   Authors: Benjamin Andre <bandre@lbl.gov>
+   Authors: Benjamin Andre <bandre@lbl.gov>, Sergi Molins <smolins@lbl.gov>, 
+   Jeff Johnson <jnjohnson@lbl.gov>
 
 
 Alquimia Data Transfer Containers
@@ -102,6 +103,8 @@ passed through the interface.
 +-------------------------+-------------+---------------------------------------------------------+
 | num_aqueous_complexes   | int         |       N_s, number of secondary aqueous complexes        |
 +-------------------------+-------------+---------------------------------------------------------+
+| num_aqueous_kinetics    | int         | N_k, number of kinetic aqueous reactions                |
++-------------------------+-------------+---------------------------------------------------------+
 | num_surface_sites       | int         | N_ss, number of surface sites                           |
 +-------------------------+-------------+---------------------------------------------------------+
 | num_ion_exchange_sites  | int         | N_ix, number of ion exchange sites                      |
@@ -152,19 +155,25 @@ Struct: Alquimia Material Properties
 
 Storage for spatially variable "parameters", not changing in time. Read only (chemistry may not change).
 
-+--------------+-----------------------+-------------------------------+
-| **variable** |      **storage**      | **units**                     |
-+==============+=======================+===============================+
-| volume       |        double         | [m^3]                         |
-+--------------+-----------------------+-------------------------------+
-| saturation   |        double         | [m^3 liquid / m^3 pore space] |
-+--------------+-----------------------+-------------------------------+
-| Isotherm Kd  | vector<double, N_is>  | [kg H20 / m^3 bulk]           |
-+--------------+-----------------------+-------------------------------+
-| Freundlich N | vector<double, N_is>  | [-]                           |
-+--------------+-----------------------+-------------------------------+
-| Langmuir b   | vector<double, N_is>  | [-]                           |
-+--------------+-----------------------+-------------------------------+
++---------------------------+-----------------------+-------------------------------+
+| **variable**              |      **storage**      | **units**                     |
++===========================+=======================+===============================+
+| volume                    |        double         | [m^3]                         |
++---------------------------+-----------------------+-------------------------------+
+| saturation                |        double         | [m^3 liquid / m^3 pore space] |
++---------------------------+-----------------------+-------------------------------+
+| Isotherm Kd               | vector<double, N_is>  | [kg H20 / m^3 bulk]           |
++---------------------------+-----------------------+-------------------------------+
+| Freundlich N              | vector<double, N_is>  | [-]                           |
++---------------------------+-----------------------+-------------------------------+
+| Langmuir b                | vector<double, N_is>  | [-]                           |
++---------------------------+-----------------------+-------------------------------+
+| mineral_rate_cnst         | vector<double, N_m>   | [mol /m^2-sec]                |
++---------------------------+-----------------------+-------------------------------+
+| aqueous_kinetic_rate_cnst | vector<double, N_k>   | [sec^-1] [5]_                 |
++---------------------------+-----------------------+-------------------------------+
+
+.. [5] Units will vary with the reaction model in the engine; sec^-1 corresponds to a first order rate dependence.
 
 Struct: Alquimia Auxiliary Data
 ===============================
@@ -293,6 +302,8 @@ receive data.
 +------------------------+---------------------+-------------------------------------------+
 | isotherm_species_names |vector<string, N_is> |names of the primary species involved in   |
 |                        |                     |isotherm reactions                         |
++------------------------+---------------------+-------------------------------------------+
+| kinetic_aqueous_names  | vector<string, N_k> |names of the kinetic aqueous reactions     |
 +------------------------+---------------------+-------------------------------------------+
 
 The positivity array is the same size as primary_names, and its ith entry 
