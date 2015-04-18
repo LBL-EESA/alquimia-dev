@@ -150,8 +150,8 @@ Storage for spatially and temporally varying "state" data. Read/write (chemistry
 +-----------------------------------+------------------------+-----------------------------+
 
 
-Struct: Alquimia Material Properties
-====================================
+Struct: Alquimia Properties
+===========================
 
 Storage for spatially variable "parameters", not changing in time. Read only (chemistry may not change).
 

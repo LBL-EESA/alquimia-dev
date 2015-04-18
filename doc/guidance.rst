@@ -78,48 +78,51 @@ the names of geochemical conditions are given in the driver's input. These
 names are then passed to Alquimia. The condition constraints are provided in the 
 geochemical engine's input file. Once, Alquimia hands the name of the condition
 to the engine, this processes the condition and assigns the 
-concentration values and material property values to the cell of interest.
+concentration values and property values to the cell of interest.
 
 The suggested call sequence in this mode of operation is given in the following 
 pseudocode: 
 
 .. code-block:: c
 
-   //alquimia initialization
-   AlquimiaSetup(alquimiaSizes);
+   // Initialize alquimia.
+   AlquimiaInterface chem;
+   void* engine_state;
+   AlquimiaSizes sizes;
+   AlquimiaEngineFunctionality functionality;
+   AlquimiaEngineStatus engine_status;
+   chem.Setup("input_file.in", &engine_state, &sizes, &functionality, &engine_status);
 
-   //driver initialization
-   readInput(domainSize,
-             conditionNames);
-   allocateState(domainSize,
-                 alquimiaSizes);
-   allocateMaterialProperties(domainSize,
-                              alquimiaSizes);
+   // Driver-specific initialization -- make several Alquimia containers 
+   // for doing chemistry on a physical domain.
+   AlquimiaGeochemicalCondition* conditions;
+   readInput(domain_size, conditionNames, &conditions);
+   AlquimiaState* states;
+   allocateState(domain_size, &alquimiaSizes, &states);
+   AlquimiaProperties* properties;
+   allocateProperties(domain_size, &alquimiaSizes, &properties);
+   AlquimiaAuxiliaryData* aux_data;
+   allocateAuxData(domain_size, &alquimiaSizes, &aux_data);
 
-   //processing conditions - assigning initial values to cells & boundaries
-   for(int cell=0;cell<domainSize;cell++) {
-     AlquimiaProcessCondition(conditionNames[cell],
-                              State[cell],
-                              MaterialProperties[cell]);
+   // Processing conditions - assigning initial values to cells & boundaries
+   for (int cell=0; cell < domain_size; ++cell) {
+     chem.ProcessCondition(&engine_state, &conditions[cell], &properties[cell],
+                           &states[cell], &aux_data[cell], &engine_status);
    }
-   //time stepping (operator splitting)
-   for(int itime=0;itime<endTime;itime++) {
+
+   // Time stepping (operator splitting)
+   for(int itime = 0; itime < endTime; ++itime) {
      // driver (e.g. flow, transport) advance
-     DriverTimeStep(State,
-                    MaterialProperties);
+     DriverTimeStep(dt, states, properties);
+
      // Alquimia chemistry advance
-     for(int cell=0;cell<domainSize;cell++) { 
-       AlquimiaReactionStepOperatorSplit(State[cell],
-                                         MaterialProperties[cell]);
+     for(int cell = 0; cell < domain_size; ++cell) { 
+       chem.ReactionStepOperatorSplit(&engine_state, dt, &properties[cell], &states[cell], &aux_data[cell], &engine_status);
      }
    }
 
-*Note:* Some :doc:`Alquimia functions <api/APIv0_functions>` have been used 
-here but the signature is not that of the API. The signature used here is only
-for the purpose of illustrating the hands-off coupling, with an emphasis on the 
-arguments that are central to this approach. The exact signature of the 
-functions :doc:`as defined by API <api/APIv0_functions>` is required for actual
-coding.
+*Note:* Functions described in :doc:`Alquimia functions <api/APIv0_functions>` 
+have been used in the above example.
    
 Hands-on mode
 -------------
@@ -147,8 +150,8 @@ conditions but actually assembling the geochemical conditions constraints.
 These conditions are then passed to Alquimia (a data structure is provided for 
 that). Alquimia takes care of translating the condition constraint to the 
 geochemical engine's internal format, which processes the condition as it were 
-provided in its own input file. The concentration values and material property 
-values are assigned to the cell of interest.
+provided in its own input file. The concentration values and property values are 
+assigned to the cell of interest.
 
 The suggested call sequence in this mode of operation is given in the following 
 pseudocode: 
@@ -156,66 +159,64 @@ pseudocode:
 .. code-block:: c
 
 
-   //alquimia initialization
-   AlquimiaSetup(alquimiaSizes);
-   AlquimiaGetProblemMetaData(alquimiaProblemMetaData);
+   // Initialize alquimia.
+   AlquimiaInterface chem;
+   void* engine_state;
+   AlquimiaSizes sizes;
+   AlquimiaEngineFunctionality functionality;
+   AlquimiaEngineStatus engine_status;
+   chem.Setup("input_file.in", &engine_state, &sizes, &functionality, &engine_status);
 
-   //driver initialization
-   readInput(domainSize,
-             chemistrySizes,
-             chemistryProblemMetaData,
-             initialConcentrations,
-             initialMaterialProperties,
-             initialConstraints);
+   // Retrieve problem metadata.
+   AlquimiaProblemMetaData metadata;
+   AllocateAlquimiaProblemMetaData(&sizes, &metadata);
+   chem.GetProblemMetaData(&engine_state, &metadata, &engine_status_);
+   
+   // Driver initialization
+   readInput(domain_size, &sizes, &metadata, &initial_concentrations, &initial_properties, 
+             &initial_constraints, &initial_aux_data);
 
    // check compatibility of sizes, order and names of parameters
-   if (alquimiaSizes != chemistrySizes) {
-     error;
+   if (sizes != chemistry_sizes) {
+     error("Size mismatch");
    }
-   if (alquimiaProblemMetaData != chemistryProblemMetaData) {
-     createMap(alquimiaProblemMetaData,
-               chemistryProblemMetaData);
+   if (metadata != chemistry_metadata) {
+     createMap(metadata, &chemistry_metadata);
    }
-   // create State and Material Properties
-   allocateState(domainSize,
-                 alquimiaSizes);
-   allocateMaterialProperties(domainSize,
-                              alquimiaSizes);
-   // assemblage of conditions w/ constraints
-   for(int cell=0;cell<domainSize;cell++) {
-     AlquimiaGeochemicalCondition[cell] = 
-       AssembleGeochemicalCondition(initialConcentrations[cell],
-                                    initialMaterialProperties[cell],
-                                    initialConstraints[cell]);
+   // create states and properties
+   allocateState(domain_size, &sizes, &states);
+   allocateProperties(domain_size, &sizes, &properties);
+
+   // Assemble constraints into conditions w/ constraints
+   AlquimiaGeochemicalCondition* conditions[domain_size];
+   for(int cell = 0; cell < domain_size; ++cell) {
+     conditions[cell] = 
+       AssembleGeochemicalCondition(&initial_concentrations[cell],
+                                    &initial_properties[cell],
+                                    &initial_constraints[cell]);
    }                                                                                          
 
-   //processing conditions - assigning initial values to cells & boundaries
-   for(int cell=0;cell<domainSize;cell++) {
-     AlquimiaProcessCondition(AlquimiaGeochemicalCondition[cell],
-                              State[cell],
-                              MaterialProperties[cell]);
+   // Processing conditions - assigning initial values to cells & boundaries
+   for(int cell = 0; cell < domain_size; ++cell) {
+     chem.ProcessCondition(&engine_state, &conditions[cell], &properties[cell],
+                           &states[cell], &aux_data[cell], &engine_status);
    }
-   //time stepping (operator splitting)
-   for(int itime=0;itime<endTime;itime++) {
+
+   // Time stepping (operator splitting)
+   for(int itime = 0; itime < endTime; ++itime) {
      // driver (e.g. flow, transport) advance
-     DriverTimeStep(State,
-                    MaterialProperties)
+     DriverTimeStep(dt, states, properties);
+
      // Alquimia chemistry advance
-     for(int cell=0;cell<domainSize;cell++) { 
-       AlquimiaReactionStepOperatorSplit(State[cell],
-                                         MaterialProperties[cell])
+     for(int cell = 0; cell < domain_size; ++cell) { 
+       chem.ReactionStepOperatorSplit(&engine_state, dt, &properties[cell], &states[cell], &aux_data[cell], &engine_status);
      }
    }
 
 *Note:* Some :doc:`Alquimia functions <api/APIv0_functions>` and 
 :doc:`Alquimia structures <api/APIv0_structures>` have been used 
-here but the signature is not that of the API. The signature used here is only
-for the purpose of illustrating the hands-on coupling, with an emphasis on the 
-arguments that are central to this approach. The exact signature of the 
-functions :doc:`as defined by the API <api/APIv0_functions>` is required for 
-actual coding. The same applies to 
-:doc:`Alquimia structures <api/APIv0_structures>`.
-
+here for illustration, but the details of the interaction of Alquimia with 
+the driver have not been specified.
    
 Fine-grained control of chemistry feedback processes    
 ----------------------------------------------------
@@ -230,7 +231,7 @@ This contains information about the functionality supported by the engine.
 It is up to the driver to decide (at run time if desired) whether this 
 functionality is to be used. For example, the geochemical driver may update 
 porosity based on changes in mineral volume changes. This updated porosity is 
-returned after the call to AlquimiaReactionStepOperatorSplit. The driver should 
+returned after the call to ReactionStepOperatorSplit. The driver should 
 use AlquimiaEngineFunctionality to be aware whether this is the case in any 
 particular simulation and decide to discard those changes or to use them. For
 some engines, this functionality can depend on the options provided in its
@@ -243,23 +244,22 @@ of the driver on the geochemical problem. However, this needs to be used with
 care. For example, arbitrarily altering concentrations may result in convergence
 issues next time the nonlinear geochemical problem is solved.
 
-Alquimia state and material properties
---------------------------------------
+Alquimia state and properties
+-----------------------------
 
 In the previous section, porosity is given as an example of a variable that 
 can change in an Alquimia time step. In Alquimia, a distinction is made 
-between variables defined in the AlquimiaState and AlquimiaMaterialProperties
+between variables defined in the AlquimiaState and AlquimiaProperties
 structures. AlquimiaState contains variables that can change in time. For
 example, aqueous concentrations are part of the AlquimiaState but also mineral 
-volume fractions. In contrast, AlquimiaMaterialProperties contains variables 
+volume fractions. In contrast, AlquimiaProperties contains variables 
 that are constant over time (within Alquimia) but that may be different in 
 different parts of the domain considered by the driver. This include aqueous
 saturation but also Kd coefficients.
 
 Often in the development for flow and transport, a different definition is given
-for State variables and material properties. For example, material properties 
-can be properties that are associated the solid phase (thus, immobile), while 
-state variables are those that are subject to transport (thus, mobile). In this 
-definition, concentrations are state variables, but mineral volume fractions are
-material properties. The developer must be careful in handling this correctly, 
-especially in.
+for state variables and properties. For example, properties can be associated 
+with the solid phase (thus, immobile), while state variables are those that 
+are subject to transport (thus, mobile). In this definition, concentrations are 
+state variables, but mineral volume fractions are properties. The developer 
+must be careful in handling this correctly.
