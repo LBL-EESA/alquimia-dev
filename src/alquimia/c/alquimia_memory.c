@@ -203,6 +203,10 @@ void AllocateAlquimiaProperties(
                                &(props->freundlich_n));
   AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
                                &(props->langmuir_b));
+  AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
+                               &(props->mineral_rate_cnst));
+  AllocateAlquimiaVectorDouble(sizes->num_aqueous_kinetics,
+                               &(props->aqueous_kinetic_rate_cnst));
 
 }  /* end AllocateAlquimiaProperties() */
 
@@ -212,6 +216,8 @@ void FreeAlquimiaProperties(
     FreeAlquimiaVectorDouble(&(props->isotherm_kd));
     FreeAlquimiaVectorDouble(&(props->freundlich_n));
     FreeAlquimiaVectorDouble(&(props->langmuir_b));
+    FreeAlquimiaVectorDouble(&(props->mineral_rate_cnst));
+    FreeAlquimiaVectorDouble(&(props->aqueous_kinetic_rate_cnst));
   }
 }  /* end FreeAlquimiaProperties() */
 
@@ -231,7 +237,7 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   memset(meta_data->positivity.data, 0, sizeof(int) * sizes->num_primary);
 
   AllocateAlquimiaVectorString(sizes->num_kinetic_minerals,
-                               &(meta_data->mineral_names));
+                               &(meta_data->kinetic_mineral_names));
 
   AllocateAlquimiaVectorString(sizes->num_surface_sites,
                                &(meta_data->surface_site_names));
@@ -242,6 +248,9 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   AllocateAlquimiaVectorString(sizes->num_isotherm_species,
                                &(meta_data->isotherm_species_names));
 
+  AllocateAlquimiaVectorString(sizes->num_aqueous_kinetics,
+                               &(meta_data->kinetic_aqueous_names));
+
 }  /* end AllocateAlquimiaProblemMetaData() */
 
 void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
@@ -249,10 +258,11 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
   if (meta_data != NULL) {
     FreeAlquimiaVectorString(&(meta_data->primary_names));
     FreeAlquimiaVectorInt(&(meta_data->positivity));
-    FreeAlquimiaVectorString(&(meta_data->mineral_names));
+    FreeAlquimiaVectorString(&(meta_data->kinetic_mineral_names));
     FreeAlquimiaVectorString(&(meta_data->surface_site_names));
     FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
     FreeAlquimiaVectorString(&(meta_data->isotherm_species_names));
+    FreeAlquimiaVectorString(&(meta_data->kinetic_aqueous_names));
   }
 }  /* end FreeAlquimiaProblemMetaData() */
 
