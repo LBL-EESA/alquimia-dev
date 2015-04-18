@@ -143,7 +143,7 @@ void PrintAlquimiaData(const struct AlquimiaData* const data) {
   PrintAlquimiaSizes(&data->sizes);
   PrintAlquimiaEngineFunctionality(&data->functionality);
   PrintAlquimiaState(&data->state);
-  PrintAlquimiaMaterialProperties(&data->material_properties);
+  PrintAlquimiaProperties(&data->properties);
   PrintAlquimiaAuxiliaryData(&data->aux_data);
   PrintAlquimiaProblemMetaData(&data->meta_data);
   PrintAlquimiaAuxiliaryOutputData(&data->aux_output);
@@ -185,15 +185,15 @@ void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const me
   PrintAlquimiaVectorString("isotherm species names", &(meta_data->isotherm_species_names));
 }  /* end PrintAlquimiaProblemMetaData() */
 
-void PrintAlquimiaMaterialProperties(const struct AlquimiaMaterialProperties* const mat_prop) {
+void PrintAlquimiaProperties(const struct AlquimiaProperties* const mat_prop) {
 
-  fprintf(stdout, "-- Alquimia Material Properties :\n");
+  fprintf(stdout, "-- Alquimia Properties :\n");
   fprintf(stdout, "     volume : %f\n", mat_prop->volume);
   fprintf(stdout, "     saturation : %f\n", mat_prop->saturation);
   PrintAlquimiaVectorDouble("isotherm kd", &(mat_prop->isotherm_kd));
   PrintAlquimiaVectorDouble("freundlich n", &(mat_prop->freundlich_n));
   PrintAlquimiaVectorDouble("langmuir b", &(mat_prop->langmuir_b));
-}  /* end PrintAlquimiaMaterialProperties() */
+}  /* end PrintAlquimiaProperties() */
 
 void PrintAlquimiaState(const struct AlquimiaState* const state) {
 
