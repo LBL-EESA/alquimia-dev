@@ -711,16 +711,16 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   ! copy mineral indices and names
   !
 
-  if (meta_data%mineral_names%size /= engine_state%reaction%mineral%nkinmnrl) then
+  if (meta_data%kinetic_mineral_names%size /= engine_state%reaction%mineral%nkinmnrl) then
      write (*, '(a, i3, a, i3, a)') "meta_data%mineral_names%size (", &
-          meta_data%mineral_names%size, ") != pflotran%reaction%mineral%nkinmnrl(", &
+          meta_data%kinetic_mineral_names%size, ") != pflotran%reaction%mineral%nkinmnrl(", &
           engine_state%reaction%mineral%nkinmnrl, ")"
   end if
-  list_size = meta_data%mineral_names%size
+  list_size = meta_data%kinetic_mineral_names%size
 
   pflotran_names => engine_state%reaction%mineral%mineral_names
 
-  call c_f_pointer(meta_data%mineral_names%data, name_list, (/list_size/))
+  call c_f_pointer(meta_data%kinetic_mineral_names%data, name_list, (/list_size/))
   do i = 1, list_size
      call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(pflotran_names(i)), &

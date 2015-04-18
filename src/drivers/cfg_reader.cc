@@ -68,7 +68,7 @@ const std::string DemoConfigReader::kPressureString("pressure");
 const std::string DemoConfigReader::kCECString("cec");
 const std::string DemoConfigReader::kSiteDensityString("site_density");
 
-const std::string DemoConfigReader::kMaterialPropertiesSection("material_properties");
+const std::string DemoConfigReader::kPropertiesSection("material_properties");
 const std::string DemoConfigReader::kVolumeString("volume");
 const std::string DemoConfigReader::kIsothermKdString("isotherm_kd");
 const std::string DemoConfigReader::kFreundlichNString("freundlich_n");
@@ -84,7 +84,7 @@ void DemoConfigReader::ReadInputFile(
     const std::string& file_name,
     DemoSimulation* simulation_params,
     DemoState* state,
-    DemoMaterialProperties* material_props,
+    DemoProperties* material_props,
     DemoConditions* conditions)
 {
   namespace util = alquimia::drivers::utilities;
@@ -141,7 +141,7 @@ void DemoConfigReader::ReadInputFile(
                                                     kStateSection)) {
         ParseStateSection(&input_file, state);
       } else if (util::CaseInsensitiveStringCompare(section_name,
-                                                    kMaterialPropertiesSection)) {
+                                                    kPropertiesSection)) {
         ParseMaterialPropertySection(&input_file, material_props);
       } else if (util::CaseInsensitiveStringCompare(section_name,
                                                     kNamedConditionSection)) {
@@ -285,7 +285,7 @@ void DemoConfigReader::ParseStateSection(
 
 void DemoConfigReader::ParseMaterialPropertySection(
     std::ifstream* input_file,
-    DemoMaterialProperties* material_props)
+    DemoProperties* material_props)
 {
   namespace util = alquimia::drivers::utilities;
   std::string raw_line;
@@ -376,7 +376,7 @@ void DemoConfigReader::ParseMaterialPropertySection(
     }
     
   }
-}  // end ParseMaterialPropertiesSection();
+}  // end ParsePropertiesSection();
 
 void DemoConfigReader::ParseConditionSection(
     std::ifstream* input_file,
@@ -477,7 +477,7 @@ void DemoConfigReader::WriteTemplateFile(const std::string& file_name)
   template_file << kPressureString << " = " << std::endl;
   template_file << std::endl;
 
-  template_file << "[" << kMaterialPropertiesSection << "]" << std::endl;
+  template_file << "[" << kPropertiesSection << "]" << std::endl;
   template_file << kVolumeString << " = " << std::endl;
   template_file << kIsothermKdString << " = [species_name value, ...]" << std::endl;
   template_file << kFreundlichNString << " = [species_name value, ...]" << std::endl;

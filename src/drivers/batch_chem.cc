@@ -96,19 +96,19 @@ int main(int argc, char** argv) {
 
     util::DemoSimulation demo_simulation;
     util::DemoState demo_state;
-    util::DemoMaterialProperties demo_material_props;
+    util::DemoProperties demo_props;
     util::DemoConditions demo_conditions;
 
     if (!input_file_name.empty()) {
       cfg_reader.set_debug(false);
       cfg_reader.ReadInputFile(input_file_name,
                                &demo_simulation, &demo_state,
-                               &demo_material_props, &demo_conditions);
+                               &demo_props, &demo_conditions);
       if (debug_batch_driver) {
         std::cout << "- Input File ---------------------------------------------------------\n";
         demo_simulation.Print();
         demo_state.Print();
-        demo_material_props.Print();
+        demo_props.Print();
         util::PrintGeochemicalConditions(demo_conditions);
         std::cout << "--------------------------------------------------------- Input File -\n";
       }
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
     // run the demo batch chemistry
     //
     error = BatchChemWithAlquimia(demo_simulation, demo_state,
-                                  demo_material_props, demo_conditions,
+                                  demo_props, demo_conditions,
                                   output);
     delete output;
 
@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
 int BatchChemWithAlquimia(
     const alquimia::drivers::utilities::DemoSimulation& demo_simulation,
     const alquimia::drivers::utilities::DemoState& demo_state,
-    const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
+    const alquimia::drivers::utilities::DemoProperties& demo_props,
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,
     alquimia::drivers::utilities::DemoOutput* output) {
   //
@@ -233,8 +233,8 @@ int BatchChemWithAlquimia(
   // appropriate values from the driver's memory.
   CopyDemoStateToAlquimiaState(demo_state, &chem_data.meta_data,
                                &chem_data.state);
-  CopyDemoMaterialPropertiesToAlquimiaMaterials(
-      demo_material_props, chem_data.meta_data, &chem_data.material_properties);
+  CopyDemoPropertiesToAlquimiaMaterials(
+      demo_props, chem_data.meta_data, &chem_data.properties);
 
   PrintAlquimiaData(&chem_data);
 
@@ -257,7 +257,7 @@ int BatchChemWithAlquimia(
       // properties need to be updated here!
       chem.ProcessCondition(&chem_data.engine_state,
                             &(alquimia_conditions.data[i]),
-                            &chem_data.material_properties,
+                            &chem_data.properties,
                             &chem_data.state,
                             &chem_data.aux_data,
                             &chem_status);
@@ -284,7 +284,7 @@ int BatchChemWithAlquimia(
   double time = 0.0;
   // get initial pH
   chem.GetAuxiliaryOutput(&chem_data.engine_state,
-                          &chem_data.material_properties,
+                          &chem_data.properties,
                           &chem_data.state,
                           &chem_data.aux_data,
                           &chem_data.aux_output,
@@ -303,7 +303,7 @@ int BatchChemWithAlquimia(
     // unpack from driver memory, since this is batch, no unpacking
     chem.ReactionStepOperatorSplit(&chem_data.engine_state,
                                    &delta_t,
-                                   &chem_data.material_properties,
+                                   &chem_data.properties,
                                    &chem_data.state,
                                    &chem_data.aux_data,
                                    &chem_status);
@@ -314,7 +314,7 @@ int BatchChemWithAlquimia(
       return chem_status.error;
     }
     chem.GetAuxiliaryOutput(&chem_data.engine_state,
-                            &chem_data.material_properties,
+                            &chem_data.properties,
                             &chem_data.state,
                             &chem_data.aux_data,
                             &chem_data.aux_output,
@@ -488,20 +488,20 @@ void CopyDemoStateToAlquimiaState(
   free(name);
 }  // end CopyDemoStateToAlquimiaState()
 
-void CopyDemoMaterialPropertiesToAlquimiaMaterials(
-    const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
+void CopyDemoPropertiesToAlquimiaMaterials(
+    const alquimia::drivers::utilities::DemoProperties& demo_props,
     const AlquimiaProblemMetaData& alquimia_meta_data,
-    AlquimiaMaterialProperties* alquimia_material_props) {
-  alquimia_material_props->volume = demo_material_props.volume;
-  alquimia_material_props->saturation = demo_material_props.saturation;
+    AlquimiaProperties* alquimia_props) {
+  alquimia_props->volume = demo_props.volume;
+  alquimia_props->saturation = demo_props.saturation;
 
   if (static_cast<size_t>(alquimia_meta_data.isotherm_species_names.size) != 
-      demo_material_props.isotherm_species.size()) {
+      demo_props.isotherm_species.size()) {
     std::stringstream message;
     message << "ERROR: chemistry engine expects " 
             << alquimia_meta_data.isotherm_species_names.size << " isotherm species. "
             << " but input file only contains " 
-            << demo_material_props.isotherm_species.size() << std::endl;
+            << demo_props.isotherm_species.size() << std::endl;
     throw std::runtime_error(message.str());
   }
 
@@ -512,21 +512,21 @@ void CopyDemoMaterialPropertiesToAlquimiaMaterials(
     // save the isotherm species id
     strncpy(name, alquimia_meta_data.isotherm_species_names.data[i],
             kAlquimiaMaxStringLength);
-    for (size_t j = 0; j < demo_material_props.isotherm_species.size(); ++j) {
-      if (demo_material_props.isotherm_species.at(j).compare(name) == 0) {
+    for (size_t j = 0; j < demo_props.isotherm_species.size(); ++j) {
+      if (demo_props.isotherm_species.at(j).compare(name) == 0) {
         
-        alquimia_material_props->isotherm_kd.data[i] = 
-            demo_material_props.isotherm_kd.at(j);
-        alquimia_material_props->freundlich_n.data[i] = 
-            demo_material_props.freundlich_n.at(j);
-        alquimia_material_props->langmuir_b.data[i] = 
-            demo_material_props.langmuir_b.at(j);
+        alquimia_props->isotherm_kd.data[i] = 
+            demo_props.isotherm_kd.at(j);
+        alquimia_props->freundlich_n.data[i] = 
+            demo_props.freundlich_n.at(j);
+        alquimia_props->langmuir_b.data[i] = 
+            demo_props.langmuir_b.at(j);
         break;
       }
     }
   }
   free(name);
-}  // end CopyDemoMaterialPropertiesToAlquimiaMaterials()
+}  // end CopyDemoPropertiesToAlquimiaMaterials()
 
 
 void CopyDemoConditionsToAlquimiaConditions(
