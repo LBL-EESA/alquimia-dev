@@ -70,6 +70,7 @@ extern "C" {
     int num_sorbed;
     int num_kinetic_minerals;
     int num_aqueous_complexes;
+    int num_aqueous_kinetics;
     int num_surface_sites;
     int num_ion_exchange_sites;
     int num_isotherm_species;
@@ -92,10 +93,12 @@ extern "C" {
   
   struct AlquimiaProperties {
     double volume;  /* [m^3] */
-    double saturation;  /* [-] */
-    struct AlquimiaVectorDouble isotherm_kd;  /* [?] */
-    struct AlquimiaVectorDouble freundlich_n; /* [?] */
-    struct AlquimiaVectorDouble langmuir_b;  /* [?] */
+    double saturation;  /* [m^3 liquid / m^3 pore space] */
+    struct AlquimiaVectorDouble isotherm_kd;  /* [kg H20 / m^3 bulk] */
+    struct AlquimiaVectorDouble freundlich_n; /* [-] */
+    struct AlquimiaVectorDouble langmuir_b;  /* [-] */
+    struct AlquimiaVectorDouble mineral_rate_cnst; /* [mol/m^2-sec] */
+    struct AlquimiaVectorDouble aqueous_kinetic_rate_cnst; /* [sec^-1] */
   };
   
   struct AlquimiaAuxiliaryData {
@@ -125,10 +128,11 @@ extern "C" {
   struct AlquimiaProblemMetaData {
     struct AlquimiaVectorString primary_names;
     struct AlquimiaVectorInt    positivity;
-    struct AlquimiaVectorString mineral_names;
+    struct AlquimiaVectorString kinetic_mineral_names;
     struct AlquimiaVectorString surface_site_names;
     struct AlquimiaVectorString ion_exchange_names;
     struct AlquimiaVectorString isotherm_species_names;
+    struct AlquimiaVectorString kinetic_aqueous_names;
     /*char** auxiliary_output_names;*/
   };
   
