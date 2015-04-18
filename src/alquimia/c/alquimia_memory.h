@@ -58,12 +58,12 @@ extern "C" {
                                      struct AlquimiaAuxiliaryData* aux_data);
   void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data);
 
-  /* material properties */
-  void AllocateAlquimiaMaterialProperties(
+  /* Properties */
+  void AllocateAlquimiaProperties(
       const struct AlquimiaSizes* const sizes,
-      struct AlquimiaMaterialProperties* material_props);
-  void FreeAlquimiaMaterialProperties(
-      struct AlquimiaMaterialProperties* material_props);
+      struct AlquimiaProperties* props);
+  void FreeAlquimiaProperties(
+      struct AlquimiaProperties* props);
 
   /* Problem Meta Data */
   void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,

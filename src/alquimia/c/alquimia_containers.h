@@ -90,7 +90,7 @@ extern "C" {
     struct AlquimiaVectorDouble cation_exchange_capacity;  /* [moles/m^3 bulk] */
   };
   
-  struct AlquimiaMaterialProperties {
+  struct AlquimiaProperties {
     double volume;  /* [m^3] */
     double saturation;  /* [-] */
     struct AlquimiaVectorDouble isotherm_kd;  /* [?] */
