@@ -190,30 +190,30 @@ void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
 
 /*******************************************************************************
  **
- **  Material Properties
+ **  Properties
  **
  *******************************************************************************/
 
-void AllocateAlquimiaMaterialProperties(
+void AllocateAlquimiaProperties(
     const struct AlquimiaSizes* const sizes,
-    struct AlquimiaMaterialProperties* material_props) {
+    struct AlquimiaProperties* props) {
   AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
-                               &(material_props->isotherm_kd));
+                               &(props->isotherm_kd));
   AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
-                               &(material_props->freundlich_n));
+                               &(props->freundlich_n));
   AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
-                               &(material_props->langmuir_b));
+                               &(props->langmuir_b));
 
-}  /* end AllocateAlquimiaMaterialProperties() */
+}  /* end AllocateAlquimiaProperties() */
 
-void FreeAlquimiaMaterialProperties(
-    struct AlquimiaMaterialProperties* material_props) {
-  if (material_props != NULL) {
-    FreeAlquimiaVectorDouble(&(material_props->isotherm_kd));
-    FreeAlquimiaVectorDouble(&(material_props->freundlich_n));
-    FreeAlquimiaVectorDouble(&(material_props->langmuir_b));
+void FreeAlquimiaProperties(
+    struct AlquimiaProperties* props) {
+  if (props != NULL) {
+    FreeAlquimiaVectorDouble(&(props->isotherm_kd));
+    FreeAlquimiaVectorDouble(&(props->freundlich_n));
+    FreeAlquimiaVectorDouble(&(props->langmuir_b));
   }
-}  /* end FreeAlquimiaMaterialProperties() */
+}  /* end FreeAlquimiaProperties() */
 
 /*******************************************************************************
  **
@@ -461,7 +461,7 @@ void FreeAlquimiaMineralConstraint(
  *******************************************************************************/
 void AllocateAlquimiaData(struct AlquimiaData* data) {
     AllocateAlquimiaState(&data->sizes, &data->state);
-    AllocateAlquimiaMaterialProperties(&data->sizes, &data->material_properties);
+    AllocateAlquimiaProperties(&data->sizes, &data->properties);
     AllocateAlquimiaAuxiliaryData(&data->sizes, &data->aux_data);
     AllocateAlquimiaProblemMetaData(&data->sizes, &data->meta_data);
     AllocateAlquimiaAuxiliaryOutputData(&data->sizes, &data->aux_output);
@@ -470,7 +470,7 @@ void AllocateAlquimiaData(struct AlquimiaData* data) {
 
 void FreeAlquimiaData(struct AlquimiaData* data) {
   FreeAlquimiaState(&data->state);
-  FreeAlquimiaMaterialProperties(&data->material_properties);
+  FreeAlquimiaProperties(&data->properties);
   FreeAlquimiaAuxiliaryData(&data->aux_data);
   FreeAlquimiaProblemMetaData(&data->meta_data);
   FreeAlquimiaAuxiliaryOutputData(&data->aux_output);

@@ -113,13 +113,13 @@ module AlquimiaContainers_module
      type (AlquimiaVectorDouble) :: cation_exchange_capacity
   end type AlquimiaState
 
-  type, public, bind(c) :: AlquimiaMaterialProperties
+  type, public, bind(c) :: AlquimiaProperties
      real (c_double) :: volume
      real (c_double) :: saturation
      type (AlquimiaVectorDouble) :: isotherm_kd
      type (AlquimiaVectorDouble) :: freundlich_n
      type (AlquimiaVectorDouble) :: langmuir_b
-  end type AlquimiaMaterialProperties
+  end type AlquimiaProperties
 
   type, public, bind(c) :: AlquimiaAuxiliaryData 
      type (AlquimiaVectorInt) :: aux_ints
