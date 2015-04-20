@@ -279,6 +279,9 @@ void AllocateAlquimiaAuxiliaryOutputData(
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(aux_output->mineral_saturation_index));
 
+  AllocateAlquimiaVectorDouble(sizes->num_aqueous_kinetics,
+                               &(aux_output->aqueous_kinetic_rate));
+
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(aux_output->mineral_reaction_rate));
 
@@ -297,6 +300,7 @@ void AllocateAlquimiaAuxiliaryOutputData(
 void FreeAlquimiaAuxiliaryOutputData(
     struct AlquimiaAuxiliaryOutputData* aux_output) {
   if (aux_output != NULL) {
+    FreeAlquimiaVectorDouble(&(aux_output->aqueous_kinetic_rate));
     FreeAlquimiaVectorDouble(&(aux_output->mineral_saturation_index));
     FreeAlquimiaVectorDouble(&(aux_output->mineral_reaction_rate));
     FreeAlquimiaVectorDouble(&(aux_output->primary_free_ion_concentration));
