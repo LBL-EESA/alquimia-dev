@@ -138,8 +138,9 @@ extern "C" {
   
   struct AlquimiaAuxiliaryOutputData {
     double pH;
-    struct AlquimiaVectorDouble mineral_saturation_index;  /* [-] */
-    struct AlquimiaVectorDouble mineral_reaction_rate;  /* [?] */
+    struct AlquimiaVectorDouble aqueous_kinetic_rate;  /* [?] */
+    struct AlquimiaVectorDouble mineral_saturation_index;  /* [mol/sec/m^3] */
+    struct AlquimiaVectorDouble mineral_reaction_rate;  /* [mol/sec/m^3 bulk] */
     struct AlquimiaVectorDouble primary_free_ion_concentration; /* [molality] */
     struct AlquimiaVectorDouble primary_activity_coeff; /* [-] */
     struct AlquimiaVectorDouble secondary_free_ion_concentration; /* [molality] */

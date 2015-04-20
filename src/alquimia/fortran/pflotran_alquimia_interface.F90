@@ -600,13 +600,18 @@ subroutine GetAuxiliaryOutput( &
      aux_output%pH = -100.d0
   end if
 
-  !
+  ! Aqueous kinetic rate FIXME: not yet supported!
+!  call c_f_pointer(aux_output%aqueous_kinetic_rate%data, local_array, &
+!       (/aux_output%aqueous_kinetic_rate%size/))
+!  do i = 1, aux_output%aqueous_kinetic_rate%size
+!    local_array(i) = engine_state%global_auxvar%reaction_rate(i)
+!  end do
+
   ! mineral data
-  !
   call c_f_pointer(aux_output%mineral_reaction_rate%data, local_array, &
        (/aux_output%mineral_reaction_rate%size/))
-    do i = 1, aux_output%mineral_reaction_rate%size
-     local_array(i) = engine_state%rt_auxvar%mnrl_rate(i)
+  do i = 1, aux_output%mineral_reaction_rate%size
+    local_array(i) = engine_state%rt_auxvar%mnrl_rate(i)
   end do
 
   call c_f_pointer(aux_output%mineral_saturation_index%data, local_array, &

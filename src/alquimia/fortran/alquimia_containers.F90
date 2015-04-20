@@ -160,6 +160,7 @@ module AlquimiaContainers_module
 
   type, public, bind(c) :: AlquimiaAuxiliaryOutputData
      real (c_double) :: pH
+     type (AlquimiaVectorDouble) :: aqueous_kinetic_rate
      type (AlquimiaVectorDouble) :: mineral_saturation_index
      type (AlquimiaVectorDouble) :: mineral_reaction_rate
      type (AlquimiaVectorDouble) :: primary_free_ion_concentration
