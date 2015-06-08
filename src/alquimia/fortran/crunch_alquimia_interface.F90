@@ -82,7 +82,7 @@ module CrunchAlquimiaInterface_module
        SetEngineFunctionality, &
        SetAlquimiaSizes, &
        ProcessCrunchConstraint, &
-!       ConvertAlquimiaConditionToPflotran, &
+       ConvertAlquimiaConditionToCrunch, &
        CopyAlquimiaToAuxVars, &
        CopyAuxVarsToAlquimia, &
        GetAuxiliaryDataSizes, &
@@ -311,7 +311,7 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
 
   ! Engine functionality
   ! note: no need to pass anything for now
-  call SetEngineFunctionality(functionality)
+  call SetEngineFunctionality(jpor,functionality)
   !
   ! save crunch's persistent data to a struct so the driver can store it for us
   ! crunch uses global variables so there is no need for anything to be stored for now
@@ -494,12 +494,37 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
   if (condition%aqueous_constraints%size > 0) then
      ! the driver is supplying the constraint data, so we need to
      ! construct a geochemical condition in crunchflow's internal format.
+ 
+     ! check whether this condition has already been added to list
+     ! prepend 'alq_' to name coming from driver (this is how they are
+     ! stored to avoid duplication of names -- easier than checking)
+     found = 0
+     do_crunchConditions: do nco = 1,nchem
+
+       if (trim(condlabel(nco)) == 'alq_'//trim(adjustl(name))) then         
+         
+         found = nco
+         exit do_crunchConditions
+       end if
+
+     end do do_crunchConditions
+
+!    the condition has not be added yet, go ahead and add it now
+     if (found == 0) then
+       call ConvertAlquimiaConditionToCrunch(state,material_properties, &
+                                             ncomp,nrct,ngas,nexchange, nsurf, &
+                                             condition)
+
+        nco = nchem
+        found = nco
+
+     end if
 
      !! (smr) fixme: not supported yet
-     status%error = kAlquimiaErrorUnsupportedFunctionality
-     call f_c_string_ptr("ERROR: crunchflow interface does not support externally supplied geochemical conditions!", &
-          status%message, kAlquimiaMaxStringLength)
-     return
+!!     status%error = kAlquimiaErrorUnsupportedFunctionality
+!!     call f_c_string_ptr("ERROR: crunchflow interface does not support externally supplied geochemical conditions!", &
+!!          status%message, kAlquimiaMaxStringLength)
+!!     return
   
   else
      ! the driver just supplied a name, so we check for a constraint
@@ -1217,19 +1242,30 @@ subroutine SetupCrunchOptions(input_filename) !, inputfilename)
 end subroutine SetupCrunchOptions
 
 ! **************************************************************************** !
-subroutine SetEngineFunctionality(functionality)
+subroutine SetEngineFunctionality(jpor,functionality)
 
   use AlquimiaContainers_module, only : AlquimiaEngineFunctionality
+
+  use temperature, only: RunIsothermal
     
   implicit none
 
   ! function parameters
+  integer(i4b), intent(in) :: jpor
   type (AlquimiaEngineFunctionality), intent(out) :: functionality
 
   functionality%thread_safe = .false. ! (smr) crunch global variables do not allow for thread safe engine
-  functionality%temperature_dependent = .false.
+  if (RunIsothermal) then
+    functionality%temperature_dependent = .false.
+  else   
+    functionality%temperature_dependent = .true.
+  end if
   functionality%pressure_dependent = .false.
-  functionality%porosity_update = .false.
+  if (jpor == -1) then
+     functionality%porosity_update = .false.
+  else 
+     functionality%porosity_update = .true.
+  end if
   functionality%operator_splitting = .true.
   functionality%global_implicit = .false.
   functionality%index_base = 1
@@ -1681,149 +1717,380 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
 
 end subroutine ProcessCrunchConstraint
 
-!! TO DO
-!!!!! **************************************************************************** !
-!!!!function ConvertAlquimiaConditionToCrunch(&
-!!!!     option, reaction, alquimia_condition)
-!!!!  use, intrinsic :: iso_c_binding
-!!!!
-!!!!  use c_f_interface_module, only : c_f_string_ptr
-!!!!
-!!!!  use AlquimiaContainers_module
-!!!!
-!!!!  ! pflotran
-!!!!  use Option_module, only : option_type, printErrMsg, printMsg
-!!!!  use Reaction_aux_module, only : reaction_type, aq_species_constraint_type, &
-!!!!       AqueousSpeciesConstraintCreate
-!!!!  use Mineral_aux_module, only : mineral_constraint_type, MineralConstraintCreate
-!!!!  use String_module, only : StringCompareIgnoreCase
-!!!!  use Constraint_module, only : tran_constraint_type, TranConstraintCreate, &
-!!!!       CONSTRAINT_FREE, CONSTRAINT_TOTAL, CONSTRAINT_TOTAL_SORB, &
-!!!!       CONSTRAINT_PH, CONSTRAINT_MINERAL, &
-!!!!       CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL
-!!!!
-!!!!
-!!!!  implicit none
-!!!!
-!!!!  ! function parameters
-!!!!  type(option_type), pointer, intent(in) :: option
-!!!!  type(reaction_type), pointer, intent(in) :: reaction
-!!!!  type (AlquimiaGeochemicalCondition), intent(in) :: alquimia_condition
-!!!!
-!!!!  ! Return value
-!!!!  type (tran_constraint_type), pointer :: ConvertAlquimiaConditionToPflotran
-!!!!
-!!!!  ! local variables
-!!!!  integer :: i
-!!!!  character (kAlquimiaMaxStringLength) :: name, constraint_type
-!!!!  character (kAlquimiaMaxStringLength) :: associated_species
-!!!!  type (tran_constraint_type), pointer :: tran_constraint
-!!!!  type(aq_species_constraint_type), pointer :: pft_aq_species_constraint
-!!!!  type(mineral_constraint_type), pointer :: pft_mineral_constraint
-!!!!  type (AlquimiaAqueousConstraint), pointer :: alq_aqueous_constraints(:)
-!!!!  type (AlquimiaMineralConstraint), pointer :: alq_mineral_constraints(:)
-!!!!
-!!!!
-!!!!  call c_f_string_ptr(alquimia_condition%name, name)
-!!!!  option%io_buffer = "building : " // trim(name)
-!!!!  call printMsg(option)
-!!!!  tran_constraint => TranConstraintCreate(option)
-!!!!  tran_constraint%name = trim(name)
-!!!!  ! NOTE(bja): requires_equilibration not used in pflotran?
-!!!!  tran_constraint%requires_equilibration = PETSC_FALSE
-!!!!
-!!!!  !
-!!!!  ! aqueous species
-!!!!  !
-!!!!  if (alquimia_condition%aqueous_constraints%size /= reaction%naqcomp) then
-!!!!     option%io_buffer = 'Number of aqueous constraints ' // &
-!!!!          'does not equal the number of primary chemical ' // &
-!!!!          'components in constraint: ' // &
-!!!!          trim(tran_constraint%name)
-!!!!     call printErrMsg(option)
-!!!!  end if
-!!!!
-!!!!  ! NOTE(bja) : this is the container for ALL aqueous constraints
-!!!!  pft_aq_species_constraint => &
-!!!!       AqueousSpeciesConstraintCreate(reaction, option)
-!!!!
-!!!!  call c_f_pointer(alquimia_condition%aqueous_constraints%data, &
-!!!!       alq_aqueous_constraints, (/alquimia_condition%aqueous_constraints%size/))
-!!!!
-!!!!  do i = 1, alquimia_condition%aqueous_constraints%size
-!!!!     call c_f_string_ptr(alq_aqueous_constraints(i)%primary_species_name, name)
-!!!!     pft_aq_species_constraint%names(i) = trim(name)
-!!!!
-!!!!     pft_aq_species_constraint%constraint_conc(i) = alq_aqueous_constraints(i)%value
-!!!!
-!!!!     call c_f_string_ptr(alq_aqueous_constraints(i)%constraint_type, constraint_type)
-!!!!
-!!!!     call c_f_string_ptr(alq_aqueous_constraints(i)%associated_species, &
-!!!!          associated_species)
-!!!!
-!!!!     if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
-!!!!        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_FREE
-!!!!
-!!!!     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueous)) then
-!!!!        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL
-!!!!
-!!!!     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalSorbed)) then
-!!!!        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL_SORB
-!!!!     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringPH)) then
-!!!!        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_PH
-!!!!
-!!!!     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringMineral)) then
-!!!!        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_MINERAL
-!!!!        pft_aq_species_constraint%constraint_aux_string(i) = &
-!!!!             trim(associated_species)
-!!!!
-!!!!     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringGas)) then
-!!!!        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_GAS
-!!!!        pft_aq_species_constraint%constraint_aux_string(i) = &
-!!!!             trim(associated_species)
-!!!!
-!!!!     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringCharge)) then
-!!!!        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_CHARGE_BAL
-!!!!
-!!!!     else
-!!!!        option%io_buffer = 'Constraint type: ' // trim(constraint_type) // &
-!!!!             ' not recognized in constraint,concentration'
-!!!!        call printErrMsg(option)
-!!!!     end if
-!!!!  end do
-!!!!  tran_constraint%aqueous_species => pft_aq_species_constraint
-!!!!
-!!!!  !
-!!!!  ! minerals
-!!!!  !
-!!!!  ! FIXME(bja): are these checks the correct thing to do in all cases...?
-!!!!  if (alquimia_condition%mineral_constraints%size > 0 .and. &
-!!!!       alquimia_condition%mineral_constraints%size /= &
-!!!!       reaction%mineral%nkinmnrl) then
-!!!!     option%io_buffer = &
-!!!!          'Number of mineral constraints is not equal to ' // &
-!!!!          'number of kinetic minerals in condition: ' // &
-!!!!          trim(tran_constraint%name)
-!!!!     call printErrMsg(option)
-!!!!  end if
-!!!!
-!!!!  pft_mineral_constraint => MineralConstraintCreate(reaction%mineral, option)
-!!!!
-!!!!  call c_f_pointer(alquimia_condition%mineral_constraints%data, &
-!!!!       alq_mineral_constraints, (/alquimia_condition%mineral_constraints%size/))
-!!!!  do i = 1, alquimia_condition%mineral_constraints%size
-!!!!     call c_f_string_ptr(alq_mineral_constraints(i)%mineral_name, name)
-!!!!     pft_mineral_constraint%names(i) = trim(name)
-!!!!     pft_mineral_constraint%constraint_vol_frac(i) = &
-!!!!          alq_mineral_constraints(i)%volume_fraction
-!!!!     pft_mineral_constraint%constraint_area(i) = &
-!!!!          alq_mineral_constraints(i)%specific_surface_area
-!!!!  end do
-!!!!  tran_constraint%minerals => pft_mineral_constraint
-!!!!
-!!!!  ConvertAlquimiaConditionToPflotran => tran_constraint
-!!!!
-!!!!end function ConvertAlquimiaConditionToCrunch
+
+! **************************************************************************** !
+subroutine ConvertAlquimiaConditionToCrunch(state,material_properties, &
+                                            ncomp,nrct,ngas, &
+                                            nexchange,nsurf, &
+                                            alquimia_condition)
+  use, intrinsic :: iso_c_binding
+
+  use c_f_interface_module, only : c_f_string_ptr
+  use AlquimiaContainers_module
+
+  use runtime, only: nchem, DensityModule
+  use concentration, only: ncon, condlabel, ctot, itype, guess, equilibrate, &
+                           gaspp, OneOverMassFraction, conversion, icec, cec, &
+                           totexch, c_surf, guess_surf, ulab, MeanSalt, iexchange, &
+                           kexch, ksurf, wtaq
+  use temperature, only: tempcond, rocond
+  use medium, only: porcond, SaturationCond
+  use mineral, only: volin, areain, iarea, specific, volmol, wtmin, &
+                     site_density,umin
+  use params, only: mls, mchem
+
+! pflotran
+  use String_module, only : StringCompareIgnoreCase
+
+  implicit none
+ 
+! function parameters
+  type (AlquimiaState), intent(in)                             :: state
+  type (AlquimiaMaterialProperties), intent(in)        :: material_properties
+  type (AlquimiaGeochemicalCondition), intent(in) :: alquimia_condition
+
+  integer(i4b), intent(in)          :: ncomp
+  integer(i4b), intent(in)          :: nrct
+  integer(i4b), intent(in)          :: ngas
+  integer(i4b), intent(in)          :: nexchange
+  integer(i4b), intent(in)          :: nsurf
+
+! local variables
+  integer :: i, ix, j, k, ks
+  real (c_double), pointer :: data(:)
+  real (dp) :: RoSolution
+  real(dp) :: permole, MeanSaltConcentration, MineralMolality
+  real(dp) :: tempc, rotemp
+  character (kAlquimiaMaxStringLength) :: name, constraint_type
+  character (kAlquimiaMaxStringLength) :: associated_species
+  character (len=mls) :: dumstring
+  type (AlquimiaAqueousConstraint), pointer :: alq_aqueous_constraints(:)
+  type (AlquimiaMineralConstraint), pointer :: alq_mineral_constraints(:)
+
+  INTEGER(I4B), DIMENSION(:), ALLOCATABLE                    :: unitsflag
+  REAL(DP), DIMENSION(:), ALLOCATABLE                           :: pH
+  REAL(DP), DIMENSION(:), ALLOCATABLE                           :: guessph
+!
+! there are internal 
+!
+  IF (ALLOCATED(pH)) THEN
+    DEALLOCATE(pH)
+    ALLOCATE(pH(mchem))
+  ELSE
+    ALLOCATE(guesspH(mchem))
+  ENDIF
+  IF (ALLOCATED(guesspH)) THEN
+    DEALLOCATE(guesspH)
+    ALLOCATE(guesspH(mchem))
+  ELSE
+    ALLOCATE(guesspH(mchem))
+  ENDIF
+  IF (ALLOCATED(unitsflag)) THEN
+    DEALLOCATE(unitsflag)
+    ALLOCATE(unitsflag(mchem))
+  ELSE
+    ALLOCATE(unitsflag(mchem))
+  END IF
+  unitsflag = 1
+!
+! update number of solutions and point to it
+!
+  nchem = nchem +1 
+!
+! check whether there is enough space; there should be, but ...
+!
+  if (nchem > mchem) then
+    write(*,*) 'Number of solutions exceeds maximum number of allocated spaces: ',mchem
+    stop
+  end if
+!
+! assign name of condition, prepend 'alq_' to indicate this comes from driver
+!
+  call c_f_string_ptr(alquimia_condition%name, name)
+  condlabel(nchem) = 'alq_'//trim(adjustl(name))
+!
+! aqueous species constraints
+!
+  call c_f_pointer(alquimia_condition%aqueous_constraints%data, &
+       alq_aqueous_constraints, (/alquimia_condition%aqueous_constraints%size/))
+!
+! check size
+!
+  if (alquimia_condition%aqueous_constraints%size /= ncomp) then
+     write(*,*) 'Number of aqueous constraints ' // &
+                     'does not equal the number of primary chemical ' // &
+                     'components in constraint: ' // &
+                      trim(condlabel(nchem))
+     stop
+  end if
+!
+! get temperature, density, porosity , saturation from AlquimiaState & Properties
+!
+  tempcond(nchem) = state%temperature
+  rocond(nchem)      = state%water_density
+  porcond(nchem)    = state%porosity  
+  SaturationCond(nchem) = material_properties%saturation
+!
+! transfer constraints to crunchflow format
+!
+  do_aqueous_components: do i = 1, ncomp
+
+     do_alquimia_constraints: do j = 1, alquimia_condition%aqueous_constraints%size
+
+        call c_f_string_ptr(alq_aqueous_constraints(j)%primary_species_name, name)
+        if (name == ulab(i)) then
+           ! j = alquimia order, i = crunchflow order
+           exit do_alquimia_constraints
+        end if
+
+     end do do_alquimia_constraints
+!
+!    get value
+!
+     ctot(i,nchem) = alq_aqueous_constraints(j)%value
+!
+!    defaults
+!
+     if (ctot(i,nchem) == 0.0) then
+       ctot(i,nchem) = 1.e-30
+     end if
+     itype(i,nchem) = 1
+     guess(i,nchem) = 1.E-06
+     equilibrate(i,nchem) = .false.
+     ph(nchem) = 7.0
+     unitsflag(nchem) = 5   ! molarity
+!
+!    get constraint type and associated name if necessary
+!
+     call c_f_string_ptr(alq_aqueous_constraints(i)%constraint_type, constraint_type)
+     call c_f_string_ptr(alq_aqueous_constraints(i)%associated_species, &
+          associated_species)
+!
+!    assign type of constraint, and name associated with it if mineral or gas constraint
+!
+     if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
+        itype(i,nchem) = 8
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueous)) then
+        itype(i,nchem) = 1
+        guess(i,nchem) = alq_aqueous_constraints(j)%value
+        ctot(i,nchem)    = alq_aqueous_constraints(j)%value
+
+        !  as per CrunchFlow
+        if_Hplus: if (ulab(i) == 'h+' .or.  ulab(i) == 'H+') then
+          if (guess(i,nchem) < 1.e-15) then
+            if (ctot(i,nchem) > 0.0) then
+              guess(i,nchem) = 1.e-05
+            else
+              guess(i,nchem) = 1.e-08
+            end if
+          end if
+        end if if_Hplus
+
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalSorbed)) then
+        itype(i,nchem) = 1
+!        equilibrate(i,nchem) = .true.
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringPH)) then
+        itype(i,nchem) = 7
+        ph(nchem) = alq_aqueous_constraints(j)%value
+        guess(i,nchem) = 10**(-ph(nchem))
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringMineral)) then
+        itype(i,nchem) = 3
+        ncon(i,nchem) = trim(associated_species)
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringGas)) then
+        itype(i,nchem) = 4
+        ncon(i,nchem) = trim(associated_species)
+        gaspp(i,nchem) = alq_aqueous_constraints(j)%value
+        if (gaspp(i,nchem) == 0.0) then
+          gaspp(i,nchem) = 1.e-30
+         end if
+         ctot(i,nchem) = gaspp(i,nchem)
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringCharge)) then
+        itype(i,nchem) = 2
+     else
+        write(*,*)'Constraint type: ' // trim(constraint_type) // &
+                  ' not recognized in constraint,concentration'
+     end if
+  end do  do_aqueous_components
+! 
+! recompute units -- alquimia gives molarity 
+! this comes straight from CrunchFlow find_condition
+!
+  tempc = tempcond(nchem)
+  rotemp = rocond(nchem) 
+  CALL rocalc(tempc,rotemp,nchem,DensityModule,unitsflag)
+  rocond(nchem) = rotemp
+
+  IF (unitsflag(nchem) == 5) THEN              !  Units in molarity 
+
+    IF (DensityModule /= 'temperature') THEN
+!     Calculate the correction for the mass fraction of water:  kg_solution/kg_water
+      MeanSaltConcentration = 0.001*(wtaq(MeanSalt(1))*ctot(MeanSalt(1),nchem) +     &
+      wtaq(MeanSalt(2))*ctot(MeanSalt(2),nchem))                                       !! Mean salt in kg salt/L solution (g/cm**3)
+      RoSolution = rocond(nchem)/1000.0d0                                              !! Convert fluid density from kg/m**3 to kg/L (or g/cm**3), same as salt
+      OneOverMassFraction(nchem) = RoSolution/(RoSolution - MeanSaltConcentration)
+      conversion(nchem) = OneOverMassFraction(nchem)/RoSolution
+    ELSE
+      OneOverMassFraction(nchem) = 1.0d0
+      conversion(nchem) = 1000.0d0/rocond(nchem)
+    END IF
+
+    DO i = 1,ncomp
+      ctot(i,nchem) = ctot(i,nchem)*conversion(nchem)               
+      guess(i,nchem) = guess(i,nchem)*conversion(nchem)
+    END DO
+
+  ELSE 
+    conversion(nchem) = 1.0d0
+    OneOverMassFraction(nchem) = 1.0d0
+  END IF
+
+!  Change "unitsflag" back to molality now and recompute the density
+  IF (unitsflag(nchem) == 5) THEN
+    unitsflag(nchem) = 1
+  END IF
+
+  CALL rocalc(tempc,rotemp,nchem,DensityModule,unitsflag)
+  rocond(nchem) = rotemp
+! 
+! end of copied section, unit conversion
+!
+
+! 
+! minerals
+!
+  call c_f_pointer(state%mineral_volume_fraction%data, data, (/nrct/))
+  do i = 1, nrct
+     volin(i,nchem) = data(i)
+  end do
+
+  call c_f_pointer(state%mineral_specific_surface_area%data, data, (/nrct/))
+  do i = 1, nrct
+     areain(i,nchem) = data(i) ! m2/m3 bulk
+     iarea(i,nchem)   = 0  ! surface area provided as bulk
+
+     if (volin(i,nchem) /= 0.0) then
+        specific(i,nchem) = areain(i,nchem)*volmol(i)/(volin(i,nchem)*wtmin(i))
+     else
+        specific(i,nchem) = 0.0
+     end if 
+  end do
+
+ !
+ ! ion exchange
+ !
+  call c_f_pointer(state%cation_exchange_capacity%data, data, (/nexchange/))
+  do ix = 1, nexchange
+!!     exchangesites(ix,jx,jy,jz) = data(ix)
+
+     IF (iexchange(ix) == 0) THEN                                          !!  Bulk exchange on the sediment
+
+!       not allowed for now, there is no SolidSolutionRatio concept in Alquimia
+        write(*,*) 'The CrunchFlow Alquimia interface does not  ' // &
+                        'support bulk exchange on sediment for now. ' // &
+                        'Please specify a mineral to exchange '
+        stop
+
+!!      IF (icec(ix) == 1) THEN
+!!        totexch(ix,nchem) = cec(ix,nchem)*SolidSolutionRatio(nchem)
+!!      ELSE
+!!        IF (SolidSolutionRatio(nchem) == 0.0d0) THEN
+!!          cec(ix,nchem) = 0.0d0
+!!        ELSE
+!!          cec(ix,nchem) = totexch(ix,nchem)/SolidSolutionRatio(nchem)
+!!        END IF
+!!      END IF
+
+    ELSE IF (iexchange(ix) == 1) THEN   !  Exchange on a specific mineral
+
+        k = kexch(ix)
+!!      IF (icec(ix) == 1) THEN                                             !!  Calculate from equivalents/g mineral and the mineral volume fraction
+        icec(ix) = 1
+        cec(ix,nchem) = data(ix) * volmol(k) / wtmin(k) /  OneOverMassFraction(nchem)
+        totexch(ix,nchem) = data(ix)*volin(k,nchem)/(SaturationCond(nchem)*porcond(nchem)*rocond(nchem))  
+!!        totexch(ix,nchem) = OneOverMassFraction(nchem)*cec(ix,n<chem)*wtmin(k)*volin(k,nchem)/(volmol(k)*SaturationCond(nchem)*porcond(nchem)*rocond(nchem))  
+!!      ELSE IF (icec(ix) == 0) THEN                                         !!  Direct specification of totexch (equivalents/kgw)--need to calculate CEC for later use if mineral fraction changes
+!!        cec(ix,nchem) = totexch(ix,nchem)*volmol(k)*SaturationCond(nchem)*porcond(nchem)*rocond(nchem)/(wtmin(k)*volin(k,nchem)*OneOverMassFraction(nchem))
+!!      END IF 
+
+    END IF 
+
+  end do
+  !
+  ! equilibrium surface complexation
+  !
+  call c_f_pointer(state%surface_site_density%data, data, (/nsurf/))
+
+  DO ks = 1,nsurf
+    k = ksurf(ks)
+    IF (specific(k,nchem) == 0.0) THEN
+      WRITE(*,*) 
+      WRITE(*,*) ' Specific surface area for mineral = 0 serving as sorbate for surface complex'
+      dumstring = umin(k)
+      WRITE(*,*) ' --->Mineral: ', dumstring
+      WRITE(*,*) ' --->In geochemical condition: ', condlabel
+      WRITE(*,*)
+      READ(*,*)
+      STOP
+    END IF
+
+    IF (volin(k,nchem) == 0.0) THEN
+      WRITE(*,*) 
+      WRITE(*,*) ' Specific surface areaVolume fraction for mineral = 0 serving as sorbate for surface complex'
+      dumstring = umin(k)
+      WRITE(*,*) ' --->Mineral: ', dumstring
+      WRITE(*,*) ' --->In geochemical condition: ', condlabel
+      WRITE(*,*)
+      READ(*,*)
+      STOP
+    END IF
+
+!   Site_density Crunch: moles site/m^2 mineral site_density 
+!   Site density Alquimia: moles/m^3 bulk data
+!   Specific:     m^2/g mineral
+!   Wtmin:        g/mole mineral
+
+    site_density(ks,nchem) = data(ks) / areain(i,nchem)
+    permole = site_density(ks,nchem)*specific(k,nchem)*wtmin(k)    !  Mole sites/Mole mineral
+
+!   Now convert to moles sites per kg solution
+!!  volin(m^3 mineral/m^3 porous medium) /( volmol[m^3/mol] * rocond[kg/m^3 fluid] * porcond[m^3 pore/m^3 PM] * SaturationCond[m^3 fluid/m^3 pore)
+
+!!  Moles mineral/kgw
+!!    IF (MineralMoles(k,nchem) > 0.0d0 .AND. volin(k,nchem) == 0.0d0) THEN
+!!      c_surf(ks,nchem) = permole*MineralMoles(k,nchem)
+!!    ELSE IF (volin(k,nchem) == 0.0d0) THEN
+!!      MineralMolality = voltemp(k,nchem)/( volmol(k)*rocond(nchem)*porcond(nchem)*SaturationCond(nchem) )
+!!      c_surf(ks,nchem) = permole*MineralMolality
+!!    ELSE
+      MineralMolality = volin(k,nchem)/( volmol(k)*rocond(nchem)*porcond(nchem)*SaturationCond(nchem) )
+      c_surf(ks,nchem) = permole*MineralMolality
+!!    END IF
+
+    IF (c_surf(ks,nchem) < 1.D-30) THEN
+      c_surf(ks,nchem) = 1.D-30
+    END IF
+
+!    WRITE(*,*) ' k = ',k
+!    WRITE(*,*) ' Site density ',site_density(ks,nchem)
+!    WRITE(*,*) ' Specific area ',specific(ks,nchem)
+!    WRITE(*,*) ' Wtmin = ',wtmin(k)
+!    WRITE(*,*) ' Permole = ',permole
+!    WRITE(*,*) ' Volin = ',volin(k,nchem)
+!    WRITE(*,*) ' volmol = ',volmol(k)
+  END DO
+  
+  DO ks = 1,nsurf
+    guess_surf(ks,nchem) = c_surf(ks,nchem)
+  END DO
+!
+! deallocate internally allocated vars
+! 
+  DEALLOCATE(pH)
+  DEALLOCATE(guesspH)
+  DEALLOCATE(unitsflag)
+  return
+
+end subroutine ConvertAlquimiaConditionToCrunch
 
 
 ! **************************************************************************** !
@@ -1964,18 +2231,6 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
     write(*,*)'current number: ',iret,' input file number: ',nretard
     stop
   end if
-
-  !call c_f_pointer(material_prop%langmuir_b%data, data, &
-  !     (/material_prop%langmuir_b%size/))
-  !do i = 1, material_prop%langmuir_b%size
-  !   reaction%eqkdlangmuirb(i) = data(i)
-  !end do
-
-  !call c_f_pointer(material_prop%freundlich_n%data, data, &
-  !     (/material_prop%freundlich_n%size/))
-  !do i = 1, material_prop%freundlich_n%size
-  !   reaction%eqkdfreundlichn(i) = data(i)
-  !end do
 
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
