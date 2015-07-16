@@ -512,7 +512,9 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
 !    the condition has not be added yet, go ahead and add it now
      if (found == 0) then
        call ConvertAlquimiaConditionToCrunch(state,material_properties, &
-                                             ncomp,nrct,ngas,nexchange, nsurf, &
+                                             ncomp,nspec,nrct,nkin, &
+                                             ngas,nsurf,nexchange, &
+                                             ikin,nexch_sec,nsurf_sec, &
                                              condition)
 
         nco = nchem
@@ -1720,8 +1722,9 @@ end subroutine ProcessCrunchConstraint
 
 ! **************************************************************************** !
 subroutine ConvertAlquimiaConditionToCrunch(state,material_properties, &
-                                            ncomp,nrct,ngas, &
-                                            nexchange,nsurf, &
+                                            ncomp,nspec,nrct,nkin, &
+                                            ngas,nsurf,nexchange, &
+                                            ikin,nexch_sec,nsurf_sec, &
                                             alquimia_condition)
   use, intrinsic :: iso_c_binding
 
@@ -1750,10 +1753,15 @@ subroutine ConvertAlquimiaConditionToCrunch(state,material_properties, &
   type (AlquimiaGeochemicalCondition), intent(in) :: alquimia_condition
 
   integer(i4b), intent(in)          :: ncomp
+  integer(i4b), intent(in)          :: nspec
   integer(i4b), intent(in)          :: nrct
+  integer(i4b), intent(in)          :: nkin
   integer(i4b), intent(in)          :: ngas
-  integer(i4b), intent(in)          :: nexchange
   integer(i4b), intent(in)          :: nsurf
+  integer(i4b), intent(in)          :: nexchange
+  integer(i4b), intent(in)          :: ikin
+  integer(i4b), intent(in)          :: nexch_sec
+  integer(i4b), intent(in)          :: nsurf_sec
 
 ! local variables
   integer :: i, ix, j, k, ks
@@ -1777,7 +1785,7 @@ subroutine ConvertAlquimiaConditionToCrunch(state,material_properties, &
     DEALLOCATE(pH)
     ALLOCATE(pH(mchem))
   ELSE
-    ALLOCATE(guesspH(mchem))
+    ALLOCATE(pH(mchem))
   ENDIF
   IF (ALLOCATED(guesspH)) THEN
     DEALLOCATE(guesspH)
@@ -1803,6 +1811,10 @@ subroutine ConvertAlquimiaConditionToCrunch(state,material_properties, &
     write(*,*) 'Number of solutions exceeds maximum number of allocated spaces: ',mchem
     stop
   end if
+! 
+! reallocate to make room for new nchem
+!
+call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_sec)
 !
 ! assign name of condition, prepend 'alq_' to indicate this comes from driver
 !
