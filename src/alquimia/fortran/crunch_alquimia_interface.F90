@@ -1970,14 +1970,43 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
 ! 
 ! minerals
 !
-  call c_f_pointer(state%mineral_volume_fraction%data, data, (/nrct/))
+!
+!  we should do it like this but too many changes for now
+!  call c_f_pointer(state%mineral_volume_fraction%data, data, (/nrct/))
+!  do i = 1, nrct
+!     volin(i,nchem) = data(i)
+!  end do
+
+!  call c_f_pointer(state%mineral_specific_surface_area%data, data, (/nrct/))
+!  do i = 1, nrct
+!     areain(i,nchem) = data(i) ! m2/m3 bulk
+!     iarea(i,nchem)   = 0  ! surface area provided as bulk
+
+!     if (volin(i,nchem) /= 0.0) then
+!        specific(i,nchem) = areain(i,nchem)*volmol(i)/(volin(i,nchem)*wtmin(i))
+!     else
+!        specific(i,nchem) = 0.0
+!     end if 
+!  end do
+
+!
+! minerals
+!
+! this will have to go if we change the original approach - but for now we'll keep it
+  if (alquimia_condition%mineral_constraints%size > 0 .and. &
+       alquimia_condition%mineral_constraints%size /= nrct) then
+    write(*,*)'number of minerals in constraint does not match number of minerals'
+    stop
+  end if
+
+  call c_f_pointer(alquimia_condition%mineral_constraints%data, &
+       alq_mineral_constraints, (/alquimia_condition%mineral_constraints%size/))
   do i = 1, nrct
-     volin(i,nchem) = data(i)
+     volin(i,nchem) = alq_mineral_constraints(i)%volume_fraction
   end do
 
-  call c_f_pointer(state%mineral_specific_surface_area%data, data, (/nrct/))
   do i = 1, nrct
-     areain(i,nchem) = data(i) ! m2/m3 bulk
+     areain(i,nchem) = alq_mineral_constraints(i)%specific_surface_area  ! m2/m3 bulk
      iarea(i,nchem)   = 0  ! surface area provided as bulk
 
      if (volin(i,nchem) /= 0.0) then
@@ -1986,7 +2015,6 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
         specific(i,nchem) = 0.0
      end if 
   end do
-
  !
  ! ion exchange
  !
