@@ -96,6 +96,7 @@ extern "C" {
     struct AlquimiaVectorDouble isotherm_kd;  /* [?] */
     struct AlquimiaVectorDouble freundlich_n; /* [?] */
     struct AlquimiaVectorDouble langmuir_b;  /* [?] */
+    //   double solid_density;  /* [kg/m3] */
   };
   
   struct AlquimiaAuxiliaryData {
