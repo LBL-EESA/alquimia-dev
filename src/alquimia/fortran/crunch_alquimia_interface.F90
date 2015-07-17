@@ -1077,10 +1077,13 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
   ! copy primary indices and names
   !
 
+  write(*,*)'meta sizes: ',meta_data%primary_names%size 
+
   if (meta_data%primary_names%size /= engine_state%ncomp) then
      write (*, '(a, i3, a, i3, a)') "meta_data%primary_names%size (", &
           meta_data%primary_names%size, ") != crunchflow%ncomp(", &
           engine_state%ncomp, ")"
+      stop
   end if
   list_size = meta_data%primary_names%size
 
@@ -1735,7 +1738,7 @@ subroutine ConvertAlquimiaConditionToCrunch(state,material_properties, &
   use concentration, only: ncon, condlabel, ctot, itype, guess, equilibrate, &
                            gaspp, OneOverMassFraction, conversion, icec, cec, &
                            totexch, c_surf, guess_surf, ulab, MeanSalt, iexchange, &
-                           kexch, ksurf, wtaq
+                           kexch, ksurf, wtaq, SolidDensity
   use temperature, only: tempcond, rocond
   use medium, only: porcond, SaturationCond
   use mineral, only: volin, areain, iarea, specific, volmol, wtmin, &
@@ -1842,6 +1845,9 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
   rocond(nchem)      = state%water_density
   porcond(nchem)    = state%porosity  
   SaturationCond(nchem) = material_properties%saturation
+!!  SolidDensity(nchem) = material_properties%solid_density
+  SolidDensity(nchem) = 2650.0d0 ! hard wired until I figure the problem with memory bug
+                                                         ! created by adding solid_density --> does it have to do with batch_chem????
 !
 ! transfer constraints to crunchflow format
 !
