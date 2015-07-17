@@ -1882,6 +1882,8 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
 !
      if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
         itype(i,nchem) = 8
+        ctot(i,nchem)    = alq_aqueous_constraints(j)%value
+        guess(i,nchem) = alq_aqueous_constraints(j)%value
      else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueous)) then
         itype(i,nchem) = 1
         guess(i,nchem) = alq_aqueous_constraints(j)%value
