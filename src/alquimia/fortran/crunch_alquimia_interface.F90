@@ -2097,7 +2097,7 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
 !   Specific:     m^2/g mineral
 !   Wtmin:        g/mole mineral
 
-    site_density(ks,nchem) = data(ks) / areain(i,nchem)
+    site_density(ks,nchem) = data(ks) / areain(k,nchem)
     permole = site_density(ks,nchem)*specific(k,nchem)*wtmin(k)    !  Mole sites/Mole mineral
 
 !   Now convert to moles sites per kg solution
