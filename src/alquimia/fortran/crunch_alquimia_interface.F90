@@ -1360,7 +1360,8 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
                            exchangesites, spex, spex10, totexch, &
                            spsurf10, spsurf, &
                            GasPressureTotal, GasPressureTotalInit, &
-                           xgram, xgramOld
+                           xgram, xgramOld, &
+                           ctot, c_surf, itype, equilibrate
   use mineral, only: LogPotential_tmp, iedl, &
                      volfx, volin, &
                      VolumeLastTimeStep, &
@@ -1955,8 +1956,13 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
     END IF
 
     DO i = 1,ncomp
-      ctot(i,nchem) = ctot(i,nchem)*conversion(nchem)               
-      guess(i,nchem) = guess(i,nchem)*conversion(nchem)
+      if (itype(i,nchem) /= 7 .and. &
+           itype(i,nchem) /= 4 )  then
+        ctot(i,nchem) = ctot(i,nchem)*conversion(nchem)               
+        guess(i,nchem) = guess(i,nchem)*conversion(nchem)
+      else 
+         continue
+      end if
     END DO
 
   ELSE 
@@ -2409,6 +2415,7 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   call c_f_pointer(state%surface_site_density%data, data, (/nsurf/))
   do i = 1, nsurf
      data(i) = ssurfn(i,jx,jy,jz) 
+     !! write(*,*)'ssurfn(i,jx,jy,jz): ',ssurfn(i,jx,jy,jz)
   end do
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
@@ -2578,7 +2585,7 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   do i = 1, nsurf
      dindex = dindex + 1
      data(dindex) = LogTotalSurface(i,jx,jy,jz) 
-     !write(*,*)'pack i, LogTotalSurface(i,jx,jy,jz) ',i, LogTotalSurface(i,jx,jy,jz) 
+     !! write(*,*)'pack i, LogTotalSurface(i,jx,jy,jz) ',i, LogTotalSurface(i,jx,jy,jz) 
   end do
 
   ! surface potential
@@ -2591,6 +2598,7 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   do i = 1, ncomp
      dindex = dindex + 1
      data(dindex) = ssurfold(i,jx,jy,jz) 
+     !! write(*,*)'ssurfold(i,jx,jy,jz): ',ssurfold(i,jx,jy,jz)
   end do
 
 ! surface 
