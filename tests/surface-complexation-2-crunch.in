@@ -68,7 +68,7 @@ pH               6.0
 Cl-              Halite
 Na+              charge
 NO3-             1.00293346236581d-01
-Zn++             1.00293346236581E-06
+Zn++             1.00293346236581d-06
 !Site name     <site density mol/m**2> multiplied by 1 m2/m3 surface area, i.e. equiv. to mol/m3  
 >FeOH_w          7.6355d-1
 >FeOH_s          1.908d-2
