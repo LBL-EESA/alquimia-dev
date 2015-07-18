@@ -833,9 +833,12 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   if (icvg == 1) then
   ! not converged, do nothing
 
-    ! --> error reduce time step
-    write(*,*)'dead '
-    stop
+    ! report alquimia status 
+    status%error = kAlquimiaNoError
+    status%converged = .false.
+    status%num_rhs_evaluations = iterat
+    status%num_jacobian_evaluations = iterat
+    status%num_newton_iterations = iterat
 
   else 
 
@@ -908,9 +911,12 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
                                  nexchange, nsurf, ndecay, npot, &
                                  nretard, state, aux_data )
     
-      ! write stats of solve into status
-      status%num_newton_iterations = iterat
+      ! report alquimia status
       status%error = kAlquimiaNoError
+      status%converged = .true.
+      status%num_rhs_evaluations = iterat
+      status%num_jacobian_evaluations = iterat
+      status%num_newton_iterations = iterat
 
     end if
   
@@ -1061,6 +1067,7 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
   type (c_ptr), pointer :: name_list(:)
   character (c_char), pointer :: name
   integer :: i, list_size, j
+  integer(c_int), pointer :: idata(:)
   type(CrunchEngineState), pointer :: engine_state
 
   !write (*, '(a)') "Crunch_Alquimia_GetEngineMetaData() :"
@@ -1094,6 +1101,28 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
      call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(ulab(i)), &
           name, kAlquimiaMaxStringLength)     
+  end do
+
+!
+! positivity constraints
+!
+
+  if (meta_data%positivity%size /= engine_state%ncomp) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%positivity%size (", &
+          meta_data%positivity%size, ") != crunchflow%ncomp(", &
+          engine_state%ncomp, ")"
+      stop
+  end if
+  list_size = meta_data%positivity%size
+
+  call c_f_pointer(meta_data%positivity%data, idata, (/list_size/))
+  do i = 1, list_size
+      if (i == engine_state%ikph) then
+!       H+ component can be negative
+        idata(i) = 0
+      else
+        idata(i) = 1 
+      end if
   end do
 
   !
