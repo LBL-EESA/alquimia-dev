@@ -45,6 +45,7 @@
 #include "alquimia_memory.h"
 
 #include "pflotran_alquimia_interface.h"
+#include "crunch_alquimia_interface.h"
 
 #include "alquimia_constants.h"
 #include "alquimia_containers.h"
@@ -180,6 +181,15 @@ void test_CreateAlquimiaInterface(void) {
 
   strncpy(name, "crunchflow", kAlquimiaMaxStringLength);
   CreateAlquimiaInterface(name, &interface, &status);
+#ifdef HAVE_CRUNCH
+  assert(status.error == kAlquimiaNoError);
+  assert(interface.Setup == &crunch_alquimia_setup);
+  assert(interface.Shutdown == &crunch_alquimia_shutdown);
+  assert(interface.ProcessCondition == &crunch_alquimia_processcondition);
+  assert(interface.ReactionStepOperatorSplit == &crunch_alquimia_reactionstepoperatorsplit);
+  assert(interface.GetAuxiliaryOutput == &crunch_alquimia_getauxiliaryoutput);
+  assert(interface.GetProblemMetaData == &crunch_alquimia_getproblemmetadata);
+#else
   assert(status.error == kAlquimiaErrorInvalidEngine);
   assert(interface.Setup == NULL);
   assert(interface.Shutdown == NULL);
@@ -187,7 +197,7 @@ void test_CreateAlquimiaInterface(void) {
   assert(interface.ReactionStepOperatorSplit == NULL);
   assert(interface.GetAuxiliaryOutput == NULL);
   assert(interface.GetProblemMetaData == NULL);
-
+#endif
 
 }  /* end test_CreateAlquimiaInterface() */
 

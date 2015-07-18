@@ -37,7 +37,8 @@ CFLAGS += $(INCLUDES)
 HEADERS = \
 	alquimia_constants.h \
 	alquimia_containers.h \
-	pflotran_alquimia_interface.h
+	pflotran_alquimia_interface.h \
+        crunch_alquimia_interface.h
 
 SRCS = \
 	alquimia_constants.c 

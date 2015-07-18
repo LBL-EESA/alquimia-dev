@@ -119,6 +119,7 @@ module AlquimiaContainers_module
      type (AlquimiaVectorDouble) :: isotherm_kd
      type (AlquimiaVectorDouble) :: freundlich_n
      type (AlquimiaVectorDouble) :: langmuir_b
+!!     real (c_double) :: solid_density
   end type AlquimiaMaterialProperties
 
   type, public, bind(c) :: AlquimiaAuxiliaryData 
