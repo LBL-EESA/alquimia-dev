@@ -38,7 +38,12 @@ ifdef PFLOTRAN_DIR
 endif
 
 ifdef CRUNCH_DIR
-	CXXFLAGS += -DHAVE_CRUNCH
+      CFLAGS += -DHAVE_CRUNCH
+      CXXFLAGS += ${PETSC_CC_INCLUDES}
+      FCFLAGS += -I$(CRUNCH_DIR) ${PETSC_FC_INCLUDES}
+      LDFLAGS += -L$(CRUNCH_DIR) -lcrunchchem 
+      LDFLAGS += ${PETSC_LIB} ${LIB}
+#	CXXFLAGS += -DHAVE_CRUNCH
 #	DEPEND_LIBS += \
 #		$(CRUNCH_DIR)/src/libcrunch_chem.a
 #       LDFLAGS += -L$(CRUNCH_DIR)/src -lcrunch_chem

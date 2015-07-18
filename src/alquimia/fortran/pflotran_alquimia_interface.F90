@@ -486,7 +486,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   !write (*, '(a)') "F_PFloTranAlquimiaInterface::ReactionStepOperatorSplit() :"
 
-  !call PrintState(engine_state%reaction, state)
+  !call PrintState(state)
 
   call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
        engine_state%reaction, engine_state%global_auxvar, engine_state%material_auxvar, &
