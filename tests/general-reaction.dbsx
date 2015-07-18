@@ -1,0 +1,15 @@
+
+&Aqueous
+  name          = 'AtoB'
+  type          = 'general'
+  stoichiometry = -1.0 'A(aq)' 1.0 'B(aq)'
+  keq           = 50.0
+/
+
+&AqueousKinetics
+  name          = 'AtoB'
+  label         = 'default'
+  type          = 'tst'
+  rate25C       =  36.5242100726
+  dependence    = 'A(aq)' 1.0
+/

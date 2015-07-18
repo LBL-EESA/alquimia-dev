@@ -1,0 +1,85 @@
+TITLE
+Batch equilibrium ion exchange based on Valocchi et al., 1981 - CrunchFlow
+END
+
+RUNTIME
+time_units      years
+timestep_max    1.0d0
+timestep_init   1.0d0
+time_tolerance  0.01
+coordinate      rectangular
+correction_max  1.0
+debye-huckel    false
+database        ion-exchange.dbs
+!!master          H+
+speciate_only   false
+database_sweep  false
+screen_output   1
+hindmarsh       false
+gimrt           false
+graphics        tecplot
+RunIsothermal   true
+END
+
+OUTPUT
+time_units            years
+spatial_profile       1.0
+time_series           ion-exchange-valocchi-cc.out  1 1 1 
+time_series_print     Na+  Ca++  Mg++  Cl-
+time_series_interval  1
+END
+
+PRIMARY_SPECIES
+Na+
+Ca++
+Mg++
+Cl-
+END
+
+SECONDARY_SPECIES 
+END
+
+MINERALS
+Halite             -label default    -rate  -40.0
+END
+ 
+ION_EXCHANGE
+exchange   X- on Halite
+convention Gaines-Thomas
+END
+
+DISCRETIZATION
+distance_units  meters
+xzones  1  1.0
+END
+ 
+Condition initial
+units            mol/kg
+temperature      25.0
+Na+              8.67537444946422d-02
+Ca++             1.82533890150577d-02
+Mg++             1.11325614322604d-02
+Cl-              charge
+!X-       -cec    3.46686914E-04
+X-       -cec    3.33333333d-04
+!                eq / g solid
+! for cec on specific mineral, such as Halite use molar volume and molecular weight to calc CEC, instead of SolidDensity
+! pflotran CEC 750 eq/m3 solid
+! 750 eq/m3 solid * 27.015 cm3/mol / 58.4425 g/mol / 1e6 cm3/m3 = 3.46686914E-04 eq/g solid
+SolidDensity     3000
+!                Kg solid / m3 solid
+Halite           1.0d-5   bulk_surface_area 1.0
+END
+ 
+INITIAL_CONDITIONS
+initial    1-1  1-1
+END
+ 
+POROSITY
+fix_porosity     0.25
+porosity_update  false
+END
+ 
+TEMPERATURE
+set_temperature  25.0
+END

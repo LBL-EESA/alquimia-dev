@@ -121,6 +121,9 @@ int main(int argc, char** argv) {
     if (util::CaseInsensitiveStringCompare(demo_simulation.engine,
                                            kAlquimiaStringPFloTran)) {
       output = new util::DemoOutputPFloTran();
+	} else if (util::CaseInsensitiveStringCompare(demo_simulation.engine,
+                                           kAlquimiaStringCrunchFlow)) {
+      output = new util::DemoOutputPFloTran();
     } else {
       std::stringstream message;
       message << "ERROR: unknown chemistry engine name '" 
