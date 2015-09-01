@@ -292,7 +292,7 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
   CALL start98(ncomp,nspec,nkin,nrct,ngas,npot,nx,ny,nz,data1,ipath,igamma,  &
                ikmast,ikph,iko2,ltitle,tstep,delt,deltmin,ttol,jpor,ikin,nstop,       &
                corrmax,nseries,nexchange,nexch_sec,nsurf,nsurf_sec,ndecay,str_mon,    &
-               str_day,str_hr,str_min,str_sec,NumInputFiles,InputFileCounter,alquimia)
+               str_day,str_hr,str_min,str_sec,NumInputFiles,InputFileCounter)
 
   ! number of unknowns
   neqn = ncomp + nexchange + nsurf + npot
@@ -1395,7 +1395,7 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
                      volfx, volin, &
                      VolumeLastTimeStep, &
                      area, areain, &
-                     mintype, LogPotential
+                     LogPotential !mintype
   use medium, only: AqueousToBulkCond, SaturationCond, constantpor, &
                     porin, por, porOld, porcond, isaturate                   
   use temperature, only: t, tempcond, rocond, ro
@@ -1637,7 +1637,8 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
         volfx(k,jx,jy,jz) = volin(k,jinit(jx,jy,jz))
         VolumeLastTimeStep(k,jx,jy,jz) = volfx(k,jx,jy,jz)
         area(k,jx,jy,jz) = areain(k,jinit(jx,jy,jz))
-        if (mintype(k) == 0) sum = sum + volfx(k,jx,jy,jz)
+  !      if (mintype(k) == 0) sum = sum + volfx(k,jx,jy,jz)
+        sum = sum + volfx(k,jx,jy,jz)
       END DO
 
       IF (Duan) THEN
