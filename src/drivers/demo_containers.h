@@ -70,7 +70,7 @@ struct DemoState {
   void Print(void) const;
 };
 
-struct DemoMaterialProperties {
+struct DemoProperties {
   double volume;  // [m^3]
   double saturation;  // [-]
   std::vector<std::string> isotherm_species;

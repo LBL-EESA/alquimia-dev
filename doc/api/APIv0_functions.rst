@@ -134,7 +134,7 @@ Geochemical condition processing for boundary/initial conditions. Called once fo
     void AlquimiaProcessCondition(
         in/out engine_internal_state <void pointer>,
         input: condition <struct: Alquimia Geochemical Condition>,
-        input: material_properties <struct: Alquimia Material Properties>,
+        input: properties <struct: Alquimia Properties>,
         in/out: state <struct: Alquimia State>,
         in/out: aux_data <struct: Alquimia Auxiliary Data>,
         output: status <struct: Alquimia Status>)
@@ -152,7 +152,7 @@ Take one reaction step in operator split mode with the specified delta t.
     void AlquimiaReactionStepOperatorSplit(
         in/out: engine_internal_state <void pointer>,
         input: delta_t <double>,
-        input: material_properties <struct: Alquimia Material Properties>,
+        input: properties <struct: Alquimia Properties>,
         in/out: state <struct: Alquimia State>,
         in/out: aux_data <struct: Alquimia Auxiliary Data>
         out: status <struct: Alquimia Status>)
