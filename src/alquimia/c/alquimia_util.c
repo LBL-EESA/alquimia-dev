@@ -154,7 +154,7 @@ void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes) {
   fprintf(stdout, "-- Alquimia Sizes :\n");
   fprintf(stdout, "     num primary species : %d\n", sizes->num_primary);
   fprintf(stdout, "     num sorbed : %d\n", sizes->num_sorbed);
-  fprintf(stdout, "     num kinetic minerals : %d\n", sizes->num_kinetic_minerals);
+  fprintf(stdout, "     num minerals : %d\n", sizes->num_minerals);
   fprintf(stdout, "     num aqueous complexes : %d\n", sizes->num_aqueous_complexes);
   fprintf(stdout, "     num aqueous kinetics : %d\n", sizes->num_aqueous_kinetics);
   fprintf(stdout, "     num surface sites : %d\n", sizes->num_surface_sites);
@@ -181,11 +181,11 @@ void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const me
   fprintf(stdout, "-- Alquimia Problem Meta Data :\n");
   PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
   PrintAlquimiaVectorInt("positivity names", &(meta_data->positivity));
-  PrintAlquimiaVectorString("kinetic mineral names", &(meta_data->kinetic_mineral_names));
+  PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names));
   PrintAlquimiaVectorString("surface site names", &(meta_data->surface_site_names));
   PrintAlquimiaVectorString("ion exchange names", &(meta_data->ion_exchange_names));
   PrintAlquimiaVectorString("isotherm species names", &(meta_data->isotherm_species_names));
-  PrintAlquimiaVectorString("kinetic aqueous names", &(meta_data->kinetic_aqueous_names));
+  PrintAlquimiaVectorString("aqueous kinetic names", &(meta_data->aqueous_kinetic_names));
 }  /* end PrintAlquimiaProblemMetaData() */
 
 void PrintAlquimiaProperties(const struct AlquimiaProperties* const mat_prop) {
