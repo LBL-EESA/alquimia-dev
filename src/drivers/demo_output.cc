@@ -89,11 +89,11 @@ void DemoOutputPFloTran::WriteHeader(const char time_units,
                    << " [mol/m^3]\"";
     }
 
-    for (int i = 0; i < meta_data.kinetic_mineral_names.size; ++i) {
-      this->output << " , \"" << meta_data.kinetic_mineral_names.data[i] << " VF\"";
+    for (int i = 0; i < meta_data.mineral_names.size; ++i) {
+      this->output << " , \"" << meta_data.mineral_names.data[i] << " VF\"";
     }
-    for (int i = 0; i < meta_data.kinetic_mineral_names.size; ++i) {
-      this->output << " , \"" << meta_data.kinetic_mineral_names.data[i] << " Rate [mol/m^3/sec]\"";
+    for (int i = 0; i < meta_data.mineral_names.size; ++i) {
+      this->output << " , \"" << meta_data.mineral_names.data[i] << " Rate [mol/m^3/sec]\"";
     }
     this->output << std::endl;
   }

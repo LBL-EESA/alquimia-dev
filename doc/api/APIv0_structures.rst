@@ -99,7 +99,7 @@ passed through the interface.
 +-------------------------+-------------+---------------------------------------------------------+
 | num_sorbed              | int         | N_sorb, number of sorbed species [3]_                   |
 +-------------------------+-------------+---------------------------------------------------------+
-| num_kinetic_minerals    | int         | N_m, number of kinetic minerals                         |
+| num_minerals    | int         | N_m, number of minerals                         |
 +-------------------------+-------------+---------------------------------------------------------+
 | num_aqueous_complexes   | int         |       N_s, number of secondary aqueous complexes        |
 +-------------------------+-------------+---------------------------------------------------------+
@@ -294,7 +294,7 @@ receive data.
 +------------------------+----------------------+--------------------------------------------+
 | positivity             | vector<int, N_p>     | positivity of the primary species (1 or 0) |
 +------------------------+----------------------+--------------------------------------------+
-| kinetic_mineral_names  | vector<string, N_m>  | names of the kinetic minerals              |
+| mineral_names  | vector<string, N_m>  | names of the minerals              |
 +------------------------+----------------------+--------------------------------------------+
 | surface_site_names     | vector<string, N_ss> | names of the surface sites                 |
 +------------------------+----------------------+--------------------------------------------+
@@ -303,7 +303,7 @@ receive data.
 | isotherm_species_names | vector<string, N_is> | names of the primary species involved in   |
 |                        |                      | isotherm reactions                         |
 +------------------------+----------------------+--------------------------------------------+
-| kinetic_aqueous_names  | vector<string, N_k>  | names of the kinetic aqueous reactions     |
+| aqueous_kinetic_names  | vector<string, N_k>  | names of the kinetic aqueous reactions     |
 +------------------------+----------------------+--------------------------------------------+
 
 The positivity array is the same size as primary_names, and its ith entry 

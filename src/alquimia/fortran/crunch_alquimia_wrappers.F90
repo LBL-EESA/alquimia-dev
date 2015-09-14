@@ -100,7 +100,7 @@ end subroutine Crunch_Alquimia_Shutdown
 subroutine Crunch_Alquimia_ProcessCondition( &
      cf_engine_state, &
      condition, &
-     material_properties, &
+     properties, &
      state, &
      aux_data, &
      status) bind(C)
@@ -115,12 +115,12 @@ subroutine Crunch_Alquimia_ProcessCondition( &
   ! function parameters
   type (c_ptr), intent(inout) :: cf_engine_state
   type (AlquimiaGeochemicalCondition), intent(in) :: condition
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent (inout) :: aux_data
   type (AlquimiaEngineStatus), intent(out) :: status
 
-  call ProcessCondition(cf_engine_state, condition, material_properties, &
+  call ProcessCondition(cf_engine_state, condition, properties, &
        state, aux_data, status)
 
 end subroutine Crunch_Alquimia_ProcessCondition
@@ -130,7 +130,7 @@ end subroutine Crunch_Alquimia_ProcessCondition
 subroutine Crunch_Alquimia_ReactionStepOperatorSplit( &
      cf_engine_state, &
      delta_t, &
-     material_properties, &
+     properties, &
      state, &
      aux_data, &
      status) bind(C)
@@ -145,13 +145,13 @@ subroutine Crunch_Alquimia_ReactionStepOperatorSplit( &
   ! function parameters
   type (c_ptr), intent(inout) :: cf_engine_state
   real (c_double), intent(in) :: delta_t
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
   type (AlquimiaEngineStatus), intent(out) :: status
 
   call ReactionStepOperatorSplit(cf_engine_state, delta_t, &
-       material_properties, state, aux_data, status)
+       properties, state, aux_data, status)
 
 end subroutine Crunch_Alquimia_ReactionStepOperatorSplit
 
@@ -159,7 +159,7 @@ end subroutine Crunch_Alquimia_ReactionStepOperatorSplit
 ! **************************************************************************** !
 subroutine Crunch_Alquimia_GetAuxiliaryOutput( &
      cf_engine_state, &
-     material_properties, &
+     properties, &
      state, &
      aux_data, &
      aux_output, &
@@ -174,14 +174,14 @@ subroutine Crunch_Alquimia_GetAuxiliaryOutput( &
 
   ! function parameters
   type (c_ptr), intent(inout) :: cf_engine_state
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaAuxiliaryOutputData), intent(inout) :: aux_output
   type (AlquimiaEngineStatus), intent(out) :: status
 
   call GetAuxiliaryOutput(cf_engine_state, &
-       material_properties, state, aux_data, aux_output, status)
+       properties, state, aux_data, aux_output, status)
 
 end subroutine Crunch_Alquimia_GetAuxiliaryOutput
 
