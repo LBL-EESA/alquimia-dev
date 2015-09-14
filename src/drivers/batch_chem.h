@@ -56,7 +56,7 @@ void SetTimeUnits(const std::string& output_time_units,
 int BatchChemWithAlquimia(
     const alquimia::drivers::utilities::DemoSimulation& demo_simulation,
     const alquimia::drivers::utilities::DemoState& demo_state,
-    const alquimia::drivers::utilities::DemoMaterialProperties& demo_material_props,
+    const alquimia::drivers::utilities::DemoProperties& demo_props,
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,
     alquimia::drivers::utilities::DemoOutput* output);
 
@@ -65,10 +65,10 @@ void CopyDemoStateToAlquimiaState(
     const AlquimiaProblemMetaData* const alquimia_meta_data,
     AlquimiaState* alquimia_state);
 
-void CopyDemoMaterialPropertiesToAlquimiaMaterials(
-    const alquimia::drivers::utilities::DemoMaterialProperties& material_props,
+void CopyDemoPropertiesToAlquimiaMaterials(
+    const alquimia::drivers::utilities::DemoProperties& props,
     const AlquimiaProblemMetaData& alquimia_meta_data,
-    AlquimiaMaterialProperties* alquimia_material_props);
+    AlquimiaProperties* alquimia_props);
 
 void CopyDemoConditionsToAlquimiaConditions(
     const alquimia::drivers::utilities::DemoConditions& demo_conditions,

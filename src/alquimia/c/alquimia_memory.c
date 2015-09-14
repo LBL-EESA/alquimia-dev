@@ -190,30 +190,36 @@ void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data) {
 
 /*******************************************************************************
  **
- **  Material Properties
+ **  Properties
  **
  *******************************************************************************/
 
-void AllocateAlquimiaMaterialProperties(
+void AllocateAlquimiaProperties(
     const struct AlquimiaSizes* const sizes,
-    struct AlquimiaMaterialProperties* material_props) {
+    struct AlquimiaProperties* props) {
   AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
-                               &(material_props->isotherm_kd));
+                               &(props->isotherm_kd));
   AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
-                               &(material_props->freundlich_n));
+                               &(props->freundlich_n));
   AllocateAlquimiaVectorDouble(sizes->num_isotherm_species,
-                               &(material_props->langmuir_b));
+                               &(props->langmuir_b));
+  AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
+                               &(props->mineral_rate_cnst));
+  AllocateAlquimiaVectorDouble(sizes->num_aqueous_kinetics,
+                               &(props->aqueous_kinetic_rate_cnst));
 
-}  /* end AllocateAlquimiaMaterialProperties() */
+}  /* end AllocateAlquimiaProperties() */
 
-void FreeAlquimiaMaterialProperties(
-    struct AlquimiaMaterialProperties* material_props) {
-  if (material_props != NULL) {
-    FreeAlquimiaVectorDouble(&(material_props->isotherm_kd));
-    FreeAlquimiaVectorDouble(&(material_props->freundlich_n));
-    FreeAlquimiaVectorDouble(&(material_props->langmuir_b));
+void FreeAlquimiaProperties(
+    struct AlquimiaProperties* props) {
+  if (props != NULL) {
+    FreeAlquimiaVectorDouble(&(props->isotherm_kd));
+    FreeAlquimiaVectorDouble(&(props->freundlich_n));
+    FreeAlquimiaVectorDouble(&(props->langmuir_b));
+    FreeAlquimiaVectorDouble(&(props->mineral_rate_cnst));
+    FreeAlquimiaVectorDouble(&(props->aqueous_kinetic_rate_cnst));
   }
-}  /* end FreeAlquimiaMaterialProperties() */
+}  /* end FreeAlquimiaProperties() */
 
 /*******************************************************************************
  **
@@ -231,7 +237,7 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   memset(meta_data->positivity.data, 0, sizeof(int) * sizes->num_primary);
 
   AllocateAlquimiaVectorString(sizes->num_kinetic_minerals,
-                               &(meta_data->mineral_names));
+                               &(meta_data->kinetic_mineral_names));
 
   AllocateAlquimiaVectorString(sizes->num_surface_sites,
                                &(meta_data->surface_site_names));
@@ -242,6 +248,9 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
   AllocateAlquimiaVectorString(sizes->num_isotherm_species,
                                &(meta_data->isotherm_species_names));
 
+  AllocateAlquimiaVectorString(sizes->num_aqueous_kinetics,
+                               &(meta_data->kinetic_aqueous_names));
+
 }  /* end AllocateAlquimiaProblemMetaData() */
 
 void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
@@ -249,10 +258,11 @@ void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* meta_data) {
   if (meta_data != NULL) {
     FreeAlquimiaVectorString(&(meta_data->primary_names));
     FreeAlquimiaVectorInt(&(meta_data->positivity));
-    FreeAlquimiaVectorString(&(meta_data->mineral_names));
+    FreeAlquimiaVectorString(&(meta_data->kinetic_mineral_names));
     FreeAlquimiaVectorString(&(meta_data->surface_site_names));
     FreeAlquimiaVectorString(&(meta_data->ion_exchange_names));
     FreeAlquimiaVectorString(&(meta_data->isotherm_species_names));
+    FreeAlquimiaVectorString(&(meta_data->kinetic_aqueous_names));
   }
 }  /* end FreeAlquimiaProblemMetaData() */
 
@@ -268,6 +278,9 @@ void AllocateAlquimiaAuxiliaryOutputData(
   aux_output->pH = -999.9;
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(aux_output->mineral_saturation_index));
+
+  AllocateAlquimiaVectorDouble(sizes->num_aqueous_kinetics,
+                               &(aux_output->aqueous_kinetic_rate));
 
   AllocateAlquimiaVectorDouble(sizes->num_kinetic_minerals,
                                &(aux_output->mineral_reaction_rate));
@@ -287,6 +300,7 @@ void AllocateAlquimiaAuxiliaryOutputData(
 void FreeAlquimiaAuxiliaryOutputData(
     struct AlquimiaAuxiliaryOutputData* aux_output) {
   if (aux_output != NULL) {
+    FreeAlquimiaVectorDouble(&(aux_output->aqueous_kinetic_rate));
     FreeAlquimiaVectorDouble(&(aux_output->mineral_saturation_index));
     FreeAlquimiaVectorDouble(&(aux_output->mineral_reaction_rate));
     FreeAlquimiaVectorDouble(&(aux_output->primary_free_ion_concentration));
@@ -461,7 +475,7 @@ void FreeAlquimiaMineralConstraint(
  *******************************************************************************/
 void AllocateAlquimiaData(struct AlquimiaData* data) {
     AllocateAlquimiaState(&data->sizes, &data->state);
-    AllocateAlquimiaMaterialProperties(&data->sizes, &data->material_properties);
+    AllocateAlquimiaProperties(&data->sizes, &data->properties);
     AllocateAlquimiaAuxiliaryData(&data->sizes, &data->aux_data);
     AllocateAlquimiaProblemMetaData(&data->sizes, &data->meta_data);
     AllocateAlquimiaAuxiliaryOutputData(&data->sizes, &data->aux_output);
@@ -470,7 +484,7 @@ void AllocateAlquimiaData(struct AlquimiaData* data) {
 
 void FreeAlquimiaData(struct AlquimiaData* data) {
   FreeAlquimiaState(&data->state);
-  FreeAlquimiaMaterialProperties(&data->material_properties);
+  FreeAlquimiaProperties(&data->properties);
   FreeAlquimiaAuxiliaryData(&data->aux_data);
   FreeAlquimiaProblemMetaData(&data->meta_data);
   FreeAlquimiaAuxiliaryOutputData(&data->aux_output);

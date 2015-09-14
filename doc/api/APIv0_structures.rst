@@ -22,7 +22,8 @@
    works, distribute copies to the public, perform publicly and display publicly, 
    and to permit others to do so.
    
-   Authors: Benjamin Andre <bandre@lbl.gov>
+   Authors: Benjamin Andre <bandre@lbl.gov>, Sergi Molins <smolins@lbl.gov>, 
+   Jeff Johnson <jnjohnson@lbl.gov>
 
 
 Alquimia Data Transfer Containers
@@ -102,15 +103,17 @@ passed through the interface.
 +-------------------------+-------------+---------------------------------------------------------+
 | num_aqueous_complexes   | int         |       N_s, number of secondary aqueous complexes        |
 +-------------------------+-------------+---------------------------------------------------------+
+| num_aqueous_kinetics    | int         | N_k, number of kinetic aqueous reactions                |
++-------------------------+-------------+---------------------------------------------------------+
 | num_surface_sites       | int         | N_ss, number of surface sites                           |
 +-------------------------+-------------+---------------------------------------------------------+
 | num_ion_exchange_sites  | int         | N_ix, number of ion exchange sites                      |
 +-------------------------+-------------+---------------------------------------------------------+
 | num_isotherm_species    | int         | N_is, number of species involved in isotherm reactions  |
 +-------------------------+-------------+---------------------------------------------------------+
-|    num_aux_integers     | int         | N_ai, number of auxiliary integers                      |
+| num_aux_integers        | int         | N_ai, number of auxiliary integers                      |
 +-------------------------+-------------+---------------------------------------------------------+
-|     num_aux_doubles     | int         | N_ad, number of auxiliary doubles                       |
+| num_aux_doubles         | int         | N_ad, number of auxiliary doubles                       |
 +-------------------------+-------------+---------------------------------------------------------+
 
 .. [3] Consider the number of sorbed species to be a flag requiring memory allocation for the immobile component of the primary species, generally assert (N_sorb == N_p || N_sorb == 0).
@@ -125,46 +128,52 @@ Storage for spatially and temporally varying "state" data. Read/write (chemistry
 +-----------------------------------+------------------------+-----------------------------+
 | **variable**                      |      **storage**       |        **units**            |
 +===================================+========================+=============================+
-| water_density                     |         double         |           [kg/m^3]          |
+| water_density                     | double                 | [kg/m^3]                    |
 +-----------------------------------+------------------------+-----------------------------+
-| porosity                          |         double         | [m^3 pore space / m^3 bulk] |
+| porosity                          | double                 | [m^3 pore space / m^3 bulk] |
 +-----------------------------------+------------------------+-----------------------------+
-| temperature                       |         double         |           [deg C]           |
+| temperature                       | double                 | [deg C]                     |
 +-----------------------------------+------------------------+-----------------------------+
-| aqueous_pressure                  |         double         |            [Pa]             |
+| aqueous_pressure                  | double                 | [Pa]                        |
 +-----------------------------------+------------------------+-----------------------------+
-| total_mobile                      |  vector<double, N_p>   |   [molarity: moles/L]       |
+| total_mobile                      | vector<double, N_p>    | [molarity: moles/L]         |
 +-----------------------------------+------------------------+-----------------------------+
-| total_immobile                    | vector<double, N_sorb> |    [moles/m^3 bulk]         |
+| total_immobile                    | vector<double, N_sorb> | [moles/m^3 bulk]            |
 +-----------------------------------+------------------------+-----------------------------+
-| mineral_volume_fractions          |  vector<double, N_m>   |           [-]               |
+| mineral_volume_fractions          | vector<double, N_m>    | [-]                         |
 +-----------------------------------+------------------------+-----------------------------+
-| mineral_specific_surface area     |  vector<double, N_m>   | [m^2 mineral / m^3 bulk]    |
+| mineral_specific_surface area     | vector<double, N_m>    | [m^2 mineral / m^3 bulk]    |
 +-----------------------------------+------------------------+-----------------------------+
-| surface_site_density              |  vector<double, N_ss>  | [moles / m^3 bulk]          |
+| surface_site_density              | vector<double, N_ss>   | [moles / m^3 bulk]          |
 +-----------------------------------+------------------------+-----------------------------+
-| cation_exchange_capacity          |  vector<double, N_ix>  | [moles / m^3 bulk]          |
+| cation_exchange_capacity          | vector<double, N_ix>   | [moles / m^3 bulk]          |
 +-----------------------------------+------------------------+-----------------------------+
 
 
-Struct: Alquimia Material Properties
-====================================
+Struct: Alquimia Properties
+===========================
 
 Storage for spatially variable "parameters", not changing in time. Read only (chemistry may not change).
 
-+--------------+-----------------------+-------------------------------+
-| **variable** |      **storage**      | **units**                     |
-+==============+=======================+===============================+
-| volume       |        double         | [m^3]                         |
-+--------------+-----------------------+-------------------------------+
-| saturation   |        double         | [m^3 liquid / m^3 pore space] |
-+--------------+-----------------------+-------------------------------+
-| Isotherm Kd  | vector<double, N_is>  | [kg H20 / m^3 bulk]           |
-+--------------+-----------------------+-------------------------------+
-| Freundlich N | vector<double, N_is>  | [-]                           |
-+--------------+-----------------------+-------------------------------+
-| Langmuir b   | vector<double, N_is>  | [-]                           |
-+--------------+-----------------------+-------------------------------+
++---------------------------+-----------------------+-------------------------------+
+| **variable**              |      **storage**      | **units**                     |
++===========================+=======================+===============================+
+| volume                    | double                | [m^3]                         |
++---------------------------+-----------------------+-------------------------------+
+| saturation                | double                | [m^3 liquid / m^3 pore space] |
++---------------------------+-----------------------+-------------------------------+
+| Isotherm Kd               | vector<double, N_is>  | [kg H20 / m^3 bulk]           |
++---------------------------+-----------------------+-------------------------------+
+| Freundlich N              | vector<double, N_is>  | [-]                           |
++---------------------------+-----------------------+-------------------------------+
+| Langmuir b                | vector<double, N_is>  | [-]                           |
++---------------------------+-----------------------+-------------------------------+
+| mineral_rate_cnst         | vector<double, N_m>   | [mol /m^2-sec]                |
++---------------------------+-----------------------+-------------------------------+
+| aqueous_kinetic_rate_cnst | vector<double, N_k>   | [sec^-1] [5]_                 |
++---------------------------+-----------------------+-------------------------------+
+
+.. [5] Units will vary with the reaction model in the engine; sec^-1 corresponds to a first order rate dependence.
 
 Struct: Alquimia Auxiliary Data
 ===============================
@@ -187,7 +196,7 @@ needed.
 +----------------+-----------------------+------------+
 | **variable**   | **storage**           | **units**  |
 +================+=======================+============+
-| aux_ints       |   vector<int, N_ai>   | [-]        |
+| aux_ints       | vector<int, N_ai>     | [-]        |
 +----------------+-----------------------+------------+
 | aux_double     | vector<double, N_ad>  | [-]        |
 +----------------+-----------------------+------------+
@@ -208,7 +217,7 @@ operation.
 +==========================+=============+
 | error                    | int         |
 +--------------------------+-------------+
-| message                  |   string    |
+| message                  | string      |
 +--------------------------+-------------+
 | converged                | bool        |
 +--------------------------+-------------+
@@ -278,22 +287,24 @@ Problem specific meta data, e.g. primary species and mineral
 names. Species are in the order that the chemistry engine expects to
 receive data.
 
-+------------------------+---------------------+-------------------------------------------+
-| **variable**           | **storage**         | **comment**                               |
-+========================+=====================+===========================================+
-| primary_names          | vector<string, N_p> |names of the primary species               |
-+------------------------+---------------------+-------------------------------------------+
-| positivity             | vector<int, N_p>    |positivity of the primary species (1 or 0) |
-+------------------------+---------------------+-------------------------------------------+
-| kinetic_mineral_names  | vector<string, N_m> |names of the kinetic minerals              |
-+------------------------+---------------------+-------------------------------------------+
-| surface_site_names     |vector<string, N_ss> |names of the surface sites                 |
-+------------------------+---------------------+-------------------------------------------+
-| ion_exchange_names     |vector<string, N_ix> |names of the ion exchange sites            |
-+------------------------+---------------------+-------------------------------------------+
-| isotherm_species_names |vector<string, N_is> |names of the primary species involved in   |
-|                        |                     |isotherm reactions                         |
-+------------------------+---------------------+-------------------------------------------+
++------------------------+----------------------+--------------------------------------------+
+| **variable**           | **storage**          | **comment**                                |
++========================+======================+============================================+
+| primary_names          | vector<string, N_p>  | names of the primary species               |
++------------------------+----------------------+--------------------------------------------+
+| positivity             | vector<int, N_p>     | positivity of the primary species (1 or 0) |
++------------------------+----------------------+--------------------------------------------+
+| kinetic_mineral_names  | vector<string, N_m>  | names of the kinetic minerals              |
++------------------------+----------------------+--------------------------------------------+
+| surface_site_names     | vector<string, N_ss> | names of the surface sites                 |
++------------------------+----------------------+--------------------------------------------+
+| ion_exchange_names     | vector<string, N_ix> | names of the ion exchange sites            |
++------------------------+----------------------+--------------------------------------------+
+| isotherm_species_names | vector<string, N_is> | names of the primary species involved in   |
+|                        |                      | isotherm reactions                         |
++------------------------+----------------------+--------------------------------------------+
+| kinetic_aqueous_names  | vector<string, N_k>  | names of the kinetic aqueous reactions     |
++------------------------+----------------------+--------------------------------------------+
 
 The positivity array is the same size as primary_names, and its ith entry 
 contains 1 if the ith primary species must be positive, 0 if it has no 
@@ -314,18 +325,19 @@ data in a particular array, it should set the size to zero.
 +==================================+========================+========================+
 | pH                               |         double         | [-]                    |
 +----------------------------------+------------------------+------------------------+
+| aqueous_kinetic_rate             |  vector<double, N_k>   | [mol / src / m^3]      |
++----------------------------------+------------------------+------------------------+
 | mineral_saturation_index         |  vector<double, N_m>   | [-]                    |
 +----------------------------------+------------------------+------------------------+
 | mineral_reaction_rate            |  vector<double, N_m>   | [mol / sec / m^3 bulk] |
-|                                  |                        |                        |
 +----------------------------------+------------------------+------------------------+
 | primary_free_ion_concentration   |  vector<double, N_p>   | [molality: mol/kg H2O] |
 +----------------------------------+------------------------+------------------------+
-|      primary_activity_coeff      |  vector<double, N_p>   | [-]                    |
+| primary_activity_coeff           |  vector<double, N_p>   | [-]                    |
 +----------------------------------+------------------------+------------------------+
 | secondary_free_ion_concentration |  vector<double, N_s>   | [molality: mol/kg H2O] |
 +----------------------------------+------------------------+------------------------+
-|     secondary_activity_coeff     |  vector<double, N_s>   | [-]                    |
+| secondary_activity_coeff         |  vector<double, N_s>   | [-]                    |
 +----------------------------------+------------------------+------------------------+
 
 

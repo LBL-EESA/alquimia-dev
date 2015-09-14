@@ -61,8 +61,8 @@ extern "C" {
   void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes);
   void PrintAlquimiaProblemMetaData(
       const struct AlquimiaProblemMetaData* const meta_data);
-  void PrintAlquimiaMaterialProperties(
-      const struct AlquimiaMaterialProperties* const mat_prop);
+  void PrintAlquimiaProperties(
+      const struct AlquimiaProperties* const prop);
   void PrintAlquimiaEngineFunctionality(
       const struct AlquimiaEngineFunctionality* const functionality);
   void PrintAlquimiaState(const struct AlquimiaState* const state);
