@@ -51,7 +51,7 @@ extern "C" {
     struct AlquimiaSizes sizes;
     struct AlquimiaEngineFunctionality functionality;
     struct AlquimiaState state;
-    struct AlquimiaMaterialProperties material_properties;
+    struct AlquimiaProperties properties;
     struct AlquimiaAuxiliaryData aux_data;
     struct AlquimiaProblemMetaData meta_data;
     struct AlquimiaAuxiliaryOutputData aux_output;
@@ -80,7 +80,7 @@ extern "C" {
     void (*ProcessCondition)(
         void* pft_engine_state,
         struct AlquimiaGeochemicalCondition* condition,
-        struct AlquimiaMaterialProperties* material_props,
+        struct AlquimiaProperties* props,
         struct AlquimiaState* state,
         struct AlquimiaAuxiliaryData* aux_data,
         struct AlquimiaEngineStatus* status);
@@ -89,7 +89,7 @@ extern "C" {
     void (*ReactionStepOperatorSplit)(
         void* pft_engine_state,
         double* delta_t,
-        struct AlquimiaMaterialProperties* material_props,
+        struct AlquimiaProperties* props,
         struct AlquimiaState* state,
         struct AlquimiaAuxiliaryData* aux_data,
         struct AlquimiaEngineStatus* status);
@@ -98,7 +98,7 @@ extern "C" {
        mineral SI, reaction rates */
     void (*GetAuxiliaryOutput)(
         void* pft_engine_state,
-        struct AlquimiaMaterialProperties* material_props,
+        struct AlquimiaProperties* props,
         struct AlquimiaState* state,
         struct AlquimiaAuxiliaryData* aux_data,
         struct AlquimiaAuxiliaryOutputData* aux_out,

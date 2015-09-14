@@ -322,7 +322,7 @@ end subroutine Shutdown
 
 
 ! **************************************************************************** !
-subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
+subroutine ProcessCondition(pft_engine_state, condition, properties, &
      state, aux_data, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
@@ -344,7 +344,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
   type (AlquimiaGeochemicalCondition), intent(in) :: condition
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent (inout) :: aux_data
   type (AlquimiaEngineStatus), intent(out) :: status
@@ -372,7 +372,7 @@ subroutine ProcessCondition(pft_engine_state, condition, material_properties, &
 
   ! NOTE(bja): the data stored in alquimia's aux_data is uninitialized
   ! at this point, so don't want to copy it! (copy_auxdata = false)
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
        engine_state%reaction, engine_state%global_auxvar, &
        engine_state%material_auxvar, engine_state%rt_auxvar)
 
@@ -446,7 +446,7 @@ end subroutine ProcessCondition
 
 ! **************************************************************************** !
 subroutine ReactionStepOperatorSplit(pft_engine_state, &
-     delta_t, material_properties, state, aux_data, status)
+     delta_t, properties, state, aux_data, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
@@ -463,7 +463,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
   real (c_double), intent(in) :: delta_t
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
   type (AlquimiaEngineStatus), intent(out) :: status
@@ -488,7 +488,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   !call PrintState(state)
 
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
        engine_state%reaction, engine_state%global_auxvar, engine_state%material_auxvar, &
        engine_state%rt_auxvar)
 
@@ -539,7 +539,7 @@ end subroutine ReactionStepOperatorSplit
 ! **************************************************************************** !
 subroutine GetAuxiliaryOutput( &
      pft_engine_state, &
-     material_properties, &
+     properties, &
      state, &
      aux_data, &
      aux_output, &
@@ -559,7 +559,7 @@ subroutine GetAuxiliaryOutput( &
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaAuxiliaryOutputData), intent(inout) :: aux_output
@@ -586,7 +586,7 @@ subroutine GetAuxiliaryOutput( &
   ! still in the auxvars. We are assuming that the driver has called
   ! GetAuxiliaryOutput immediately after reaction step...!
 
-  !call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
+  !call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
   !     engine_state%reaction, engine_state%global_auxvar, engine_state%rt_auxvar, &
   !     porosity, volume)
 
@@ -600,13 +600,18 @@ subroutine GetAuxiliaryOutput( &
      aux_output%pH = -100.d0
   end if
 
-  !
+  ! Aqueous kinetic rate FIXME: not yet supported!
+!  call c_f_pointer(aux_output%aqueous_kinetic_rate%data, local_array, &
+!       (/aux_output%aqueous_kinetic_rate%size/))
+!  do i = 1, aux_output%aqueous_kinetic_rate%size
+!    local_array(i) = engine_state%global_auxvar%reaction_rate(i)
+!  end do
+
   ! mineral data
-  !
   call c_f_pointer(aux_output%mineral_reaction_rate%data, local_array, &
        (/aux_output%mineral_reaction_rate%size/))
-    do i = 1, aux_output%mineral_reaction_rate%size
-     local_array(i) = engine_state%rt_auxvar%mnrl_rate(i)
+  do i = 1, aux_output%mineral_reaction_rate%size
+    local_array(i) = engine_state%rt_auxvar%mnrl_rate(i)
   end do
 
   call c_f_pointer(aux_output%mineral_saturation_index%data, local_array, &
@@ -734,16 +739,16 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   ! copy mineral indices and names
   !
 
-  if (meta_data%mineral_names%size /= engine_state%reaction%mineral%nkinmnrl) then
+  if (meta_data%kinetic_mineral_names%size /= engine_state%reaction%mineral%nkinmnrl) then
      write (*, '(a, i3, a, i3, a)') "meta_data%mineral_names%size (", &
-          meta_data%mineral_names%size, ") != pflotran%reaction%mineral%nkinmnrl(", &
+          meta_data%kinetic_mineral_names%size, ") != pflotran%reaction%mineral%nkinmnrl(", &
           engine_state%reaction%mineral%nkinmnrl, ")"
   end if
-  list_size = meta_data%mineral_names%size
+  list_size = meta_data%kinetic_mineral_names%size
 
   pflotran_names => engine_state%reaction%mineral%mineral_names
 
-  call c_f_pointer(meta_data%mineral_names%data, name_list, (/list_size/))
+  call c_f_pointer(meta_data%kinetic_mineral_names%data, name_list, (/list_size/))
   do i = 1, list_size
      call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(pflotran_names(i)), &
@@ -1390,7 +1395,7 @@ end function ConvertAlquimiaConditionToPflotran
 
 
 ! **************************************************************************** !
-subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
+subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
   reaction, global_auxvar, material_auxvar, rt_auxvar)
 
   use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
@@ -1409,7 +1414,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   logical, intent(in) :: copy_auxdata
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
-  type (AlquimiaMaterialProperties), intent(in) :: material_prop
+  type (AlquimiaProperties), intent(in) :: prop
   type(reaction_type), pointer, intent(inout) :: reaction
   type(global_auxvar_type), pointer, intent(inout) :: global_auxvar
   type(material_auxvar_type), pointer, intent(inout) :: material_auxvar
@@ -1426,12 +1431,12 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   ! state
   !
   global_auxvar%den_kg(1) = state%water_density
-  global_auxvar%sat(1) = material_prop%saturation
+  global_auxvar%sat(1) = prop%saturation
   global_auxvar%temp = state%temperature
   global_auxvar%pres(1) = state%aqueous_pressure
 
   material_auxvar%porosity = state%porosity
-  material_auxvar%volume = material_prop%volume
+  material_auxvar%volume = prop%volume
 
   !
   ! primary aqueous
@@ -1485,21 +1490,21 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   !
   ! isotherms
   !
-  call c_f_pointer(material_prop%isotherm_kd%data, data, &
-       (/material_prop%isotherm_kd%size/))
-  do i = 1, material_prop%isotherm_kd%size
+  call c_f_pointer(prop%isotherm_kd%data, data, &
+       (/prop%isotherm_kd%size/))
+  do i = 1, prop%isotherm_kd%size
      reaction%eqkddistcoef(i) = data(i)
   end do
 
-  call c_f_pointer(material_prop%langmuir_b%data, data, &
-       (/material_prop%langmuir_b%size/))
-  do i = 1, material_prop%langmuir_b%size
+  call c_f_pointer(prop%langmuir_b%data, data, &
+       (/prop%langmuir_b%size/))
+  do i = 1, prop%langmuir_b%size
      reaction%eqkdlangmuirb(i) = data(i)
   end do
 
-  call c_f_pointer(material_prop%freundlich_n%data, data, &
-       (/material_prop%freundlich_n%size/))
-  do i = 1, material_prop%freundlich_n%size
+  call c_f_pointer(prop%freundlich_n%data, data, &
+       (/prop%freundlich_n%size/))
+  do i = 1, prop%freundlich_n%size
      reaction%eqkdfreundlichn(i) = data(i)
   end do
 

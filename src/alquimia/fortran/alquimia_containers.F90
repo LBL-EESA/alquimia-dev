@@ -93,6 +93,7 @@ module AlquimiaContainers_module
      integer (c_int) :: num_sorbed
      integer (c_int) :: num_kinetic_minerals
      integer (c_int) :: num_aqueous_complexes
+     integer (c_int) :: num_aqueous_kinetics
      integer (c_int) :: num_surface_sites
      integer (c_int) :: num_ion_exchange_sites
      integer (c_int) :: num_isotherm_species
@@ -113,14 +114,16 @@ module AlquimiaContainers_module
      type (AlquimiaVectorDouble) :: cation_exchange_capacity
   end type AlquimiaState
 
-  type, public, bind(c) :: AlquimiaMaterialProperties
+  type, public, bind(c) :: AlquimiaProperties
      real (c_double) :: volume
      real (c_double) :: saturation
      type (AlquimiaVectorDouble) :: isotherm_kd
      type (AlquimiaVectorDouble) :: freundlich_n
      type (AlquimiaVectorDouble) :: langmuir_b
+     type (AlquimiaVectorDouble) :: mineral_rate_cnst
 !!     real (c_double) :: solid_density
-  end type AlquimiaMaterialProperties
+     type (AlquimiaVectorDouble) :: aqueous_kinetic_rate_cnst
+  end type AlquimiaProperties
 
   type, public, bind(c) :: AlquimiaAuxiliaryData 
      type (AlquimiaVectorInt) :: aux_ints
@@ -153,10 +156,12 @@ module AlquimiaContainers_module
      type (AlquimiaVectorString) :: surface_site_names
      type (AlquimiaVectorString) :: ion_exchange_names
      type (AlquimiaVectorString) :: isotherm_species_names
+     type (AlquimiaVectorString) :: kinetic_aqueous_names
   end type AlquimiaProblemMetaData
 
   type, public, bind(c) :: AlquimiaAuxiliaryOutputData
      real (c_double) :: pH
+     type (AlquimiaVectorDouble) :: aqueous_kinetic_rate
      type (AlquimiaVectorDouble) :: mineral_saturation_index
      type (AlquimiaVectorDouble) :: mineral_reaction_rate
      type (AlquimiaVectorDouble) :: primary_free_ion_concentration

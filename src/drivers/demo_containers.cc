@@ -77,7 +77,7 @@ void DemoState::Print(void) const {
  **  Material Properties
  **
  *******************************************************************************/
-void DemoMaterialProperties::Print(void) const {
+void DemoProperties::Print(void) const {
   namespace util = alquimia::drivers::utilities;
   std::cout << "  -- Material Properties :" << std::endl;
   std::cout << "    volume : " << this->volume << std::endl;
