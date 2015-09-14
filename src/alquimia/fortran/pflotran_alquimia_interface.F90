@@ -739,16 +739,16 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   ! copy mineral indices and names
   !
 
-  if (meta_data%kinetic_mineral_names%size /= engine_state%reaction%mineral%nkinmnrl) then
+  if (meta_data%mineral_names%size /= engine_state%reaction%mineral%nkinmnrl) then
      write (*, '(a, i3, a, i3, a)') "meta_data%mineral_names%size (", &
-          meta_data%kinetic_mineral_names%size, ") != pflotran%reaction%mineral%nkinmnrl(", &
+          meta_data%mineral_names%size, ") != pflotran%reaction%mineral%nkinmnrl(", &
           engine_state%reaction%mineral%nkinmnrl, ")"
   end if
-  list_size = meta_data%kinetic_mineral_names%size
+  list_size = meta_data%mineral_names%size
 
   pflotran_names => engine_state%reaction%mineral%mineral_names
 
-  call c_f_pointer(meta_data%kinetic_mineral_names%data, name_list, (/list_size/))
+  call c_f_pointer(meta_data%mineral_names%data, name_list, (/list_size/))
   do i = 1, list_size
      call c_f_pointer(name_list(i), name)
      call f_c_string_chars(trim(pflotran_names(i)), &
@@ -928,7 +928,7 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   else
      sizes%num_sorbed = 0
   end if
-  sizes%num_kinetic_minerals = reaction%mineral%nkinmnrl
+  sizes%num_minerals = reaction%mineral%nkinmnrl
   sizes%num_aqueous_complexes = reaction%neqcplx
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
@@ -1780,7 +1780,7 @@ subroutine PrintSizes(sizes)
 
   write (*, '(a)') "size : "
   write (*, '(a, i4)') "  num primary : ", sizes%num_primary
-  write (*, '(a, i4)') "  num kinetics minerals : ", sizes%num_kinetic_minerals
+  write (*, '(a, i4)') "  num kinetics minerals : ", sizes%num_minerals
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites

@@ -91,7 +91,7 @@ module AlquimiaContainers_module
   type, public, bind(c) :: AlquimiaSizes
      integer (c_int) :: num_primary
      integer (c_int) :: num_sorbed
-     integer (c_int) :: num_kinetic_minerals
+     integer (c_int) :: num_minerals
      integer (c_int) :: num_aqueous_complexes
      integer (c_int) :: num_aqueous_kinetics
      integer (c_int) :: num_surface_sites
@@ -156,7 +156,7 @@ module AlquimiaContainers_module
      type (AlquimiaVectorString) :: surface_site_names
      type (AlquimiaVectorString) :: ion_exchange_names
      type (AlquimiaVectorString) :: isotherm_species_names
-     type (AlquimiaVectorString) :: kinetic_aqueous_names
+     type (AlquimiaVectorString) :: aqueous_kinetic_names
   end type AlquimiaProblemMetaData
 
   type, public, bind(c) :: AlquimiaAuxiliaryOutputData
