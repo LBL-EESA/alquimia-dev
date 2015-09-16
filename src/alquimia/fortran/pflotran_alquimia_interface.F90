@@ -1508,6 +1508,25 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
      reaction%eqkdfreundlichn(i) = data(i)
   end do
 
+  !
+  ! mineral reaction rate constant
+  !
+  call c_f_pointer(prop%mineral_rate_cnst%data, data, &
+       (/prop%mineral_rate_cnst%size/))
+  do i = 1, prop%mineral_rate_cnst%size
+     reaction%mineral%kinmnrl_rate(i) = data(i)
+  end do
+
+  !
+  ! aqueous kinetic reaction rate constant
+  !
+  call c_f_pointer(prop%aqueous_kinetic_rate_cnst%data, data, &
+       (/prop%aqueous_kinetic_rate_cnst%size/))
+  do i = 1, prop%aqueous_kinetic_rate_cnst%size
+      reaction%general_kf(i) = data(i)
+      reaction%general_kr(i) = 0.0d0
+  end do
+
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
   end if
@@ -1604,6 +1623,9 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   end do
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
+  ! by chemistry. We don't need to copy theme here!
+
+  ! NOTE(smr): reaction rates constants are properties, and can't be changed
   ! by chemistry. We don't need to copy theme here!
 
   call PackAlquimiaAuxiliaryData(reaction, rt_auxvar, aux_data)

@@ -2200,9 +2200,12 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
                             distrib, &
                             SolidDensity, &
                             jinit, &
-                            xgram
+                            xgram, &
+                            ratek
 
-  use mineral, only : volfx, area
+  use mineral, only : volfx, area, &
+                                  rate0
+  use params, only: secyr
 
   implicit none
 
@@ -2319,6 +2322,26 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
     stop
   end if
 
+  !
+  ! mineral reaction rate constant
+  !
+  call c_f_pointer(prop%mineral_rate_cnst%data, data, &
+       (/prop%mineral_rate_cnst%size/))
+  do i = 1, prop%mineral_rate_cnst%size
+     ! rate0 is in units of mol/m2/yr
+       rate0(1,i) = data(i) *secyr         ! 1 --> hardwired for now to 1 pathway
+  end do
+
+  !
+  ! aqueous kinetic reaction rate constant
+  !
+  call c_f_pointer(prop%aqueous_kinetic_rate_cnst%data, data, &
+       (/prop%aqueous_kinetic_rate_cnst%size/))
+  do i = 1, prop%aqueous_kinetic_rate_cnst%size
+     ! ratek is in units of 1/yr 
+       ratek(1,i) = data(i) * secyr      ! 1 -->hardwired for now to 1 pathway
+  end do
+
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
                                       nexchange, nsurf, ndecay, npot, &
@@ -2351,6 +2374,7 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                              SolidDensity, &
                              distrib, &
                              xgram
+
   use mineral, only : volfx, area
 
   implicit none
@@ -2449,6 +2473,9 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   end do
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
+  ! by chemistry. We don't need to copy theme here!
+
+  ! NOTE(smr): reaction rates constants are properties, and can't be changed
   ! by chemistry. We don't need to copy theme here!
 
   call PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
