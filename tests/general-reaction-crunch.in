@@ -1,0 +1,72 @@
+TITLE
+Batch simple aqueous kinetic reaction test - CrunchFlow
+END
+
+RUNTIME
+time_units      days
+timestep_max    1.0d0
+timestep_init   1.0d0
+time_tolerance  0.01
+coordinate      rectangular
+correction_max  1.0
+debye-huckel    false
+database        general-reaction.dbs
+kinetic_database   general-reaction.dbsx
+!!master          H+
+speciate_only   false
+database_sweep  false
+screen_output   1
+hindmarsh       false
+gimrt           false
+graphics        tecplot
+RunIsothermal   true
+END
+
+OUTPUT
+time_units            days
+spatial_profile       50.0
+time_series           general-reaction-cc.out  1 1 1 
+time_series_print     A(aq)  B(aq)
+time_series_interval  1
+END
+
+PRIMARY_SPECIES
+A(aq)
+B(aq)
+END
+
+SECONDARY_SPECIES 
+END
+
+MINERALS
+END
+
+AQUEOUS_KINETICS
+AtoB               -rate  36.5242100726
+END
+
+
+DISCRETIZATION
+distance_units  meters
+xzones  1  1.0
+END
+ 
+Condition initial
+units            mol/kg
+temperature      25.0
+A(aq)            1.00293346236581d-04
+B(aq)            2.00586692473161d-05
+END
+ 
+INITIAL_CONDITIONS
+initial    1-1  1-1
+END
+ 
+POROSITY
+fix_porosity     0.90
+porosity_update  false
+END
+ 
+TEMPERATURE
+set_temperature  25.0
+END

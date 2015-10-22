@@ -1,0 +1,17 @@
+Run valgrind to detect memory leaks in alquimia with something like:
+
+cd ${ALQUIMIA_DIR}/examples
+valgrind --dsymutil=yes \
+         --suppressions=../contrib/valgrind/valgrind-sys.supp \
+         --suppressions=../contrib/valgrind/valgrind-pflotran.supp \
+         --leak-check=full \
+         ./batch_chem -d -i calcite-short-pc.cfg
+
+Notes: 
+
+* The sys suppression file for should only be used for system
+libraries, mpi, petsc, etc. It might be a good idea to have separate
+lists for different platforms/compilers/mpi.
+
+* Errors in chemistry engines like pflotran or crunchflow should be
+placed in a separate file (or fixed).

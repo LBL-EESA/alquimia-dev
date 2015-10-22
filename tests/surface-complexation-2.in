@@ -1,0 +1,151 @@
+:Description: batch chemistry equilibrium surface complexation based on Steefel's CrunchFlow Short Course Exercise 4
+
+:=========================== chemistry ========================================
+CHEMISTRY
+  PRIMARY_SPECIES
+    H+
+    Cl-
+    Na+
+    NO3-
+    Zn++
+  /
+
+  SECONDARY_SPECIES
+    OH-
+    Zn(OH)2(aq)
+    Zn(OH)3-
+    Zn(OH)4--
+    ZnOH+
+  /
+
+  MINERALS
+    Halite
+  /
+  MINERAL_KINETICS
+    Halite
+      RATE_CONSTANT 1.d-40
+    /
+  /
+
+  SORPTION
+    SURFACE_COMPLEXATION_RXN
+      EQUILIBRIUM
+      MINERAL Halite
+      SITE >FeOH_w 7.6355e4
+      COMPLEXES
+        >FeOH2+_w
+        >FeO-_w
+        >FeOHZn+_w
+      /
+    /
+    SURFACE_COMPLEXATION_RXN
+      EQUILIBRIUM
+      MINERAL Halite
+      SITE >FeOH_s 1.908e3
+      COMPLEXES
+        >FeOH2+_s
+        >FeO-_s
+        >FeOHZn+_s
+      /
+    /
+  /
+  DATABASE surface-complexation.dat
+  LOG_FORMULATION
+  ACTIVITY_COEFFICIENTS TIMESTEP
+  OUTPUT
+    PRIMARY_SPECIES
+    TOTAL_SORBED
+    MINERALS
+    TOTAL
+  /
+END
+
+:=========================== solver options ===================================
+TIMESTEPPER TRANSPORT
+  TS_ACCELERATION 15
+/
+
+:=========================== discretization ===================================
+GRID
+  TYPE structured
+  ORIGIN 0.d0 0.d0 0.d0
+  NXYZ 1 1 1
+  BOUNDS
+    0.d0 1.d0
+    0.d0 1.d0
+    0.d0 1.d0
+  /
+END
+
+:=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+/
+
+:=========================== material properties ==============================
+MATERIAL_PROPERTY soil1
+  ID 1
+  POROSITY 0.9d0
+/
+
+:=========================== observation points ===============================
+OBSERVATION
+  REGION all
+  AT_CELL_CENTER
+/
+
+:=========================== output options ===================================
+OUTPUT
+  PERIODIC_OBSERVATION TIMESTEP 1
+/
+
+:=========================== times ============================================
+TIME
+  FINAL_TIME 1.d0 y
+  INITIAL_TIMESTEP_SIZE 1.d0 y
+  MAXIMUM_TIMESTEP_SIZE 1.d0 y
+END
+
+:=========================== regions ==========================================
+REGION all
+  COORDINATES
+    0.d0 0.d0 0.d0
+    1.d0 1.d0 1.d0
+  /
+END
+
+:=========================== transport conditions =============================
+TRANSPORT_CONDITION initial
+  TYPE zero_gradient
+  CONSTRAINT_LIST
+    0.d0 initial
+  /
+END
+
+
+:=========================== constraints ======================================
+CONSTRAINT initial
+  CONCENTRATIONS
+    H+     6.0     P
+    Cl-    1.0e-5  M Halite
+    Na+    1.0e-5  Z
+    NO3-   1.0e-1  T
+    Zn++   1.0e-6  T
+  /
+  MINERALS
+    Halite 1.d-5 1.d0
+  /
+END
+
+:=========================== condition couplers ===============================
+: initial condition
+INITIAL_CONDITION
+  TRANSPORT_CONDITION initial
+  REGION all
+END
+
+:=========================== stratigraphy couplers ============================
+STRATA
+  REGION all
+  MATERIAL soil1
+END
