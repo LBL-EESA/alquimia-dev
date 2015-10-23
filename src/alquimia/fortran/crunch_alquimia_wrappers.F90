@@ -55,7 +55,7 @@
 
 
 ! **************************************************************************** !
-subroutine Crunch_Alquimia_Setup(input_filename, cf_engine_state, &
+subroutine Crunch_Alquimia_Setup(input_filename, hands_off, cf_engine_state, &
      sizes, functionality, status) bind(C)
 
   use, intrinsic :: iso_c_binding
@@ -67,12 +67,13 @@ subroutine Crunch_Alquimia_Setup(input_filename, cf_engine_state, &
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
+  logical (c_bool), intent(in) :: hands_off
   type (c_ptr), intent(out) :: cf_engine_state
   type (AlquimiaSizes), intent(out) :: sizes
   type (AlquimiaEngineFunctionality), intent(out) :: functionality
   type (AlquimiaEngineStatus), intent(out) :: status
 
-  call Setup(input_filename, cf_engine_state, sizes, functionality, status)
+  call Setup(input_filename, hands_off, cf_engine_state, sizes, functionality, status)
 
 end subroutine Crunch_Alquimia_Setup
 

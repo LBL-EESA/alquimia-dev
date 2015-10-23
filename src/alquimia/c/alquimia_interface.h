@@ -65,6 +65,7 @@ extern "C" {
        (includes reading database, swapping basis, etc.) */
     void (*Setup)(
         const char* input_filename,
+        bool* hands_off,
         void* pft_engine_state,
         struct AlquimiaSizes* sizes,
         struct AlquimiaEngineFunctionality* functionality,
