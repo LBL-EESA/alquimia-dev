@@ -565,7 +565,8 @@ subroutine ProcessCondition(cf_engine_state, condition, properties, &
 
   ! move here for now, we need to know now what condition we are dealing with
   jinit(1,1,1) = nco
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, engine_state%hands_off, &
+                             state, aux_data, properties, &
                              ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
 
   if (allocated(stmp)) DEALLOCATE(stmp) !! to revisit ?
@@ -708,7 +709,8 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   deltmin = engine_state%deltmin
   time = engine_state%time
 
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata,   engine_state%hands_off, &
+                             state, aux_data, properties, &
                              ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
 
   IF (nexchange > 0) THEN
@@ -2182,7 +2184,8 @@ end subroutine ConvertAlquimiaConditionToCrunch
 
 
 ! **************************************************************************** !
-subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
+subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
+                                 state, aux_data, prop, &
                                  ncomp, nspec, nkin, nrct, ngas, &
                                  nexchange, nsurf, ndecay, npot, &
                                  nretard )
@@ -2215,6 +2218,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
 
   ! function parameters
   logical, intent(in) :: copy_auxdata
+  logical, intent(in) :: hands_off
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaProperties), intent(in) :: prop
@@ -2353,7 +2357,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
        ratek(1,i) = data(i) * secyr      ! 1 -->hardwired for now to 1 pathway
   end do
 
-  end if if_handsoff
+  end if if_hands_off
   
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &

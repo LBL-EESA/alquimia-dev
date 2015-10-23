@@ -376,7 +376,8 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
 
   ! NOTE(bja): the data stored in alquimia's aux_data is uninitialized
   ! at this point, so don't want to copy it! (copy_auxdata = false)
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, engine_state%hands_off, &
+       state, aux_data, properties, &
        engine_state%reaction, engine_state%global_auxvar, &
        engine_state%material_auxvar, engine_state%rt_auxvar)
 
@@ -492,7 +493,8 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   !call PrintState(state)
 
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, engine_state%hands_off, &
+       state, aux_data, properties, &
        engine_state%reaction, engine_state%global_auxvar, engine_state%material_auxvar, &
        engine_state%rt_auxvar)
 
@@ -1399,7 +1401,8 @@ end function ConvertAlquimiaConditionToPflotran
 
 
 ! **************************************************************************** !
-subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
+subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
+  state, aux_data, prop, &
   reaction, global_auxvar, material_auxvar, rt_auxvar)
 
   use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
@@ -1416,6 +1419,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
 
   ! function parameters
   logical, intent(in) :: copy_auxdata
+  logical, intent(in) :: hands_off
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaProperties), intent(in) :: prop
@@ -1538,7 +1542,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
       reaction%general_kr(i) = 0.0d0
   end do
 
-  end if if_handsoff
+  end if if_hands_off
   
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
