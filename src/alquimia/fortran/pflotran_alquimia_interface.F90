@@ -118,6 +118,7 @@ module PFloTranAlquimiaInterface_module
      type (material_auxvar_type), pointer :: material_auxvar
      type(tran_constraint_list_type), pointer :: transport_constraints
      type(tran_constraint_coupler_type), pointer :: constraint_coupler 
+     logical :: hands_off
   end type PFloTranEngineState
 
 contains
@@ -130,13 +131,13 @@ contains
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
+subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, functionality, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 !
 !  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
 !    been called by the driver
 
-  use, intrinsic :: iso_c_binding, only : c_char, c_ptr
+  use, intrinsic :: iso_c_binding, only : c_char, c_ptr, c_bool
 
   use c_f_interface_module, only : f_c_string_ptr
 
@@ -159,6 +160,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
+  logical (c_bool), intent(in) :: hands_off
   type (c_ptr), intent(out) :: pft_engine_state
   type (AlquimiaSizes), intent(out) :: sizes
   type (AlquimiaEngineFunctionality), intent(out) :: functionality
@@ -261,6 +263,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   engine_state%material_auxvar => material_auxvar
   engine_state%constraint_coupler => constraint_coupler
   engine_state%transport_constraints => transport_constraints
+
+  engine_state%hands_off = hands_off
 
   pft_engine_state = c_loc(engine_state)
 
