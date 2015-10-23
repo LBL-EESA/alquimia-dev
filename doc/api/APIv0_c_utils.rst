@@ -91,7 +91,7 @@ formal alquimia API.
       struct AlquimiaSizes sizes;
       struct AlquimiaEngineFunctionality functionality;
       struct AlquimiaState state;
-      struct AlquimiaMaterialProperties material_properties;
+      struct AlquimiaProperties properties;
       struct AlquimiaAuxiliaryData aux_data;
       struct AlquimiaProblemMetaData meta_data;
       struct AlquimiaAuxiliaryOutputData aux_output;

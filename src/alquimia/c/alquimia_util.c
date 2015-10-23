@@ -143,7 +143,7 @@ void PrintAlquimiaData(const struct AlquimiaData* const data) {
   PrintAlquimiaSizes(&data->sizes);
   PrintAlquimiaEngineFunctionality(&data->functionality);
   PrintAlquimiaState(&data->state);
-  PrintAlquimiaMaterialProperties(&data->material_properties);
+  PrintAlquimiaProperties(&data->properties);
   PrintAlquimiaAuxiliaryData(&data->aux_data);
   PrintAlquimiaProblemMetaData(&data->meta_data);
   PrintAlquimiaAuxiliaryOutputData(&data->aux_output);
@@ -154,8 +154,9 @@ void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes) {
   fprintf(stdout, "-- Alquimia Sizes :\n");
   fprintf(stdout, "     num primary species : %d\n", sizes->num_primary);
   fprintf(stdout, "     num sorbed : %d\n", sizes->num_sorbed);
-  fprintf(stdout, "     num kinetic minerals : %d\n", sizes->num_kinetic_minerals);
+  fprintf(stdout, "     num minerals : %d\n", sizes->num_minerals);
   fprintf(stdout, "     num aqueous complexes : %d\n", sizes->num_aqueous_complexes);
+  fprintf(stdout, "     num aqueous kinetics : %d\n", sizes->num_aqueous_kinetics);
   fprintf(stdout, "     num surface sites : %d\n", sizes->num_surface_sites);
   fprintf(stdout, "     num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
   fprintf(stdout, "     num auxiliary integers : %d\n", sizes->num_aux_integers);
@@ -179,21 +180,25 @@ void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const me
 
   fprintf(stdout, "-- Alquimia Problem Meta Data :\n");
   PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
+  PrintAlquimiaVectorInt("positivity names", &(meta_data->positivity));
   PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names));
   PrintAlquimiaVectorString("surface site names", &(meta_data->surface_site_names));
   PrintAlquimiaVectorString("ion exchange names", &(meta_data->ion_exchange_names));
   PrintAlquimiaVectorString("isotherm species names", &(meta_data->isotherm_species_names));
+  PrintAlquimiaVectorString("aqueous kinetic names", &(meta_data->aqueous_kinetic_names));
 }  /* end PrintAlquimiaProblemMetaData() */
 
-void PrintAlquimiaMaterialProperties(const struct AlquimiaMaterialProperties* const mat_prop) {
+void PrintAlquimiaProperties(const struct AlquimiaProperties* const mat_prop) {
 
-  fprintf(stdout, "-- Alquimia Material Properties :\n");
+  fprintf(stdout, "-- Alquimia Properties :\n");
   fprintf(stdout, "     volume : %f\n", mat_prop->volume);
   fprintf(stdout, "     saturation : %f\n", mat_prop->saturation);
   PrintAlquimiaVectorDouble("isotherm kd", &(mat_prop->isotherm_kd));
   PrintAlquimiaVectorDouble("freundlich n", &(mat_prop->freundlich_n));
   PrintAlquimiaVectorDouble("langmuir b", &(mat_prop->langmuir_b));
-}  /* end PrintAlquimiaMaterialProperties() */
+  PrintAlquimiaVectorDouble("mineral rate cnst", &(mat_prop->mineral_rate_cnst));
+  PrintAlquimiaVectorDouble("aqueous kinetic rate cnst", &(mat_prop->aqueous_kinetic_rate_cnst));
+}  /* end PrintAlquimiaProperties() */
 
 void PrintAlquimiaState(const struct AlquimiaState* const state) {
 

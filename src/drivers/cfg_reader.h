@@ -50,7 +50,7 @@ class DemoConfigReader {
   void ReadInputFile(const std::string& file_name,
                      DemoSimulation* simulation_params,
                      DemoState* state,
-                     DemoMaterialProperties* material_props,
+                     DemoProperties* material_props,
                      DemoConditions* conditions);
 
   void WriteTemplateFile(const std::string& file_name);
@@ -76,7 +76,7 @@ class DemoConfigReader {
                          DemoState* state);
   void ParseMaterialPropertySection(
       std::ifstream* input_file,
-      DemoMaterialProperties* material_props);
+      DemoProperties* material_props);
   
   void ParseConditionSection(
       std::ifstream* input_file,
@@ -105,7 +105,7 @@ class DemoConfigReader {
   static const std::string kCECString;
   static const std::string kSiteDensityString;
   
-  static const std::string kMaterialPropertiesSection;
+  static const std::string kPropertiesSection;
   static const std::string kVolumeString;
   static const std::string kIsothermKdString;
   static const std::string kFreundlichNString;

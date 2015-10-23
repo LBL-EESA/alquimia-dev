@@ -398,7 +398,7 @@ end subroutine Shutdown
 
 
 ! **************************************************************************** !
-subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
+subroutine ProcessCondition(cf_engine_state, condition, properties, &
      state, aux_data, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
@@ -419,7 +419,7 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
   ! function parameters
   type (c_ptr), intent(inout) :: cf_engine_state
   type (AlquimiaGeochemicalCondition), intent(in) :: condition
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent (inout) :: aux_data
   type (AlquimiaEngineStatus), intent(out) :: status
@@ -511,7 +511,7 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
 
 !    the condition has not be added yet, go ahead and add it now
      if (found == 0) then
-       call ConvertAlquimiaConditionToCrunch(state,material_properties, &
+       call ConvertAlquimiaConditionToCrunch(state,properties, &
                                              ncomp,nspec,nrct,nkin, &
                                              ngas,nsurf,nexchange, &
                                              ikin,nexch_sec,nsurf_sec, &
@@ -561,7 +561,7 @@ subroutine ProcessCondition(cf_engine_state, condition, material_properties, &
 
   ! move here for now, we need to know now what condition we are dealing with
   jinit(1,1,1) = nco
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
                              ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
 
   if (allocated(stmp)) DEALLOCATE(stmp) !! to revisit ?
@@ -586,7 +586,7 @@ end subroutine ProcessCondition
 
 ! **************************************************************************** !
 subroutine ReactionStepOperatorSplit(cf_engine_state, &
-     delta_t, material_properties, state, aux_data, status)
+     delta_t, properties, state, aux_data, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
@@ -611,7 +611,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   ! function parameters
   type (c_ptr), intent(inout) :: cf_engine_state
   real (c_double), intent(in) :: delta_t
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
   type (AlquimiaEngineStatus), intent(out) :: status
@@ -704,7 +704,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   deltmin = engine_state%deltmin
   time = engine_state%time
 
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
                              ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
 
   IF (nexchange > 0) THEN
@@ -928,7 +928,7 @@ end subroutine ReactionStepOperatorSplit
 ! **************************************************************************** !
 subroutine GetAuxiliaryOutput( &
      cf_engine_state, &
-     material_properties, &
+     properties, &
      state, &
      aux_data, &
      aux_output, &
@@ -952,7 +952,7 @@ subroutine GetAuxiliaryOutput( &
 
   ! function parameters
   type (c_ptr), intent(inout) :: cf_engine_state
-  type (AlquimiaMaterialProperties), intent(in) :: material_properties
+  type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaAuxiliaryOutputData), intent(inout) :: aux_output
@@ -1341,7 +1341,7 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
 !!  else
 !!     sizes%num_sorbed = 0
 !!  end if
-  sizes%num_kinetic_minerals = nrct ! nkin
+  sizes%num_minerals = nrct ! nkin
   sizes%num_aqueous_complexes = nspec
   sizes%num_surface_sites = nsurf
   sizes%num_ion_exchange_sites = nexchange
@@ -1755,7 +1755,7 @@ end subroutine ProcessCrunchConstraint
 
 
 ! **************************************************************************** !
-subroutine ConvertAlquimiaConditionToCrunch(state,material_properties, &
+subroutine ConvertAlquimiaConditionToCrunch(state,properties, &
                                             ncomp,nspec,nrct,nkin, &
                                             ngas,nsurf,nexchange, &
                                             ikin,nexch_sec,nsurf_sec, &
@@ -1783,7 +1783,7 @@ subroutine ConvertAlquimiaConditionToCrunch(state,material_properties, &
  
 ! function parameters
   type (AlquimiaState), intent(in)                             :: state
-  type (AlquimiaMaterialProperties), intent(in)        :: material_properties
+  type (AlquimiaProperties), intent(in)                     ::properties
   type (AlquimiaGeochemicalCondition), intent(in) :: alquimia_condition
 
   integer(i4b), intent(in)          :: ncomp
@@ -1875,8 +1875,8 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
   tempcond(nchem) = state%temperature
   rocond(nchem)      = state%water_density
   porcond(nchem)    = state%porosity  
-  SaturationCond(nchem) = material_properties%saturation
-!!  SolidDensity(nchem) = material_properties%solid_density
+  SaturationCond(nchem) = properties%saturation
+!!  SolidDensity(nchem) = properties%solid_density
   SolidDensity(nchem) = 2650.0d0 ! hard wired until I figure the problem with memory bug
                                                          ! created by adding solid_density --> does it have to do with batch_chem????
 !
@@ -2178,7 +2178,7 @@ end subroutine ConvertAlquimiaConditionToCrunch
 
 
 ! **************************************************************************** !
-subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
+subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
                                  ncomp, nspec, nkin, nrct, ngas, &
                                  nexchange, nsurf, ndecay, npot, &
                                  nretard )
@@ -2200,9 +2200,12 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
                             distrib, &
                             SolidDensity, &
                             jinit, &
-                            xgram
+                            xgram, &
+                            ratek
 
-  use mineral, only : volfx, area
+  use mineral, only : volfx, area, &
+                                  rate0
+  use params, only: secyr
 
   implicit none
 
@@ -2210,7 +2213,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   logical, intent(in) :: copy_auxdata
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
-  type (AlquimiaMaterialProperties), intent(in) :: material_prop
+  type (AlquimiaProperties), intent(in) :: prop
   integer(i4b), intent(in) :: ncomp
   integer(i4b), intent(in) :: nspec
   integer(i4b), intent(in) :: nkin
@@ -2235,11 +2238,11 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   ! copy state to crunchflow
   !
   ro(jx,jy,jz)            = state%water_density
-  satliq(jx,jy,jz)        = material_prop%saturation
+  satliq(jx,jy,jz)        = prop%saturation
   t(jx,jy,jz)             = state%temperature
   !! not needed by crunch = state%aqueous_pressure
   por(jx,jy,jz)           = state%porosity  
-  !! not needed by crunch = material_prop%volume
+  !! not needed by crunch = prop%volume
   !!write(*,*)'HERE dens, temp, por: ', state%water_density, state%temperature, state%porosity
   !
   ! primary aqueous
@@ -2296,7 +2299,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
   !
   ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
   !
-  call c_f_pointer(material_prop%isotherm_kd%data, data, (/nretard/))
+  call c_f_pointer(prop%isotherm_kd%data, data, (/nretard/))
   iret = 0
   do i = 1, ncomp
               
@@ -2318,6 +2321,26 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, material_prop, &
     write(*,*)'current number: ',iret,' input file number: ',nretard
     stop
   end if
+
+  !
+  ! mineral reaction rate constant
+  !
+  call c_f_pointer(prop%mineral_rate_cnst%data, data, &
+       (/prop%mineral_rate_cnst%size/))
+  do i = 1, prop%mineral_rate_cnst%size
+     ! rate0 is in units of mol/m2/yr
+       rate0(1,i) = data(i) *secyr         ! 1 --> hardwired for now to 1 pathway
+  end do
+
+  !
+  ! aqueous kinetic reaction rate constant
+  !
+  call c_f_pointer(prop%aqueous_kinetic_rate_cnst%data, data, &
+       (/prop%aqueous_kinetic_rate_cnst%size/))
+  do i = 1, prop%aqueous_kinetic_rate_cnst%size
+     ! ratek is in units of 1/yr 
+       ratek(1,i) = data(i) * secyr      ! 1 -->hardwired for now to 1 pathway
+  end do
 
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
@@ -2351,6 +2374,7 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                              SolidDensity, &
                              distrib, &
                              xgram
+
   use mineral, only : volfx, area
 
   implicit none
@@ -2449,6 +2473,9 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   end do
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
+  ! by chemistry. We don't need to copy theme here!
+
+  ! NOTE(smr): reaction rates constants are properties, and can't be changed
   ! by chemistry. We don't need to copy theme here!
 
   call PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
@@ -2799,7 +2826,7 @@ subroutine PrintSizes(sizes)
 
   write (*, '(a)') "size : "
   write (*, '(a, i4)') "  num primary : ", sizes%num_primary
-  write (*, '(a, i4)') "  num kinetics minerals : ", sizes%num_kinetic_minerals
+  write (*, '(a, i4)') "  num minerals : ", sizes%num_minerals
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
