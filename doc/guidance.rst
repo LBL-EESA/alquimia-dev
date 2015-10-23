@@ -87,7 +87,7 @@ pseudocode:
 
 .. code-block:: c
 
-   //alquimia initialization (alquimia_interface.h)
+   //alquimia initialization (alquimia_interface.h)     
    AllocateAlquimiaEngineStatus(AlquimiaStatus);
    CreateAlquimiaInterface(Alquimia, 
               AlquimiaStatus);
