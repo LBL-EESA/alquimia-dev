@@ -57,20 +57,20 @@ extern "C" {
   void crunch_alquimia_processcondition(
       void* cf_engine_state,
       struct AlquimiaGeochemicalCondition* condition,
-      struct AlquimiaMaterialProperties* material_props,
+      struct AlquimiaProperties* props,
       struct AlquimiaState* state,
       struct AlquimiaAuxiliaryData* aux_data,
       struct AlquimiaEngineStatus* status);
   void crunch_alquimia_reactionstepoperatorsplit(
       void* cf_engine_state,
       double* delta_t,
-      struct AlquimiaMaterialProperties* material_properties,
+      struct AlquimiaProperties* properties,
       struct AlquimiaState* state,
       struct AlquimiaAuxiliaryData* aux_data,
       struct AlquimiaEngineStatus* status);
   void crunch_alquimia_getauxiliaryoutput(
       void* cf_engine_state,
-      struct AlquimiaMaterialProperties* material_properties,
+      struct AlquimiaProperties* properties,
       struct AlquimiaState* state,
       struct AlquimiaAuxiliaryData* aux_data,
       struct AlquimiaAuxiliaryOutputData* aux_out,

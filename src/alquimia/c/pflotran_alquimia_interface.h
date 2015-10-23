@@ -57,20 +57,20 @@ extern "C" {
   void pflotran_alquimia_processcondition(
       void* pft_engine_state,
       struct AlquimiaGeochemicalCondition* condition,
-      struct AlquimiaMaterialProperties* material_props,
+      struct AlquimiaProperties* material_props,
       struct AlquimiaState* state,
       struct AlquimiaAuxiliaryData* aux_data,
       struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_reactionstepoperatorsplit(
       void* pft_engine_state,
       double* delta_t,
-      struct AlquimiaMaterialProperties* material_properties,
+      struct AlquimiaProperties* material_properties,
       struct AlquimiaState* state,
       struct AlquimiaAuxiliaryData* aux_data,
       struct AlquimiaEngineStatus* status);
   void pflotran_alquimia_getauxiliaryoutput(
       void* pft_engine_state,
-      struct AlquimiaMaterialProperties* material_properties,
+      struct AlquimiaProperties* material_properties,
       struct AlquimiaState* state,
       struct AlquimiaAuxiliaryData* aux_data,
       struct AlquimiaAuxiliaryOutputData* aux_out,

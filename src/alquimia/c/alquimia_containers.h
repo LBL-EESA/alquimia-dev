@@ -68,8 +68,9 @@ extern "C" {
   struct AlquimiaSizes {
     int num_primary;
     int num_sorbed;
-    int num_kinetic_minerals;
+    int num_minerals;
     int num_aqueous_complexes;
+    int num_aqueous_kinetics;
     int num_surface_sites;
     int num_ion_exchange_sites;
     int num_isotherm_species;
@@ -90,12 +91,14 @@ extern "C" {
     struct AlquimiaVectorDouble cation_exchange_capacity;  /* [moles/m^3 bulk] */
   };
   
-  struct AlquimiaMaterialProperties {
+  struct AlquimiaProperties {
     double volume;  /* [m^3] */
-    double saturation;  /* [-] */
-    struct AlquimiaVectorDouble isotherm_kd;  /* [?] */
-    struct AlquimiaVectorDouble freundlich_n; /* [?] */
-    struct AlquimiaVectorDouble langmuir_b;  /* [?] */
+    double saturation;  /* [m^3 liquid / m^3 pore space] */
+    struct AlquimiaVectorDouble isotherm_kd;  /* [kg H20 / m^3 bulk] */
+    struct AlquimiaVectorDouble freundlich_n; /* [-] */
+    struct AlquimiaVectorDouble langmuir_b;  /* [-] */
+    struct AlquimiaVectorDouble mineral_rate_cnst; /* [mol/m^2-sec] */    
+    struct AlquimiaVectorDouble aqueous_kinetic_rate_cnst; /* [sec^-1] */
     //   double solid_density;  /* [kg/m3] */
   };
   
@@ -130,13 +133,15 @@ extern "C" {
     struct AlquimiaVectorString surface_site_names;
     struct AlquimiaVectorString ion_exchange_names;
     struct AlquimiaVectorString isotherm_species_names;
+    struct AlquimiaVectorString aqueous_kinetic_names;
     /*char** auxiliary_output_names;*/
   };
   
   struct AlquimiaAuxiliaryOutputData {
     double pH;
-    struct AlquimiaVectorDouble mineral_saturation_index;  /* [-] */
-    struct AlquimiaVectorDouble mineral_reaction_rate;  /* [?] */
+    struct AlquimiaVectorDouble aqueous_kinetic_rate;  /* [?] */
+    struct AlquimiaVectorDouble mineral_saturation_index;  /* [mol/sec/m^3] */
+    struct AlquimiaVectorDouble mineral_reaction_rate;  /* [mol/sec/m^3 bulk] */
     struct AlquimiaVectorDouble primary_free_ion_concentration; /* [molality] */
     struct AlquimiaVectorDouble primary_activity_coeff; /* [-] */
     struct AlquimiaVectorDouble secondary_free_ion_concentration; /* [molality] */
