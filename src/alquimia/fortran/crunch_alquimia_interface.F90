@@ -2301,6 +2301,13 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
   end do
 
   !
+  ! in hands-off mode geochemical properties
+  ! are not provided by the driver so copying them over would
+  ! lose crunchflow's input file values 
+  !
+  if_hands_off: if (hands_off .and. .not. copy_auxdata) then
+  
+  !
   ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
   !
   call c_f_pointer(prop%isotherm_kd%data, data, (/nretard/))
@@ -2346,6 +2353,8 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
        ratek(1,i) = data(i) * secyr      ! 1 -->hardwired for now to 1 pathway
   end do
 
+  end if if_handsoff
+  
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
                                       nexchange, nsurf, ndecay, npot, &

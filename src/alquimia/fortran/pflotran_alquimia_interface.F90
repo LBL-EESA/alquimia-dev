@@ -1474,6 +1474,13 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
   end do
 
   !
+  ! in hands-off mode CEC and site density, as well as any property
+  ! are not provided by the driver so copying them over would
+  ! lose pflotran's input file values 
+  !
+  if_hands_off: if (hands_off .and. .not. copy_auxdata) then
+  
+  !
   ! ion exchange, CEC only present in reaction, not aux_vars?
   !
   call c_f_pointer(state%cation_exchange_capacity%data, data, &
@@ -1531,6 +1538,8 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
       reaction%general_kr(i) = 0.0d0
   end do
 
+  end if if_handsoff
+  
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
   end if
