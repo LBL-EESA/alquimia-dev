@@ -47,6 +47,7 @@ extern "C" {
 #ifdef HAVE_PFLOTRAN
   void pflotran_alquimia_setup(
       const char* input_filename,
+      bool* hands_off,
       void* pft_engine_state,
       struct AlquimiaSizes* sizes,
       struct AlquimiaEngineFunctionality* functionality,
