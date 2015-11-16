@@ -9,9 +9,12 @@ option(USE_XSDK_DEFAULTS "Set to use xSDK defaults for options [ON]." ON)
 option(CMAKE_INSTALL_PREFIX "Sets installation prefix [/usr/local]." "/usr/local")
 option(XSDK_ENABLE_DEBUG "Enables Debug mode builds [OFF]." OFF)
 option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
-option(XSDK_PRECISION "Sets the precision of floating-point numbers shared libraries (SINGLE,DOUBLE) [DOUBLE]." "DOUBLE")
+option(XSDK_PRECISION "Sets the precision of floating-point numbers shared libraries (SINGLE,DOUBLE) [DOUBLE].")
 
 # Check defaults for xSDK if needed.
+if (NOT XSDK_PRECISION)
+  set(XSDK_PRECISION DOUBLE)
+endif()
 
 # Make sure compilers are set. This must be done before enabling languages.
 if (NOT CMAKE_C_COMPILER)
