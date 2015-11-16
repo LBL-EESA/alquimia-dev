@@ -1,0 +1,14 @@
+# OS generated files
+.DS_Store
+
+# Editor backup files
+*~
+.*.swp
+.*.swo
+
+# Binary files.
+*.pdf
+
+# Generated files
+build/
+
