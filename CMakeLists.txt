@@ -9,24 +9,30 @@ option(USE_XSDK_DEFAULTS "Set to use xSDK defaults for options [ON]." ON)
 option(CMAKE_INSTALL_PREFIX "Sets installation prefix [/usr/local]." "/usr/local")
 option(XSDK_ENABLE_DEBUG "Enables Debug mode builds [OFF]." OFF)
 option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
-option(XSDK_PRECISION "Sets the precision of floating-point numbers shared libraries [SINGLE,DOUBLE]." DOUBLE)
+option(XSDK_PRECISION "Sets the precision of floating-point numbers shared libraries (SINGLE,DOUBLE) [DOUBLE]." "DOUBLE")
 
-# Set compilers. This must be done before enabling languages.
-set(CMAKE_C_COMPILER "${CC}")
-set(CMAKE_C_FLAGS "${CFLAGS}")
-set(CMAKE_CXX_COMPILER "${CXX}")
-set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
-set(CMAKE_Fortran_COMPILER "${FC}")
-set(CMAKE_Fortran_FLAGS "${FCFLAGS}")
+# Check defaults for xSDK if needed.
+
+# Make sure compilers are set. This must be done before enabling languages.
+if (NOT CMAKE_C_COMPILER)
+  set(CMAKE_C_COMPILER "${CC}")
+endif()
+if (NOT CMAKE_C_FLAGS)
+  set(CMAKE_C_FLAGS "${CFLAGS}")
+endif()
+if (NOT CMAKE_Fortran_COMPILER)
+  set(CMAKE_Fortran_COMPILER "${FC}")
+endif()
+if (NOT CMAKE_Fortran_FLAGS)
+  set(CMAKE_Fortran_FLAGS "${FCFLAGS}")
+endif()
 enable_language(C)
-enable_language(CXX)
 enable_language(Fortran)
 
 # We declare the project here.
 project (alquimia)
 
 message("-- C compiler is ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID})")
-message("-- C++ compiler is ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})")
 message("-- Fortran compiler is ${CMAKE_Fortran_COMPILER} (${CMAKE_Fortran_COMPILER_ID})")
 
 # Version numbers.
@@ -51,7 +57,8 @@ message("-- Real number representation is ${ALQUIMIA_REAL_TYPE}")
 
 # Add a custom target (always out of date) that generates alquimia_version.h.
 add_custom_target(update_version_h ALL
-                  python ${PROJECT_SOURCE_DIR}/tools/update_version_h.py alquimia ${ALQUIMIA_VERSION} ${PROJECT_BINARY_DIR}/alquimia_version.h)
+                  mkdir -p ${PROJECT_BINARY_DIR}/include/alquimia
+                  COMMAND python ${PROJECT_SOURCE_DIR}/tools/update_version_h.py ${ALQUIMIA_VERSION} ${PROJECT_BINARY_DIR}/include/alquimia/alquimia_version.h)
                   
 # Figure out the system type.
 if (APPLE EQUAL 1)
@@ -84,20 +91,8 @@ elseif (CMAKE_C_COMPILER_ID STREQUAL "Intel")
 endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SYS_FLAGS}")
 
-# C++ compiler flags.
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-parameter -Wno-int-to-pointer-cast -Wno-unused-function")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-parameter -Wno-int-to-pointer-cast -Wno-unused-function")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SYS_FLAGS}")
-
 # Fortran compiler flags.
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -W -Wall -std=gnu -pedantic -Wno-unused-variable -Wno-unused-parameter")
 endif()
 
@@ -106,14 +101,13 @@ endif()
 include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_BINARY_DIR}/include")
 link_directories("${PROJECT_BINARY_DIR}/lib")
-include_directories(${POLYMEC_INCDIRS})
 
 # Unit testing.
 enable_testing()
 
 # Source code itself.
 include_directories("${PROJECT_SOURCE_DIR}")
-add_subdirectory(src)
+add_subdirectory(alquimia)
 
 # Now that we have gathered all our libraries, generate an alquimia.cmake 
 # file that contains all the vital information.
