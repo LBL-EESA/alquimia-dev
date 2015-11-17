@@ -55,12 +55,43 @@ void alquimia_error(const char* message, ...)
 
   // Call the handler.
   error_handler(err);
-  exit(-1);
 }
 
 void alquimia_set_error_handler(alquimia_error_handler_function handler)
 {
   error_handler = handler;
+}
+
+// Abort function.
+static alquimia_abort_function abort_function = NULL;
+
+// Default abort function.
+static void default_abort_function(const char* message)
+{
+  printf("alquimia: aborting: %s\n", message);
+  abort();
+}
+
+void alquimia_abort(const char* message, ...)
+{
+  // Set the default abort function if none is set.
+  if (abort_function == NULL)
+    abort_function = default_abort_function;
+
+  // Extract the variadic arguments and splat them into a string.
+  char err[1024];
+  va_list argp;
+  va_start(argp, message);
+  vsnprintf(err, 1023, message, argp);
+  va_end(argp);
+
+  // Call the function.
+  abort_function(err);
+}
+
+void alquimia_set_abort_function(alquimia_abort_function function)
+{
+  abort_function = function;
 }
 
 void alquimia_version_fprintf(const char* exe_name, FILE* stream)

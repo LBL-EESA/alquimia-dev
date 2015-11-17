@@ -38,7 +38,7 @@ typedef @ALQUIMIA_REAL_TYPE@ alquimia_real_t;
 #ifndef NDEBUG
 #define ALQUIMIA_ASSERT(x) \
   if (!(x)) \
-    alquimia_error("Assertion %s failed\nat %s: %d\n", #x, __FILE__, __LINE__);
+    alquimia_abort("Assertion %s failed\nat %s: %d\n", #x, __FILE__, __LINE__);
 #else
 #define ALQUIMIA_ASSERT(x) 
 #endif
@@ -49,6 +49,7 @@ extern "C" {
 
 #include <stdio.h>
 
+// This function type handles errors encountered in Alquimia.
 typedef void (*alquimia_error_handler_function)(const char*);
 
 // Issues an error with the given message. By default, an error issues a 
@@ -57,6 +58,17 @@ void alquimia_error(const char* message, ...);
 
 // Sets the error handler for the Alquimia library.
 void alquimia_set_error_handler(alquimia_error_handler_function handler);
+
+// This function type performs aborts, which halt a program when a fatal 
+// error is encountered in Alquimia.
+typedef void (*alquimia_abort_function)(const char*);
+
+// Aborts the program using the set abort function, issuing the given 
+// message to a file.
+void alquimia_abort(const char* message, ...);
+
+// Sets the abort function for the Alquimia library.
+void alquimia_set_abort_function(alquimia_abort_function function);
 
 // This function writes version information to the given file descriptor.
 void alquimia_version_fprintf(const char* exe_name, FILE* stream);
