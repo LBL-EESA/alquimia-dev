@@ -48,40 +48,53 @@ does not do any geochemical calculations.
 Building
 --------
 
-To build alquimia, you must have petsc installed, with the PETSC_DIR
-and PETSC_ARCH environment variables set. Compilers are obtained from
-the petsc variables.
+You'll need working C and Fortran compilers and CMake installed on your system.
+For UNIX and UNIX-like operating systems, you'll need GNU Make or another 
+capable version of Make installed as well.
 
-PFLOTRAN_DIR=/path/to/pflotran/dir must be defined to link pflotran. 
+To build Alquimia with support for PFlotran's chemistry engine, you must have 
+PETSc 3.5.x installed, with the PETSC_DIR and PETSC_ARCH environment variables 
+set. 
 
-::
+Currently, Alquimia only works with a particular version of PFlotran: 
+hash 611092f80ddb from the pflotran-dev repository at 
+https://bitbucket.org/pflotran/pflotran-dev/wiki/Home
 
-    cd ${ALQUIMIA_DIR}/src
-    export PFLOTRAN_DIR=${HOME}/projects/pflotran-dev
-    make all
-
-
-Test your build by running the batch chemistry demo driver.
-
-::
-
-    cd ${ALQUIMIA_DIR}/tests
-    ln -s ../src/drivers/batch_chem .
-    ./batch_chem -d -i calcite-short-pc.cfg
-
-
-Builds are debug by default. To build without debug symbols and with
-optimization:
+The instructions below assume that you have set the environment variable 
+PFLOTRAN_DIR to the top of your PFlotran source directory.
 
 ::
 
-    make RELEASE=1 all
+    cd ${PFLOTRAN_DIR}/src/pflotran
+    make pflotran_rxn
 
-
-The default compiler is assumed to be GCC (or compatible LLVM?). And
-uses GCC specific build options. To build with minimal generic build
-flags:
+Finally, you can build Alquimia using the following instructions, which assume
+you have set ALQUIMIA_DIR to the top of your Alquimia source tree. Note that 
+you will need to create a build tree from which to invoke CMake.
 
 ::
 
-   make COMPILER=generic all
+    cd ${ALQUIMIA_DIR}
+    mkdir build ; cd build
+    cmake .. \
+      -DCMAKE_C_COMPILER=<C compiler> \
+      -DCMAKE_Fortran_COMPILER=<Fortran compiler> \
+      -DXSDK_WITH_PFLOTRAN=ON \
+      -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a \
+      -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran
+    make 
+
+NOTE: The \*PFLOTRAN\* arguments can be omitted for builds without the PFlotran
+chemistry engine. You also don't need PETSc in this case.
+
+To run Alquimia's suite of tests from your build directory, just type
+
+::
+
+    make test
+
+See the CMakeLists.txt file for other available build options, including
+optimization level, shared/static libraries, build prefix, etc. Alquimia 
+supports all xSDK-compliant build options, which can be passed to CMake 
+when configuring your build.
+
