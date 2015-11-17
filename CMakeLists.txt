@@ -58,11 +58,6 @@ else()
 endif()
 message("-- Real number representation is ${ALQUIMIA_REAL_TYPE}")
 
-# Add a custom target (always out of date) that generates alquimia_version.h.
-add_custom_target(update_version_h ALL
-                  mkdir -p ${PROJECT_BINARY_DIR}/include/alquimia
-                  COMMAND python ${PROJECT_SOURCE_DIR}/tools/update_version_h.py ${ALQUIMIA_VERSION} ${PROJECT_BINARY_DIR}/include/alquimia/alquimia_version.h)
-                  
 # Figure out the system type.
 if (APPLE EQUAL 1)
   set(SYS_FLAGS "-DAPPLE=1")

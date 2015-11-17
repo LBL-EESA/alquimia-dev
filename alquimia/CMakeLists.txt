@@ -8,9 +8,6 @@ add_library(alquimia alquimia.c alquimia_constants.c alquimia_interface.c
             alquimia_memory.c alquimia_util.c alquimia_containers.F90 
             c_f_interface_module.F90)
 
-# alquimia.c depends on the creation of alquimia_version.h.
-add_dependencies(alquimia update_version_h)
-
 # Install library.
 install(TARGETS alquimia DESTINATION lib)
 

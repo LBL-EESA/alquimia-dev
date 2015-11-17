@@ -27,7 +27,6 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
-#include "alquimia/alquimia_version.h"
 #include "alquimia/alquimia.h"
 
 // Error handler.
