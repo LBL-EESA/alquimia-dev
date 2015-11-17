@@ -10,13 +10,13 @@ set(ALQUIMIA_SOURCES alquimia.c;alquimia_constants.c;alquimia_interface.c;
     c_f_interface_module.F90)
 
 # PFlotran engine.
-if (XSDK_WITH_PFLOTRAN)
+if (ALQUIMIA_HAVE_PFLOTRAN)
   include_directories(${TPL_PFLOTRAN_INCLUDE_DIRS})
   list(APPEND alquimia_sources pflotran_alquimia_interface.F90 pflotran_alquimia_wrappers.F90)
 endif()
 
 # CrunchFlow engine.
-if (XSDK_WITH_CRUNCHFLOW)
+if (ALQUIMIA_HAVE_CRUNCHFLOW)
   include_directories(${TPL_CRUNCHFLOW_INCLUDE_DIRS})
   list(APPEND alquimia_sources crunch_alquimia_interface.F90 crunch_alquimia_wrappers.F90)
 endif()
