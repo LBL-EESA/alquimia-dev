@@ -51,6 +51,8 @@ if (XSDK_WITH_PFLOTRAN)
   endif()
 
   set(ALQUIMIA_HAVE_PFLOTRAN 1)
+else()
+  set(ALQUIMIA_HAVE_PFLOTRAN 0)
 endif()
 
 if (XSDK_WITH_CRUNCHFLOW)
@@ -73,6 +75,8 @@ if (XSDK_WITH_CRUNCHFLOW)
   endforeach()
 
   set(ALQUIMIA_HAVE_CRUNCHFLOW 1)
+else()
+  set(ALQUIMIA_HAVE_CRUNCHFLOW 0)
 endif()
 
 # Make sure compilers are set. This must be done before enabling languages.
