@@ -10,10 +10,69 @@ option(CMAKE_INSTALL_PREFIX "Sets installation prefix [/usr/local]." "/usr/local
 option(XSDK_ENABLE_DEBUG "Enables Debug mode builds [OFF]." OFF)
 option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
 option(XSDK_PRECISION "Sets the precision of floating-point numbers shared libraries (SINGLE,DOUBLE) [DOUBLE].")
+option(XSDK_WITH_PFLOTRAN "Enables support for the PFlotran chemistry engine [OFF]." OFF)
+option(TPL_PFLOTRAN_LIBRARIES "List of absolute paths to PFlotran link libraries [].")
+option(TPL_PFLOTRAN_INCLUDE_DIRS "List of absolute paths to PFlotran include directories [].")
+option(XSDK_WITH_CRUNCHFLOW "Enables support for the CrunchFlow chemistry engine [OFF]." OFF)
+option(TPL_CRUNCHFLOW_LIBRARIES "List of absolute paths to CrunchFlow link libraries [].")
+option(TPL_CRUNCHFLOW_INCLUDE_DIRS "List of absolute paths to CrunchFlow include directories [].")
 
 # Check defaults for xSDK if needed.
 if (NOT XSDK_PRECISION)
   set(XSDK_PRECISION DOUBLE)
+endif()
+
+# Check third-party library dependencies.
+if (XSDK_WITH_PFLOTRAN)
+  if (NOT TPL_PFLOTRAN_LIBRARIES)
+    message(FATAL_ERROR "TPL_PFLOTRAN_LIBRARIES option be set for PFlotran support to be enabled.")
+  endif()
+  foreach(lib ${TPL_PFLOTRAN_LIBRARIES})
+    if (NOT EXISTS ${lib})
+      message(FATAL_ERROR "PFlotran library not found: ${lib}")
+    endif()
+  endforeach()
+
+  if (NOT TPL_PFLOTRAN_INCLUDE_DIRS)
+    message(FATAL_ERROR "TPL_PFLOTRAN_INCLUDE_DIRS option be set for PFlotran support to be enabled.")
+  endif()
+  foreach(dir ${TPL_PFLOTRAN_INCLUDE_DIRS})
+    if (NOT EXISTS ${dir})
+      message(FATAL_ERROR "PFlotran include directory not found: ${dir}")
+    endif()
+  endforeach()
+
+  # Check for PETSc.
+  if ($ENV{PETSC_DIR} STREQUAL "")
+    message(FATAL_ERROR "PETSC_DIR must be set for PFlotran support to be enabled.")
+  endif()
+  if ($ENV{PETSC_ARCH} STREQUAL "")
+    message(FATAL_ERROR "PETSC_ARCH must be set for PFlotran support to be enabled.")
+  endif()
+
+  set(ALQUIMIA_HAVE_PFLOTRAN 1)
+endif()
+
+if (XSDK_WITH_CRUNCHFLOW)
+  if (NOT TPL_CRUNCHFLOW_LIBRARIES)
+    message(FATAL_ERROR "TPL_CRUNCHFLOW_LIBRARIES option be set for CrunchFlow support to be enabled.")
+  endif()
+  foreach(lib ${TPL_CRUNCHFLOW_LIBRARIES})
+    if (NOT EXISTS ${lib})
+      message(FATAL_ERROR "CrunchFlow library not found: ${lib}")
+    endif()
+  endforeach()
+
+  if (NOT TPL_CRUNCHFLOW_INCLUDE_DIRS)
+    message(FATAL "TPL_CRUNCHFLOW_INCLUDE_DIRS option be set for CrunchFlow support to be enabled.")
+  endif()
+  foreach(dir ${TPL_CRUNCHFLOW_INCLUDE_DIRS})
+    if (NOT EXISTS ${dir})
+      message(FATAL "CrunchFlow include directory not found: ${dir}")
+    endif()
+  endforeach()
+
+  set(ALQUIMIA_HAVE_CRUNCHFLOW 1)
 endif()
 
 # Make sure compilers are set. This must be done before enabling languages.

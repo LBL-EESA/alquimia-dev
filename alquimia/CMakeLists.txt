@@ -4,9 +4,24 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/alquimia.h"
 )
 
-add_library(alquimia alquimia.c alquimia_constants.c alquimia_interface.c 
-            alquimia_memory.c alquimia_util.c alquimia_containers.F90 
-            c_f_interface_module.F90)
+# Core library sources.
+set(ALQUIMIA_SOURCES alquimia.c;alquimia_constants.c;alquimia_interface.c;
+    alquimia_memory.c;alquimia_util.c;alquimia_containers.F90;
+    c_f_interface_module.F90)
+
+# PFlotran engine.
+if (XSDK_WITH_PFLOTRAN)
+  include_directories(${TPL_PFLOTRAN_INCLUDE_DIRS})
+  list(APPEND alquimia_sources pflotran_alquimia_interface.F90 pflotran_alquimia_wrappers.F90)
+endif()
+
+# CrunchFlow engine.
+if (XSDK_WITH_CRUNCHFLOW)
+  include_directories(${TPL_CRUNCHFLOW_INCLUDE_DIRS})
+  list(APPEND alquimia_sources crunch_alquimia_interface.F90 crunch_alquimia_wrappers.F90)
+endif()
+
+add_library(alquimia ${ALQUIMIA_SOURCES})
 
 # Install library.
 install(TARGETS alquimia DESTINATION lib)
