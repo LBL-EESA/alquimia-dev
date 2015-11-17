@@ -1,7 +1,7 @@
 Legal
 -----
 
-"Alquimia Copyright (c) 2013, The Regents of the University of
+"Alquimia Copyright (c) 2013-2015, The Regents of the University of
 California, through Lawrence Berkeley National Laboratory (subject to
 receipt of any required approvals from the U.S. Dept. of Energy).  All
 rights reserved.
@@ -50,11 +50,11 @@ Building
 
 You'll need working C and Fortran compilers and CMake installed on your system.
 For UNIX and UNIX-like operating systems, you'll need GNU Make or another 
-capable version of Make installed as well.
+capable version of Make installed as well. Both engines require PETSc 3.5.x to 
+be installed, with the PETSC_DIR and PETSC_ARCH environment variables set properly. 
 
-To build Alquimia with support for PFlotran's chemistry engine, you must have 
-PETSc 3.5.x installed, with the PETSC_DIR and PETSC_ARCH environment variables 
-set. 
+PFlotran engine
+===============
 
 Currently, Alquimia only works with a particular version of PFlotran: 
 hash 611092f80ddb from the pflotran-dev repository at 
@@ -68,24 +68,39 @@ PFLOTRAN_DIR to the top of your PFlotran source directory.
     cd ${PFLOTRAN_DIR}/src/pflotran
     make pflotran_rxn
 
-Finally, you can build Alquimia using the following instructions, which assume
-you have set ALQUIMIA_DIR to the top of your Alquimia source tree. Note that 
+CrunchFlow engine
+=================
+
+*Instructions go here.*
+
+Alquimia interface
+==================
+
+When you have built all the desired chemistry engines, you can build Alquimia 
+using the following command, which assumes you have set ALQUIMIA_DIR to the top of your Alquimia source tree. Note that 
 you will need to create a build tree from which to invoke CMake.
 
-::
+:: parsed-literal::
 
     cd ${ALQUIMIA_DIR}
     mkdir build ; cd build
     cmake .. \
       -DCMAKE_C_COMPILER=<C compiler> \
-      -DCMAKE_Fortran_COMPILER=<Fortran compiler> \
+      -DCMAKE_Fortran_COMPILER=<Fortran compiler> \ 
       -DXSDK_WITH_PFLOTRAN=ON \
       -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a \
-      -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran
+      -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran` \ 
+      -DXSDK_WITH_CRUNCHFLOW=ON \
+      -DTPL_CRUNCHFLOW_LIBRARIES=$CRUNCHFLOW_DIR/libcrunchchem.a \
+      -DTPL_CRUNCHFLOW_INCLUDE_DIRS=$CRUNCHFLOW_DIR`
     make 
 
-NOTE: The \*PFLOTRAN\* arguments can be omitted for builds without the PFlotran
-chemistry engine. You also don't need PETSc in this case.
+**NOTE**: you can omit either of the engines if you aren't building them both. 
+If you don't specify any chemistry engine, Alquimia will halt and remind you 
+that building it without an engine is pointless.
+
+Testing
+-------
 
 To run Alquimia's suite of tests from your build directory, just type
 
