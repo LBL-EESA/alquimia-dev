@@ -45,17 +45,10 @@
  **
  *******************************************************************************/
 
-#include "alquimia_memory.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <assert.h>
-
-#include "alquimia_interface.h"
-#include "alquimia_constants.h"
-#include "alquimia_containers.h"
+#include "alquimia/alquimia_memory.h"
+#include "alquimia/alquimia_interface.h"
+#include "alquimia/alquimia_constants.h"
+#include "alquimia/alquimia_containers.h"
 
 /*******************************************************************************
  **
@@ -66,7 +59,7 @@ void AllocateAlquimiaVectorDouble(const int size, struct AlquimiaVectorDouble* v
   if (size > 0) {
     vector->size = size;
     vector->data = (double*) calloc((unsigned int)size, sizeof(double));
-    assert(NULL != vector->data);
+    ALQUIMIA_ASSERT(NULL != vector->data);
   } else {
     vector->size = 0;
     vector->data = NULL;
@@ -85,7 +78,7 @@ void AllocateAlquimiaVectorInt(const int size, struct AlquimiaVectorInt* vector)
   if (size > 0) {
     vector->size = size;
     vector->data = (int*) calloc((unsigned int)size, sizeof(int));
-    assert(NULL != vector->data);
+    ALQUIMIA_ASSERT(NULL != vector->data);
   } else {
     vector->size = 0;
     vector->data = NULL;
@@ -105,10 +98,10 @@ void AllocateAlquimiaVectorString(const int size, struct AlquimiaVectorString* v
   if (size > 0) {
     vector->size = size;
     vector->data = (char**) calloc((unsigned int)size, sizeof(char*));
-    assert(NULL != vector->data);
+    ALQUIMIA_ASSERT(NULL != vector->data);
     for (i = 0; i < vector->size; ++i) {
       vector->data[i] = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
-      assert(NULL != vector->data[i]);
+      ALQUIMIA_ASSERT(NULL != vector->data[i]);
     }
   } else {
     vector->size = 0;
@@ -137,7 +130,7 @@ void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector) {
 void AllocateAlquimiaState(const struct AlquimiaSizes* const sizes,
                            struct AlquimiaState* state) {
   AllocateAlquimiaVectorDouble(sizes->num_primary, &(state->total_mobile));
-  assert(state->total_mobile.data != NULL);
+  ALQUIMIA_ASSERT(state->total_mobile.data != NULL);
 
   AllocateAlquimiaVectorDouble(sizes->num_sorbed, &(state->total_immobile));
 
@@ -231,7 +224,7 @@ void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
                                      struct AlquimiaProblemMetaData* meta_data) {
 
   AllocateAlquimiaVectorString(sizes->num_primary, &(meta_data->primary_names));
-  assert(meta_data->primary_names.data != NULL);
+  ALQUIMIA_ASSERT(meta_data->primary_names.data != NULL);
 
   AllocateAlquimiaVectorInt(sizes->num_primary, &(meta_data->positivity));
   memset(meta_data->positivity.data, 0, sizeof(int) * sizes->num_primary);

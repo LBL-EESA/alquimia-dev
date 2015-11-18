@@ -30,8 +30,8 @@
 #ifndef ALQUIMIA_C_MEMORY_H_
 #define ALQUIMIA_C_MEMORY_H_
 
-#include "alquimia_interface.h"
-#include "alquimia_containers.h"
+#include "alquimia/alquimia_interface.h"
+#include "alquimia/alquimia_containers.h"
 
 #ifdef __cplusplus
 extern "C" {

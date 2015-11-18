@@ -53,11 +53,34 @@ typedef @ALQUIMIA_REAL_TYPE@ alquimia_real_t;
 #define ALQUIMIA_ASSERT(x) 
 #endif
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// C Boolean support.
+#define ALQUIMIA_HAVE_BOOL @ALQUIMIA_HAVE_BOOL@
+#ifndef __cplusplus
+
+#if ALQUIMIA_HAVE_BOOL
+#include <stdbool.h>
+#else // probably Windows
+#define	bool	_Bool
+typedef	int   _Bool;
+#define	false 0
+#define	true  1
+#endif
+
+#endif
+
+// Windows platform stuff.
+#ifdef WINDOWS
+#define snprintf _snprintf
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus 
-
-#include <stdio.h>
 
 // This function type handles errors encountered in Alquimia.
 typedef void (*alquimia_error_handler_function)(const char*);

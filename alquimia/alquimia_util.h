@@ -30,14 +30,8 @@
 #ifndef ALQUIMIA_C_UTIL_H_
 #define ALQUIMIA_C_UTIL_H_
 
-#ifdef WINDOWS
-#include "xstdbool.h"
-#else
-#include <stdbool.h>
-#endif
-
-#include "alquimia_containers.h"
-#include "alquimia_interface.h"
+#include "alquimia/alquimia_containers.h"
+#include "alquimia/alquimia_interface.h"
 
 #ifdef __cplusplus
 extern "C" {

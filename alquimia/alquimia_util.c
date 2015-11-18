@@ -34,23 +34,10 @@
  **
  *******************************************************************************/
 
-#include "alquimia_util.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <assert.h>
-
-#ifdef WINDOWS
-#include "xstdbool.h"
-#else
-#include <stdbool.h>
-#endif
-
-#include "alquimia_containers.h"
-#include "alquimia_interface.h"
-#include "alquimia_constants.h"
+#include "alquimia/alquimia_util.h"
+#include "alquimia/alquimia_containers.h"
+#include "alquimia/alquimia_interface.h"
+#include "alquimia/alquimia_constants.h"
 
 /*******************************************************************************
  **

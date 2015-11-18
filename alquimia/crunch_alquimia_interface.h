@@ -36,15 +36,14 @@
  **
  ******************************************************************************/
 
-#include "alquimia_interface.h"
-
-#include "alquimia_containers.h"
+#include "alquimia/alquimia_interface.h"
+#include "alquimia/alquimia_containers.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#ifdef HAVE_CRUNCH
+#if ALQUIMIA_HAVE_CRUNCHFLOW
   void crunch_alquimia_setup(
       const char* input_filename,
       void* cf_engine_state,
