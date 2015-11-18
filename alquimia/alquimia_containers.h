@@ -39,11 +39,7 @@
  **
  ******************************************************************************/
 
-#ifdef WINDOWS
-#include "xstdbool.h"
-#else
-#include <stdbool.h>
-#endif
+#include "alquimia/alquimia.h"
 
 #ifdef __cplusplus
 extern "C" {

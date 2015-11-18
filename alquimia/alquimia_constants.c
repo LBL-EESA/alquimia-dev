@@ -28,7 +28,7 @@
 */
 
 
-#include "alquimia_constants.h"
+#include "alquimia/alquimia_constants.h"
 
 /* String lengths */
 const int kAlquimiaMaxStringLength = 512;

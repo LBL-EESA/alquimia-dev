@@ -27,6 +27,7 @@
 ** Authors: Benjamin Andre <bandre@lbl.gov>
 */
 
+// FIXME: We should use something other than ALQUIMIA_ASSERT to test predicates.
 
 /*******************************************************************************
  **
@@ -34,21 +35,12 @@
  **
  *******************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <assert.h>
-#include <stdbool.h>
-
-#include "alquimia_util.h"
-#include "alquimia_memory.h"
-
-#include "pflotran_alquimia_interface.h"
-#include "crunch_alquimia_interface.h"
-
-#include "alquimia_constants.h"
-#include "alquimia_containers.h"
+#include "alquimia/alquimia_constants.h"
+#include "alquimia/alquimia_memory.h"
+#include "alquimia/alquimia_interface.h"
+#include "alquimia/alquimia_util.h"
+#include "alquimia/pflotran_alquimia_interface.h"
+#include "alquimia/crunch_alquimia_interface.h"
 
 void test_AlquimiaCaseInsensitiveStringCompare(void);
 void test_AlquimiaVectors(void);
@@ -65,16 +57,16 @@ void test_AlquimiaCaseInsensitiveStringCompare(void) {
   strncpy(str1, "Hello", kAlquimiaMaxStringLength);
   strncpy(str2, "World", kAlquimiaMaxStringLength);
 
-  assert(AlquimiaCaseInsensitiveStringCompare(str1, str2) == false);
+  ALQUIMIA_ASSERT(AlquimiaCaseInsensitiveStringCompare(str1, str2) == false);
 
   strncpy(str2, "Goodbye", kAlquimiaMaxStringLength);
-  assert(AlquimiaCaseInsensitiveStringCompare(str1, str2) == false);
+  ALQUIMIA_ASSERT(AlquimiaCaseInsensitiveStringCompare(str1, str2) == false);
 
   strncpy(str2, "Hello", kAlquimiaMaxStringLength);
-  assert(AlquimiaCaseInsensitiveStringCompare(str1, str2) == true);
+  ALQUIMIA_ASSERT(AlquimiaCaseInsensitiveStringCompare(str1, str2) == true);
 
   strncpy(str2, "hELLO", kAlquimiaMaxStringLength);
-  assert(AlquimiaCaseInsensitiveStringCompare(str1, str2) == true);
+  ALQUIMIA_ASSERT(AlquimiaCaseInsensitiveStringCompare(str1, str2) == true);
 }  /* end test_AlquimiaCaseInsensitiveStringCompare */
 
 void test_AlquimiaVectors(void) {
@@ -85,35 +77,35 @@ void test_AlquimiaVectors(void) {
 
   size = -1;
   AllocateAlquimiaVectorDouble(size, &dvector);
-  assert(dvector.size == 0);
-  assert(dvector.data == NULL);
+  ALQUIMIA_ASSERT(dvector.size == 0);
+  ALQUIMIA_ASSERT(dvector.data == NULL);
 
   size = 5;
   AllocateAlquimiaVectorDouble(size, &dvector);
-  assert(dvector.size == size);
-  assert(dvector.data != NULL);
+  ALQUIMIA_ASSERT(dvector.size == size);
+  ALQUIMIA_ASSERT(dvector.data != NULL);
   FreeAlquimiaVectorDouble(&dvector);
 
   size = -1;
   AllocateAlquimiaVectorInt(size, &ivector);
-  assert(ivector.size == 0);
-  assert(ivector.data == NULL);
+  ALQUIMIA_ASSERT(ivector.size == 0);
+  ALQUIMIA_ASSERT(ivector.data == NULL);
 
   size = 5;
   AllocateAlquimiaVectorInt(size, &ivector);
-  assert(ivector.size == size);
-  assert(ivector.data != NULL);
+  ALQUIMIA_ASSERT(ivector.size == size);
+  ALQUIMIA_ASSERT(ivector.data != NULL);
   FreeAlquimiaVectorInt(&ivector);
 
   size = -1;
   AllocateAlquimiaVectorString(size, &svector);
-  assert(svector.size == 0);
-  assert(svector.data == NULL);
+  ALQUIMIA_ASSERT(svector.size == 0);
+  ALQUIMIA_ASSERT(svector.data == NULL);
 
   size = 5;
   AllocateAlquimiaVectorString(size, &svector);
-  assert(svector.size == size);
-  assert(svector.data != NULL);
+  ALQUIMIA_ASSERT(svector.size == size);
+  ALQUIMIA_ASSERT(svector.data != NULL);
   FreeAlquimiaVectorString(&svector);
 }  /* end test_AlquimiaVectors() */
 
@@ -132,11 +124,11 @@ void test_AlquimiaNameIndexMapping(void) {
 
   strncpy(name, "foo", kAlquimiaMaxStringLength);
   AlquimiaFindIndexFromName(name, &names, &id);
-  assert(id == -1);
+  ALQUIMIA_ASSERT(id == -1);
 
   strncpy(name, "name_13", kAlquimiaMaxStringLength);
   AlquimiaFindIndexFromName(name, &names, &id);
-  assert(id == 3);
+  ALQUIMIA_ASSERT(id == 3);
 
   FreeAlquimiaVectorString(&names);
 }  /* end test_AlquimiaNameIndexMapping() */
@@ -151,52 +143,52 @@ void test_CreateAlquimiaInterface(void) {
 
   strncpy(name, "junk", kAlquimiaMaxStringLength);
   CreateAlquimiaInterface(name, &interface, &status);
-  assert(status.error == kAlquimiaErrorInvalidEngine);
-  assert(interface.Setup == NULL);
-  assert(interface.Shutdown == NULL);
-  assert(interface.ProcessCondition == NULL);
-  assert(interface.ReactionStepOperatorSplit == NULL);
-  assert(interface.GetAuxiliaryOutput == NULL);
-  assert(interface.GetProblemMetaData == NULL);
+  ALQUIMIA_ASSERT(status.error == kAlquimiaErrorInvalidEngine);
+  ALQUIMIA_ASSERT(interface.Setup == NULL);
+  ALQUIMIA_ASSERT(interface.Shutdown == NULL);
+  ALQUIMIA_ASSERT(interface.ProcessCondition == NULL);
+  ALQUIMIA_ASSERT(interface.ReactionStepOperatorSplit == NULL);
+  ALQUIMIA_ASSERT(interface.GetAuxiliaryOutput == NULL);
+  ALQUIMIA_ASSERT(interface.GetProblemMetaData == NULL);
 
   strncpy(name, "pflotran", kAlquimiaMaxStringLength);
   CreateAlquimiaInterface(name, &interface, &status);
-#ifdef HAVE_PFLOTRAN
-  assert(status.error == kAlquimiaNoError);
-  assert(interface.Setup == &pflotran_alquimia_setup);
-  assert(interface.Shutdown == &pflotran_alquimia_shutdown);
-  assert(interface.ProcessCondition == &pflotran_alquimia_processcondition);
-  assert(interface.ReactionStepOperatorSplit == &pflotran_alquimia_reactionstepoperatorsplit);
-  assert(interface.GetAuxiliaryOutput == &pflotran_alquimia_getauxiliaryoutput);
-  assert(interface.GetProblemMetaData == &pflotran_alquimia_getproblemmetadata);
+#ifdef ALQUIMIA_HAVE_PFLOTRAN
+  ALQUIMIA_ASSERT(status.error == kAlquimiaNoError);
+  ALQUIMIA_ASSERT(interface.Setup == &pflotran_alquimia_setup);
+  ALQUIMIA_ASSERT(interface.Shutdown == &pflotran_alquimia_shutdown);
+  ALQUIMIA_ASSERT(interface.ProcessCondition == &pflotran_alquimia_processcondition);
+  ALQUIMIA_ASSERT(interface.ReactionStepOperatorSplit == &pflotran_alquimia_reactionstepoperatorsplit);
+  ALQUIMIA_ASSERT(interface.GetAuxiliaryOutput == &pflotran_alquimia_getauxiliaryoutput);
+  ALQUIMIA_ASSERT(interface.GetProblemMetaData == &pflotran_alquimia_getproblemmetadata);
 #else
-  assert(status.error == kAlquimiaErrorInvalidEngine);
-  assert(interface.Setup == NULL);
-  assert(interface.Shutdown == NULL);
-  assert(interface.ProcessCondition == NULL);
-  assert(interface.ReactionStepOperatorSplit == NULL);
-  assert(interface.GetAuxiliaryOutput == NULL);
-  assert(interface.GetProblemMetaData == NULL);
+  ALQUIMIA_ASSERT(status.error == kAlquimiaErrorInvalidEngine);
+  ALQUIMIA_ASSERT(interface.Setup == NULL);
+  ALQUIMIA_ASSERT(interface.Shutdown == NULL);
+  ALQUIMIA_ASSERT(interface.ProcessCondition == NULL);
+  ALQUIMIA_ASSERT(interface.ReactionStepOperatorSplit == NULL);
+  ALQUIMIA_ASSERT(interface.GetAuxiliaryOutput == NULL);
+  ALQUIMIA_ASSERT(interface.GetProblemMetaData == NULL);
 #endif
 
   strncpy(name, "crunchflow", kAlquimiaMaxStringLength);
   CreateAlquimiaInterface(name, &interface, &status);
-#ifdef HAVE_CRUNCH
-  assert(status.error == kAlquimiaNoError);
-  assert(interface.Setup == &crunch_alquimia_setup);
-  assert(interface.Shutdown == &crunch_alquimia_shutdown);
-  assert(interface.ProcessCondition == &crunch_alquimia_processcondition);
-  assert(interface.ReactionStepOperatorSplit == &crunch_alquimia_reactionstepoperatorsplit);
-  assert(interface.GetAuxiliaryOutput == &crunch_alquimia_getauxiliaryoutput);
-  assert(interface.GetProblemMetaData == &crunch_alquimia_getproblemmetadata);
+#ifdef ALQUIMIA_HAVE_CRUNCH
+  ALQUIMIA_ASSERT(status.error == kAlquimiaNoError);
+  ALQUIMIA_ASSERT(interface.Setup == &crunch_alquimia_setup);
+  ALQUIMIA_ASSERT(interface.Shutdown == &crunch_alquimia_shutdown);
+  ALQUIMIA_ASSERT(interface.ProcessCondition == &crunch_alquimia_processcondition);
+  ALQUIMIA_ASSERT(interface.ReactionStepOperatorSplit == &crunch_alquimia_reactionstepoperatorsplit);
+  ALQUIMIA_ASSERT(interface.GetAuxiliaryOutput == &crunch_alquimia_getauxiliaryoutput);
+  ALQUIMIA_ASSERT(interface.GetProblemMetaData == &crunch_alquimia_getproblemmetadata);
 #else
-  assert(status.error == kAlquimiaErrorInvalidEngine);
-  assert(interface.Setup == NULL);
-  assert(interface.Shutdown == NULL);
-  assert(interface.ProcessCondition == NULL);
-  assert(interface.ReactionStepOperatorSplit == NULL);
-  assert(interface.GetAuxiliaryOutput == NULL);
-  assert(interface.GetProblemMetaData == NULL);
+  ALQUIMIA_ASSERT(status.error == kAlquimiaErrorInvalidEngine);
+  ALQUIMIA_ASSERT(interface.Setup == NULL);
+  ALQUIMIA_ASSERT(interface.Shutdown == NULL);
+  ALQUIMIA_ASSERT(interface.ProcessCondition == NULL);
+  ALQUIMIA_ASSERT(interface.ReactionStepOperatorSplit == NULL);
+  ALQUIMIA_ASSERT(interface.GetAuxiliaryOutput == NULL);
+  ALQUIMIA_ASSERT(interface.GetProblemMetaData == NULL);
 #endif
 
 }  /* end test_CreateAlquimiaInterface() */

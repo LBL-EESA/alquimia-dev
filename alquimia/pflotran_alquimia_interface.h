@@ -36,15 +36,14 @@
  **
  ******************************************************************************/
 
-#include "alquimia_interface.h"
-
-#include "alquimia_containers.h"
+#include "alquimia/alquimia_interface.h"
+#include "alquimia/alquimia_containers.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#ifdef HAVE_PFLOTRAN
+#if ALQUIMIA_HAVE_PFLOTRAN
   void pflotran_alquimia_setup(
       const char* input_filename,
       void* pft_engine_state,

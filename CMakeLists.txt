@@ -94,6 +94,7 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
 endif()
 
 # Figure out the system type.
+set(ALQUIMIA_HAVE_BOOL 1) # All reasonable C99 compilers have this now.
 if (APPLE EQUAL 1)
   set(SYS_FLAGS "-DAPPLE=1")
   set(DYLIB_SUFFIX "dylib")
@@ -103,6 +104,12 @@ else ()
     set(SYS_FLAGS "-DLINUX=1")
     set(DYLIB_SUFFIX "so")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+  else()
+    if (WIN32 EQUAL 1)
+      set(ALQUIMIA_HAVE_BOOL 0) # MS doesn't have reasonable C compilers.
+      set(SYS_FLAGS "-DWINDOWS=1")
+      set(DYLIB_SUFFIX "dll")
+    endif()
   endif ()
 endif ()
 
@@ -201,12 +208,13 @@ include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_BINARY_DIR}/include")
 link_directories("${PROJECT_BINARY_DIR}/lib")
 
-# Unit testing.
-enable_testing()
-
 # Source code itself.
 include_directories("${PROJECT_SOURCE_DIR}")
 add_subdirectory(alquimia)
+
+# Unit testing.
+enable_testing()
+add_subdirectory(unit_tests)
 
 # Now that we have gathered all our libraries, generate an alquimia.cmake 
 # file that contains all the vital information.

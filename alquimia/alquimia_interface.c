@@ -27,25 +27,13 @@
 ** Authors: Benjamin Andre <bandre@lbl.gov>
 */
 
+#include "alquimia/alquimia_interface.h"
 
-#include "alquimia_interface.h"
+#include "alquimia/pflotran_alquimia_interface.h"
+#include "alquimia/crunch_alquimia_interface.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-
-#ifdef WINDOWS
-#define snprintf _snprintf
-#endif
-
-
-#include "pflotran_alquimia_interface.h"
-#include "crunch_alquimia_interface.h"
-
-#include "alquimia_util.h"
-#include "alquimia_containers.h"
-#include "alquimia_constants.h"
+#include "alquimia/alquimia_util.h"
+#include "alquimia/alquimia_constants.h"
 
 void CreateAlquimiaInterface(const char* const engine_name,
                              struct AlquimiaInterface* interface,
@@ -59,7 +47,7 @@ void CreateAlquimiaInterface(const char* const engine_name,
 
   if (AlquimiaCaseInsensitiveStringCompare(engine_name,
                                            kAlquimiaStringPFloTran)) {
-#ifdef HAVE_PFLOTRAN
+#if ALQUIMIA_HAVE_PFLOTRAN
     interface->Setup = &pflotran_alquimia_setup;
     interface->Shutdown = &pflotran_alquimia_shutdown;
     interface->ProcessCondition = &pflotran_alquimia_processcondition;
@@ -77,7 +65,7 @@ void CreateAlquimiaInterface(const char* const engine_name,
 
   } else if (AlquimiaCaseInsensitiveStringCompare(engine_name,
                                                   kAlquimiaStringCrunchFlow)) {
-#ifdef HAVE_CRUNCH
+#if ALQUIMIA_HAVE_CRUNCHFLOW
     /* interface->Setup = ...; */
     interface->Setup = &crunch_alquimia_setup;
     interface->Shutdown = &crunch_alquimia_shutdown;

@@ -25,7 +25,6 @@
 ** and to permit others to do so.
 */
 
-#include <stdlib.h>
 #include <stdarg.h>
 #include "alquimia/alquimia.h"
 

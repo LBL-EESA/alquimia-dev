@@ -36,7 +36,7 @@
  **
  ******************************************************************************/
 
-#include "alquimia_containers.h"
+#include "alquimia/alquimia_containers.h"
 
 #ifdef __cplusplus
 extern "C" {
