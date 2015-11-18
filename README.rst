@@ -57,15 +57,16 @@ PFlotran engine
 ===============
 
 Currently, Alquimia only works with a particular version of PFlotran: 
-hash 611092f80ddb from the pflotran-dev repository at 
-https://bitbucket.org/pflotran/pflotran-dev/wiki/Home
+hash 611092f80ddb from the pflotran-dev repository. You can download this 
+revision directly as a ZIP file from 
+https://bitbucket.org/pflotran/pflotran-dev/get/611092f80ddb.zip
 
 The instructions below assume that you have set the environment variable 
 PFLOTRAN_DIR to the top of your PFlotran source directory.
 
 ::
 
-    cd ${PFLOTRAN_DIR}/src/pflotran
+    cd $PFLOTRAN_DIR/src/pflotran
     make pflotran_rxn
 
 CrunchFlow engine
@@ -82,7 +83,7 @@ you will need to create a build tree from which to invoke CMake.
 
 :: parsed-literal::
 
-    cd ${ALQUIMIA_DIR}
+    cd $ALQUIMIA_DIR
     mkdir build ; cd build
     cmake .. \
       -DCMAKE_C_COMPILER=<C compiler> \
