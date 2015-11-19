@@ -76,6 +76,7 @@ PFlotran source directory.
 
 To build PFlotran on Windows, see the instructions 
 [here](https://bitbucket.org/pflotran/pflotran-dev/wiki/Installation/Windows_with_Visual_Studio).
+*Make sure to install PETSC 3.5.x instead of petsc-dev!*
 
 CrunchFlow engine
 =================
