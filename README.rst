@@ -50,8 +50,12 @@ Building
 
 You'll need working C and Fortran compilers and CMake installed on your system.
 For UNIX and UNIX-like operating systems, you'll need GNU Make or another 
-capable version of Make installed as well. Both engines require PETSc 3.5.x to 
-be installed, with the PETSC_DIR and PETSC_ARCH environment variables set properly. 
+capable version of Make installed as well. To build on Windows, you'll need 
+some recent version of Visual Studio and a decent Fortran compiler such as 
+Intel's.
+
+Both engines require PETSc 3.5.x to be installed, with the PETSC_DIR and 
+PETSC_ARCH environment variables set properly. 
 
 PFlotran engine
 ===============
@@ -61,13 +65,17 @@ hash 611092f80ddb from the pflotran-dev repository. You can download this
 revision directly as a ZIP file from 
 https://bitbucket.org/pflotran/pflotran-dev/get/611092f80ddb.zip
 
-The instructions below assume that you have set the environment variable 
-PFLOTRAN_DIR to the top of your PFlotran source directory.
+The instructions below assume that you are on a UNIX or UNIX-like system, 
+and you have set the environment variable PFLOTRAN_DIR to the top of your 
+PFlotran source directory.
 
 ::
 
     cd $PFLOTRAN_DIR/src/pflotran
     make pflotran_rxn
+
+To build PFlotran on Windows, see the instructions 
+[here](https://bitbucket.org/pflotran/pflotran-dev/wiki/Installation/Windows_with_Visual_Studio).
 
 CrunchFlow engine
 =================
@@ -77,9 +85,11 @@ CrunchFlow engine
 Alquimia interface
 ==================
 
-When you have built all the desired chemistry engines, you can build Alquimia 
-using the following command, which assumes you have set ALQUIMIA_DIR to the top of your Alquimia source tree. Note that 
-you will need to create a build tree from which to invoke CMake.
+When you have built all the desired chemistry engines, you can build the 
+Alquimia interface. On UNIX and UNIX-like systems, you can use the following 
+command, which assumes you have set ALQUIMIA_DIR to the top of your Alquimia 
+source tree. Note that you will need to create a build tree from which to 
+invoke CMake.
 
 :: 
 
@@ -99,6 +109,8 @@ you will need to create a build tree from which to invoke CMake.
 **NOTE**: you can omit either of the engines if you aren't building them both. 
 If you don't specify any chemistry engine, Alquimia will halt and remind you 
 that building it without an engine is pointless.
+
+*Windows instructions go here.*
 
 Testing
 -------
