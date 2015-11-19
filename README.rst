@@ -30,9 +30,10 @@ perform publicly and display publicly, and to permit others to do so.
 Description
 -----------
 
-Alquimia is an biogeochemistry API and wrapper library being developed
-as part of the [ASCEM](http://esd.lbl.gov/research/projects/ascem/)
-project.
+Alquimia is an biogeochemistry API and wrapper library developed as part of 
+the [ASCEM](http://esd.lbl.gov/research/projects/ascem/) project, and is 
+an interoperable component of the Department of Energy's 
+[IDEAS](https://ideas-productivity.org/) software productivity project.
 
 The aim is to provide a unified interface to existing "geochemistry
 engines" such as
@@ -43,7 +44,6 @@ functionality.
 
 It is not an implementation of a biogeochemistry reaction library, and
 does not do any geochemical calculations.
-
 
 Building
 --------
@@ -81,7 +81,7 @@ When you have built all the desired chemistry engines, you can build Alquimia
 using the following command, which assumes you have set ALQUIMIA_DIR to the top of your Alquimia source tree. Note that 
 you will need to create a build tree from which to invoke CMake.
 
-:: parsed-literal::
+:: 
 
     cd $ALQUIMIA_DIR
     mkdir build ; cd build
