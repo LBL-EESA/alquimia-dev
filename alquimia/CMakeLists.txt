@@ -50,5 +50,4 @@ install(TARGETS alquimia DESTINATION lib)
 # Install headers, including generated files.
 file(GLOB HEADERS *.h)
 LIST(APPEND HEADERS ${CMAKE_CURRENT_BINARY_DIR}/alquimia.h)
-LIST(APPEND HEADERS ${CMAKE_CURRENT_BINARY_DIR}/alquimia_version.h)
 install(FILES ${HEADERS} DESTINATION include/alquimia)
