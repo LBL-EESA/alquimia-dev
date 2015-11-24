@@ -56,7 +56,20 @@
 #include "demo_utils.h"
 #include "string_tokenizer.h"
 
+static void usage()
+{
+  printf("batch_chem: usage:\n");
+  printf("batch_chem [options] -i <input_file>\n\n");
+  printf("Available options are:\n");
+  printf("-t <template_file> - Supplies a template file\n");
+  printf("-d - Run in debug mode\n");
+  exit(0);
+}
+
 int main(int argc, char** argv) {
+
+  if (argc == 1)
+    usage();
 
   // initialize petsc/mpi for command line options and engines that
   // require it (pflotran).

@@ -8,7 +8,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 option(USE_XSDK_DEFAULTS "Set to use xSDK defaults for options [ON]." ON)
 option(CMAKE_INSTALL_PREFIX "Sets installation prefix [/usr/local].")
 option(XSDK_ENABLE_DEBUG "Enables Debug mode builds [OFF]." OFF)
-option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
+#option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
+set(BUILD_SHARED_LIBS OFF) # Shared libs currently not supported! PFlotran doesn't like it.
 option(XSDK_PRECISION "Sets the precision of floating-point numbers shared libraries (SINGLE,DOUBLE) [DOUBLE].")
 option(XSDK_WITH_PFLOTRAN "Enables support for the PFlotran chemistry engine [OFF]." OFF)
 option(TPL_PFLOTRAN_LIBRARIES "List of absolute paths to PFlotran link libraries [].")
@@ -243,6 +244,9 @@ add_subdirectory(unit_tests)
 
 # Drivers for benchmarks.
 add_subdirectory(drivers)
+
+# Benchmarks.
+add_subdirectory(benchmarks)
 
 # Now that we have gathered all our libraries, generate an alquimia.cmake 
 # file that contains all the vital information.

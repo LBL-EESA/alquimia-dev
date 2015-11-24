@@ -12,3 +12,7 @@
 # Generated files
 build/
 
+# Benchmark detritus
+benchmarks/*.txt
+benchmarks/*.out.alquimia
+
