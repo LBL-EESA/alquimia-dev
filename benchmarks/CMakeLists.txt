@@ -1,0 +1,33 @@
+# NOTE: Currently all the benchmarks are just smoke tests.
+
+include(add_alquimia_batch_chem_benchmark)
+
+if (ALQUIMIA_HAVE_PFLOTRAN)
+  add_alquimia_batch_chem_benchmark(calcite_short_ac calcite-short-ac.cfg)
+  add_alquimia_batch_chem_benchmark(calcite_short_pc calcite-short-pc.cfg)
+  add_alquimia_batch_chem_benchmark(calcite_short_vf calcite-short-vf.cfg)
+  add_alquimia_batch_chem_benchmark(general_reaction_ac general-reaction-ac.cfg)
+  add_alquimia_batch_chem_benchmark(general_reaction_pc general-reaction-pc.cfg)
+  add_alquimia_batch_chem_benchmark(ion_exchange_valocchi_ac ion-exchange-valocchi-ac.cfg)
+  add_alquimia_batch_chem_benchmark(ion_exchange_valocchi_pc ion-exchange-valocchi-pc.cfg)
+  add_alquimia_batch_chem_benchmark(isotherms_ac isotherms-ac.cfg)
+  add_alquimia_batch_chem_benchmark(isotherms_pc isotherms-pc.cfg)
+  add_alquimia_batch_chem_benchmark(surface_complexation_2_ac surface-complexation-2-ac.cfg)
+  add_alquimia_batch_chem_benchmark(surface_complexation_2_pc surface-complexation-2-pc.cfg)
+endif()
+
+if (ALQUIMIA_HAVE_CRUNCHFLOW)
+  add_alquimia_batch_chem_benchmark(calcite_short_crunch_ac calcite-short-crunch-ac.cfg)
+  add_alquimia_batch_chem_benchmark(calcite_short_crunch_pc calcite-short-crunch-pc.cfg)
+  add_alquimia_batch_chem_benchmark(calcite_vf_crunch_ac calcite-vf-crunch-ac.cfg)
+  add_alquimia_batch_chem_benchmark(calcite_vf_crunch_cc calcite-vf-crunch-cc.cfg)
+  add_alquimia_batch_chem_benchmark(general_reaction_crunch_ac general-reaction-crunch-ac.cfg)
+  add_alquimia_batch_chem_benchmark(general_reaction_crunch_cc general-reaction-crunch-cc.cfg)
+  add_alquimia_batch_chem_benchmark(ion_exchange_valocchi_crunch_ac ion-exchange-valocchi-crunch-ac.cfg)
+  add_alquimia_batch_chem_benchmark(ion_exchange_valocchi_crunch_cc ion-exchange-valocchi-crunch-cc.cfg)
+  add_alquimia_batch_chem_benchmark(isotherms_crunch_ac isotherms-crunch-ac.cfg)
+  add_alquimia_batch_chem_benchmark(isotherms_crunch_cc isotherms-crunch-cc.cfg)
+  add_alquimia_batch_chem_benchmark(surface_complexation_2_crunch_ac surface-complexation-2-crunch-ac.cfg)
+  add_alquimia_batch_chem_benchmark(surface_complexation_2_crunch_cc surface-complexation-2-crunch-cc.cfg)
+endif()
+
