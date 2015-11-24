@@ -98,6 +98,7 @@ invoke CMake.
     mkdir build ; cd build
     cmake .. \
       -DCMAKE_C_COMPILER=<C compiler> \
+      -DCMAKE_CXX_COMPILER=<C++ compiler> \
       -DCMAKE_Fortran_COMPILER=<Fortran compiler> \ 
       -DXSDK_WITH_PFLOTRAN=ON \
       -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a \
