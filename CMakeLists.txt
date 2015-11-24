@@ -37,6 +37,16 @@ endif()
 if (NOT CMAKE_C_FLAGS)
   set(CMAKE_C_FLAGS $ENV{CFLAGS})
 endif()
+if (NOT CMAKE_CXX_COMPILER)
+  if (NOT $ENV{CXX} STREQUAL "")
+    set(CMAKE_CXX_COMPILER $ENV{CXX})
+  else()
+    set(CMAKE_CXX_COMPILER c++)
+  endif()
+endif()
+if (NOT CMAKE_CXX_FLAGS)
+  set(CMAKE_CXX_FLAGS $ENV{CXX_FLAGS})
+endif()
 if (NOT CMAKE_Fortran_COMPILER)
   if (NOT $ENV{FC} STREQUAL "")
     set(CMAKE_Fortran_COMPILER $ENV{FC})
@@ -48,6 +58,7 @@ if (NOT CMAKE_Fortran_FLAGS)
   set(CMAKE_Fortran_FLAGS $ENV{FCFLAGS})
 endif()
 enable_language(C)
+enable_language(CXX)
 enable_language(Fortran)
 
 # We declare the project here.
@@ -229,6 +240,9 @@ add_subdirectory(alquimia)
 # Unit testing.
 enable_testing()
 add_subdirectory(unit_tests)
+
+# Drivers for benchmarks.
+add_subdirectory(drivers)
 
 # Now that we have gathered all our libraries, generate an alquimia.cmake 
 # file that contains all the vital information.

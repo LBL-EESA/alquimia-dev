@@ -42,7 +42,7 @@
 #include <fstream>
 #include <string>
 
-#include "alquimia_containers.h"
+#include "alquimia/alquimia_containers.h"
 
 #include "demo_utils.h"
 
