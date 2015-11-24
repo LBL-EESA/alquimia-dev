@@ -36,8 +36,8 @@
 
 #include "petscsys.h"
 
-#include "alquimia_constants.h"
-#include "alquimia_containers.h"
+#include "alquimia/alquimia_constants.h"
+#include "alquimia/alquimia_containers.h"
 
 #include "demo_containers.h"
 #include "demo_output.h"

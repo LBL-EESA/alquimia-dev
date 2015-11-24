@@ -32,8 +32,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "alquimia_containers.h"
-#include "alquimia_util.h"
+#include "alquimia/alquimia_containers.h"
+#include "alquimia/alquimia_util.h"
 
 namespace alquimia {
 namespace drivers {

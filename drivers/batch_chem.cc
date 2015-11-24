@@ -43,15 +43,13 @@
 #include <stdexcept>
 #include <algorithm>
 
-#include <mpi.h>
-
 #include "petscsys.h"
 
-#include "alquimia_memory.h"
-#include "alquimia_util.h"
-#include "alquimia_constants.h"
-#include "alquimia_containers.h"
-#include "alquimia_interface.h"
+#include "alquimia/alquimia_memory.h"
+#include "alquimia/alquimia_util.h"
+#include "alquimia/alquimia_constants.h"
+#include "alquimia/alquimia_containers.h"
+#include "alquimia/alquimia_interface.h"
 
 #include "cfg_reader.h"
 #include "demo_containers.h"
