@@ -102,10 +102,10 @@ invoke CMake.
       -DCMAKE_Fortran_COMPILER=<Fortran compiler> \ 
       -DXSDK_WITH_PFLOTRAN=ON \
       -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a \
-      -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran` \ 
+      -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran \ 
       -DXSDK_WITH_CRUNCHFLOW=ON \
       -DTPL_CRUNCHFLOW_LIBRARIES=$CRUNCHFLOW_DIR/libcrunchchem.a \
-      -DTPL_CRUNCHFLOW_INCLUDE_DIRS=$CRUNCHFLOW_DIR`
+      -DTPL_CRUNCHFLOW_INCLUDE_DIRS=$CRUNCHFLOW_DIR
     make 
 
 **NOTE**: you can omit either of the engines if you aren't building them both. 
