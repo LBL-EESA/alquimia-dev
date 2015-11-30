@@ -930,6 +930,7 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   end if
   sizes%num_minerals = reaction%mineral%nkinmnrl
   sizes%num_aqueous_complexes = reaction%neqcplx
+  sizes%num_aqueous_kinetics = reaction%ngeneral_rxn
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
   sizes%num_isotherm_species = reaction%neqkdrxn
