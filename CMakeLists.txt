@@ -226,6 +226,21 @@ if (ALQUIMIA_NEED_PETSC)
   endif()
   set_target_properties(petsc PROPERTIES IMPORTED_LOCATION ${PETSC_LIBRARY})
   set(PETSC_LIBRARIES ${PETSC_LIBRARY};${PETSC_PACKAGE_LIBS})
+
+  # PETSc 3.5.x sniffs out Valgrind if you don't ask it to, and then doesn't 
+  # add the include path to its CMake-generated file. This is a bug, so we 
+  # accommodate it here. A tad excrutiating.
+  if (PETSC_HAVE_VALGRIND)
+    file(READ $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/petscvariables petscvariables)
+    string(FIND ${petscvariables} "VALGRIND_INCLUDE" start_index)
+    math(EXPR start_index ${start_index}+19)
+    string(SUBSTRING ${petscvariables} ${start_index} -1 valgrind_include)
+    string(FIND ${valgrind_include} "\n" length)
+    string(SUBSTRING ${valgrind_include} 0 ${length} valgrind_include)
+    string(REPLACE "-I" "" valgrind_include ${valgrind_include})
+    message("-- Valgrind include dir is ${valgrind_include}")
+    include_directories(${valgrind_include})
+  endif()
 endif()
 
 # Include the binary directory in the header file search path,
