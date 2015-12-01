@@ -10,18 +10,12 @@ option(CMAKE_INSTALL_PREFIX "Sets installation prefix [/usr/local].")
 option(XSDK_ENABLE_DEBUG "Enables Debug mode builds [OFF]." OFF)
 #option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
 set(BUILD_SHARED_LIBS OFF) # Shared libs currently not supported! PFlotran doesn't like it.
-option(XSDK_PRECISION "Sets the precision of floating-point numbers shared libraries (SINGLE,DOUBLE) [DOUBLE].")
 option(XSDK_WITH_PFLOTRAN "Enables support for the PFlotran chemistry engine [OFF]." OFF)
 option(TPL_PFLOTRAN_LIBRARIES "List of absolute paths to PFlotran link libraries [].")
 option(TPL_PFLOTRAN_INCLUDE_DIRS "List of absolute paths to PFlotran include directories [].")
 option(XSDK_WITH_CRUNCHFLOW "Enables support for the CrunchFlow chemistry engine [OFF]." OFF)
 option(TPL_CRUNCHFLOW_LIBRARIES "List of absolute paths to CrunchFlow link libraries [].")
 option(TPL_CRUNCHFLOW_INCLUDE_DIRS "List of absolute paths to CrunchFlow include directories [].")
-
-# Check defaults for xSDK if needed.
-if (NOT XSDK_PRECISION)
-  set(XSDK_PRECISION DOUBLE)
-endif()
 
 if (NOT CMAKE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX /usr/local)
@@ -73,20 +67,6 @@ set (ALQUIMIA_MAJOR_VERSION 0)
 set (ALQUIMIA_MINOR_VERSION 3)
 set (ALQUIMIA_PATCH_VERSION 1)
 set (ALQUIMIA_VERSION "${ALQUIMIA_MAJOR_VERSION}.${ALQUIMIA_MINOR_VERSION}.${ALQUIMIA_PATCH_VERSION}")
-
-# Set up floating point numbers.
-if (XSDK_PRECISION STREQUAL "SINGLE")
-  set(ALQUIMIA_HAVE_SINGLE_PRECISION 1)
-  set(ALQUIMIA_HAVE_DOUBLE_PRECISION 0)
-  set(ALQUIMIA_REAL_TYPE float)
-elseif(XSDK_PRECISION STREQUAL "DOUBLE")
-  set(ALQUIMIA_HAVE_SINGLE_PRECISION 0)
-  set(ALQUIMIA_HAVE_DOUBLE_PRECISION 1)
-  set(ALQUIMIA_REAL_TYPE double)
-else()
-  message(FATAL_ERROR "Unsupported precision: ${XSDK_PRECISION}")
-endif()
-message("-- Real number representation is ${ALQUIMIA_REAL_TYPE}")
 
 # General C compiler flags.
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
