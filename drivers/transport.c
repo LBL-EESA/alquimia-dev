@@ -297,10 +297,10 @@ int RunSimulation(TransportSim* sim, FILE* output)
   // and chem_data per thead, but we don't know if the engine is
   // thread safe until after the call to Setup()!
   //
-  struct AlquimiaInterface chem;
-  struct AlquimiaEngineStatus chem_status;
-  struct AlquimiaData chem_data;
-  struct AlquimiaGeochemicalConditionVector alquimia_conditions;
+  AlquimiaInterface chem;
+  AlquimiaEngineStatus chem_status;
+  AlquimiaData chem_data;
+  AlquimiaGeochemicalConditionVector alquimia_conditions;
 
 #if 0
   // All alquimia function calls require a status object.
