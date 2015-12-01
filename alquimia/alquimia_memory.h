@@ -38,81 +38,68 @@ extern "C" {
 #endif /* __cplusplus */
   
   /* Alquimia Vectors */
-  void AllocateAlquimiaVectorDouble(const int size, struct AlquimiaVectorDouble* vector);
-  void FreeAlquimiaVectorDouble(struct AlquimiaVectorDouble* vector);
+  void AllocateAlquimiaVectorDouble(const int size, AlquimiaVectorDouble* vector);
+  void FreeAlquimiaVectorDouble(AlquimiaVectorDouble* vector);
 
-  void AllocateAlquimiaVectorInt(const int size, struct AlquimiaVectorInt* vector);
-  void FreeAlquimiaVectorInt(struct AlquimiaVectorInt* vector);
+  void AllocateAlquimiaVectorInt(const int size, AlquimiaVectorInt* vector);
+  void FreeAlquimiaVectorInt(AlquimiaVectorInt* vector);
 
-  void AllocateAlquimiaVectorString(const int size, struct AlquimiaVectorString* vector);
-  void FreeAlquimiaVectorString(struct AlquimiaVectorString* vector);
+  void AllocateAlquimiaVectorString(const int size, AlquimiaVectorString* vector);
+  void FreeAlquimiaVectorString(AlquimiaVectorString* vector);
 
   /* State */
-  void AllocateAlquimiaState(const struct AlquimiaSizes* const sizes,
-                             struct AlquimiaState* state);
+  void AllocateAlquimiaState(const AlquimiaSizes* const sizes,
+                             AlquimiaState* state);
 
-  void FreeAlquimiaState(struct AlquimiaState* state);
+  void FreeAlquimiaState(AlquimiaState* state);
 
   /* Auxiliary Data */ 
-  void AllocateAlquimiaAuxiliaryData(const struct AlquimiaSizes* const sizes,
-                                     struct AlquimiaAuxiliaryData* aux_data);
-  void FreeAlquimiaAuxiliaryData(struct AlquimiaAuxiliaryData* aux_data);
+  void AllocateAlquimiaAuxiliaryData(const AlquimiaSizes* const sizes,
+                                     AlquimiaAuxiliaryData* aux_data);
+  void FreeAlquimiaAuxiliaryData(AlquimiaAuxiliaryData* aux_data);
 
   /* Properties */
-  void AllocateAlquimiaProperties(
-      const struct AlquimiaSizes* const sizes,
-      struct AlquimiaProperties* props);
-  void FreeAlquimiaProperties(
-      struct AlquimiaProperties* props);
+  void AllocateAlquimiaProperties(const AlquimiaSizes* const sizes,
+                                  AlquimiaProperties* props);
+  void FreeAlquimiaProperties(AlquimiaProperties* props);
 
   /* Problem Meta Data */
-  void AllocateAlquimiaProblemMetaData(const struct AlquimiaSizes* const sizes,
-                                       struct AlquimiaProblemMetaData* meta_data);
+  void AllocateAlquimiaProblemMetaData(const AlquimiaSizes* const sizes,
+                                       AlquimiaProblemMetaData* meta_data);
 
-  void FreeAlquimiaProblemMetaData(struct AlquimiaProblemMetaData* metda_data);
+  void FreeAlquimiaProblemMetaData(AlquimiaProblemMetaData* metda_data);
 
   /* Status */
-  void AllocateAlquimiaEngineStatus(struct AlquimiaEngineStatus* status);
+  void AllocateAlquimiaEngineStatus(AlquimiaEngineStatus* status);
 
-  void FreeAlquimiaEngineStatus(struct AlquimiaEngineStatus* status);
+  void FreeAlquimiaEngineStatus(AlquimiaEngineStatus* status);
 
   /* Auxiliary Output Data */ 
-  void AllocateAlquimiaAuxiliaryOutputData(
-      const struct AlquimiaSizes* const sizes,
-      struct AlquimiaAuxiliaryOutputData* aux_output);
-  void FreeAlquimiaAuxiliaryOutputData(
-      struct AlquimiaAuxiliaryOutputData* aux_output);
+  void AllocateAlquimiaAuxiliaryOutputData(const AlquimiaSizes* const sizes,
+                                           AlquimiaAuxiliaryOutputData* aux_output);
+  void FreeAlquimiaAuxiliaryOutputData(AlquimiaAuxiliaryOutputData* aux_output);
 
   /* Geochemical conditions/constraints */
-  void AllocateAlquimiaGeochemicalConditionVector(
-      const int num_conditions,
-      struct AlquimiaGeochemicalConditionVector* condition_list);
-  void AllocateAlquimiaGeochemicalCondition(
-      const int size_name,
-      const int num_aqueous_constraints, const int num_mineral_constraints,
-      struct AlquimiaGeochemicalCondition* condition);
-  void AllocateAlquimiaAqueousConstraint(
-      struct AlquimiaAqueousConstraint* constraint);
-  void AllocateAlquimiaMineralConstraint(
-      struct AlquimiaMineralConstraint* constraint);
+  void AllocateAlquimiaGeochemicalConditionVector(const int num_conditions,
+                                                  AlquimiaGeochemicalConditionVector* condition_list);
+  void AllocateAlquimiaGeochemicalCondition(const int size_name,
+                                            const int num_aqueous_constraints, 
+                                            const int num_mineral_constraints,
+                                            AlquimiaGeochemicalCondition* condition);
+  void AllocateAlquimiaAqueousConstraint(AlquimiaAqueousConstraint* constraint);
+  void AllocateAlquimiaMineralConstraint(AlquimiaMineralConstraint* constraint);
 
-  void FreeAlquimiaGeochemicalConditionVector(
-      struct AlquimiaGeochemicalConditionVector* condition_list);
-  void FreeAlquimiaGeochemicalCondition(
-      struct AlquimiaGeochemicalCondition* condition);
-  void FreeAlquimiaAqueousConstraintVector(
-      struct AlquimiaAqueousConstraintVector* vector);
-  void FreeAlquimiaAqueousConstraint(
-      struct AlquimiaAqueousConstraint* constraint);
-  void FreeAlquimiaMineralConstraintVector(
-      struct AlquimiaMineralConstraintVector* vector);
-  void FreeAlquimiaMineralConstraint(
-      struct AlquimiaMineralConstraint* constraint);
+  void FreeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* condition_list);
+  void FreeAlquimiaGeochemicalCondition(AlquimiaGeochemicalCondition* condition);
+  void FreeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vector);
+  void FreeAlquimiaAqueousConstraint(AlquimiaAqueousConstraint* constraint);
+  void FreeAlquimiaMineralConstraintVector(AlquimiaMineralConstraintVector* vector);
+  void FreeAlquimiaMineralConstraint(AlquimiaMineralConstraint* constraint);
 
 
   /* Data */
-  void AllocateAlquimiaData(struct AlquimiaData* data);
-  void FreeAlquimiaData(struct AlquimiaData* data);
+  void AllocateAlquimiaData(AlquimiaData* data);
+  void FreeAlquimiaData(AlquimiaData* data);
 
 #ifdef __cplusplus
 }

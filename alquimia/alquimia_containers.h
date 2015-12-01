@@ -45,23 +45,23 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  struct AlquimiaVectorDouble {
+  typedef struct {
     int size;
     double* data;
-  };
+  } AlquimiaVectorDouble;
 
-  struct AlquimiaVectorInt {
+  typedef struct {
     int size;
     int* data;
-  };
+  } AlquimiaVectorInt;
 
-  struct AlquimiaVectorString {
+  typedef struct {
     /* NOTE: this is a vector of strings */
     int size;
     char** data;
-  };
+  } AlquimiaVectorString;
 
-  struct AlquimiaSizes {
+  typedef struct {
     int num_primary;
     int num_sorbed;
     int num_minerals;
@@ -72,47 +72,46 @@ extern "C" {
     int num_isotherm_species;
     int num_aux_integers;
     int num_aux_doubles;
-  };
+  } AlquimiaSizes;
   
-  struct AlquimiaState {
+  typedef struct {
     double water_density;  /* [kg/m^3] */
     double porosity;  /* [-] */
     double temperature;  /* [celsius] */
     double aqueous_pressure; /* [Pa] */
-    struct AlquimiaVectorDouble total_mobile;  /* [molarity] */
-    struct AlquimiaVectorDouble total_immobile;  /* [moles/m^3 bulk] */
-    struct AlquimiaVectorDouble mineral_volume_fraction;  /* [-] */
-    struct AlquimiaVectorDouble mineral_specific_surface_area; /* [m^2 mineral/m^3 bulk] */
-    struct AlquimiaVectorDouble surface_site_density;  /* [moles/m^3 bulk] */
-    struct AlquimiaVectorDouble cation_exchange_capacity;  /* [moles/m^3 bulk] */
-  };
+    AlquimiaVectorDouble total_mobile;  /* [molarity] */
+    AlquimiaVectorDouble total_immobile;  /* [moles/m^3 bulk] */
+    AlquimiaVectorDouble mineral_volume_fraction;  /* [-] */
+    AlquimiaVectorDouble mineral_specific_surface_area; /* [m^2 mineral/m^3 bulk] */
+    AlquimiaVectorDouble surface_site_density;  /* [moles/m^3 bulk] */
+    AlquimiaVectorDouble cation_exchange_capacity;  /* [moles/m^3 bulk] */
+  } AlquimiaState;
   
-  struct AlquimiaProperties {
+  typedef struct {
     double volume;  /* [m^3] */
     double saturation;  /* [m^3 liquid / m^3 pore space] */
-    struct AlquimiaVectorDouble isotherm_kd;  /* [kg H20 / m^3 bulk] */
-    struct AlquimiaVectorDouble freundlich_n; /* [-] */
-    struct AlquimiaVectorDouble langmuir_b;  /* [-] */
-    struct AlquimiaVectorDouble mineral_rate_cnst; /* [mol/m^2-sec] */    
-    struct AlquimiaVectorDouble aqueous_kinetic_rate_cnst; /* [sec^-1] */
-    //   double solid_density;  /* [kg/m3] */
-  };
+    AlquimiaVectorDouble isotherm_kd;  /* [kg H20 / m^3 bulk] */
+    AlquimiaVectorDouble freundlich_n; /* [-] */
+    AlquimiaVectorDouble langmuir_b;  /* [-] */
+    AlquimiaVectorDouble mineral_rate_cnst; /* [mol/m^2-sec] */    
+    AlquimiaVectorDouble aqueous_kinetic_rate_cnst; /* [sec^-1] */
+  } AlquimiaProperties;
   
-  struct AlquimiaAuxiliaryData {
-    struct AlquimiaVectorInt aux_ints;  /* [-] */
-    struct AlquimiaVectorDouble aux_doubles;  /* [-] */
-  };
+  typedef struct {
+    AlquimiaVectorInt aux_ints;  /* [-] */
+    AlquimiaVectorDouble aux_doubles;  /* [-] */
+  } AlquimiaAuxiliaryData;
   
-  struct AlquimiaEngineStatus {
+  typedef struct {
     int error;
     char* message;
     bool converged;
     int num_rhs_evaluations;
     int num_jacobian_evaluations;
     int num_newton_iterations;
-  };
+  } AlquimiaEngineStatus;
   
-  struct AlquimiaEngineFunctionality {
+  typedef struct {
     bool thread_safe;
     bool temperature_dependent;
     bool pressure_dependent;
@@ -120,68 +119,67 @@ extern "C" {
     bool operator_splitting;
     bool global_implicit;
     int index_base;
-  };
+  } AlquimiaEngineFunctionality;
   
-  struct AlquimiaProblemMetaData {
-    struct AlquimiaVectorString primary_names;
-    struct AlquimiaVectorInt    positivity;
-    struct AlquimiaVectorString mineral_names;
-    struct AlquimiaVectorString surface_site_names;
-    struct AlquimiaVectorString ion_exchange_names;
-    struct AlquimiaVectorString isotherm_species_names;
-    struct AlquimiaVectorString aqueous_kinetic_names;
-    /*char** auxiliary_output_names;*/
-  };
+  typedef struct {
+    AlquimiaVectorString primary_names;
+    AlquimiaVectorInt    positivity;
+    AlquimiaVectorString mineral_names;
+    AlquimiaVectorString surface_site_names;
+    AlquimiaVectorString ion_exchange_names;
+    AlquimiaVectorString isotherm_species_names;
+    AlquimiaVectorString aqueous_kinetic_names;
+  } AlquimiaProblemMetaData;
   
-  struct AlquimiaAuxiliaryOutputData {
+  typedef struct {
     double pH;
-    struct AlquimiaVectorDouble aqueous_kinetic_rate;  /* [?] */
-    struct AlquimiaVectorDouble mineral_saturation_index;  /* [mol/sec/m^3] */
-    struct AlquimiaVectorDouble mineral_reaction_rate;  /* [mol/sec/m^3 bulk] */
-    struct AlquimiaVectorDouble primary_free_ion_concentration; /* [molality] */
-    struct AlquimiaVectorDouble primary_activity_coeff; /* [-] */
-    struct AlquimiaVectorDouble secondary_free_ion_concentration; /* [molality] */
-    struct AlquimiaVectorDouble secondary_activity_coeff; /* [-] */
-  };
+    AlquimiaVectorDouble aqueous_kinetic_rate;  /* [?] */
+    AlquimiaVectorDouble mineral_saturation_index;  /* [mol/sec/m^3] */
+    AlquimiaVectorDouble mineral_reaction_rate;  /* [mol/sec/m^3 bulk] */
+    AlquimiaVectorDouble primary_free_ion_concentration; /* [molality] */
+    AlquimiaVectorDouble primary_activity_coeff; /* [-] */
+    AlquimiaVectorDouble secondary_free_ion_concentration; /* [molality] */
+    AlquimiaVectorDouble secondary_activity_coeff; /* [-] */
+  } AlquimiaAuxiliaryOutputData;
 
   /* 
   ** Geochemical Conditions
   */
 
-  struct AlquimiaAqueousConstraint {
+  typedef struct {
     char* primary_species_name;
     char* constraint_type;
     char* associated_species;
     double value;
-  };
+  } AlquimiaAqueousConstraint;
 
-  struct AlquimiaAqueousConstraintVector {
+  typedef struct {
     int size;
-    struct AlquimiaAqueousConstraint* data;
-  };
+    AlquimiaAqueousConstraint* data;
+  } AlquimiaAqueousConstraintVector;
 
-  struct AlquimiaMineralConstraint {
+  typedef struct {
     char* mineral_name;
     double volume_fraction;
     double specific_surface_area;
-  };
+  } AlquimiaMineralConstraint;
   
-  struct AlquimiaMineralConstraintVector {
+  typedef struct {
     int size;
-    struct AlquimiaMineralConstraint* data;
-  };
+    AlquimiaMineralConstraint* data;
+  } AlquimiaMineralConstraintVector;
 
   /* A geochemical condition is an array of aqueous and mineral geochemical constraints */
-  struct AlquimiaGeochemicalCondition {
+  typedef struct {
     char* name;
-    struct AlquimiaAqueousConstraintVector aqueous_constraints;
-    struct AlquimiaMineralConstraintVector mineral_constraints;
-  };
+    AlquimiaAqueousConstraintVector aqueous_constraints;
+    AlquimiaMineralConstraintVector mineral_constraints;
+  } AlquimiaGeochemicalCondition;
 
-  struct AlquimiaGeochemicalConditionVector {
+  typedef struct {
     int size;
-    struct AlquimiaGeochemicalCondition* data;
-  };
+    AlquimiaGeochemicalCondition* data;
+  } AlquimiaGeochemicalConditionVector;
   
 #ifdef __cplusplus
 }

@@ -47,37 +47,37 @@ extern "C" {
   void crunch_alquimia_setup(
       const char* input_filename,
       void* cf_engine_state,
-      struct AlquimiaSizes* sizes,
-      struct AlquimiaEngineFunctionality* functionality,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaSizes* sizes,
+      AlquimiaEngineFunctionality* functionality,
+      AlquimiaEngineStatus* status);
   void crunch_alquimia_shutdown(
       void* cf_engine_state,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaEngineStatus* status);
   void crunch_alquimia_processcondition(
       void* cf_engine_state,
-      struct AlquimiaGeochemicalCondition* condition,
-      struct AlquimiaProperties* props,
-      struct AlquimiaState* state,
-      struct AlquimiaAuxiliaryData* aux_data,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaGeochemicalCondition* condition,
+      AlquimiaProperties* props,
+      AlquimiaState* state,
+      AlquimiaAuxiliaryData* aux_data,
+      AlquimiaEngineStatus* status);
   void crunch_alquimia_reactionstepoperatorsplit(
       void* cf_engine_state,
       double* delta_t,
-      struct AlquimiaProperties* properties,
-      struct AlquimiaState* state,
-      struct AlquimiaAuxiliaryData* aux_data,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaProperties* properties,
+      AlquimiaState* state,
+      AlquimiaAuxiliaryData* aux_data,
+      AlquimiaEngineStatus* status);
   void crunch_alquimia_getauxiliaryoutput(
       void* cf_engine_state,
-      struct AlquimiaProperties* properties,
-      struct AlquimiaState* state,
-      struct AlquimiaAuxiliaryData* aux_data,
-      struct AlquimiaAuxiliaryOutputData* aux_out,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaProperties* properties,
+      AlquimiaState* state,
+      AlquimiaAuxiliaryData* aux_data,
+      AlquimiaAuxiliaryOutputData* aux_out,
+      AlquimiaEngineStatus* status);
   void crunch_alquimia_getproblemmetadata(
       void* cf_engine_state,
-      struct AlquimiaProblemMetaData* meta_data,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaProblemMetaData* meta_data,
+      AlquimiaEngineStatus* status);
 #endif
 
 #ifdef __cplusplus

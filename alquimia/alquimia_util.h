@@ -41,36 +41,28 @@ extern "C" {
                                             const char* const str2);
 
   void AlquimiaFindIndexFromName(const char* const name,
-                                   const struct AlquimiaVectorString* const names,
+                                 const AlquimiaVectorString* const names,
                                    int* index);
 
   void PrintAlquimiaVectorDouble(const char* const name,
-                                 const struct AlquimiaVectorDouble* const vector);
+                                 const AlquimiaVectorDouble* const vector);
   void PrintAlquimiaVectorInt(const char* const name,
-                              const struct AlquimiaVectorInt* const vector);
+                              const AlquimiaVectorInt* const vector);
   void PrintAlquimiaVectorString(const char* const name,
-                                 const struct AlquimiaVectorString* const vector);
+                                 const AlquimiaVectorString* const vector);
 
-  void PrintAlquimiaData(const struct AlquimiaData* const data);
-  void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes);
-  void PrintAlquimiaProblemMetaData(
-      const struct AlquimiaProblemMetaData* const meta_data);
-  void PrintAlquimiaProperties(
-      const struct AlquimiaProperties* const prop);
-  void PrintAlquimiaEngineFunctionality(
-      const struct AlquimiaEngineFunctionality* const functionality);
-  void PrintAlquimiaState(const struct AlquimiaState* const state);
-  void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_data);
-  void PrintAlquimiaAuxiliaryOutputData(
-      const struct AlquimiaAuxiliaryOutputData* const aux_output);
-  void PrintAlquimiaGeochemicalConditionVector(
-      const struct AlquimiaGeochemicalConditionVector* condition_list);
-  void PrintAlquimiaGeochemicalCondition(
-      const struct AlquimiaGeochemicalCondition* const condition);
-  void PrintAlquimiaAqueousConstraint(
-      const struct AlquimiaAqueousConstraint* const constraint);
-  void PrintAlquimiaMineralConstraint(
-      const struct AlquimiaMineralConstraint* const constraint);
+  void PrintAlquimiaData(const AlquimiaData* const data);
+  void PrintAlquimiaSizes(const AlquimiaSizes* const sizes);
+  void PrintAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const meta_data);
+  void PrintAlquimiaProperties(const AlquimiaProperties* const prop);
+  void PrintAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const functionality);
+  void PrintAlquimiaState(const AlquimiaState* const state);
+  void PrintAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const aux_data);
+  void PrintAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const aux_output);
+  void PrintAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* condition_list);
+  void PrintAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const condition);
+  void PrintAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const constraint);
+  void PrintAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const constraint);
 
 #ifdef __cplusplus
 }

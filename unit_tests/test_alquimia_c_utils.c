@@ -71,9 +71,9 @@ void test_AlquimiaCaseInsensitiveStringCompare(void) {
 
 void test_AlquimiaVectors(void) {
   int size;
-  struct AlquimiaVectorDouble dvector;
-  struct AlquimiaVectorInt ivector;
-  struct AlquimiaVectorString svector;
+  AlquimiaVectorDouble dvector;
+  AlquimiaVectorInt ivector;
+  AlquimiaVectorString svector;
 
   size = -1;
   AllocateAlquimiaVectorDouble(size, &dvector);
@@ -112,7 +112,7 @@ void test_AlquimiaVectors(void) {
 void test_AlquimiaNameIndexMapping(void) {
   int i, id, size;
   char* name;
-  struct AlquimiaVectorString names;
+  AlquimiaVectorString names;
 
   name = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
   size = 5;
@@ -134,8 +134,8 @@ void test_AlquimiaNameIndexMapping(void) {
 }  /* end test_AlquimiaNameIndexMapping() */
 
 void test_CreateAlquimiaInterface(void) {
-  struct AlquimiaEngineStatus status;
-  struct AlquimiaInterface interface;
+  AlquimiaEngineStatus status;
+  AlquimiaInterface interface;
   char* name;
 
   AllocateAlquimiaEngineStatus(&status);

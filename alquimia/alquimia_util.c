@@ -67,8 +67,8 @@ bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
  **
  *******************************************************************************/
 void AlquimiaFindIndexFromName(const char* const name,
-                           const struct AlquimiaVectorString* const names,
-                           int* index) {
+                               const AlquimiaVectorString* const names,
+                               int* index) {
   int i;
   *index = -1;
   for (i = 0; i < names->size; ++i) {
@@ -86,7 +86,7 @@ void AlquimiaFindIndexFromName(const char* const name,
  **
  *******************************************************************************/
 void PrintAlquimiaVectorDouble(const char* const name,
-                               const struct AlquimiaVectorDouble* const vector) {
+                               const AlquimiaVectorDouble* const vector) {
   int i;
   fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
   fprintf(stdout, "   [ ");
@@ -97,7 +97,7 @@ void PrintAlquimiaVectorDouble(const char* const name,
 }  /* end PrintAlqumiaVectorDouble() */
 
 void PrintAlquimiaVectorInt(const char* const name,
-                            const struct AlquimiaVectorInt* const vector) {
+                            const AlquimiaVectorInt* const vector) {
   int i;
   fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
   fprintf(stdout, "   [ ");
@@ -108,7 +108,7 @@ void PrintAlquimiaVectorInt(const char* const name,
 }  /* end PrintAlqumiaVectorInt() */
 
 void PrintAlquimiaVectorString(const char* const name,
-                               const struct AlquimiaVectorString* const vector) {
+                               const AlquimiaVectorString* const vector) {
   int i;
   fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
   fprintf(stdout, "   [ ");
@@ -124,7 +124,7 @@ void PrintAlquimiaVectorString(const char* const name,
  **  Printing Containers
  **
  *******************************************************************************/
-void PrintAlquimiaData(const struct AlquimiaData* const data) {
+void PrintAlquimiaData(const AlquimiaData* const data) {
   fprintf(stdout, "- Alquimia Data ----------------------------------------\n");
   fprintf(stdout, "  engine_state : %p\n", data->engine_state);
   PrintAlquimiaSizes(&data->sizes);
@@ -137,7 +137,7 @@ void PrintAlquimiaData(const struct AlquimiaData* const data) {
   fprintf(stdout, "---------------------------------------- Alquimia Data -\n");
 }  /* end PrintAlquimiaData() */
 
-void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes) {
+void PrintAlquimiaSizes(const AlquimiaSizes* const sizes) {
   fprintf(stdout, "-- Alquimia Sizes :\n");
   fprintf(stdout, "     num primary species : %d\n", sizes->num_primary);
   fprintf(stdout, "     num sorbed : %d\n", sizes->num_sorbed);
@@ -150,8 +150,7 @@ void PrintAlquimiaSizes(const struct AlquimiaSizes* const sizes) {
   fprintf(stdout, "     num auxiliary doubles : %d\n", sizes->num_aux_doubles);
 }  /* end PrintAlquimiaSizes() */
 
-void PrintAlquimiaEngineFunctionality(
-    const struct AlquimiaEngineFunctionality* const functionality) {
+void PrintAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const functionality) {
 
   fprintf(stdout, "-- Alquimia Engine Functionality :\n");
   fprintf(stdout, "     thread_safe : %d\n", functionality->thread_safe);
@@ -163,7 +162,7 @@ void PrintAlquimiaEngineFunctionality(
   fprintf(stdout, "     index base : %d\n", functionality->index_base);
 }  /* end PrintAlquimiaEngineFunctionality() */
 
-void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const meta_data) {
+void PrintAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const meta_data) {
 
   fprintf(stdout, "-- Alquimia Problem Meta Data :\n");
   PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
@@ -175,7 +174,7 @@ void PrintAlquimiaProblemMetaData(const struct AlquimiaProblemMetaData* const me
   PrintAlquimiaVectorString("aqueous kinetic names", &(meta_data->aqueous_kinetic_names));
 }  /* end PrintAlquimiaProblemMetaData() */
 
-void PrintAlquimiaProperties(const struct AlquimiaProperties* const mat_prop) {
+void PrintAlquimiaProperties(const AlquimiaProperties* const mat_prop) {
 
   fprintf(stdout, "-- Alquimia Properties :\n");
   fprintf(stdout, "     volume : %f\n", mat_prop->volume);
@@ -187,7 +186,7 @@ void PrintAlquimiaProperties(const struct AlquimiaProperties* const mat_prop) {
   PrintAlquimiaVectorDouble("aqueous kinetic rate cnst", &(mat_prop->aqueous_kinetic_rate_cnst));
 }  /* end PrintAlquimiaProperties() */
 
-void PrintAlquimiaState(const struct AlquimiaState* const state) {
+void PrintAlquimiaState(const AlquimiaState* const state) {
 
   fprintf(stdout, "-- Alquimia State:\n");
   fprintf(stdout, "     water density : %f\n", state->water_density);
@@ -207,15 +206,14 @@ void PrintAlquimiaState(const struct AlquimiaState* const state) {
                             &(state->surface_site_density));
 }  /* end PrintAlquimiaState() */
 
-void PrintAlquimiaAuxiliaryData(const struct AlquimiaAuxiliaryData* const aux_data) {
+void PrintAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const aux_data) {
 
   fprintf(stdout, "-- Alquimia Auxiliary Data:\n");
   PrintAlquimiaVectorInt("auxiliary integers", &(aux_data->aux_ints));
   PrintAlquimiaVectorDouble("auxiliary doubles", &(aux_data->aux_doubles));
 }  /* end PrintAlquimiaAuxiliaryData() */
 
-void PrintAlquimiaAuxiliaryOutputData(
-    const struct AlquimiaAuxiliaryOutputData* const aux_output) {
+void PrintAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const aux_output) {
 
   fprintf(stdout, "-- Alquimia Auxiliary Output Data:\n");
   fprintf(stdout, "     pH : %f\n", aux_output->pH);
@@ -234,8 +232,7 @@ void PrintAlquimiaAuxiliaryOutputData(
                             &(aux_output->secondary_activity_coeff));
 }  /* end PrintAlquimiaAuxiliaryOutputData() */
 
-void PrintAlquimiaGeochemicalConditionVector(
-    const struct AlquimiaGeochemicalConditionVector* const condition_list) {
+void PrintAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* const condition_list) {
   int i;
   fprintf(stdout, "- Alquimia Geochemical Condition List ------------------\n");
   for (i = 0; i < condition_list->size; ++i) {
@@ -245,8 +242,7 @@ void PrintAlquimiaGeochemicalConditionVector(
   fprintf(stdout, "------------------ Alquimia Geochemical Condition List -\n");
 }  /*  PrintAlquimiaGeochemicalConditionVector() */
 
-void PrintAlquimiaGeochemicalCondition(
-    const struct AlquimiaGeochemicalCondition* const condition) {
+void PrintAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const condition) {
   int i;
   fprintf(stdout, "-- Alquimia Geochemical Condition : %s\n", condition->name);
   for (i = 0; i < condition->aqueous_constraints.size; ++i) {
@@ -258,8 +254,7 @@ void PrintAlquimiaGeochemicalCondition(
   fprintf(stdout, "\n");
 }  /*  PrintAlquimiaGeochemicalCondition() */
 
-void PrintAlquimiaAqueousConstraint(
-    const struct AlquimiaAqueousConstraint* const constraint) {
+void PrintAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const constraint) {
   fprintf(stdout, "--- Alquimia Aqueous Constraint : \n");
   fprintf(stdout, "      primary species : %s\n", constraint->primary_species_name);
   fprintf(stdout, "      constraint type : %s\n", constraint->constraint_type);
@@ -267,8 +262,7 @@ void PrintAlquimiaAqueousConstraint(
   fprintf(stdout, "      value : %e\n", constraint->value);
 }  /*  PrintAlquimiaAqueousConstraint() */
 
-void PrintAlquimiaMineralConstraint(
-    const struct AlquimiaMineralConstraint* const constraint) {
+void PrintAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const constraint) {
   fprintf(stdout, "--- Alquimia Mineral Constraint : \n");
   fprintf(stdout, "      mineral : %s\n", constraint->mineral_name);
   fprintf(stdout, "      volume fraction : %e\n", constraint->volume_fraction);

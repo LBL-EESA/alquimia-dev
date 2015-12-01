@@ -36,8 +36,8 @@
 #include "alquimia/alquimia_constants.h"
 
 void CreateAlquimiaInterface(const char* const engine_name,
-                             struct AlquimiaInterface* interface,
-                             struct AlquimiaEngineStatus* status) {
+                             AlquimiaInterface* interface,
+                             AlquimiaEngineStatus* status) {
   interface->Setup = NULL;
   interface->Shutdown = NULL;
   interface->ProcessCondition = NULL;

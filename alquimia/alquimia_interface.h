@@ -46,74 +46,74 @@ extern "C" {
      structure that should be passed between the driver and
      engine. Conditions are not included here because they are short
      lived data structures. Need one data object per thread. */
-  struct AlquimiaData {
+  typedef struct {
     void* engine_state;
-    struct AlquimiaSizes sizes;
-    struct AlquimiaEngineFunctionality functionality;
-    struct AlquimiaState state;
-    struct AlquimiaProperties properties;
-    struct AlquimiaAuxiliaryData aux_data;
-    struct AlquimiaProblemMetaData meta_data;
-    struct AlquimiaAuxiliaryOutputData aux_output;
-  };
+    AlquimiaSizes sizes;
+    AlquimiaEngineFunctionality functionality;
+    AlquimiaState state;
+    AlquimiaProperties properties;
+    AlquimiaAuxiliaryData aux_data;
+    AlquimiaProblemMetaData meta_data;
+    AlquimiaAuxiliaryOutputData aux_output;
+  } AlquimiaData;
 
   /* NOTE(bja): The alquimia interface should contain nothing but
      function pointers. Inorder to thread chemistry, we need just one
      interface object. */ 
-  struct AlquimiaInterface {
+  typedef struct {
     /* read data files/structures, initialize memory, basis management
        (includes reading database, swapping basis, etc.) */
     void (*Setup)(
         const char* input_filename,
         void* pft_engine_state,
-        struct AlquimiaSizes* sizes,
-        struct AlquimiaEngineFunctionality* functionality,
-        struct AlquimiaEngineStatus* status);
+        AlquimiaSizes* sizes,
+        AlquimiaEngineFunctionality* functionality,
+        AlquimiaEngineStatus* status);
 
     /* gracefully shutdown the engine, cleanup memory */
     void (*Shutdown)(
       void* pft_engine_state,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaEngineStatus* status);
 
     /* constrain processing for boundary/initial constraints. Called
        once for each IC/BC. */
     void (*ProcessCondition)(
         void* pft_engine_state,
-        struct AlquimiaGeochemicalCondition* condition,
-        struct AlquimiaProperties* props,
-        struct AlquimiaState* state,
-        struct AlquimiaAuxiliaryData* aux_data,
-        struct AlquimiaEngineStatus* status);
+        AlquimiaGeochemicalCondition* condition,
+        AlquimiaProperties* props,
+        AlquimiaState* state,
+        AlquimiaAuxiliaryData* aux_data,
+        AlquimiaEngineStatus* status);
 
     /* take one (or more?) reaction steps in operator split mode */
     void (*ReactionStepOperatorSplit)(
         void* pft_engine_state,
         double* delta_t,
-        struct AlquimiaProperties* props,
-        struct AlquimiaState* state,
-        struct AlquimiaAuxiliaryData* aux_data,
-        struct AlquimiaEngineStatus* status);
+        AlquimiaProperties* props,
+        AlquimiaState* state,
+        AlquimiaAuxiliaryData* aux_data,
+        AlquimiaEngineStatus* status);
     
     /* Access to user selected geochemical data for output, i.e. pH, 
        mineral SI, reaction rates */
     void (*GetAuxiliaryOutput)(
         void* pft_engine_state,
-        struct AlquimiaProperties* props,
-        struct AlquimiaState* state,
-        struct AlquimiaAuxiliaryData* aux_data,
-        struct AlquimiaAuxiliaryOutputData* aux_out,
-        struct AlquimiaEngineStatus* status);
+        AlquimiaProperties* props,
+        AlquimiaState* state,
+        AlquimiaAuxiliaryData* aux_data,
+        AlquimiaAuxiliaryOutputData* aux_out,
+        AlquimiaEngineStatus* status);
     
     void (*GetProblemMetaData)(
         void* pft_engine_state,
-        struct AlquimiaProblemMetaData* meta_data,
-        struct AlquimiaEngineStatus* status);
-  };
+        AlquimiaProblemMetaData* meta_data,
+        AlquimiaEngineStatus* status);
+  } AlquimiaInterface;
 
 
   void CreateAlquimiaInterface(const char* const engine_name,
-                               struct AlquimiaInterface* interface,
-                               struct AlquimiaEngineStatus* status);
+                               AlquimiaInterface* interface,
+                               AlquimiaEngineStatus* status);
 
 #ifdef __cplusplus
 }

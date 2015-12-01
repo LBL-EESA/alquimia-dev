@@ -47,37 +47,37 @@ extern "C" {
   void pflotran_alquimia_setup(
       const char* input_filename,
       void* pft_engine_state,
-      struct AlquimiaSizes* sizes,
-      struct AlquimiaEngineFunctionality* functionality,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaSizes* sizes,
+      AlquimiaEngineFunctionality* functionality,
+      AlquimiaEngineStatus* status);
   void pflotran_alquimia_shutdown(
       void* pft_engine_state,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaEngineStatus* status);
   void pflotran_alquimia_processcondition(
       void* pft_engine_state,
-      struct AlquimiaGeochemicalCondition* condition,
-      struct AlquimiaProperties* material_props,
-      struct AlquimiaState* state,
-      struct AlquimiaAuxiliaryData* aux_data,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaGeochemicalCondition* condition,
+      AlquimiaProperties* material_props,
+      AlquimiaState* state,
+      AlquimiaAuxiliaryData* aux_data,
+      AlquimiaEngineStatus* status);
   void pflotran_alquimia_reactionstepoperatorsplit(
       void* pft_engine_state,
       double* delta_t,
-      struct AlquimiaProperties* material_properties,
-      struct AlquimiaState* state,
-      struct AlquimiaAuxiliaryData* aux_data,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaProperties* material_properties,
+      AlquimiaState* state,
+      AlquimiaAuxiliaryData* aux_data,
+      AlquimiaEngineStatus* status);
   void pflotran_alquimia_getauxiliaryoutput(
       void* pft_engine_state,
-      struct AlquimiaProperties* material_properties,
-      struct AlquimiaState* state,
-      struct AlquimiaAuxiliaryData* aux_data,
-      struct AlquimiaAuxiliaryOutputData* aux_out,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaProperties* material_properties,
+      AlquimiaState* state,
+      AlquimiaAuxiliaryData* aux_data,
+      AlquimiaAuxiliaryOutputData* aux_out,
+      AlquimiaEngineStatus* status);
   void pflotran_alquimia_getproblemmetadata(
       void* pft_engine_state,
-      struct AlquimiaProblemMetaData* meta_data,
-      struct AlquimiaEngineStatus* status);
+      AlquimiaProblemMetaData* meta_data,
+      AlquimiaEngineStatus* status);
 #endif
 
 #ifdef __cplusplus
