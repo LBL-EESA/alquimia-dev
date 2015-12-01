@@ -244,10 +244,8 @@ if (ALQUIMIA_NEED_PETSC)
 endif()
 
 # Include the binary directory in the header file search path,
-# since it's where we place the third-party libraries.
+# since it's where we place generated files.
 include_directories("${PROJECT_BINARY_DIR}")
-include_directories("${PROJECT_BINARY_DIR}/include")
-link_directories("${PROJECT_BINARY_DIR}/lib")
 
 # Source code itself.
 include_directories("${PROJECT_SOURCE_DIR}")
