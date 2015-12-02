@@ -205,7 +205,7 @@ int BatchChemWithAlquimia(
     std::cout << chem_status.message << std::endl;
     return chem_status.error;
   }
-  bool* hands_off = false;
+  bool hands_off = false;
 
   // setup the engine and get the memory requirements
   chem.Setup(demo_simulation.engine_inputfile.c_str(),

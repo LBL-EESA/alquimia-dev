@@ -67,7 +67,7 @@ subroutine Crunch_Alquimia_Setup(input_filename, hands_off, cf_engine_state, &
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
-  logical (c_bool), intent(in) :: hands_off
+  logical (c_bool), value, intent(in) :: hands_off
   type (c_ptr), intent(out) :: cf_engine_state
   type (AlquimiaSizes), intent(out) :: sizes
   type (AlquimiaEngineFunctionality), intent(out) :: functionality
