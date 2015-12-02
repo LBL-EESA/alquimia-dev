@@ -111,9 +111,9 @@ TransportDriver* TransportDriver_New(TransportInput* input)
   // memory for alquimia data transfer containers.
   AllocateAlquimiaData(&driver->chem_data);
 
-  // Initialize a solution vector (with ghost cells).
+  // Initialize a solution vector.
   driver->num_primary = driver->chem_data.sizes.num_primary;
-  AllocateAlquimiaVectorDouble(driver->num_primary * (driver->num_cells + 2), 
+  AllocateAlquimiaVectorDouble(driver->num_primary * driver->num_cells, 
                                &driver->solution);
 
   // Initialize auxiliary data.
@@ -148,23 +148,11 @@ static int TransportDriver_Initialize(TransportDriver* driver)
   return 0;
 }
 
-static int TransportDriver_Step(TransportDriver* driver)
+static int Run_OperatorSplit(TransportDriver* driver)
 {
   double dx = (driver->x_max - driver->x_min) / driver->num_cells;
   double dt = driver->cfl * dx / driver->ux;
 
-  // Do the advection step.
-
-  // Do the chemistry step, using the advection step as input.
-
-  driver->time += dt;
-  driver->step += 1;
-
-  return 0;
-}
-
-static int Run_OperatorSplit(TransportDriver* driver)
-{
   // Initialize the chemistry state in each cell, and set up the solution vector.
   int status = TransportDriver_Initialize(driver);
   if (status != 0)
@@ -174,8 +162,20 @@ static int Run_OperatorSplit(TransportDriver* driver)
   driver->step = 0;
   while ((driver->time < driver->t_max) && (driver->step < driver->max_steps))
   {
-    status = TransportDriver_Step(driver);
+    // Do the advection step.
+    if (driver->order > 1) // TVD scheme 
+    {
+    }
+    else // simple upwinding
+    {
+    }
+
+    // Do the chemistry step, using the advection step as input.
+
     if (status != 0) break;
+
+    driver->time += dt;
+    driver->step += 1;
   }
 
   return status;
