@@ -28,7 +28,7 @@
 #include "DriverOutput.h"
 #include "alquimia/alquimia_memory.h"
 
-typedef void (*DriverWriteMethod)(AlquimiaVectorString*, AlquimiaVectorDouble**, FILE*);
+typedef void (*DriverWriteMethod)(AlquimiaVectorString, AlquimiaVectorDouble*, FILE*);
 
 struct DriverOutput 
 {
@@ -43,19 +43,20 @@ static DriverOutput* DriverOutput_New(DriverWriteMethod write_method)
   return file;
 }
 
-static void GnuplotWrite(AlquimiaVectorString* var_names,
-                         AlquimiaVectorDouble** var_vectors,
+static void GnuplotWrite(AlquimiaVectorString var_names,
+                         AlquimiaVectorDouble* var_vectors,
                          FILE* file)
 {
   // Write the header.
-  for (int i = 0; i < var_names->size-1; ++i)
-    fprintf(file, "\"%s\", ", var_names->data[i]);
-  fprintf(file, "\"%s\"\n", var_names->data[var_names->size-1]);
+  fprintf(file, "# ");
+  for (int i = 0; i < var_names.size-1; ++i)
+    fprintf(file, "\"%s\", ", var_names.data[i]);
+  fprintf(file, "\"%s\"\n", var_names.data[var_names.size-1]);
 
   // Write the columnated data.
-  for (int i = 0; i < var_vectors[0]->size; ++i)
-    for (int j = 0; j < var_names->size-1; ++j)
-      fprintf(file, "%14.6e", var_vectors[j]->data[i]);
+  for (int i = 0; i < var_vectors[0].size; ++i)
+    for (int j = 0; j < var_names.size-1; ++j)
+      fprintf(file, "%14.6e", var_vectors[j].data[i]);
   fprintf(file, "\n");
 }
 
@@ -64,19 +65,19 @@ DriverOutput* GnuplotDriverOutput_New()
   return DriverOutput_New(GnuplotWrite);
 }
 
-static void PythonWrite(AlquimiaVectorString* var_names,
-                        AlquimiaVectorDouble** var_vectors,
+static void PythonWrite(AlquimiaVectorString var_names,
+                        AlquimiaVectorDouble* var_vectors,
                         FILE* file)
 {
   // Write a Python dictionary.
   fprintf(file, "data = {\n");
-  for (int i = 0; i < var_names->size; ++i)
+  for (int i = 0; i < var_names.size; ++i)
   {
-    fprintf(file, "  '%s': [", var_names->data[i]);
-    for (int j = 0; j < var_vectors[0]->size-1; ++j)
-      fprintf(file, "%14.6e, ", var_vectors[i]->data[j]);
-    fprintf(file, "%14.6e]", var_vectors[i]->data[var_vectors[0]->size-1]);
-    if (i < var_names->size-1)
+    fprintf(file, "  '%s': [", var_names.data[i]);
+    for (int j = 0; j < var_vectors[0].size-1; ++j)
+      fprintf(file, "%14.6e, ", var_vectors[i].data[j]);
+    fprintf(file, "%14.6e]", var_vectors[i].data[var_vectors[0].size-1]);
+    if (i < var_names.size-1)
       fprintf(file, ",\n");
     else
       fprintf(file, "\n}\n");
@@ -90,17 +91,17 @@ DriverOutput* PythonDriverOutput_New()
 
 void DriverOutput_WriteVectors(DriverOutput* output, 
                                const char* filename,
-                               AlquimiaVectorString* var_names,
-                               AlquimiaVectorDouble** var_vectors)
+                               AlquimiaVectorString var_names,
+                               AlquimiaVectorDouble* var_vectors)
 {
-  if (var_names->size == 0)
+  if (var_names.size == 0)
     alquimia_error("DriverOutput_WriteVectors: no variables to write!");
-  for (int i = 1; i < var_names->size; ++i)
+  for (int i = 1; i < var_names.size; ++i)
   {
-    if (var_vectors[i]->size != var_vectors[0]->size)
+    if (var_vectors[i].size != var_vectors[0].size)
     {
       alquimia_error("DriverOutput_WriteVectors: vector %d has %d data, but vector 0 has %d.", 
-                     i, var_vectors[i]->size, var_vectors[0]->size);
+                     i, var_vectors[i].size, var_vectors[0].size);
     }
   }
   FILE* file = fopen(filename, "w");
@@ -110,25 +111,25 @@ void DriverOutput_WriteVectors(DriverOutput* output,
 
 void DriverOutput_WriteMulticompVector(DriverOutput* output, 
                                        const char* filename,
-                                       AlquimiaVectorString* comp_names,
-                                       AlquimiaVectorDouble* multicomp_vector)
+                                       AlquimiaVectorString comp_names,
+                                       AlquimiaVectorDouble multicomp_vector)
 {
-  int num_comps = comp_names->size;
-  if ((multicomp_vector->size % num_comps) != 0)
+  int num_comps = comp_names.size;
+  if ((multicomp_vector.size % num_comps) != 0)
   {
     alquimia_error("DriverOutput_WriteMulticompVector: multicomp_vector data has invalid size for %d components (%d).", 
-                   num_comps, multicomp_vector->size);
+                   num_comps, multicomp_vector.size);
   }
-  int vec_size = multicomp_vector->size / num_comps;
-  AlquimiaVectorDouble* var_vectors[num_comps];
+  int vec_size = multicomp_vector.size / num_comps;
+  AlquimiaVectorDouble var_vectors[num_comps];
   for (int i = 0; i < num_comps; ++i)
   {
-    AllocateAlquimiaVectorDouble(vec_size, var_vectors[i]);
+    AllocateAlquimiaVectorDouble(vec_size, &var_vectors[i]);
     for (int j = 0; j < vec_size; ++j)
-      var_vectors[i]->data[j] = multicomp_vector->data[num_comps*j+i];
+      var_vectors[i].data[j] = multicomp_vector.data[num_comps*j+i];
   }
   DriverOutput_WriteVectors(output, filename, comp_names, var_vectors);
   for (int i = 0; i < num_comps; ++i)
-    FreeAlquimiaVectorDouble(var_vectors[i]);
+    FreeAlquimiaVectorDouble(&var_vectors[i]);
 }
 

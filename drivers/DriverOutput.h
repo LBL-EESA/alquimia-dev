@@ -44,14 +44,14 @@ DriverOutput* PythonDriverOutput_New();
 // Writes the given vector(s) to the file with the given name.
 void DriverOutput_WriteVectors(DriverOutput* output, 
                                const char* filename,
-                               AlquimiaVectorString* var_names,
-                               AlquimiaVectorDouble** var_vectors);
+                               AlquimiaVectorString var_names,
+                               AlquimiaVectorDouble* var_vectors);
 
 // Writes the given vector to the file, with names assigned to components 
 // within the vector in a cyclic fashion.
 void DriverOutput_WriteMulticompVector(DriverOutput* output, 
                                        const char* filename,
-                                       AlquimiaVectorString* comp_names,
-                                       AlquimiaVectorDouble* multicomp_vector);
+                                       AlquimiaVectorString comp_names,
+                                       AlquimiaVectorDouble multicomp_vector);
 
 #endif 

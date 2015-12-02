@@ -50,7 +50,8 @@ void TransportInput_GetSimParameters(TransportInput* input,
                                      double* t_min, 
                                      double* t_max,
                                      int* max_steps,
-                                     double* cfl_factor);
+                                     double* cfl_factor,
+                                     int* order_of_accuracy);
 
 void TransportInput_GetDomain(TransportInput* input,
                               double* x_min, 
@@ -58,15 +59,15 @@ void TransportInput_GetDomain(TransportInput* input,
                               int* num_cells);
 
 void TransportInput_GetFlow(TransportInput* input,
+                            double* temperature,
                             double* x_velocity);
 
-void TransportInput_GetInitialConditions(TransportInput* input,
-                                         double* initial_temperature,
-                                         char** chemical_ic_name);
-
-void TransportInput_GetBoundaryConditions(TransportInput* input,
-                                          char** left_ic_name,
-                                          char** right_ic_name);
+void TransportInput_GetChemistry(TransportInput* input,
+                                 char** chemistry_engine,
+                                 char** chemistry_input_file,
+                                 char** chemical_ic_name,
+                                 char** left_chemical_bc_name,
+                                 char** right_chemical_bc_name);
 
 void TransportInput_GetOutput(TransportInput* input,
                               char** filename,

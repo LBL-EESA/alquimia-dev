@@ -25,37 +25,185 @@
 // and to permit others to do so.
 //
 
+#include "alquimia/alquimia_interface.h"
+#include "alquimia/alquimia_memory.h"
 #include "TransportDriver.h"
 
 struct TransportDriver 
 {
   TransportInput* input;
+
+  // Simulation parameters.
+  TransportInputCoupling coupling;
+  double t_min, t_max, cfl;
+  int max_steps, order;
+
+  // 1D grid information.
+  int num_cells;
+  double x_min, x_max;
+
+  // Flow velocity.
+  double ux;
+
+  // Current sim state.
+  double time;
+  int step;
+
+  // Solution vector and auxiliary data.
+  int num_primary;
+  AlquimiaVectorDouble solution;
+  AlquimiaVectorDouble aux_doubles;
+  AlquimiaVectorInt aux_ints;
+
+  // Chemistry engine -- one of each of these per thread in general.
+  AlquimiaInterface chem;
+  AlquimiaEngineStatus chem_status;
+
+  // Chemistry data.
+  AlquimiaData chem_data;
+  AlquimiaGeochemicalCondition chem_ic;
+  AlquimiaGeochemicalConditionVector chem_bcs;
 };
 
 TransportDriver* TransportDriver_New(TransportInput* input)
 {
   TransportDriver* driver = malloc(sizeof(TransportDriver));
   driver->input = input;
+
+  // Get basic simulation parameters.
+  TransportInput_GetSimParameters(driver->input, &driver->coupling, 
+                                  &driver->t_min, &driver->t_max, 
+                                  &driver->max_steps, &driver->cfl, &driver->order);
+
+  // Get grid information.
+  TransportInput_GetDomain(input, &driver->x_min, &driver->x_max, &driver->num_cells);
+
+  // Set up the chemistry engine.
+  AllocateAlquimiaEngineStatus(&driver->chem_status);
+  char *chem_engine, *chem_input, *chem_ic, *chem_left_bc, *chem_right_bc;
+  TransportInput_GetChemistry(driver->input, &chem_engine, &chem_input,
+                              &chem_ic, &chem_left_bc, &chem_right_bc);
+  CreateAlquimiaInterface(chem_engine, &driver->chem, &driver->chem_status);
+  if (driver->chem_status.error != 0) 
+  {
+    alquimia_error("TransportDriver_New: %s", driver->chem_status.message);
+    return NULL;
+  }
+
+  // Set up the engine and get storage requirements.
+  driver->chem.Setup(chem_input,
+                     &driver->chem_data.engine_state,
+                     &driver->chem_data.sizes,
+                     &driver->chem_data.functionality,
+                     &driver->chem_status);
+  if (driver->chem_status.error != 0) 
+  {
+    alquimia_error("TransportDriver_New: %s", driver->chem_status.message);
+    return NULL;
+  }
+
+  // If you want multiple copies of the chemistry engine with
+  // OpenMP, verify: chem_data.functionality.thread_safe == true,
+  // then create the appropriate number of chem status and data
+  // objects.
+
+  // chem_data.sizes was set by Setup(), so now we can allocate
+  // memory for alquimia data transfer containers.
+  AllocateAlquimiaData(&driver->chem_data);
+
+  // Initialize a solution vector (with ghost cells).
+  driver->num_primary = driver->chem_data.sizes.num_primary;
+  AllocateAlquimiaVectorDouble(driver->num_primary * (driver->num_cells + 2), 
+                               &driver->solution);
+
+  // Initialize auxiliary data.
+  AllocateAlquimiaVectorDouble(driver->chem_data.sizes.num_aux_doubles * driver->num_cells,
+                               &driver->aux_doubles);
+  AllocateAlquimiaVectorInt(driver->chem_data.sizes.num_aux_integers * driver->num_cells,
+                            &driver->aux_ints);
+
   return driver;
 }
 
 void TransportDriver_Free(TransportDriver* driver)
 {
-  if (driver->input != NULL)
-    TransportInput_Free(driver->input);
+  // Destroy input data.
+  TransportInput_Free(driver->input);
+
+  // Destroy solution vector and aux data.
+  FreeAlquimiaVectorDouble(&driver->solution);
+  FreeAlquimiaVectorDouble(&driver->aux_doubles);
+  FreeAlquimiaVectorInt(&driver->aux_ints);
+
+  // Destroy chemistry stuff.
+  driver->chem.Shutdown(&driver->chem_data.engine_state, 
+                        &driver->chem_status);
+  FreeAlquimiaData(&driver->chem_data);
+  FreeAlquimiaEngineStatus(&driver->chem_status);
   free(driver);
 }
 
-int TransportDriver_Run(TransportDriver* driver)
+static int TransportDriver_Initialize(TransportDriver* driver)
 {
   return 0;
 }
 
+static int TransportDriver_Step(TransportDriver* driver)
+{
+  double dx = (driver->x_max - driver->x_min) / driver->num_cells;
+  double dt = driver->cfl * dx / driver->ux;
+
+  // Do the advection step.
+
+  // Do the chemistry step, using the advection step as input.
+
+  driver->time += dt;
+  driver->step += 1;
+
+  return 0;
+}
+
+static int Run_OperatorSplit(TransportDriver* driver)
+{
+  // Initialize the chemistry state in each cell, and set up the solution vector.
+  int status = TransportDriver_Initialize(driver);
+  if (status != 0)
+    return status;
+
+  driver->time = driver->t_min;
+  driver->step = 0;
+  while ((driver->time < driver->t_max) && (driver->step < driver->max_steps))
+  {
+    status = TransportDriver_Step(driver);
+    if (status != 0) break;
+  }
+
+  return status;
+}
+
+static int Run_GlobalImplicit(TransportDriver* driver)
+{
+  alquimia_error("Globally implicit transport is not yet supported.");
+  return -1;
+}
+
+int TransportDriver_Run(TransportDriver* driver)
+{
+  if (driver->coupling == TRANSPORT_OPERATOR_SPLIT)
+    return Run_OperatorSplit(driver);
+  else
+    return Run_GlobalImplicit(driver);
+}
+
 void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
                                          double* time,
-                                         AlquimiaVectorString** var_names,
-                                         AlquimiaVectorDouble** var_data)
+                                         AlquimiaVectorString* var_names,
+                                         AlquimiaVectorDouble* var_data)
 {
+  // FIXME: Right now we only write out the solution.
+  AllocateAlquimiaVectorString(driver->num_primary, var_names);
+  AllocateAlquimiaVectorDouble(driver->num_primary * driver->num_cells, 
+                               var_data);
 }
 
 #if 0

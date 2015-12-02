@@ -31,8 +31,25 @@
 
 struct TransportInput
 {
+  TransportInputCoupling coupling;
+  double t_min, t_max;
+  int max_steps;
+  double cfl;
+  int order;
+
   double x_min, x_max;
   int num_cells;
+
+  double T, ux;
+
+  char chem_engine[FILENAME_MAX]; 
+  char chem_input[FILENAME_MAX]; 
+  char chem_ic[FILENAME_MAX]; 
+  char chem_left_bc[FILENAME_MAX]; 
+  char chem_right_bc[FILENAME_MAX]; 
+
+  char output_file[FILENAME_MAX]; 
+  char output_type[FILENAME_MAX]; 
 };
 
 TransportInput* TransportInput_New(const char* input_file)
@@ -51,8 +68,15 @@ void TransportInput_GetSimParameters(TransportInput* input,
                                      double* t_min, 
                                      double* t_max,
                                      int* max_steps,
-                                     double* cfl_factor)
+                                     double* cfl_factor,
+                                     int* order_of_accuracy)
 {
+  *coupling = input->coupling;
+  *t_min = input->t_min;
+  *t_max = input->t_max;
+  *max_steps = input->max_steps;
+  *cfl_factor = input->cfl;
+  *order_of_accuracy = input->order;
 }
 
 void TransportInput_GetDomain(TransportInput* input,
@@ -60,27 +84,37 @@ void TransportInput_GetDomain(TransportInput* input,
                               double* x_max, 
                               int* num_cells)
 {
+  *x_min = input->x_min;
+  *x_max = input->x_max;
+  *num_cells = input->num_cells;
 }
 
 void TransportInput_GetFlow(TransportInput* input,
+                            double* temperature,
                             double* x_velocity)
 {
+  *temperature = input->T;
+  *x_velocity = input->ux;
 }
 
-void TransportInput_GetInitialConditions(TransportInput* input,
-                                         double* initial_temperature,
-                                         char** chemical_ic_name)
+void TransportInput_GetChemistry(TransportInput* input,
+                                 char** chemistry_engine,
+                                 char** chemistry_input_file,
+                                 char** chemical_ic_name,
+                                 char** left_chemical_bc_name,
+                                 char** right_chemical_bc_name)
 {
-}
-
-void TransportInput_GetBoundaryConditions(TransportInput* input,
-                                          char** left_ic_name,
-                                          char** right_ic_name)
-{
+  *chemistry_engine = input->chem_engine;
+  *chemistry_input_file = input->chem_input;
+  *chemical_ic_name = input->chem_ic;
+  *left_chemical_bc_name = input->chem_left_bc;
+  *right_chemical_bc_name = input->chem_right_bc;
 }
 
 void TransportInput_GetOutput(TransportInput* input,
                               char** filename,
                               char** output_type)
 {
+  *filename = input->output_file;
+  *output_type = input->output_type;
 }

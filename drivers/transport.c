@@ -42,9 +42,9 @@ int main(int argc, char* argv[])
   if (argc == 1)
     Usage();
 
-  // initialize petsc/mpi for command line options and engines that
-  // require it (pflotran).
-  char help[] = "alquimia reactive transport driver";
+  // Initialize PETSc/MPI for command line options and engines that
+  // require it.
+  char help[] = "Alquimia advective, nondispersive reactive transport driver";
   PetscInitialize(&argc, &argv, (char*)0, help);
   PetscInitializeFortran();
 
@@ -74,13 +74,13 @@ int main(int argc, char* argv[])
   if (output != NULL)
   {
     double final_time;
-    AlquimiaVectorString* var_names;
-    AlquimiaVectorDouble* var_data;
+    AlquimiaVectorString var_names;
+    AlquimiaVectorDouble var_data;
     TransportDriver_GetSoluteAndAuxData(transport, &final_time, &var_names, &var_data);
     DriverOutput_WriteMulticompVector(output, output_file, var_names, var_data);
 
-    FreeAlquimiaVectorString(var_names);
-    FreeAlquimiaVectorDouble(var_data);
+    FreeAlquimiaVectorString(&var_names);
+    FreeAlquimiaVectorDouble(&var_data);
   }
 
   // Clean up.

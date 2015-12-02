@@ -51,7 +51,7 @@ int TransportDriver_Run(TransportDriver* driver);
 // caller.
 void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
                                          double* time,
-                                         AlquimiaVectorString** var_names,
-                                         AlquimiaVectorDouble** var_data);
+                                         AlquimiaVectorString* var_names,
+                                         AlquimiaVectorDouble* var_data);
 
 #endif
