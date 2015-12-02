@@ -1,0 +1,125 @@
+:Description: batch system w/ equilibrium sorption isotherms. Since it is equilibrium, no change in the system should be observed.
+
+:=========================== chemistry ========================================
+CHEMISTRY
+  PRIMARY_SPECIES
+    A
+    B
+    C
+    D
+  /
+
+  SORPTION
+    ISOTHERM_REACTIONS
+      A
+        TYPE LINEAR
+        DISTRIBUTION_COEFFICIENT 10.0 ! kg water/m^3 bulk
+      /
+      B
+        TYPE LANGMUIR
+        DISTRIBUTION_COEFFICIENT 30.d0
+        LANGMUIR_B 0.1
+      /
+      D
+        TYPE FREUNDLICH
+        DISTRIBUTION_COEFFICIENT 1.5
+        FREUNDLICH_N  0.8 : 1/n = 1.25
+      /
+    /
+  /
+
+  DATABASE ./isotherms.dat
+  LOG_FORMULATION
+  ACTIVITY_COEFFICIENTS OFF
+  OUTPUT
+    ALL
+    TOTAL_SORBED
+    TOTAL
+  /
+END
+
+:=========================== solver options ===================================
+TIMESTEPPER
+  TS_ACCELERATION 15
+/
+
+:=========================== discretization ===================================
+GRID
+  TYPE structured
+  ORIGIN 0.d0 0.d0 0.d0
+  NXYZ 1 1 1
+  BOUNDS
+    0.d0 1.d0
+    0.d0 1.d0
+    0.d0 1.d0
+  /
+END
+
+:=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+/
+
+:=========================== material properties ==============================
+MATERIAL_PROPERTY soil1
+  ID 1
+  POROSITY 0.25d0
+/
+
+:=========================== observation points ===============================
+OBSERVATION
+  REGION all
+  AT_CELL_CENTER
+/
+
+:=========================== output options ===================================
+OUTPUT
+  PERIODIC_OBSERVATION TIMESTEP 1
+/
+
+:=========================== times ============================================
+TIME
+  FINAL_TIME 100.d0 d
+  INITIAL_TIMESTEP_SIZE 10.0d0 d
+  MAXIMUM_TIMESTEP_SIZE 10.0d0 d
+/
+
+:=========================== regions ==========================================
+REGION all
+  COORDINATES
+    0.d0 0.d0 0.d0
+    1.d0 1.d0 1.d0
+  /
+END
+
+:=========================== transport conditions =============================
+TRANSPORT_CONDITION initial
+  TYPE zero_gradient
+  CONSTRAINT_LIST
+    0.d0 initial
+  /
+END
+
+
+:=========================== constraints ======================================
+CONSTRAINT initial
+  CONCENTRATIONS
+    A  1.0e-3    T
+    B  1.0e-3    T
+    C  1.0e-3    T
+    D  1.0e-3    T
+  /
+END
+
+:=========================== condition couplers ===============================
+: initial condition
+INITIAL_CONDITION
+  TRANSPORT_CONDITION initial
+  REGION all
+END
+
+:=========================== stratigraphy couplers ============================
+STRATA
+  REGION all
+  MATERIAL soil1
+END
