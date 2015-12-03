@@ -168,9 +168,20 @@ static int Run_OperatorSplit(TransportDriver* driver)
     }
     else // simple upwinding
     {
+
     }
 
     // Do the chemistry step, using the advection step as input.
+    for (int i = 0; i < driver->num_cells; ++i)
+    {
+      // FIXME: Copy the advected state over.
+      driver->chem.ReactionStepOperatorSplit(&driver->chem_data.engine_state,
+                                             &dt, &driver->chem_data.properties,
+                                             &driver->chem_data.state,
+                                             &driver->chem_data.aux_data,
+                                             &driver->chem_status);
+      // FIXME: Copy the state back over.
+    }
 
     if (status != 0) break;
 
