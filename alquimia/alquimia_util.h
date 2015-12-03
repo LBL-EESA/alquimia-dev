@@ -43,7 +43,41 @@ extern "C" {
 
   void AlquimiaFindIndexFromName(const char* const name,
                                  const AlquimiaVectorString* const names,
-                                   int* index);
+                                 int* index);
+
+  // Functions for copying Alquimia containers.
+  void CopyAlquimiaVectorDouble(const AlquimiaVectorDouble* const source,
+                                AlquimiaVectorDouble* destination);
+  void CopyAlquimiaVectorInt(const AlquimiaVectorInt* const source,
+                             AlquimiaVectorInt* destination);
+  void CopyAlquimiaVectorString(const AlquimiaVectorString* const source,
+                                AlquimiaVectorString* destination);
+  void CopyAlquimiaSizes(const AlquimiaSizes* const source, 
+                         AlquimiaSizes* destination);
+  void CopyAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const source, 
+                                   AlquimiaProblemMetaData* destination);
+  void CopyAlquimiaProperties(const AlquimiaProperties* const source, 
+                              AlquimiaProperties* destination);
+  void CopyAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const source, 
+                                       AlquimiaEngineFunctionality* destination);
+  void CopyAlquimiaState(const AlquimiaState* const source, 
+                         AlquimiaState* destination);
+  void CopyAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const source, 
+                                 AlquimiaAuxiliaryData* destination);
+  void CopyAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const source, 
+                                       AlquimiaAuxiliaryOutputData* destination);
+  void CopyAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const source, 
+                                        AlquimiaGeochemicalCondition* destination);
+  void CopyAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* source, 
+                                              AlquimiaGeochemicalConditionVector* destination);
+  void CopyAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const source, 
+                                     AlquimiaAqueousConstraint* destination);
+  void CopyAlquimiaAqueousConstraintVector(const AlquimiaAqueousConstraintVector* const source, 
+                                           AlquimiaAqueousConstraintVector* destination);
+  void CopyAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const source, 
+                                     AlquimiaMineralConstraint* destination);
+  void CopyAlquimiaMineralConstraintVector(const AlquimiaMineralConstraintVector* const source, 
+                                           AlquimiaMineralConstraintVector* destination);
 
   // The following functions write data to the given FILE.
   void PrintAlquimiaVectorDouble(const char* const name,
