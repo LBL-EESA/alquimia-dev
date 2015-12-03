@@ -214,7 +214,7 @@ int BatchChemWithAlquimia(
              &chem_status);
   if (chem_status.error != 0) {
     std::cout << chem_status.message << std::endl;
-    PrintAlquimiaSizes(&chem_data.sizes);
+    PrintAlquimiaSizes(&chem_data.sizes, stdout);
     return chem_status.error;
   }
 
@@ -235,10 +235,10 @@ int BatchChemWithAlquimia(
                           &chem_status);
   if (chem_status.error != 0) {
     std::cout << chem_status.message << std::endl;
-    PrintAlquimiaProblemMetaData(&chem_data.meta_data);
+    PrintAlquimiaProblemMetaData(&chem_data.meta_data, stdout);
     return chem_status.error;
   }
-  //PrintAlquimiaProblemMetaData(&chem_data.meta_data);
+  //PrintAlquimiaProblemMetaData(&chem_data.meta_data, stdout);
 
   // finish initializing the driver, e.g. verify material
   // properties, species names, etc
@@ -250,7 +250,7 @@ int BatchChemWithAlquimia(
   CopyDemoPropertiesToAlquimiaMaterials(
       demo_props, chem_data.meta_data, &chem_data.properties);
 
-  PrintAlquimiaData(&chem_data);
+  PrintAlquimiaData(&chem_data, stdout);
 
   //
   // prepare for constraint processing
@@ -260,7 +260,7 @@ int BatchChemWithAlquimia(
   // and store them in alquimia's format
   CopyDemoConditionsToAlquimiaConditions(demo_conditions, &alquimia_conditions);
 
-  PrintAlquimiaGeochemicalConditionVector(&alquimia_conditions);
+  PrintAlquimiaGeochemicalConditionVector(&alquimia_conditions, stdout);
 
   for (int i = 0; i < alquimia_conditions.size; ++i) {
     // ask the engine to process the geochemical conditions
@@ -276,8 +276,8 @@ int BatchChemWithAlquimia(
                             &chem_data.aux_data,
                             &chem_status);
       if (chem_status.error != 0) {
-        PrintAlquimiaData(&chem_data);
-        PrintAlquimiaGeochemicalCondition(&(alquimia_conditions.data[i]));
+        PrintAlquimiaData(&chem_data, stdout);
+        PrintAlquimiaGeochemicalCondition(&(alquimia_conditions.data[i]), stdout);
         std::cout << chem_status.message << std::endl;
         return chem_status.error;
       }
@@ -311,8 +311,8 @@ int BatchChemWithAlquimia(
     time += delta_t;
     //std::cout << "reaction step : " << t << "  time: " << time << std::endl;
     if (false) {
-      PrintAlquimiaState(&chem_data.state);
-      PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
+      PrintAlquimiaState(&chem_data.state, stdout);
+      PrintAlquimiaAuxiliaryData(&chem_data.aux_data, stdout);
     }
     // unpack from driver memory, since this is batch, no unpacking
     chem.ReactionStepOperatorSplit(&chem_data.engine_state,
@@ -323,8 +323,8 @@ int BatchChemWithAlquimia(
                                    &chem_status);
     if (chem_status.error != 0) {
       std::cout << chem_status.message << std::endl;
-      PrintAlquimiaState(&chem_data.state);
-      PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
+      PrintAlquimiaState(&chem_data.state, stdout);
+      PrintAlquimiaAuxiliaryData(&chem_data.aux_data, stdout);
       return chem_status.error;
     }
     chem.GetAuxiliaryOutput(&chem_data.engine_state,
