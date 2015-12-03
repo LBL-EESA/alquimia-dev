@@ -25,13 +25,6 @@
 ** and to permit others to do so.
 */
 
-#include <fenv.h>
-#include "fpe.h"
-
-#ifdef __APPLE__
-#include <xmmintrin.h>
-#else
-
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE // for older GNU compilers
 #endif
@@ -40,9 +33,17 @@
 #define __USE_GNU   // for newer GNU compilers
 #endif
 
-#endif
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#include <fenv.h>
+#include "fpe.h"
+
+#ifdef __APPLE__
+#include <xmmintrin.h>
+#else
+
 #endif
 
 void EnableFPE()
