@@ -316,7 +316,7 @@ int BatchChemWithAlquimia(
     }
     // unpack from driver memory, since this is batch, no unpacking
     chem.ReactionStepOperatorSplit(&chem_data.engine_state,
-                                   &delta_t,
+                                   delta_t,
                                    &chem_data.properties,
                                    &chem_data.state,
                                    &chem_data.aux_data,
