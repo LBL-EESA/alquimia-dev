@@ -18,7 +18,7 @@ endif()
 
 if (ALQUIMIA_HAVE_CRUNCHFLOW)
   add_alquimia_batch_chem_benchmark(calcite_short_crunch_ac calcite-short-crunch-ac.cfg)
-  add_alquimia_batch_chem_benchmark(calcite_short_crunch_pc calcite-short-crunch-pc.cfg)
+  add_alquimia_batch_chem_benchmark(calcite_short_crunch_cc calcite-short-crunch-cc.cfg)
   add_alquimia_batch_chem_benchmark(calcite_vf_crunch_ac calcite-vf-crunch-ac.cfg)
   add_alquimia_batch_chem_benchmark(calcite_vf_crunch_cc calcite-vf-crunch-cc.cfg)
   add_alquimia_batch_chem_benchmark(general_reaction_crunch_ac general-reaction-crunch-ac.cfg)
