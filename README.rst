@@ -81,7 +81,21 @@ To build PFlotran on Windows, see the instructions
 CrunchFlow engine
 =================
 
-*Instructions go here.*
+The CrunchFlow geochemistry engine is located in a special "alquimia" branch
+of the crunchtope repository on bitbucket. Currently, you need to be a 
+collaborator to access this repository, but steps are being taken to release 
+an open-source version.
+
+When you have the alquimia branch of the repository located at $CRUNCHFLOW_DIR, 
+you can build the geochemistry reaction library by typing
+
+::
+
+    cd $CRUNCHFLOW_DIR
+    make libcrunchchem.a
+
+At this time, building CrunchFlow's geochemistry engine on Windows is not 
+supported.
 
 Alquimia interface
 ==================
