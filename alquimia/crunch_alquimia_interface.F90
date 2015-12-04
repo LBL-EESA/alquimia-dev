@@ -2309,7 +2309,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   ! are not provided by the driver so copying them over would
   ! lose crunchflow's input file values 
   !
-  if_hands_off: if (hands_off .and. .not. copy_auxdata) then
+  if_hands_off: if (.not. hands_off .and. .not. copy_auxdata) then
   
   !
   ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
