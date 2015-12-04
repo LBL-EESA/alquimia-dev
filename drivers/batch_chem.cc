@@ -51,7 +51,6 @@
 #include "alquimia/alquimia_containers.h"
 #include "alquimia/alquimia_interface.h"
 
-#include "fpe.h"
 #include "cfg_reader.h"
 #include "demo_containers.h"
 #include "demo_utils.h"
@@ -71,11 +70,6 @@ int main(int argc, char** argv) {
 
   if (argc == 1)
     usage();
-
-  // Enable floating point trapping on debug builds.
-#ifndef NDEBUG
-  EnableFPE();
-#endif
 
   // initialize petsc/mpi for command line options and engines that
   // require it (pflotran).
