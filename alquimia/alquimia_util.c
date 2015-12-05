@@ -44,6 +44,14 @@
 //   Strings
 //
 //------------------------------------------------------------------------
+char* AlquimiaStringDup(const char* str)
+{
+  int len = strlen(str);
+  char* copy = malloc((len+1)*sizeof(char));
+  strcpy(copy, str);
+  return copy;
+}
+
 bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                           const char* const str2) {
   int i;
@@ -116,7 +124,7 @@ void CopyAlquimiaVectorString(const AlquimiaVectorString* const source,
     destination->data = realloc(destination->data, sizeof(char*) * destination->size);
   }
   for (int i = 0; i < destination->size; ++i)
-    destination->data[i] = strdup(source->data[i]);
+    destination->data[i] = AlquimiaStringDup(source->data[i]);
 }
 
 void CopyAlquimiaSizes(const AlquimiaSizes* const source, 
@@ -195,7 +203,7 @@ void CopyAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const 
 {
   if (destination->name != NULL)
     free(destination->name);
-  destination->name = strdup(source->name);
+  destination->name = AlquimiaStringDup(source->name);
   CopyAlquimiaAqueousConstraintVector(&source->aqueous_constraints, &destination->aqueous_constraints);
   CopyAlquimiaMineralConstraintVector(&source->mineral_constraints, &destination->mineral_constraints);
 }
@@ -217,13 +225,13 @@ void CopyAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const source
 {
   if (destination->primary_species_name != NULL)
     free(destination->primary_species_name);
-  destination->primary_species_name = strdup(source->primary_species_name);
+  destination->primary_species_name = AlquimiaStringDup(source->primary_species_name);
   if (destination->constraint_type != NULL)
     free(destination->constraint_type);
-  destination->constraint_type = strdup(source->constraint_type);
+  destination->constraint_type = AlquimiaStringDup(source->constraint_type);
   if (destination->associated_species != NULL)
     free(destination->associated_species);
-  destination->associated_species = strdup(source->associated_species);
+  destination->associated_species = AlquimiaStringDup(source->associated_species);
   destination->value = source->value;
 }
 
@@ -244,7 +252,7 @@ void CopyAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const source
 {
   if (destination->mineral_name != NULL)
     free(destination->mineral_name);
-  destination->mineral_name = strdup(source->mineral_name);
+  destination->mineral_name = AlquimiaStringDup(source->mineral_name);
   destination->volume_fraction = source->volume_fraction;
   destination->specific_surface_area = source->specific_surface_area;
 }

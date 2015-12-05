@@ -38,6 +38,7 @@ extern "C" {
 #endif /* __cplusplus */
 
   // String manipulation functions.
+  char* AlquimiaStringDup(const char* str);
   bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                             const char* const str2);
 

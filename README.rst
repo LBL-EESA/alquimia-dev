@@ -81,7 +81,21 @@ To build PFlotran on Windows, see the instructions
 CrunchFlow engine
 =================
 
-*Instructions go here.*
+The CrunchFlow geochemistry engine is located in a special "alquimia" branch
+of the crunchtope repository on bitbucket. Currently, you need to be a 
+collaborator to access this repository, but steps are being taken to release 
+an open-source version.
+
+When you have the alquimia branch of the repository located at $CRUNCHFLOW_DIR, 
+you can build the geochemistry reaction library by typing
+
+::
+
+    cd $CRUNCHFLOW_DIR
+    make libcrunchchem.a
+
+At this time, building CrunchFlow's geochemistry engine on Windows is not 
+supported.
 
 Alquimia interface
 ==================
@@ -99,10 +113,10 @@ invoke CMake.
     cmake .. \
       -DCMAKE_C_COMPILER=<C compiler> \
       -DCMAKE_CXX_COMPILER=<C++ compiler> \
-      -DCMAKE_Fortran_COMPILER=<Fortran compiler> \ 
+      -DCMAKE_Fortran_COMPILER=<Fortran compiler> \
       -DXSDK_WITH_PFLOTRAN=ON \
       -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a \
-      -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran \ 
+      -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran \
       -DXSDK_WITH_CRUNCHFLOW=ON \
       -DTPL_CRUNCHFLOW_LIBRARIES=$CRUNCHFLOW_DIR/libcrunchchem.a \
       -DTPL_CRUNCHFLOW_INCLUDE_DIRS=$CRUNCHFLOW_DIR
@@ -110,7 +124,23 @@ invoke CMake.
 
 **NOTE**: you can omit either of the engines if you aren't building them both. 
 If you don't specify any chemistry engine, Alquimia will halt and remind you 
-that building it without an engine is pointless.
+that building it without an engine is pointless. So, for example, to build 
+Alquimia with an install of PFlotran at $PFLOTRAN_DIR using MPI compilers, 
+in Debug mode:
+
+:: 
+
+    cd $ALQUIMIA_DIR
+    mkdir build ; cd build
+    cmake .. \
+      -DCMAKE_C_COMPILER=`which mpicc` \
+      -DCMAKE_CXX_COMPILER=`which mpicxx` \
+      -DCMAKE_Fortran_COMPILER=`which mpif90` \
+      -DCMAKE_BUILD_TYPE=Debug \
+      -DXSDK_WITH_PFLOTRAN=ON \
+      -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a \
+      -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran
+    make 
 
 *Windows instructions go here.*
 

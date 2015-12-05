@@ -173,7 +173,7 @@ void test_CreateAlquimiaInterface(void) {
 
   strncpy(name, "crunchflow", kAlquimiaMaxStringLength);
   CreateAlquimiaInterface(name, &interface, &status);
-#ifdef ALQUIMIA_HAVE_CRUNCH
+#ifdef ALQUIMIA_HAVE_CRUNCHFLOW
   ALQUIMIA_ASSERT(status.error == kAlquimiaNoError);
   ALQUIMIA_ASSERT(interface.Setup == &crunch_alquimia_setup);
   ALQUIMIA_ASSERT(interface.Shutdown == &crunch_alquimia_shutdown);
