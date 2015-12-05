@@ -176,7 +176,7 @@ static int Run_OperatorSplit(TransportDriver* driver)
     {
       // FIXME: Copy the advected state over.
       driver->chem.ReactionStepOperatorSplit(&driver->chem_data.engine_state,
-                                             &dt, &driver->chem_data.properties,
+                                             dt, &driver->chem_data.properties,
                                              &driver->chem_data.state,
                                              &driver->chem_data.aux_data,
                                              &driver->chem_status);
