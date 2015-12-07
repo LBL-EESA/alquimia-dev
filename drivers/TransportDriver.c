@@ -49,18 +49,22 @@ struct TransportDriver
   double time;
   int step;
 
-  // Solution vector and auxiliary data.
-  int num_primary;
-  AlquimiaVectorDouble solution;
-  AlquimiaVectorDouble aux_doubles;
-  AlquimiaVectorInt aux_ints;
+  // Per-cell chemistry data.
+  AlquimiaProperties* chem_properties;
+  AlquimiaState* chem_state;
+  AlquimiaAuxiliaryData* chem_aux_data;
+  AlquimiaAuxiliaryOutputData* chem_aux_output;
 
   // Chemistry engine -- one of each of these per thread in general.
   AlquimiaInterface chem;
+  void* chem_engine;
   AlquimiaEngineStatus chem_status;
 
-  // Chemistry data.
-  AlquimiaData chem_data;
+  // Chemistry metadata.
+  AlquimiaSizes chem_sizes;
+  AlquimiaProblemMetaData chem_metadata;
+
+  // Initial and boundary conditions.
   AlquimiaGeochemicalCondition chem_ic;
   AlquimiaGeochemicalConditionVector chem_bcs;
 };
@@ -91,10 +95,11 @@ TransportDriver* TransportDriver_New(TransportInput* input)
   }
 
   // Set up the engine and get storage requirements.
+  AlquimiaEngineFunctionality chem_engine_functionality;
   driver->chem.Setup(chem_input,
-                     &driver->chem_data.engine_state,
-                     &driver->chem_data.sizes,
-                     &driver->chem_data.functionality,
+                     &driver->chem_engine,
+                     &driver->chem_sizes,
+                     &chem_engine_functionality,
                      &driver->chem_status);
   if (driver->chem_status.error != 0) 
   {
@@ -107,20 +112,27 @@ TransportDriver* TransportDriver_New(TransportInput* input)
   // then create the appropriate number of chem status and data
   // objects.
 
-  // chem_data.sizes was set by Setup(), so now we can allocate
-  // memory for alquimia data transfer containers.
-  AllocateAlquimiaData(&driver->chem_data);
+  // Allocate memory for the chemistry data.
+  AllocateAlquimiaProblemMetaData(&driver->chem_sizes, &driver->chem_metadata);
+  driver->chem_properties = malloc(sizeof(AlquimiaProperties) * driver->num_cells);
+  driver->chem_state = malloc(sizeof(AlquimiaState) * driver->num_cells);
+  driver->chem_aux_data = malloc(sizeof(AlquimiaAuxiliaryData) * driver->num_cells);
+  driver->chem_aux_output = malloc(sizeof(AlquimiaAuxiliaryOutputData) * driver->num_cells);
+  for (int i = 0; i < driver->num_cells; ++i)
+  {
+    AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_state[i]);
+    AllocateAlquimiaProperties(&driver->chem_sizes, &driver->chem_properties[i]);
+    AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_aux_data[i]);
+    AllocateAlquimiaAuxiliaryOutputData(&driver->chem_sizes, &driver->chem_aux_output[i]);
+  }
 
-  // Initialize a solution vector.
-  driver->num_primary = driver->chem_data.sizes.num_primary;
-  AllocateAlquimiaVectorDouble(driver->num_primary * driver->num_cells, 
-                               &driver->solution);
+  // Initial condition.
+  AllocateAlquimiaGeochemicalCondition(strlen(chem_ic), 0, 0, &driver->chem_ic);
 
-  // Initialize auxiliary data.
-  AllocateAlquimiaVectorDouble(driver->chem_data.sizes.num_aux_doubles * driver->num_cells,
-                               &driver->aux_doubles);
-  AllocateAlquimiaVectorInt(driver->chem_data.sizes.num_aux_integers * driver->num_cells,
-                            &driver->aux_ints);
+  // Boundary conditions.
+  AllocateAlquimiaGeochemicalConditionVector(2, &driver->chem_bcs);
+  AllocateAlquimiaGeochemicalCondition(strlen(chem_left_bc), 0, 0, &(driver->chem_bcs.data[0]));
+  AllocateAlquimiaGeochemicalCondition(strlen(chem_right_bc), 0, 0, &(driver->chem_bcs.data[1]));
 
   return driver;
 }
@@ -130,22 +142,51 @@ void TransportDriver_Free(TransportDriver* driver)
   // Destroy input data.
   TransportInput_Free(driver->input);
 
-  // Destroy solution vector and aux data.
-  FreeAlquimiaVectorDouble(&driver->solution);
-  FreeAlquimiaVectorDouble(&driver->aux_doubles);
-  FreeAlquimiaVectorInt(&driver->aux_ints);
+  // Destroy boundary and initial conditions.
+  FreeAlquimiaGeochemicalConditionVector(&driver->chem_bcs);
+  FreeAlquimiaGeochemicalCondition(&driver->chem_ic);
 
-  // Destroy chemistry stuff.
-  driver->chem.Shutdown(&driver->chem_data.engine_state, 
+  // Destroy chemistry data.
+  for (int i = 0; i < driver->num_cells; ++i)
+  {
+    FreeAlquimiaState(&driver->chem_state[i]);
+    FreeAlquimiaProperties(&driver->chem_properties[i]);
+    FreeAlquimiaAuxiliaryData(&driver->chem_aux_data[i]);
+    FreeAlquimiaAuxiliaryOutputData(&driver->chem_aux_output[i]);
+  }
+  free(driver->chem_state);
+  free(driver->chem_properties);
+  free(driver->chem_aux_data);
+  free(driver->chem_aux_output);
+  FreeAlquimiaProblemMetaData(&driver->chem_metadata);
+
+  // Destroy chemistry engine.
+  driver->chem.Shutdown(&driver->chem_engine, 
                         &driver->chem_status);
-  FreeAlquimiaData(&driver->chem_data);
   FreeAlquimiaEngineStatus(&driver->chem_status);
   free(driver);
 }
 
 static int TransportDriver_Initialize(TransportDriver* driver)
 {
-  return 0;
+  // Invoke the chemistry intial condition in each cell.
+  for (int i = 0; i < driver->num_cells; ++i)
+  {
+    driver->chem.ProcessCondition(driver->chem_engine,
+                                  &driver->chem_ic, 
+                                  &driver->chem_properties[i],
+                                  &driver->chem_state[i],
+                                  &driver->chem_aux_data[i],
+                                  &driver->chem_status);
+    if (driver->chem_status.error != 0)
+    {
+      printf("TransportDriver: initialization error in cell %d: %s", 
+             i, driver->chem_status.message);
+      break;
+    }
+  }
+
+  return driver->chem_status.error;
 }
 
 static int Run_OperatorSplit(TransportDriver* driver)
@@ -174,13 +215,18 @@ static int Run_OperatorSplit(TransportDriver* driver)
     // Do the chemistry step, using the advection step as input.
     for (int i = 0; i < driver->num_cells; ++i)
     {
-      // FIXME: Copy the advected state over.
-      driver->chem.ReactionStepOperatorSplit(&driver->chem_data.engine_state,
-                                             dt, &driver->chem_data.properties,
-                                             &driver->chem_data.state,
-                                             &driver->chem_data.aux_data,
+      driver->chem.ReactionStepOperatorSplit(&driver->chem_engine,
+                                             dt, &driver->chem_properties[i],
+                                             &driver->chem_state[i],
+                                             &driver->chem_aux_data[i],
                                              &driver->chem_status);
-      // FIXME: Copy the state back over.
+      if (driver->chem_status.error != 0)
+      {
+        status = driver->chem_status.error;
+        printf("TransportDriver: operator-split reaction in cell %d: %s", 
+               i, driver->chem_status.message);
+        break;
+      }
     }
 
     if (status != 0) break;
@@ -212,8 +258,9 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
                                          AlquimiaVectorDouble* var_data)
 {
   // FIXME: Right now we only write out the solution.
-  AllocateAlquimiaVectorString(driver->num_primary, var_names);
-  AllocateAlquimiaVectorDouble(driver->num_primary * driver->num_cells, 
+  int num_primary = driver->chem_sizes.num_primary;
+  AllocateAlquimiaVectorString(num_primary, var_names);
+  AllocateAlquimiaVectorDouble(num_primary * driver->num_cells, 
                                var_data);
 }
 
