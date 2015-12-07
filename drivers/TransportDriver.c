@@ -27,7 +27,18 @@
 
 #include "alquimia/alquimia_interface.h"
 #include "alquimia/alquimia_memory.h"
+#include "alquimia/alquimia_util.h"
 #include "TransportDriver.h"
+
+static inline double Min(double a, double b)
+{
+  return (a < b) ? a : b;
+}
+
+static inline double Max(double a, double b)
+{
+  return (a >= b) ? a : b;
+}
 
 struct TransportDriver 
 {
@@ -66,7 +77,13 @@ struct TransportDriver
 
   // Initial and boundary conditions.
   AlquimiaGeochemicalCondition chem_ic;
-  AlquimiaGeochemicalConditionVector chem_bcs;
+  AlquimiaGeochemicalCondition chem_left_bc, chem_right_bc;
+  AlquimiaState chem_left_state, chem_right_state;
+  AlquimiaAuxiliaryData chem_left_aux_data, chem_right_aux_data;
+
+  // Bookkeeping.
+  AlquimiaState advected_chem_state;
+  double* advective_fluxes;
 };
 
 TransportDriver* TransportDriver_New(TransportInput* input)
@@ -130,9 +147,16 @@ TransportDriver* TransportDriver_New(TransportInput* input)
   AllocateAlquimiaGeochemicalCondition(strlen(chem_ic), 0, 0, &driver->chem_ic);
 
   // Boundary conditions.
-  AllocateAlquimiaGeochemicalConditionVector(2, &driver->chem_bcs);
-  AllocateAlquimiaGeochemicalCondition(strlen(chem_left_bc), 0, 0, &(driver->chem_bcs.data[0]));
-  AllocateAlquimiaGeochemicalCondition(strlen(chem_right_bc), 0, 0, &(driver->chem_bcs.data[1]));
+  AllocateAlquimiaGeochemicalCondition(strlen(chem_left_bc), 0, 0, &driver->chem_left_bc);
+  AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_left_state);
+  AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_left_aux_data);
+  AllocateAlquimiaGeochemicalCondition(strlen(chem_right_bc), 0, 0, &driver->chem_right_bc);
+  AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_right_state);
+  AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_right_aux_data);
+
+  // Bookkeeping.
+  AllocateAlquimiaState(&driver->chem_sizes, &driver->advected_chem_state);
+  driver->advective_fluxes = malloc(sizeof(double) * driver->chem_sizes.num_primary * (driver->num_cells + 1));
 
   return driver;
 }
@@ -142,8 +166,17 @@ void TransportDriver_Free(TransportDriver* driver)
   // Destroy input data.
   TransportInput_Free(driver->input);
 
+  // Destroy advection bookkeeping.
+  free(driver->advective_fluxes);
+  FreeAlquimiaState(&driver->advected_chem_state);
+
   // Destroy boundary and initial conditions.
-  FreeAlquimiaGeochemicalConditionVector(&driver->chem_bcs);
+  FreeAlquimiaGeochemicalCondition(&driver->chem_left_bc);
+  FreeAlquimiaState(&driver->chem_left_state);
+  FreeAlquimiaAuxiliaryData(&driver->chem_left_aux_data);
+  FreeAlquimiaGeochemicalCondition(&driver->chem_right_bc);
+  FreeAlquimiaState(&driver->chem_right_state);
+  FreeAlquimiaAuxiliaryData(&driver->chem_right_aux_data);
   FreeAlquimiaGeochemicalCondition(&driver->chem_ic);
 
   // Destroy chemistry data.
@@ -189,10 +222,92 @@ static int TransportDriver_Initialize(TransportDriver* driver)
   return driver->chem_status.error;
 }
 
+// Here's a finite volume method for advecting concentrations using the 
+// 1D flow velocity ux in the given cell.
+static int ComputeAdvectiveFluxes(TransportDriver* driver, 
+                                  double dx,
+                                  double* advective_fluxes)
+{
+  int num_primary = driver->chem_sizes.num_primary;
+
+  // Estimate the concentrations on each interface, beginning with those 
+  // at the boundaries. Note that properties are taken from the leftmost
+  // and rightmost cells. Then compute fluxes.
+
+  // Left boundary.
+  driver->chem.ProcessCondition(driver->chem_engine,
+                                &driver->chem_left_bc, 
+                                &driver->chem_properties[0],
+                                &driver->chem_left_state,
+                                &driver->chem_left_aux_data,
+                                &driver->chem_status);
+  if (driver->chem_status.error != 0)
+  {
+    printf("TransportDriver: boundary condition error at leftmost interface: %s",
+           driver->chem_status.message);
+    return driver->chem_status.error;
+  }
+  for (int c = 0; c < num_primary; ++c)
+    advective_fluxes[c] = driver->ux * driver->chem_left_state.total_mobile.data[c];
+  // Right boundary.
+  driver->chem.ProcessCondition(driver->chem_engine,
+                                &driver->chem_right_bc, 
+                                &driver->chem_properties[driver->num_cells-1],
+                                &driver->chem_right_state,
+                                &driver->chem_right_aux_data,
+                                &driver->chem_status);
+  if (driver->chem_status.error != 0)
+  {
+    printf("TransportDriver: boundary condition error at rightmost interface: %s",
+           driver->chem_status.message);
+    return driver->chem_status.error;
+  }
+  for (int c = 0; c < num_primary; ++c)
+    advective_fluxes[num_primary*driver->num_cells+c] = driver->ux * driver->chem_right_state.total_mobile.data[c];
+
+  // Interior interfaces.
+  for (int i = 1; i < driver->num_cells; ++i)
+  {
+    // We use the method of Gupta et al, 1991 to construct an explicit, 
+    // third-order TVD estimate of the concentration at the interface.
+    for (int c = 0; c < num_primary; ++c)
+    {
+      // Figure out the upstream and downstream concentrations.
+      double up_conc, down_conc;
+      double conc = driver->chem_state[i].total_mobile.data[c];
+      if (driver->ux >= 0.0)
+      {
+        up_conc = driver->chem_state[i-1].total_mobile.data[c];
+        down_conc = driver->chem_state[i+1].total_mobile.data[c];
+      }
+      else
+      {
+        up_conc = driver->chem_state[i+1].total_mobile.data[c];
+        down_conc = driver->chem_state[i-1].total_mobile.data[c];
+      }
+
+      // Construct the limiter.
+      double r_num = (conc - up_conc) / (2.0 * dx);
+      double r_denom = (down_conc - up_conc) / (2.0 * dx);
+      double r = r_num / r_denom;
+      double beta = Max(0.0, Min(2.0, Min(2.0*r, (2.0 + r) / 3.0)));
+
+      // Compute the interface concentration.
+      double interface_conc = conc + 0.5 * beta * (down_conc - conc);
+
+      // Compute the flux.
+      advective_fluxes[num_primary * i + c] = driver->ux * interface_conc;
+    }
+  }
+
+  return 0;
+}
+
 static int Run_OperatorSplit(TransportDriver* driver)
 {
   double dx = (driver->x_max - driver->x_min) / driver->num_cells;
   double dt = driver->cfl * dx / driver->ux;
+  int num_primary = driver->chem_sizes.num_primary;
 
   // Initialize the chemistry state in each cell, and set up the solution vector.
   int status = TransportDriver_Initialize(driver);
@@ -203,21 +318,29 @@ static int Run_OperatorSplit(TransportDriver* driver)
   driver->step = 0;
   while ((driver->time < driver->t_max) && (driver->step < driver->max_steps))
   {
-    // Do the advection step.
-    if (driver->order > 1) // TVD scheme 
+    // Compute the advective fluxes.
+    if (driver->ux != 0.0)
     {
-    }
-    else // simple upwinding
-    {
-
+      status = ComputeAdvectiveFluxes(driver, dx, driver->advective_fluxes);
+      if (status != 0) break;
     }
 
-    // Do the chemistry step, using the advection step as input.
     for (int i = 0; i < driver->num_cells; ++i)
     {
+      // Advect the state in this cell using a finite volume method with 
+      // the advective fluxes we've computed.
+      CopyAlquimiaState(&driver->chem_state[i], &driver->advected_chem_state);
+      for (int c = 0; c < num_primary; ++c)
+      {
+        double F_right = driver->advective_fluxes[num_primary*(i+1)+c];
+        double F_left = driver->advective_fluxes[num_primary*i+c];
+        driver->advected_chem_state.total_mobile.data[c] -= (F_right - F_left) / dx;
+      }
+
+      // Do the chemistry step, using the advected state as input.
       driver->chem.ReactionStepOperatorSplit(&driver->chem_engine,
                                              dt, &driver->chem_properties[i],
-                                             &driver->chem_state[i],
+                                             &driver->advected_chem_state,
                                              &driver->chem_aux_data[i],
                                              &driver->chem_status);
       if (driver->chem_status.error != 0)
@@ -227,6 +350,9 @@ static int Run_OperatorSplit(TransportDriver* driver)
                i, driver->chem_status.message);
         break;
       }
+
+      // Copy the advected/reacted state back into place.
+      CopyAlquimiaState(&driver->advected_chem_state, &driver->chem_state[i]);
     }
 
     if (status != 0) break;
