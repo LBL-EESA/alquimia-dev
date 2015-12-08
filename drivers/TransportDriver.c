@@ -375,28 +375,38 @@ static int TransportDriver_Initialize(TransportDriver* driver)
   // Initialize each cell.
   for (int i = 0; i < driver->num_cells; ++i)
   {
-    // Set the material properties.
-    driver->chem_properties[i].volume = volume;
-    driver->chem_properties[i].saturation = driver->saturation;
-
-    // Set the thermodynamic state.
-    driver->chem_state[i].water_density = water_density;
-    driver->chem_state[i].temperature = driver->temperature;
-    driver->chem_state[i].porosity = driver->porosity;
-    driver->chem_state[i].aqueous_pressure = aqueous_pressure;
-
-    // Invoke the chemical initial condition.
-    driver->chem.ProcessCondition(&driver->chem_engine,
-                                  &driver->chem_ic, 
-                                  &driver->chem_properties[i],
-                                  &driver->chem_state[i],
-                                  &driver->chem_aux_data[i],
-                                  &driver->chem_status);
-    if (driver->chem_status.error != 0)
+    if (i == 0)
     {
-      printf("TransportDriver: initialization error in cell %d: %s\n", 
-             i, driver->chem_status.message);
-      break;
+      // Set the material properties.
+      driver->chem_properties[i].volume = volume;
+      driver->chem_properties[i].saturation = driver->saturation;
+
+      // Set the thermodynamic state.
+      driver->chem_state[i].water_density = water_density;
+      driver->chem_state[i].temperature = driver->temperature;
+      driver->chem_state[i].porosity = driver->porosity;
+      driver->chem_state[i].aqueous_pressure = aqueous_pressure;
+
+      // Invoke the chemical initial condition.
+      driver->chem.ProcessCondition(&driver->chem_engine,
+                                    &driver->chem_ic, 
+                                    &driver->chem_properties[i],
+                                    &driver->chem_state[i],
+                                    &driver->chem_aux_data[i],
+                                    &driver->chem_status);
+      if (driver->chem_status.error != 0)
+      {
+        printf("TransportDriver: initialization error: %s\n", 
+               driver->chem_status.message);
+        break;
+      }
+    }
+    else
+    {
+      // Just copy the contents of cell 0 over.
+      CopyAlquimiaProperties(&driver->chem_properties[0], &driver->chem_properties[i]);
+      CopyAlquimiaState(&driver->chem_state[0], &driver->chem_state[i]);
+      CopyAlquimiaAuxiliaryData(&driver->chem_aux_data[0], &driver->chem_aux_data[i]);
     }
   }
 
@@ -414,11 +424,11 @@ static int TransportDriver_Initialize(TransportDriver* driver)
     PrintAlquimiaState(&driver->chem_left_state, stdout);
 
     driver->chem.ProcessCondition(&driver->chem_engine,
-                                &driver->chem_left_bc, 
-                                &driver->chem_properties[0],
-                                &driver->chem_left_state,
-                                &driver->chem_left_aux_data,
-                                &driver->chem_status);
+                                  &driver->chem_left_bc, 
+                                  &driver->chem_properties[0],
+                                  &driver->chem_left_state,
+                                  &driver->chem_left_aux_data,
+                                  &driver->chem_status);
     if (driver->chem_status.error != 0)
     {
       printf("TransportDriver: boundary condition error at leftmost interface: %s\n",
