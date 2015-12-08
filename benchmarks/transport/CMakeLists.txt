@@ -1,5 +1,3 @@
-# NOTE: Currently all the benchmarks are just smoke tests.
-
 include(add_alquimia_transport_benchmark)
 
 if (ALQUIMIA_HAVE_PFLOTRAN)

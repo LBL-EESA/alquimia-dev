@@ -1,5 +1,3 @@
-# NOTE: Currently all the benchmarks are just smoke tests.
-
 include(add_alquimia_batch_chem_benchmark)
 
 if (ALQUIMIA_HAVE_PFLOTRAN)
@@ -31,5 +29,3 @@ if (ALQUIMIA_HAVE_CRUNCHFLOW)
   add_alquimia_batch_chem_benchmark(surface_complexation_2_cc_crunch surface-complexation-2-cc-crunch.cfg)
 endif()
 
-# Transport benchmarks.
-add_subdirectory(transport)
