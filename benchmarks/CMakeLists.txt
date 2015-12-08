@@ -31,3 +31,5 @@ if (ALQUIMIA_HAVE_CRUNCHFLOW)
   add_alquimia_batch_chem_benchmark(surface_complexation_2_cc_crunch surface-complexation-2-cc-crunch.cfg)
 endif()
 
+# Transport benchmarks.
+add_subdirectory(transport)

@@ -29,14 +29,77 @@
 #define ALQUIMIA_TRANSPORT_DRIVER_H_
 
 #include "alquimia/alquimia_containers.h"
-#include "TransportInput.h"
 
 // This type stores the metadata for a reactive transport simulation.
 typedef struct TransportDriver TransportDriver;
 
-// Creates a new TransportDriver object given input parameters. The 
-// TransportInput object is stolen by the TransportDriver.
-TransportDriver* TransportDriver_New(TransportInput* input);
+// Types of coupling for time integration.
+typedef enum
+{
+  TRANSPORT_OPERATOR_SPLIT,
+  TRANSPORT_GLOBAL_IMPLICIT
+} TransportCoupling;
+  
+// This type holds simulation input information for the transport driver.
+typedef struct
+{
+  // ---------------------
+  // Simulation parameters
+  // ---------------------
+  TransportCoupling coupling;
+
+  // Start/stop time, max number of steps.
+  double t_min, t_max;
+  int max_steps;
+
+  // CFL factor.
+  double cfl_factor;
+
+  // --------------------
+  // Computational domain 
+  // --------------------
+  double x_min, x_max;
+  int num_cells;
+
+  // --------------
+  // Flow variables
+  // --------------
+  double velocity, temperature;
+
+  // -------------------
+  // Material properties
+  // -------------------
+  double porosity, volume, saturation;
+
+  // -------------------------------
+  // Initial and boundary conditions
+  // -------------------------------
+  char* ic_name;
+  char* left_bc_name;
+  char* right_bc_name;
+
+  // ---------------------
+  // Chemistry engine info
+  // ---------------------
+  char* chemistry_engine;
+  char* chemistry_input_file;
+
+  // ------------------
+  // Output information
+  // ------------------
+  char* output_file;
+  char* output_type;
+
+} TransportDriverInput;
+
+// Parses an input file and produces a TransportDriverInput.
+TransportDriverInput* TransportDriverInput_New(const char* input_file);
+
+// Frees the given TransportDriverInput.
+void TransportDriverInput_Free(TransportDriverInput* input);
+
+// Creates a new TransportDriver object given input parameters. 
+TransportDriver* TransportDriver_New(TransportDriverInput* input);
 
 // Destroys the given TransportDriver object, freeing its resources.
 void TransportDriver_Free(TransportDriver* driver);

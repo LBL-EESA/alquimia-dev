@@ -52,16 +52,13 @@ int main(int argc, char* argv[])
   strncpy(input_file, argv[0], FILENAME_MAX-1);
 
   // Parse the input file.
-  TransportInput* input = TransportInput_New(input_file);
+  TransportDriverInput* input = TransportDriverInput_New(input_file);
 
   // Set up output.
   DriverOutput* output = NULL;
-  char* output_file;
-  char* output_type;
-  TransportInput_GetOutput(input, &output_file, &output_type);
-  if (strcasecmp(output_type, "python") == 0)
+  if (strcasecmp(input->output_type, "python") == 0)
     output = PythonDriverOutput_New();
-  else if (strcasecmp(output_type, "gnuplot") == 0)
+  else if (strcasecmp(input->output_type, "gnuplot") == 0)
     output = GnuplotDriverOutput_New();
 
   // Create a TransportDriver from the parsed input.
@@ -77,13 +74,14 @@ int main(int argc, char* argv[])
     AlquimiaVectorString var_names;
     AlquimiaVectorDouble var_data;
     TransportDriver_GetSoluteAndAuxData(transport, &final_time, &var_names, &var_data);
-    DriverOutput_WriteMulticompVector(output, output_file, var_names, var_data);
+    DriverOutput_WriteMulticompVector(output, input->output_file, var_names, var_data);
 
     FreeAlquimiaVectorString(&var_names);
     FreeAlquimiaVectorDouble(&var_data);
   }
 
   // Clean up.
+  TransportDriverInput_Free(input);
   TransportDriver_Free(transport);
   PetscInt petsc_error = PetscFinalize();
   if (status == EXIT_SUCCESS && petsc_error == 0) 

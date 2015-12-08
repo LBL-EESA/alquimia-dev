@@ -28,6 +28,7 @@
 #include "alquimia/alquimia_interface.h"
 #include "alquimia/alquimia_memory.h"
 #include "alquimia/alquimia_util.h"
+#include "ini.h"
 #include "TransportDriver.h"
 
 static inline double Min(double a, double b)
@@ -40,21 +41,59 @@ static inline double Max(double a, double b)
   return (a >= b) ? a : b;
 }
 
+// Input parsing stuff. See https://github.com/benhoyt/inih for details.
+static int ParseInput(void* user,
+                      const char* section,
+                      const char* name,
+                      const char* value)
+{
+  TransportDriverInput* input = user;
+#define MATCH(s, n) (strcmp(section, s) == 0) && (strcmp(name, n) == 0)
+  if (MATCH("chemistry",""))
+    input->ic_name = AlquimiaStringDup(value);
+  return 1;
+}
+
+TransportDriverInput* TransportDriverInput_New(const char* input_file)
+{
+  TransportDriverInput* input = malloc(sizeof(TransportDriverInput));
+  int error = ini_parse(input_file, ParseInput, input);
+  if (error != 0)
+  {
+    free(input);
+    alquimia_error("TransportDriver: Error parsing input: %s", input_file);
+  }
+  return input;
+}
+
+void TransportDriverInput_Free(TransportDriverInput* input)
+{
+  free(input->ic_name);
+  free(input->left_bc_name);
+  free(input->right_bc_name);
+  free(input->chemistry_engine);
+  free(input->chemistry_input_file);
+  free(input->output_file);
+  free(input->output_type);
+  free(input);
+}
+
 struct TransportDriver 
 {
-  TransportInput* input;
-
   // Simulation parameters.
-  TransportInputCoupling coupling;
+  TransportCoupling coupling;
   double t_min, t_max, cfl;
-  int max_steps, order;
+  int max_steps;
 
   // 1D grid information.
   int num_cells;
   double x_min, x_max;
 
-  // Flow velocity.
-  double ux;
+  // Flow velocity, temperature.
+  double vx, temperature;
+
+  // Material properties.
+  double porosity, saturation;
 
   // Current sim state.
   double time;
@@ -86,25 +125,37 @@ struct TransportDriver
   double* advective_fluxes;
 };
 
-TransportDriver* TransportDriver_New(TransportInput* input)
+TransportDriver* TransportDriver_New(TransportDriverInput* input)
 {
   TransportDriver* driver = malloc(sizeof(TransportDriver));
-  driver->input = input;
 
   // Get basic simulation parameters.
-  TransportInput_GetSimParameters(driver->input, &driver->coupling, 
-                                  &driver->t_min, &driver->t_max, 
-                                  &driver->max_steps, &driver->cfl, &driver->order);
+  driver->coupling = input->coupling;
+  driver->t_min = input->t_min; 
+  driver->t_max = input->t_max;
+  driver->max_steps = input->max_steps;
+  driver->cfl = input->cfl_factor;
 
   // Get grid information.
-  TransportInput_GetDomain(input, &driver->x_min, &driver->x_max, &driver->num_cells);
+  driver->x_min = input->x_min; 
+  driver->x_max = input->x_max;
+  driver->num_cells = input->num_cells;
+
+  // Get material properties.
+  driver->porosity = input->porosity;
+  driver->saturation = input->saturation;
+
+  // Get flow variables.
+  driver->vx = input->velocity;
+  driver->temperature = input->temperature;
+
+  // Simulation state.
+  driver->time = driver->t_min;
+  driver->step = 0;
 
   // Set up the chemistry engine.
   AllocateAlquimiaEngineStatus(&driver->chem_status);
-  char *chem_engine, *chem_input, *chem_ic, *chem_left_bc, *chem_right_bc;
-  TransportInput_GetChemistry(driver->input, &chem_engine, &chem_input,
-                              &chem_ic, &chem_left_bc, &chem_right_bc);
-  CreateAlquimiaInterface(chem_engine, &driver->chem, &driver->chem_status);
+  CreateAlquimiaInterface(driver->chem_engine, &driver->chem, &driver->chem_status);
   if (driver->chem_status.error != 0) 
   {
     alquimia_error("TransportDriver_New: %s", driver->chem_status.message);
@@ -113,7 +164,7 @@ TransportDriver* TransportDriver_New(TransportInput* input)
 
   // Set up the engine and get storage requirements.
   AlquimiaEngineFunctionality chem_engine_functionality;
-  driver->chem.Setup(chem_input,
+  driver->chem.Setup(input->chemistry_input_file,
                      &driver->chem_engine,
                      &driver->chem_sizes,
                      &chem_engine_functionality,
@@ -144,13 +195,13 @@ TransportDriver* TransportDriver_New(TransportInput* input)
   }
 
   // Initial condition.
-  AllocateAlquimiaGeochemicalCondition(strlen(chem_ic), 0, 0, &driver->chem_ic);
+  AllocateAlquimiaGeochemicalCondition(strlen(input->ic_name), 0, 0, &driver->chem_ic);
 
   // Boundary conditions.
-  AllocateAlquimiaGeochemicalCondition(strlen(chem_left_bc), 0, 0, &driver->chem_left_bc);
+  AllocateAlquimiaGeochemicalCondition(strlen(input->left_bc_name), 0, 0, &driver->chem_left_bc);
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_left_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_left_aux_data);
-  AllocateAlquimiaGeochemicalCondition(strlen(chem_right_bc), 0, 0, &driver->chem_right_bc);
+  AllocateAlquimiaGeochemicalCondition(strlen(input->right_bc_name), 0, 0, &driver->chem_right_bc);
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_right_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_right_aux_data);
 
@@ -163,9 +214,6 @@ TransportDriver* TransportDriver_New(TransportInput* input)
 
 void TransportDriver_Free(TransportDriver* driver)
 {
-  // Destroy input data.
-  TransportInput_Free(driver->input);
-
   // Destroy advection bookkeeping.
   free(driver->advective_fluxes);
   FreeAlquimiaState(&driver->advected_chem_state);
@@ -202,9 +250,17 @@ void TransportDriver_Free(TransportDriver* driver)
 
 static int TransportDriver_Initialize(TransportDriver* driver)
 {
-  // Invoke the chemistry intial condition in each cell.
+  // Determine the volume of a cell from the domain.
+  double volume = (driver->x_max - driver->x_min) / driver->num_cells;
+
+  // Initialize each cell.
   for (int i = 0; i < driver->num_cells; ++i)
   {
+    // Set the material properties.
+    driver->chem_properties[i].volume = volume;
+    driver->chem_properties[i].saturation = driver->saturation;
+
+    // Invoke the chemical initial condition.
     driver->chem.ProcessCondition(driver->chem_engine,
                                   &driver->chem_ic, 
                                   &driver->chem_properties[i],
@@ -217,6 +273,10 @@ static int TransportDriver_Initialize(TransportDriver* driver)
              i, driver->chem_status.message);
       break;
     }
+
+    // Overwrite the temperature and porosity in this cell.
+    driver->chem_state[i].temperature = driver->temperature;
+    driver->chem_state[i].porosity = driver->porosity;
   }
 
   return driver->chem_status.error;
@@ -247,8 +307,9 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
            driver->chem_status.message);
     return driver->chem_status.error;
   }
+  double phi_l = driver->chem_left_state.porosity;
   for (int c = 0; c < num_primary; ++c)
-    advective_fluxes[c] = driver->ux * driver->chem_left_state.total_mobile.data[c];
+    advective_fluxes[c] = phi_l * driver->vx * driver->chem_left_state.total_mobile.data[c];
   // Right boundary.
   driver->chem.ProcessCondition(driver->chem_engine,
                                 &driver->chem_right_bc, 
@@ -262,8 +323,9 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
            driver->chem_status.message);
     return driver->chem_status.error;
   }
+  double phi_r = driver->chem_right_state.porosity;
   for (int c = 0; c < num_primary; ++c)
-    advective_fluxes[num_primary*driver->num_cells+c] = driver->ux * driver->chem_right_state.total_mobile.data[c];
+    advective_fluxes[num_primary*driver->num_cells+c] = phi_r * driver->vx * driver->chem_right_state.total_mobile.data[c];
 
   // Interior interfaces.
   for (int i = 1; i < driver->num_cells; ++i)
@@ -275,15 +337,15 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
       // Figure out the upstream and downstream concentrations.
       double up_conc, down_conc;
       double conc = driver->chem_state[i].total_mobile.data[c];
-      if (driver->ux >= 0.0)
+      if (driver->vx >= 0.0)
       {
-        up_conc = driver->chem_state[i-1].total_mobile.data[c];
+        up_conc = driver->chem_state[i].total_mobile.data[c];
         down_conc = driver->chem_state[i+1].total_mobile.data[c];
       }
       else
       {
         up_conc = driver->chem_state[i+1].total_mobile.data[c];
-        down_conc = driver->chem_state[i-1].total_mobile.data[c];
+        down_conc = driver->chem_state[i].total_mobile.data[c];
       }
 
       // Construct the limiter.
@@ -295,8 +357,11 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
       // Compute the interface concentration.
       double interface_conc = conc + 0.5 * beta * (down_conc - conc);
 
+      // Compute the interface porosity.
+      double phi = 0.5 * (driver->chem_state[i].porosity + driver->chem_state[i+1].porosity);
+
       // Compute the flux.
-      advective_fluxes[num_primary * i + c] = driver->ux * interface_conc;
+      advective_fluxes[num_primary * i + c] = phi * driver->vx * interface_conc;
     }
   }
 
@@ -306,7 +371,7 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
 static int Run_OperatorSplit(TransportDriver* driver)
 {
   double dx = (driver->x_max - driver->x_min) / driver->num_cells;
-  double dt = driver->cfl * dx / driver->ux;
+  double dt = driver->cfl * dx / driver->vx;
   int num_primary = driver->chem_sizes.num_primary;
 
   // Initialize the chemistry state in each cell, and set up the solution vector.
@@ -319,7 +384,7 @@ static int Run_OperatorSplit(TransportDriver* driver)
   while ((driver->time < driver->t_max) && (driver->step < driver->max_steps))
   {
     // Compute the advective fluxes.
-    if (driver->ux != 0.0)
+    if (driver->vx != 0.0)
     {
       status = ComputeAdvectiveFluxes(driver, dx, driver->advective_fluxes);
       if (status != 0) break;
@@ -327,6 +392,8 @@ static int Run_OperatorSplit(TransportDriver* driver)
 
     for (int i = 0; i < driver->num_cells; ++i)
     {
+      double phi = driver->chem_state[i].porosity;
+
       // Advect the state in this cell using a finite volume method with 
       // the advective fluxes we've computed.
       CopyAlquimiaState(&driver->chem_state[i], &driver->advected_chem_state);
@@ -334,7 +401,9 @@ static int Run_OperatorSplit(TransportDriver* driver)
       {
         double F_right = driver->advective_fluxes[num_primary*(i+1)+c];
         double F_left = driver->advective_fluxes[num_primary*i+c];
-        driver->advected_chem_state.total_mobile.data[c] -= (F_right - F_left) / dx;
+        double phiC = phi * driver->advected_chem_state.total_mobile.data[c] -
+                      (F_right - F_left) / dx;
+        driver->advected_chem_state.total_mobile.data[c] = phiC / phi;
       }
 
       // Do the chemistry step, using the advected state as input.
@@ -389,360 +458,4 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
   AllocateAlquimiaVectorDouble(num_primary * driver->num_cells, 
                                var_data);
 }
-
-#if 0
-// Demo-specific helper rountines for setting up alquimia structs
-void CopyDemoStateToAlquimiaState(
-    const alquimia::drivers::utilities::DemoState& demo_state,
-    const AlquimiaProblemMetaData* const alquimia_meta_data,
-    AlquimiaState* alquimia_state) {
-  alquimia_state->water_density = demo_state.water_density;
-  alquimia_state->porosity = demo_state.porosity;
-  alquimia_state->temperature = demo_state.temperature;
-  alquimia_state->aqueous_pressure = demo_state.aqueous_pressure;
-  assert(static_cast<int>(demo_state.cec.size()) == 
-         alquimia_state->cation_exchange_capacity.size);
-  for (size_t i = 0; i < demo_state.cec.size(); ++i) {
-    alquimia_state->cation_exchange_capacity.data[i] = demo_state.cec.at(i);
-  }
-  assert(static_cast<int>(demo_state.site_density.size()) == 
-         alquimia_state->surface_site_density.size);
-
-  char* name;
-  name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
-  // loop through the *engine's* surface site list
-  for (int i = 0; i < alquimia_meta_data->surface_site_names.size; ++i) {
-    strncpy(name, alquimia_meta_data->surface_site_names.data[i],
-            kAlquimiaMaxStringLength);
-    std::map<std::string, double>::const_iterator site;
-    site = demo_state.site_density.find(name);
-    if (site != demo_state.site_density.end()) {
-      alquimia_state->surface_site_density.data[i] = site->second;
-    } else {
-      std::stringstream message;
-      message << "ERROR: chemistry engine expects surface site '" 
-              << alquimia_meta_data->surface_site_names.data[i]
-              << "', but it was not found in the driver state surface site list."
-              << std::endl;
-      throw std::runtime_error(message.str());
-    }
-  }
-  free(name);
-}  // end CopyDemoStateToAlquimiaState()
-
-void CopyDemoPropertiesToAlquimiaMaterials(
-    const alquimia::drivers::utilities::DemoProperties& demo_props,
-    const AlquimiaProblemMetaData& alquimia_meta_data,
-    AlquimiaProperties* alquimia_props) {
-  alquimia_props->volume = demo_props.volume;
-  alquimia_props->saturation = demo_props.saturation;
-
-  if (static_cast<size_t>(alquimia_meta_data.isotherm_species_names.size) != 
-      demo_props.isotherm_species.size()) {
-    std::stringstream message;
-    message << "ERROR: chemistry engine expects " 
-            << alquimia_meta_data.isotherm_species_names.size << " isotherm species. "
-            << " but input file only contains " 
-            << demo_props.isotherm_species.size() << std::endl;
-    throw std::runtime_error(message.str());
-  }
-
-  char* name;
-  name = (char*) calloc(kAlquimiaMaxStringLength, sizeof(char));
-  // loop through each species in the *engine's* isotherm list
-  for (int i = 0; i < alquimia_meta_data.isotherm_species_names.size; ++i) {
-    // save the isotherm species id
-    strncpy(name, alquimia_meta_data.isotherm_species_names.data[i],
-            kAlquimiaMaxStringLength);
-    for (size_t j = 0; j < demo_props.isotherm_species.size(); ++j) {
-      if (demo_props.isotherm_species.at(j).compare(name) == 0) {
-        
-        alquimia_props->isotherm_kd.data[i] = 
-            demo_props.isotherm_kd.at(j);
-        alquimia_props->freundlich_n.data[i] = 
-            demo_props.freundlich_n.at(j);
-        alquimia_props->langmuir_b.data[i] = 
-            demo_props.langmuir_b.at(j);
-        break;
-      }
-    }
-  }
-  free(name);
-}  // end CopyDemoPropertiesToAlquimiaMaterials()
-
-
-void CopyDemoConditionsToAlquimiaConditions(
-    const alquimia::drivers::utilities::DemoConditions& demo_conditions,
-    AlquimiaGeochemicalConditionVector* alquimia_conditions) {
-  namespace util = alquimia::drivers::utilities;
-
-  AllocateAlquimiaGeochemicalConditionVector(demo_conditions.size(),
-                                             alquimia_conditions);
-
-  // copy the geochemical conditions
-  util::DemoConditions::const_iterator demo_cond;
-  unsigned int i_cond;
-  for (demo_cond = demo_conditions.begin(), i_cond = 0;
-       i_cond < demo_conditions.size(); ++i_cond, ++demo_cond) {
-    std::cout << "    " << demo_cond->first << " : " << i_cond << std::endl;
-    AlquimiaGeochemicalCondition* condition =
-        &(alquimia_conditions->data[i_cond]);
-    AllocateAlquimiaGeochemicalCondition(kAlquimiaMaxStringLength,
-                                         demo_cond->second.aqueous_constraints.size(),
-                                         demo_cond->second.mineral_constraints.size(),
-                                         condition);
-    unsigned int max_copy_length = std::min(kAlquimiaMaxStringLength, static_cast<int>(demo_cond->first.size()));
-    strncpy(condition->name, demo_cond->first.c_str(), max_copy_length);
-    CopyDemoAqueousConstraintsToAlquimia(demo_cond->second.aqueous_constraints,
-                                         &condition->aqueous_constraints);
-    CopyDemoMineralConstraintsToAlquimia(demo_cond->second.mineral_constraints,
-                                         &condition->mineral_constraints);
-  }
-}  // end CopyDemoConditionsToAlquimiaConditions()
-
-void CopyDemoAqueousConstraintsToAlquimia(
-    const std::vector<alquimia::drivers::utilities::DemoAqueousConstraint>& demo_aqueous_constraints,
-    AlquimiaAqueousConstraintVector* alquimia_aqueous_constraints) {
-  // loop through aqueous constraints
-  for (unsigned int i = 0; i < demo_aqueous_constraints.size(); ++i) {
-
-    // easier to work with a pointer to one constraint than the entire vector
-    AlquimiaAqueousConstraint* constraint =
-        &(alquimia_aqueous_constraints->data[i]);
-    
-    // allocate memory fo the current constraint
-    AllocateAlquimiaAqueousConstraint(constraint);
-
-    //
-    // copy demo constraint to alquimia constraint
-    //
-
-    // name
-    int max_copy_length = std::min(kAlquimiaMaxStringLength,
-                                   static_cast<int>(demo_aqueous_constraints.at(i).primary_species_name.size()));
-    std::strncpy(constraint->primary_species_name,
-                 demo_aqueous_constraints.at(i).primary_species_name.c_str(),
-                 max_copy_length);
-
-    // constraint type
-    max_copy_length = std::min(kAlquimiaMaxStringLength,
-                               static_cast<int>(demo_aqueous_constraints.at(i).constraint_type.size()));
-    std::strncpy(constraint->constraint_type,
-                 demo_aqueous_constraints.at(i).constraint_type.c_str(),
-                 max_copy_length);
-
-    // associated species
-    max_copy_length = std::min(kAlquimiaMaxStringLength,
-                               static_cast<int>(demo_aqueous_constraints.at(i).associated_species.size()));
-    std::strncpy(constraint->associated_species,
-                 demo_aqueous_constraints.at(i).associated_species.c_str(),
-                 max_copy_length);
-
-    // constraint value
-    constraint->value = demo_aqueous_constraints.at(i).value;
-  }
-}  // end CopyDemoAqueousConstraintsToAlquimia()
-
-void CopyDemoMineralConstraintsToAlquimia(
-    const std::vector<alquimia::drivers::utilities::DemoMineralConstraint>& demo_mineral_constraints,
-    AlquimiaMineralConstraintVector* alquimia_mineral_constraints) {
-
-  //assert(demo_mineral_constraints.size() == alquimia_mineral_constraints->size);
-
-  // loop through mineral constraints
-  for (unsigned int i = 0; i < demo_mineral_constraints.size(); ++i) {
-
-    // easier to work with a single pointer instead of the full array
-    AlquimiaMineralConstraint* constraint =
-        &(alquimia_mineral_constraints->data[i]);
-
-    // create memory in the constraint
-    AllocateAlquimiaMineralConstraint(constraint);
-
-    //
-    // copy demo constraint to alquimia constraint
-    //
-
-    // name
-    int max_copy_length = std::min(kAlquimiaMaxStringLength,
-                                   static_cast<int>(demo_mineral_constraints.at(i).mineral_name.size()));
-    std::strncpy(constraint->mineral_name,
-                 demo_mineral_constraints.at(i).mineral_name.c_str(),
-                 max_copy_length);
-    
-    constraint->volume_fraction = demo_mineral_constraints.at(i).volume_fraction;
-    constraint->specific_surface_area = demo_mineral_constraints.at(i).specific_surface_area;
-  }
-}  // end CopyDemoMineralConstraintsToAlquimia()
-
-int RunSimulation(TransportSim* sim, FILE* output)
-{
-  // Create the alquimia structures.  NOTE: chem_data are for a single
-  // grid cell. For openmp/threaded code, you'll need one chem_status
-  // and chem_data per thead, but we don't know if the engine is
-  // thread safe until after the call to Setup()!
-  //
-  AlquimiaInterface chem;
-  AlquimiaEngineStatus chem_status;
-  AlquimiaData chem_data;
-  AlquimiaGeochemicalConditionVector alquimia_conditions;
-
-  // All alquimia function calls require a status object.
-  AllocateAlquimiaEngineStatus(&chem_status);
-  // Create the chemistry engine
-  CreateAlquimiaInterface(demo_simulation.engine.c_str(), &chem, &chem_status);
-  if (chem_status.error != 0) {
-    std::cout << chem_status.message << std::endl;
-    return chem_status.error;
-  }
-
-  // setup the engine and get the memory requirements
-  chem.Setup(demo_simulation.engine_inputfile.c_str(),
-             &chem_data.engine_state,
-             &chem_data.sizes,
-             &chem_data.functionality,
-             &chem_status);
-  if (chem_status.error != 0) {
-    std::cout << chem_status.message << std::endl;
-    PrintAlquimiaSizes(&chem_data.sizes);
-    return chem_status.error;
-  }
-
-  // if you want multiple copies of the chemistry engine with
-  // OpenMP, verify: chem_data.functionality.thread_safe == true,
-  // then create the appropriate number of chem status and data
-  // objects
-
-  // chem_data.sizes was set by Setup(), so now we can allocate
-  // memory for alquimia data transfer containers.
-  AllocateAlquimiaData(&chem_data);
-
-  // allocate the remaining memory in the driver (mesh dependent)
-
-  // get the problem meta data (species and mineral names, etc)
-  chem.GetProblemMetaData(&chem_data.engine_state,
-                          &chem_data.meta_data,
-                          &chem_status);
-  if (chem_status.error != 0) {
-    std::cout << chem_status.message << std::endl;
-    PrintAlquimiaProblemMetaData(&chem_data.meta_data);
-    return chem_status.error;
-  }
-  //PrintAlquimiaProblemMetaData(&chem_data.meta_data);
-
-  // finish initializing the driver, e.g. verify material
-  // properties, species names, etc
-
-  // initialize the alquimia state and material properties with
-  // appropriate values from the driver's memory.
-  CopyDemoStateToAlquimiaState(demo_state, &chem_data.meta_data,
-                               &chem_data.state);
-  CopyDemoPropertiesToAlquimiaMaterials(
-      demo_props, chem_data.meta_data, &chem_data.properties);
-
-  PrintAlquimiaData(&chem_data);
-
-  //
-  // prepare for constraint processing
-  //
-
-  // Read the geochemical conditions from the driver's native format
-  // and store them in alquimia's format
-  CopyDemoConditionsToAlquimiaConditions(demo_conditions, &alquimia_conditions);
-
-  PrintAlquimiaGeochemicalConditionVector(&alquimia_conditions);
-
-  for (int i = 0; i < alquimia_conditions.size; ++i) {
-    // ask the engine to process the geochemical conditions
-    if (demo_simulation.initial_condition.compare(
-            alquimia_conditions.data[i].name) == 0) {
-      // for batch, only care about the IC. If the conditions have
-      // spatially dependent values, then the state and material
-      // properties need to be updated here!
-      chem.ProcessCondition(&chem_data.engine_state,
-                            &(alquimia_conditions.data[i]),
-                            &chem_data.properties,
-                            &chem_data.state,
-                            &chem_data.aux_data,
-                            &chem_status);
-      if (chem_status.error != 0) {
-        PrintAlquimiaData(&chem_data);
-        PrintAlquimiaGeochemicalCondition(&(alquimia_conditions.data[i]));
-        std::cout << chem_status.message << std::endl;
-        return chem_status.error;
-      }
-    }
-    // store the processed geochemical conditions in driver's memory
-  }
-  // we are done with the conditions (data is stored in driver state
-  // vectors at this point).
-  FreeAlquimiaGeochemicalConditionVector(&alquimia_conditions);
-
-  char time_units;
-  double time_units_conversion;  // [time_units / sec]
-  SetTimeUnits(demo_simulation.time_units,
-               &time_units, &time_units_conversion);
-
-  // set delta t: [time_units]/[time_units/sec] = [sec]
-  double delta_t = demo_simulation.delta_t / time_units_conversion;
-  double time = 0.0;
-  // get initial pH
-  chem.GetAuxiliaryOutput(&chem_data.engine_state,
-                          &chem_data.properties,
-                          &chem_data.state,
-                          &chem_data.aux_data,
-                          &chem_data.aux_output,
-                          &chem_status);
-  // save the IC to our output file
-  output->WriteHeader(time_units, chem_data.meta_data, chem_data.sizes);
-  output->Write(time, chem_data.state, chem_data.aux_output);
-  std::cout << "Starting reaction stepping (OS) with dt = " << delta_t << " [s]\n";
-  for (int t = 0; t < demo_simulation.num_time_steps; ++t) {
-    time += delta_t;
-    //std::cout << "reaction step : " << t << "  time: " << time << std::endl;
-    if (false) {
-      PrintAlquimiaState(&chem_data.state);
-      PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
-    }
-    // unpack from driver memory, since this is batch, no unpacking
-    chem.ReactionStepOperatorSplit(&chem_data.engine_state,
-                                   &delta_t,
-                                   &chem_data.properties,
-                                   &chem_data.state,
-                                   &chem_data.aux_data,
-                                   &chem_status);
-    if (chem_status.error != 0) {
-      std::cout << chem_status.message << std::endl;
-      PrintAlquimiaState(&chem_data.state);
-      PrintAlquimiaAuxiliaryData(&chem_data.aux_data);
-      return chem_status.error;
-    }
-    chem.GetAuxiliaryOutput(&chem_data.engine_state,
-                            &chem_data.properties,
-                            &chem_data.state,
-                            &chem_data.aux_data,
-                            &chem_data.aux_output,
-                            &chem_status);
-    if (chem_status.error != 0) {
-      std::cout << chem_status.message << std::endl;
-      return chem_status.error;
-    }
-    double out_time = time * time_units_conversion;  // [sec]*[time_units/sec]
-    output->Write(out_time, chem_data.state, chem_data.aux_output);
-    std::cout << "  step = " << std::setw(6) << std::right << t 
-              << "    time = " << std::setw(8) << std::right
-              << time*time_units_conversion << " [" << time_units 
-              << "]    newton = " << std::setw(4) << std::right 
-              << chem_status.num_newton_iterations << std::endl; 
-    // repack into driver memory...
-  }
-  std::cout << std::endl;
-
-  // cleanup memory
-  chem.Shutdown(&chem_data.engine_state, &chem_status);
-  FreeAlquimiaData(&chem_data);
-  FreeAlquimiaEngineStatus(&chem_status);
-  return 0;
-}
-#endif
 
