@@ -301,12 +301,15 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
 
   // Initial condition.
   AllocateAlquimiaGeochemicalCondition(strlen(input->ic_name), 0, 0, &driver->chem_ic);
+  strcpy(driver->chem_ic.name, input->ic_name);
 
   // Boundary conditions.
   AllocateAlquimiaGeochemicalCondition(strlen(input->left_bc_name), 0, 0, &driver->chem_left_bc);
+  strcpy(driver->chem_left_bc.name, input->left_bc_name);
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_left_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_left_aux_data);
   AllocateAlquimiaGeochemicalCondition(strlen(input->right_bc_name), 0, 0, &driver->chem_right_bc);
+  strcpy(driver->chem_right_bc.name, input->right_bc_name);
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_right_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_right_aux_data);
 
@@ -374,7 +377,7 @@ static int TransportDriver_Initialize(TransportDriver* driver)
                                   &driver->chem_status);
     if (driver->chem_status.error != 0)
     {
-      printf("TransportDriver: initialization error in cell %d: %s", 
+      printf("TransportDriver: initialization error in cell %d: %s\n", 
              i, driver->chem_status.message);
       break;
     }
@@ -408,7 +411,7 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
                                 &driver->chem_status);
   if (driver->chem_status.error != 0)
   {
-    printf("TransportDriver: boundary condition error at leftmost interface: %s",
+    printf("TransportDriver: boundary condition error at leftmost interface: %s\n",
            driver->chem_status.message);
     return driver->chem_status.error;
   }
@@ -424,7 +427,7 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
                                 &driver->chem_status);
   if (driver->chem_status.error != 0)
   {
-    printf("TransportDriver: boundary condition error at rightmost interface: %s",
+    printf("TransportDriver: boundary condition error at rightmost interface: %s\n",
            driver->chem_status.message);
     return driver->chem_status.error;
   }
@@ -520,7 +523,7 @@ static int Run_OperatorSplit(TransportDriver* driver)
       if (driver->chem_status.error != 0)
       {
         status = driver->chem_status.error;
-        printf("TransportDriver: operator-split reaction in cell %d: %s", 
+        printf("TransportDriver: operator-split reaction in cell %d: %s\n", 
                i, driver->chem_status.message);
         break;
       }
