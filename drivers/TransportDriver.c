@@ -26,6 +26,7 @@
 //
 
 #include <limits.h>
+#include <float.h>
 #include "alquimia/alquimia_interface.h"
 #include "alquimia/alquimia_memory.h"
 #include "alquimia/alquimia_util.h"
@@ -58,6 +59,8 @@ static int ParseInput(void* user,
     input->t_max = atof(value);
   else if (MATCH("simulation","max_steps"))
     input->max_steps = atoi(value);
+  else if (MATCH("simulation","timestep"))
+    input->dt = atof(value);
   else if (MATCH("simulation", "cfl_factor"))
     input->cfl_factor = atof(value);
 
@@ -94,6 +97,13 @@ static int ParseInput(void* user,
     input->right_bc_name = AlquimiaStringDup(value);
 
   // Output section.
+  else if (MATCH("output", "verbose"))
+  {
+    input->verbose = ((strcmp(value, "1") == 0) || 
+                      (strcasecmp(value, "true") == 0) ||
+                      (strcasecmp(value, "yes") == 0) ||
+                      (strcasecmp(value, "on") == 0)) ? true : false;
+  }
   else if (MATCH("output", "type"))
     input->output_type = AlquimiaStringDup(value);
   else if (MATCH("output", "filename"))
@@ -110,6 +120,7 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
   // Make sure we have some meaningful defaults.
   input->t_min = 0.0;
   input->max_steps = INT_MAX;
+  input->dt = FLT_MAX;
   input->cfl_factor = 1.0;
   input->porosity = 1.0;
   input->saturation = 1.0;
@@ -127,7 +138,7 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
   // Verify that our required fields are filled properly.
   if (input->t_max <= input->t_min)
     alquimia_error("TransportDriver: simulation->t_max must be greater than simulation->t_min.");
-  if (input->max_steps <= 0)
+  if (input->max_steps < 0)
     alquimia_error("TransportDriver: simulation->max_steps must be non-negative.");
   if ((input->cfl_factor <= 0.0) || (input->cfl_factor > 1.0))
     alquimia_error("TransportDriver: simulation->cfl_factor must be within (0, 1].");
@@ -141,6 +152,8 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
     alquimia_error("TransportDriver: material->saturation must be within (0, 1].");
   if (input->temperature <= 0.0)
     alquimia_error("TransportDriver: flow->temperature must be positive.");
+  if ((input->left_bc_name == NULL) && (input->right_bc_name == NULL) && (input->velocity != 0.0))
+    alquimia_error("TransportDriver: When velocity != 0, left or right boundary condition must be given.");
 
   // Default output.
   if (input->output_type == NULL)
@@ -187,8 +200,9 @@ struct TransportDriver
 {
   // Simulation parameters.
   TransportCoupling coupling;
-  double t_min, t_max, cfl;
+  double t_min, t_max, dt, cfl;
   int max_steps;
+  bool verbose;
 
   // 1D grid information.
   int num_cells;
@@ -239,7 +253,9 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
   driver->t_min = input->t_min; 
   driver->t_max = input->t_max;
   driver->max_steps = input->max_steps;
+  driver->dt = input->dt;
   driver->cfl = input->cfl_factor;
+  driver->verbose = input->verbose;
 
   // Get grid information.
   driver->x_min = input->x_min; 
@@ -297,6 +313,16 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
     AllocateAlquimiaProperties(&driver->chem_sizes, &driver->chem_properties[i]);
     AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_aux_data[i]);
     AllocateAlquimiaAuxiliaryOutputData(&driver->chem_sizes, &driver->chem_aux_output[i]);
+  }
+
+  // Metadata.
+  driver->chem.GetProblemMetaData(&driver->chem_engine, 
+                                  &driver->chem_metadata, 
+                                  &driver->chem_status);
+  if (driver->chem_status.error != 0)
+  {
+    alquimia_error("TransportDriver_New: %s", driver->chem_status.message);
+    return NULL;
   }
 
   // Initial condition.
@@ -366,6 +392,9 @@ void TransportDriver_Free(TransportDriver* driver)
 
 static int TransportDriver_Initialize(TransportDriver* driver)
 {
+  if (driver->verbose)
+    printf("TransportDriver: initializing at time %g...\n", driver->t_min);
+
   static const double water_density = 999.9720;    // density of water in kg/m**3
   static const double aqueous_pressure = 201325.0; // pressure in Pa.
 
@@ -420,9 +449,6 @@ static int TransportDriver_Initialize(TransportDriver* driver)
   driver->chem_left_state.aqueous_pressure = aqueous_pressure;
   if (driver->chem_left_bc.name != NULL)
   {
-    PrintAlquimiaProperties(&driver->chem_properties[0], stdout);
-    PrintAlquimiaState(&driver->chem_left_state, stdout);
-
     driver->chem.ProcessCondition(&driver->chem_engine,
                                   &driver->chem_left_bc, 
                                   &driver->chem_properties[0],
@@ -467,6 +493,9 @@ static int TransportDriver_Initialize(TransportDriver* driver)
     for (int c = 0; c < num_primary; ++c)
       driver->chem_right_state.total_mobile.data[c] = driver->chem_state[driver->num_cells-1].total_mobile.data[c];
   }
+
+  if (driver->verbose)
+    printf("TransportDriver: Finished initializing.\n");
 
   return driver->chem_status.error;
 }
@@ -537,7 +566,7 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
 static int Run_OperatorSplit(TransportDriver* driver)
 {
   double dx = (driver->x_max - driver->x_min) / driver->num_cells;
-  double dt = driver->cfl * dx / driver->vx;
+  double dt = Min(driver->dt, driver->cfl * dx / driver->vx);
   int num_primary = driver->chem_sizes.num_primary;
 
   // Initialize the chemistry state in each cell, and set up the solution vector.
@@ -549,6 +578,9 @@ static int Run_OperatorSplit(TransportDriver* driver)
   driver->step = 0;
   while ((driver->time < driver->t_max) && (driver->step < driver->max_steps))
   {
+    if (driver->verbose)
+      printf("TransportDriver: step %d (t = %g, dt = %g)\n", driver->step, driver->time, dt);
+
     // Compute the advective fluxes.
     if (driver->vx != 0.0)
     {
@@ -618,10 +650,143 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
                                          AlquimiaVectorString* var_names,
                                          AlquimiaVectorDouble* var_data)
 {
-  // FIXME: Right now we only write out the solution.
+  // Destroy the contents of the vectors we're given.
+  if (var_names->size > 0)
+    FreeAlquimiaVectorString(var_names);
+  if (var_data->size > 0)
+    FreeAlquimiaVectorDouble(var_data);
+
+  // Construct a list of all variables, which are those in the state and 
+  // the auxiliary output data, and fill their data.
+  int num_cells = driver->num_cells;
   int num_primary = driver->chem_sizes.num_primary;
-  AllocateAlquimiaVectorString(num_primary, var_names);
-  AllocateAlquimiaVectorDouble(num_primary * driver->num_cells, 
-                               var_data);
+  int num_sorbed = driver->chem_sizes.num_sorbed;
+  int num_minerals = driver->chem_sizes.num_minerals;
+  int num_surface_sites = driver->chem_sizes.num_surface_sites;
+  int num_ion_exchange_sites = driver->chem_sizes.num_ion_exchange_sites;
+  int num_aqueous_kinetics = driver->chem_sizes.num_aqueous_kinetics;
+  int num_vars = num_primary +            // total mobile
+                 num_sorbed +             // total immobile
+                 2 * num_minerals +       // mineral volume fractions, specific surface area
+                 num_surface_sites +      // surface site density
+                 num_ion_exchange_sites + // cation exchange capacity
+                 1 +                      // pH
+                 num_aqueous_kinetics +   // aqueous kinetic rate
+                 2 * num_minerals +       // mineral saturation index, reaction rate
+                 2 * num_primary +        // primary free ion concentration, activity coeff
+                 2 * num_sorbed;          // secondary free ion concentration, activity coeff
+  int counter = 0;
+  AllocateAlquimiaVectorString(num_vars, var_names);
+  AllocateAlquimiaVectorDouble(num_vars * driver->num_cells, var_data);
+  for (int i = 0; i < num_primary; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "total_mobile[%s]", driver->chem_metadata.primary_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state[j].total_mobile.data[i];
+  }
+  for (int i = 0; i < num_sorbed; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "total_immobile[%d]", i);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state[j].total_immobile.data[i];
+  }
+  for (int i = 0; i < num_minerals; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "mineral_volume_fractions[%s]", driver->chem_metadata.mineral_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state[j].mineral_volume_fraction.data[i];
+  }
+  for (int i = 0; i < num_minerals; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "mineral_specific_surface_area[%s]", driver->chem_metadata.mineral_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state[j].mineral_specific_surface_area.data[i];
+  }
+  for (int i = 0; i < num_surface_sites; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "surface_site_density[%s]", driver->chem_metadata.surface_site_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state[j].surface_site_density.data[i];
+  }
+  for (int i = 0; i < num_ion_exchange_sites; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "cation_exchange_capacity[%s]", driver->chem_metadata.ion_exchange_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*counter + j] = driver->chem_state[j].cation_exchange_capacity.data[i];
+  }
+  {
+    var_names->data[counter] = AlquimiaStringDup("pH");
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].pH;
+    ++counter;
+  }
+  for (int i = 0; i < num_aqueous_kinetics; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "aqueous_kinetic_rate[%s]", driver->chem_metadata.aqueous_kinetic_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].aqueous_kinetic_rate.data[i];
+  }
+  for (int i = 0; i < num_minerals; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "mineral_saturation_index[%s]", driver->chem_metadata.mineral_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].mineral_saturation_index.data[i];
+  }
+  for (int i = 0; i < num_minerals; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "mineral_reaction_rate[%s]", driver->chem_metadata.mineral_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].mineral_reaction_rate.data[i];
+  }
+  for (int i = 0; i < num_primary; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "primary_free_ion_concentration[%s]", driver->chem_metadata.primary_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].primary_free_ion_concentration.data[i];
+  }
+  for (int i = 0; i < num_primary; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "primary_activity_coeff[%s]", driver->chem_metadata.primary_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].primary_activity_coeff.data[i];
+  }
+  for (int i = 0; i < num_sorbed; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "secondary_free_ion_concentration[%d]", i);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].secondary_free_ion_concentration.data[i];
+  }
+  for (int i = 0; i < num_sorbed; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "secondary_activity_coeff[%d]", i);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].secondary_activity_coeff.data[i];
+  }
 }
 

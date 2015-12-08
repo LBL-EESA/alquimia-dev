@@ -52,6 +52,9 @@ typedef struct
   double t_min, t_max;
   int max_steps;
 
+  // Specified timestep.
+  double dt;
+
   // CFL factor.
   double cfl_factor;
 
@@ -87,6 +90,7 @@ typedef struct
   // ------------------
   // Output information
   // ------------------
+  bool verbose;
   char* output_file;
   char* output_type;
 
