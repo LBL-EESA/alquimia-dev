@@ -304,12 +304,18 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
   strcpy(driver->chem_ic.name, input->ic_name);
 
   // Boundary conditions.
-  AllocateAlquimiaGeochemicalCondition(strlen(input->left_bc_name), 0, 0, &driver->chem_left_bc);
-  strcpy(driver->chem_left_bc.name, input->left_bc_name);
+  if (input->left_bc_name != NULL)
+  {
+    AllocateAlquimiaGeochemicalCondition(strlen(input->left_bc_name), 0, 0, &driver->chem_left_bc);
+    strcpy(driver->chem_left_bc.name, input->left_bc_name);
+  }
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_left_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_left_aux_data);
-  AllocateAlquimiaGeochemicalCondition(strlen(input->right_bc_name), 0, 0, &driver->chem_right_bc);
-  strcpy(driver->chem_right_bc.name, input->right_bc_name);
+  if (input->right_bc_name != NULL)
+  {
+    AllocateAlquimiaGeochemicalCondition(strlen(input->right_bc_name), 0, 0, &driver->chem_right_bc);
+    strcpy(driver->chem_right_bc.name, input->right_bc_name);
+  }
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_right_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_right_aux_data);
 
@@ -327,10 +333,12 @@ void TransportDriver_Free(TransportDriver* driver)
   FreeAlquimiaState(&driver->advected_chem_state);
 
   // Destroy boundary and initial conditions.
-  FreeAlquimiaGeochemicalCondition(&driver->chem_left_bc);
+  if (driver->chem_left_bc.name != NULL)
+    FreeAlquimiaGeochemicalCondition(&driver->chem_left_bc);
   FreeAlquimiaState(&driver->chem_left_state);
   FreeAlquimiaAuxiliaryData(&driver->chem_left_aux_data);
-  FreeAlquimiaGeochemicalCondition(&driver->chem_right_bc);
+  if (driver->chem_right_bc.name != NULL)
+    FreeAlquimiaGeochemicalCondition(&driver->chem_right_bc);
   FreeAlquimiaState(&driver->chem_right_state);
   FreeAlquimiaAuxiliaryData(&driver->chem_right_aux_data);
   FreeAlquimiaGeochemicalCondition(&driver->chem_ic);
@@ -358,6 +366,9 @@ void TransportDriver_Free(TransportDriver* driver)
 
 static int TransportDriver_Initialize(TransportDriver* driver)
 {
+  static const double water_density = 999.9720;    // density of water in kg/m**3
+  static const double aqueous_pressure = 201325.0; // pressure in Pa.
+
   // Determine the volume of a cell from the domain.
   double volume = (driver->x_max - driver->x_min) / driver->num_cells;
 
@@ -367,6 +378,12 @@ static int TransportDriver_Initialize(TransportDriver* driver)
     // Set the material properties.
     driver->chem_properties[i].volume = volume;
     driver->chem_properties[i].saturation = driver->saturation;
+
+    // Set the thermodynamic state.
+    driver->chem_state[i].water_density = water_density;
+    driver->chem_state[i].temperature = driver->temperature;
+    driver->chem_state[i].porosity = driver->porosity;
+    driver->chem_state[i].aqueous_pressure = aqueous_pressure;
 
     // Invoke the chemical initial condition.
     driver->chem.ProcessCondition(&driver->chem_engine,
@@ -381,10 +398,64 @@ static int TransportDriver_Initialize(TransportDriver* driver)
              i, driver->chem_status.message);
       break;
     }
+  }
 
-    // Overwrite the temperature and porosity in this cell.
-    driver->chem_state[i].temperature = driver->temperature;
-    driver->chem_state[i].porosity = driver->porosity;
+  // Initialize the left and right boundary states.
+  int num_primary = driver->chem_sizes.num_primary;
+
+  // Left.
+  driver->chem_left_state.water_density = water_density;
+  driver->chem_left_state.temperature = driver->temperature;
+  driver->chem_left_state.porosity = driver->porosity;
+  driver->chem_left_state.aqueous_pressure = aqueous_pressure;
+  if (driver->chem_left_bc.name != NULL)
+  {
+    PrintAlquimiaProperties(&driver->chem_properties[0], stdout);
+    PrintAlquimiaState(&driver->chem_left_state, stdout);
+
+    driver->chem.ProcessCondition(&driver->chem_engine,
+                                &driver->chem_left_bc, 
+                                &driver->chem_properties[0],
+                                &driver->chem_left_state,
+                                &driver->chem_left_aux_data,
+                                &driver->chem_status);
+    if (driver->chem_status.error != 0)
+    {
+      printf("TransportDriver: boundary condition error at leftmost interface: %s\n",
+             driver->chem_status.message);
+      return driver->chem_status.error;
+    }
+  }
+  else
+  {
+    for (int c = 0; c < num_primary; ++c)
+      driver->chem_left_state.total_mobile.data[c] = driver->chem_state[0].total_mobile.data[c];
+  }
+
+  // Right.
+  driver->chem_right_state.water_density = water_density;
+  driver->chem_right_state.temperature = driver->temperature;
+  driver->chem_right_state.porosity = driver->porosity;
+  driver->chem_right_state.aqueous_pressure = aqueous_pressure;
+  if (driver->chem_right_bc.name != NULL)
+  {
+    driver->chem.ProcessCondition(&driver->chem_engine,
+                                  &driver->chem_right_bc, 
+                                  &driver->chem_properties[driver->num_cells-1],
+                                  &driver->chem_right_state,
+                                  &driver->chem_right_aux_data,
+                                  &driver->chem_status);
+    if (driver->chem_status.error != 0)
+    {
+      printf("TransportDriver: boundary condition error at rightmost interface: %s\n",
+             driver->chem_status.message);
+      return driver->chem_status.error;
+    }
+  }
+  else
+  {
+    for (int c = 0; c < num_primary; ++c)
+      driver->chem_right_state.total_mobile.data[c] = driver->chem_state[driver->num_cells-1].total_mobile.data[c];
   }
 
   return driver->chem_status.error;
@@ -403,34 +474,11 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
   // and rightmost cells. Then compute fluxes.
 
   // Left boundary.
-  driver->chem.ProcessCondition(&driver->chem_engine,
-                                &driver->chem_left_bc, 
-                                &driver->chem_properties[0],
-                                &driver->chem_left_state,
-                                &driver->chem_left_aux_data,
-                                &driver->chem_status);
-  if (driver->chem_status.error != 0)
-  {
-    printf("TransportDriver: boundary condition error at leftmost interface: %s\n",
-           driver->chem_status.message);
-    return driver->chem_status.error;
-  }
   double phi_l = driver->chem_left_state.porosity;
   for (int c = 0; c < num_primary; ++c)
     advective_fluxes[c] = phi_l * driver->vx * driver->chem_left_state.total_mobile.data[c];
+
   // Right boundary.
-  driver->chem.ProcessCondition(&driver->chem_engine,
-                                &driver->chem_right_bc, 
-                                &driver->chem_properties[driver->num_cells-1],
-                                &driver->chem_right_state,
-                                &driver->chem_right_aux_data,
-                                &driver->chem_status);
-  if (driver->chem_status.error != 0)
-  {
-    printf("TransportDriver: boundary condition error at rightmost interface: %s\n",
-           driver->chem_status.message);
-    return driver->chem_status.error;
-  }
   double phi_r = driver->chem_right_state.porosity;
   for (int c = 0; c < num_primary; ++c)
     advective_fluxes[num_primary*driver->num_cells+c] = phi_r * driver->vx * driver->chem_right_state.total_mobile.data[c];
@@ -447,13 +495,13 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
       double conc = driver->chem_state[i].total_mobile.data[c];
       if (driver->vx >= 0.0)
       {
-        up_conc = driver->chem_state[i].total_mobile.data[c];
-        down_conc = driver->chem_state[i+1].total_mobile.data[c];
+        up_conc = driver->chem_state[i-1].total_mobile.data[c];
+        down_conc = driver->chem_state[i].total_mobile.data[c];
       }
       else
       {
-        up_conc = driver->chem_state[i+1].total_mobile.data[c];
-        down_conc = driver->chem_state[i].total_mobile.data[c];
+        up_conc = driver->chem_state[i].total_mobile.data[c];
+        down_conc = driver->chem_state[i-1].total_mobile.data[c];
       }
 
       // Construct the limiter.
