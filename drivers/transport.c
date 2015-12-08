@@ -49,10 +49,12 @@ int main(int argc, char* argv[])
   PetscInitializeFortran();
 
   char input_file[FILENAME_MAX];
-  strncpy(input_file, argv[0], FILENAME_MAX-1);
+  strncpy(input_file, argv[1], FILENAME_MAX-1);
 
   // Parse the input file.
   TransportDriverInput* input = TransportDriverInput_New(input_file);
+  if (input == NULL)
+    alquimia_error("transport: error encountered reading input file '%s'.", input_file);
 
   // Set up output.
   DriverOutput* output = NULL;

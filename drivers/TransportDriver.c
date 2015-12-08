@@ -25,6 +25,7 @@
 // and to permit others to do so.
 //
 
+#include <limits.h>
 #include "alquimia/alquimia_interface.h"
 #include "alquimia/alquimia_memory.h"
 #include "alquimia/alquimia_util.h"
@@ -49,32 +50,136 @@ static int ParseInput(void* user,
 {
   TransportDriverInput* input = user;
 #define MATCH(s, n) (strcmp(section, s) == 0) && (strcmp(name, n) == 0)
-  if (MATCH("chemistry",""))
+
+  // Simulation section
+  if (MATCH("simulation","t_min"))
+    input->t_min = atof(value);
+  else if (MATCH("simulation","t_max"))
+    input->t_max = atof(value);
+  else if (MATCH("simulation","max_steps"))
+    input->max_steps = atoi(value);
+  else if (MATCH("simulation", "cfl_factor"))
+    input->cfl_factor = atof(value);
+
+  // Domain section.
+  else if (MATCH("domain", "x_min"))
+    input->x_min = atof(value);
+  else if (MATCH("domain", "x_max"))
+    input->x_max = atof(value);
+  else if (MATCH("domain", "num_cells"))
+    input->num_cells = atoi(value);
+
+  // Material section.
+  else if (MATCH("material", "porosity"))
+    input->porosity = atof(value);
+  else if (MATCH("material", "saturation"))
+    input->saturation = atof(value);
+
+  // Flow section.
+  else if (MATCH("flow", "temperature"))
+    input->temperature = atof(value);
+  else if (MATCH("flow", "velocity"))
+    input->velocity = atof(value);
+
+  // Chemistry section.
+  else if (MATCH("chemistry", "engine"))
+    input->chemistry_engine = AlquimiaStringDup(value);
+  else if (MATCH("chemistry", "input_file"))
+    input->chemistry_input_file = AlquimiaStringDup(value);
+  else if (MATCH("chemistry", "initial_condition"))
     input->ic_name = AlquimiaStringDup(value);
+  else if (MATCH("chemistry", "left_boundary_condition"))
+    input->left_bc_name = AlquimiaStringDup(value);
+  else if (MATCH("chemistry", "right_boundary_condition"))
+    input->right_bc_name = AlquimiaStringDup(value);
+
+  // Output section.
+  else if (MATCH("output", "type"))
+    input->output_type = AlquimiaStringDup(value);
+  else if (MATCH("output", "filename"))
+    input->output_file = AlquimiaStringDup(value);
+
   return 1;
 }
 
 TransportDriverInput* TransportDriverInput_New(const char* input_file)
 {
   TransportDriverInput* input = malloc(sizeof(TransportDriverInput));
+  memset(input, 0, sizeof(TransportDriverInput));
+
+  // Make sure we have some meaningful defaults.
+  input->t_min = 0.0;
+  input->max_steps = INT_MAX;
+  input->cfl_factor = 1.0;
+  input->porosity = 1.0;
+  input->saturation = 1.0;
+  input->temperature = 25.0;
+  input->velocity = 0.0;
+
+  // Fill in fields by parsing the input file.
   int error = ini_parse(input_file, ParseInput, input);
   if (error != 0)
   {
-    free(input);
+    TransportDriverInput_Free(input);
     alquimia_error("TransportDriver: Error parsing input: %s", input_file);
   }
+
+  // Verify that our required fields are filled properly.
+  if (input->t_max <= input->t_min)
+    alquimia_error("TransportDriver: simulation->t_max must be greater than simulation->t_min.");
+  if (input->max_steps <= 0)
+    alquimia_error("TransportDriver: simulation->max_steps must be non-negative.");
+  if ((input->cfl_factor <= 0.0) || (input->cfl_factor > 1.0))
+    alquimia_error("TransportDriver: simulation->cfl_factor must be within (0, 1].");
+  if (input->x_max <= input->x_min)
+    alquimia_error("TransportDriver: domain->x_max must be greater than domain->x_min.");
+  if (input->num_cells <= 0)
+    alquimia_error("TransportDriver: domain->num_cells must be positive.");
+  if ((input->porosity <= 0.0) || (input->porosity > 1.0))
+    alquimia_error("TransportDriver: material->porosity must be within (0, 1].");
+  if ((input->saturation <= 0.0) || (input->saturation > 1.0))
+    alquimia_error("TransportDriver: material->saturation must be within (0, 1].");
+  if (input->temperature <= 0.0)
+    alquimia_error("TransportDriver: flow->temperature must be positive.");
+
+  // Default output.
+  if (input->output_type == NULL)
+    input->output_type = AlquimiaStringDup("gnuplot");
+  char default_output_file[FILENAME_MAX];
+  if (input->output_file == NULL)
+  {
+    // Start at the first . we find from the end.
+    int i = strlen(input_file)-1;
+    while ((i > 0) && (input_file[i] != '.')) --i;
+    if (i == 0)
+      sprintf(default_output_file, "%s.gnuplot", input_file);
+    else
+    {
+      memcpy(default_output_file, input_file, sizeof(char) * i);
+      strcat(default_output_file, ".gnuplot");
+    }
+    input->output_type = AlquimiaStringDup(default_output_file);
+  }
+
   return input;
 }
 
 void TransportDriverInput_Free(TransportDriverInput* input)
 {
-  free(input->ic_name);
-  free(input->left_bc_name);
-  free(input->right_bc_name);
-  free(input->chemistry_engine);
-  free(input->chemistry_input_file);
-  free(input->output_file);
-  free(input->output_type);
+  if (input->ic_name != NULL)
+    free(input->ic_name);
+  if (input->left_bc_name != NULL)
+    free(input->left_bc_name);
+  if (input->right_bc_name != NULL)
+    free(input->right_bc_name);
+  if (input->chemistry_engine != NULL)
+    free(input->chemistry_engine);
+  if (input->chemistry_input_file != NULL)
+    free(input->chemistry_input_file);
+  if (input->output_file != NULL)
+    free(input->output_file);
+  if (input->output_type != NULL)
+    free(input->output_type);
   free(input);
 }
 
@@ -155,7 +260,7 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
 
   // Set up the chemistry engine.
   AllocateAlquimiaEngineStatus(&driver->chem_status);
-  CreateAlquimiaInterface(driver->chem_engine, &driver->chem, &driver->chem_status);
+  CreateAlquimiaInterface(input->chemistry_engine, &driver->chem, &driver->chem_status);
   if (driver->chem_status.error != 0) 
   {
     alquimia_error("TransportDriver_New: %s", driver->chem_status.message);
@@ -261,7 +366,7 @@ static int TransportDriver_Initialize(TransportDriver* driver)
     driver->chem_properties[i].saturation = driver->saturation;
 
     // Invoke the chemical initial condition.
-    driver->chem.ProcessCondition(driver->chem_engine,
+    driver->chem.ProcessCondition(&driver->chem_engine,
                                   &driver->chem_ic, 
                                   &driver->chem_properties[i],
                                   &driver->chem_state[i],
@@ -295,7 +400,7 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
   // and rightmost cells. Then compute fluxes.
 
   // Left boundary.
-  driver->chem.ProcessCondition(driver->chem_engine,
+  driver->chem.ProcessCondition(&driver->chem_engine,
                                 &driver->chem_left_bc, 
                                 &driver->chem_properties[0],
                                 &driver->chem_left_state,
@@ -311,7 +416,7 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
   for (int c = 0; c < num_primary; ++c)
     advective_fluxes[c] = phi_l * driver->vx * driver->chem_left_state.total_mobile.data[c];
   // Right boundary.
-  driver->chem.ProcessCondition(driver->chem_engine,
+  driver->chem.ProcessCondition(&driver->chem_engine,
                                 &driver->chem_right_bc, 
                                 &driver->chem_properties[driver->num_cells-1],
                                 &driver->chem_right_state,
