@@ -11,5 +11,11 @@ if (ALQUIMIA_HAVE_PFLOTRAN)
 endif()
 
 if (ALQUIMIA_HAVE_CRUNCHFLOW)
+  add_alquimia_transport_benchmark(tracer_1d_crunch tracer-1d-crunch.cfg)
+  add_alquimia_transport_benchmark(tritium_1d_crunch tritium-1d-crunch.cfg)
+  add_alquimia_transport_benchmark(calcite_1d_crunch calcite-1d-crunch.cfg)
+  add_alquimia_transport_benchmark(isotherms_1d_crunch isotherms-1d-crunch.cfg)
+  # The following test seems to take a long time.
+  #add_alquimia_transport_benchmark(ion_exchange_1d_crunch ion-exchange-1d-crunch.cfg)
 endif()
 
