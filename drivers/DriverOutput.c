@@ -55,8 +55,11 @@ static void GnuplotWrite(AlquimiaVectorString var_names,
 
   // Write the columnated data.
   for (int i = 0; i < var_vectors[0].size; ++i)
-    for (int j = 0; j < var_names.size-1; ++j)
+  {
+    for (int j = 0; j < var_names.size; ++j)
       fprintf(file, "%14.6e", var_vectors[j].data[i]);
+    fprintf(file, "\n");
+  }
   fprintf(file, "\n");
 }
 

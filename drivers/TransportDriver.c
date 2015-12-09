@@ -241,6 +241,7 @@ struct TransportDriver
 
   // Bookkeeping.
   AlquimiaState advected_chem_state;
+  AlquimiaAuxiliaryData advected_chem_aux_data;
   double* advective_fluxes;
 };
 
@@ -347,6 +348,7 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
 
   // Bookkeeping.
   AllocateAlquimiaState(&driver->chem_sizes, &driver->advected_chem_state);
+  AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->advected_chem_aux_data);
   driver->advective_fluxes = malloc(sizeof(double) * driver->chem_sizes.num_primary * (driver->num_cells + 1));
 
   return driver;
@@ -357,6 +359,7 @@ void TransportDriver_Free(TransportDriver* driver)
   // Destroy advection bookkeeping.
   free(driver->advective_fluxes);
   FreeAlquimiaState(&driver->advected_chem_state);
+  FreeAlquimiaAuxiliaryData(&driver->advected_chem_aux_data);
 
   // Destroy boundary and initial conditions.
   if (driver->chem_left_bc.name != NULL)
@@ -429,6 +432,9 @@ static int TransportDriver_Initialize(TransportDriver* driver)
                driver->chem_status.message);
         break;
       }
+
+      // Overwrite the stuff that might have changed.
+      driver->chem_state[i].porosity = driver->porosity;
     }
     else
     {
@@ -461,6 +467,10 @@ static int TransportDriver_Initialize(TransportDriver* driver)
              driver->chem_status.message);
       return driver->chem_status.error;
     }
+
+    // Overwrite things that might have changed.
+    // FIXME: Why??
+    driver->chem_left_state.porosity = driver->porosity;
   }
   else
   {
@@ -487,6 +497,10 @@ static int TransportDriver_Initialize(TransportDriver* driver)
              driver->chem_status.message);
       return driver->chem_status.error;
     }
+
+    // Overwrite things that might have changed.
+    // FIXME: Why??
+    driver->chem_right_state.porosity = driver->porosity;
   }
   else
   {
@@ -523,40 +537,46 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
     advective_fluxes[num_primary*driver->num_cells+c] = phi_r * driver->vx * driver->chem_right_state.total_mobile.data[c];
 
   // Interior interfaces.
-  for (int i = 1; i < driver->num_cells; ++i)
+  for (int i = 0; i < driver->num_cells-1; ++i)
   {
-    // We use the method of Gupta et al, 1991 to construct an explicit, 
-    // third-order TVD estimate of the concentration at the interface.
     for (int c = 0; c < num_primary; ++c)
     {
       // Figure out the upstream and downstream concentrations.
       double up_conc, down_conc;
-      double conc = driver->chem_state[i].total_mobile.data[c];
       if (driver->vx >= 0.0)
       {
-        up_conc = driver->chem_state[i-1].total_mobile.data[c];
-        down_conc = driver->chem_state[i].total_mobile.data[c];
+        up_conc = driver->chem_state[i].total_mobile.data[c];
+        down_conc = driver->chem_state[i+1].total_mobile.data[c];
       }
       else
       {
-        up_conc = driver->chem_state[i].total_mobile.data[c];
-        down_conc = driver->chem_state[i-1].total_mobile.data[c];
+        up_conc = driver->chem_state[i+1].total_mobile.data[c];
+        down_conc = driver->chem_state[i].total_mobile.data[c];
       }
 
+      // We use a simple upwinding method to determine the interface
+      // concentration.
+      double interface_conc = up_conc;
+#if 0
+      // We use the method of Gupta et al, 1991 to construct an explicit, 
+      // third-order TVD estimate of the concentration at the interface.
+
       // Construct the limiter.
+      double conc = driver->chem_state[i].total_mobile.data[c];
       double r_num = (conc - up_conc) / (2.0 * dx);
-      double r_denom = (down_conc - up_conc) / (2.0 * dx);
-      double r = r_num / r_denom;
+      double r_denom = (down_conc - conc) / (2.0 * dx);
+      double r = (r_denom != 0.0) ? (r_num / r_denom) : 0.0;
       double beta = Max(0.0, Min(2.0, Min(2.0*r, (2.0 + r) / 3.0)));
 
       // Compute the interface concentration.
       double interface_conc = conc + 0.5 * beta * (down_conc - conc);
+#endif
 
       // Compute the interface porosity.
-      double phi = 0.5 * (driver->chem_state[i].porosity + driver->chem_state[i+1].porosity);
+      double phi = 0.5 * (driver->chem_state[i-1].porosity + driver->chem_state[i].porosity);
 
       // Compute the flux.
-      advective_fluxes[num_primary * i + c] = phi * driver->vx * interface_conc;
+      advective_fluxes[num_primary * (i+1) + c] = phi * driver->vx * interface_conc;
     }
   }
 
@@ -595,20 +615,25 @@ static int Run_OperatorSplit(TransportDriver* driver)
       // Advect the state in this cell using a finite volume method with 
       // the advective fluxes we've computed.
       CopyAlquimiaState(&driver->chem_state[i], &driver->advected_chem_state);
+      CopyAlquimiaAuxiliaryData(&driver->chem_aux_data[i], &driver->advected_chem_aux_data);
       for (int c = 0; c < num_primary; ++c)
       {
-        double F_right = driver->advective_fluxes[num_primary*(i+1)+c];
         double F_left = driver->advective_fluxes[num_primary*i+c];
+        double F_right = driver->advective_fluxes[num_primary*(i+1)+c];
+//printf("F_left = %g, F_right = %g\n", F_left, F_right);
         double phiC = phi * driver->advected_chem_state.total_mobile.data[c] -
-                      (F_right - F_left) / dx;
+                      dt * (F_right - F_left) / dx;
         driver->advected_chem_state.total_mobile.data[c] = phiC / phi;
+        driver->advected_chem_state.total_mobile.data[c] = Max(driver->advected_chem_state.total_mobile.data[c], 1e-20); // Floor it at a tiny positive value.
+//printf("phi = %g, C = %g, phiC = %g, phi* = %g\n", phi, driver->advected_chem_state.total_mobile.data[c], phiC, driver->advected_chem_state.total_mobile.data[c]);
       }
 
       // Do the chemistry step, using the advected state as input.
+PrintAlquimiaState(&driver->advected_chem_state, stdout);
       driver->chem.ReactionStepOperatorSplit(&driver->chem_engine,
                                              dt, &driver->chem_properties[i],
                                              &driver->advected_chem_state,
-                                             &driver->chem_aux_data[i],
+                                             &driver->advected_chem_aux_data,
                                              &driver->chem_status);
       if (driver->chem_status.error != 0)
       {
@@ -617,9 +642,13 @@ static int Run_OperatorSplit(TransportDriver* driver)
                i, driver->chem_status.message);
         break;
       }
+PrintAlquimiaState(&driver->advected_chem_state, stdout);
+      // FIXME: Why is the porosity being set to zero here??
+      driver->advected_chem_state.porosity = driver->porosity;
 
       // Copy the advected/reacted state back into place.
       CopyAlquimiaState(&driver->advected_chem_state, &driver->chem_state[i]);
+      CopyAlquimiaAuxiliaryData(&driver->advected_chem_aux_data, &driver->chem_aux_data[i]);
     }
 
     if (status != 0) break;
@@ -665,7 +694,8 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
   int num_surface_sites = driver->chem_sizes.num_surface_sites;
   int num_ion_exchange_sites = driver->chem_sizes.num_ion_exchange_sites;
   int num_aqueous_kinetics = driver->chem_sizes.num_aqueous_kinetics;
-  int num_vars = num_primary +            // total mobile
+  int num_vars = 1 +                      // grid cell locations 
+                 num_primary +            // total mobile
                  num_sorbed +             // total immobile
                  2 * num_minerals +       // mineral volume fractions, specific surface area
                  num_surface_sites +      // surface site density
@@ -678,6 +708,12 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
   int counter = 0;
   AllocateAlquimiaVectorString(num_vars, var_names);
   AllocateAlquimiaVectorDouble(num_vars * driver->num_cells, var_data);
+  {
+    var_names->data[counter] = AlquimiaStringDup("x");
+    for (int j = 0; j < num_cells; ++j)
+      var_data->data[num_vars*j + counter] = driver->x_min + (j+0.5) * (driver->x_max - driver->x_min) / driver->num_cells;
+    ++counter;
+  }
   for (int i = 0; i < num_primary; ++i, ++counter)
   {
     char var_name[1024];

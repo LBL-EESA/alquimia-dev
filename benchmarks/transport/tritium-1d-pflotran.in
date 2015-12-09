@@ -8,7 +8,7 @@ CHEMISTRY
   /
   GENERAL_REACTION
     REACTION Tritium <-> 
-    FORWARD_RATE 1.78577E-09 ! t_1/2 = 12.32 years
+    FORWARD_RATE 1.78577d-9 ! t_1/2 = 12.32 years
     BACKWARD_RATE 0.d0
   /
   DATABASE ./tritium.dat
@@ -24,7 +24,7 @@ END
 :=========================== constraints ======================================
 CONSTRAINT initial
   CONCENTRATIONS
-    Tritium  1.0e-20    T
+    Tritium  1.d-20    T
   /
 END
 
