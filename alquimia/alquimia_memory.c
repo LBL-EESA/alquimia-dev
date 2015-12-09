@@ -360,6 +360,8 @@ void AllocateAlquimiaGeochemicalCondition(const int size_name,
           calloc((unsigned int)condition->aqueous_constraints.size, 
                  sizeof(AlquimiaAqueousConstraint));
     }
+    else
+      condition->aqueous_constraints.data = NULL;
 
     condition->mineral_constraints.size = num_mineral_constraints;
     if (condition->mineral_constraints.size > 0) {
@@ -367,6 +369,8 @@ void AllocateAlquimiaGeochemicalCondition(const int size_name,
           calloc((unsigned int)condition->mineral_constraints.size, 
                  sizeof(AlquimiaMineralConstraint));
     }
+    else
+      condition->mineral_constraints.data = NULL;
 
   }
 }  /* end AllocateAlquimiaGeochemicalCondition() */
@@ -394,16 +398,20 @@ void FreeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* 
     for (i = 0; i < condition_list->size; ++i) {
       FreeAlquimiaGeochemicalCondition(&(condition_list->data[i]));
     }
-    free(condition_list->data);
-    condition_list->data = NULL;
+    if (condition_list->data != NULL) {
+      free(condition_list->data);
+      condition_list->data = NULL;
+    }
     condition_list->size = 0;
   }
 }  /* end FreeAlquimiaGeochemicalConditionList() */
 
 void FreeAlquimiaGeochemicalCondition(AlquimiaGeochemicalCondition* condition) {
   if (condition != NULL) {
-    free(condition->name);
-    condition->name = NULL;
+    if (condition->name != NULL) {
+      free(condition->name);
+      condition->name = NULL;
+    }
     FreeAlquimiaAqueousConstraintVector(&(condition->aqueous_constraints));
     FreeAlquimiaMineralConstraintVector(&(condition->mineral_constraints));
   }
@@ -415,8 +423,10 @@ void FreeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vector
     for (i = 0; i < vector->size; ++i) {
       FreeAlquimiaAqueousConstraint(&vector->data[i]);
     }
-    free(vector->data);
-    vector->data = NULL;
+    if (vector->data != NULL) {
+      free(vector->data);
+      vector->data = NULL;
+    }
     vector->size = 0;
   }
 }  /* end FreeAlquimiaAqueousConstraintVector() */

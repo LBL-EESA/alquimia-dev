@@ -73,8 +73,8 @@ int main(int argc, char* argv[])
   if (output != NULL)
   {
     double final_time;
-    AlquimiaVectorString var_names;
-    AlquimiaVectorDouble var_data;
+    AlquimiaVectorString var_names = {.size = 0};
+    AlquimiaVectorDouble var_data = {.size = 0};
     TransportDriver_GetSoluteAndAuxData(transport, &final_time, &var_names, &var_data);
     DriverOutput_WriteMulticompVector(output, input->output_file, var_names, var_data);
 
