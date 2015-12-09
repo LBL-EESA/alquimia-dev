@@ -316,6 +316,13 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
     AllocateAlquimiaAuxiliaryOutputData(&driver->chem_sizes, &driver->chem_aux_output[i]);
   }
 
+  // NOTE: we rely on the engine's input file for kinetics, so size the 
+  // NOTE: aqueous kinetic rate constant vectors to zero in the properties. If 
+  // NOTE: we don't do this, PFlotran copies our (zero) values in and uses them.
+  // FIXME: Is this a feature or a bug???
+  for (int i = 0; i < driver->num_cells; ++i)
+    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].aqueous_kinetic_rate_cnst));
+
   // Metadata.
   driver->chem.GetProblemMetaData(&driver->chem_engine, 
                                   &driver->chem_metadata, 
@@ -629,7 +636,6 @@ static int Run_OperatorSplit(TransportDriver* driver)
       }
 
       // Do the chemistry step, using the advected state as input.
-PrintAlquimiaState(&driver->advected_chem_state, stdout);
       driver->chem.ReactionStepOperatorSplit(&driver->chem_engine,
                                              dt, &driver->chem_properties[i],
                                              &driver->advected_chem_state,
@@ -642,7 +648,6 @@ PrintAlquimiaState(&driver->advected_chem_state, stdout);
                i, driver->chem_status.message);
         break;
       }
-PrintAlquimiaState(&driver->advected_chem_state, stdout);
       // FIXME: Why is the porosity being set to zero here??
       driver->advected_chem_state.porosity = driver->porosity;
 
