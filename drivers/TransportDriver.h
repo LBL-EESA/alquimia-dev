@@ -43,6 +43,9 @@ typedef enum
 // This type holds simulation input information for the transport driver.
 typedef struct
 {
+  // Problem description.
+  char* description;
+
   // ---------------------
   // Simulation parameters
   // ---------------------

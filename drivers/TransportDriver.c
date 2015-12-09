@@ -53,7 +53,9 @@ static int ParseInput(void* user,
 #define MATCH(s, n) (strcmp(section, s) == 0) && (strcmp(name, n) == 0)
 
   // Simulation section
-  if (MATCH("simulation","t_min"))
+  if (MATCH("simulation","description"))
+    input->description = AlquimiaStringDup(value);
+  else if (MATCH("simulation","t_min"))
     input->t_min = atof(value);
   else if (MATCH("simulation","t_max"))
     input->t_max = atof(value);
@@ -179,6 +181,8 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
 
 void TransportDriverInput_Free(TransportDriverInput* input)
 {
+  if (input->description != NULL)
+    free(input->description);
   if (input->ic_name != NULL)
     free(input->ic_name);
   if (input->left_bc_name != NULL)
@@ -199,6 +203,7 @@ void TransportDriverInput_Free(TransportDriverInput* input)
 struct TransportDriver 
 {
   // Simulation parameters.
+  char* description;
   TransportCoupling coupling;
   double t_min, t_max, dt, cfl;
   int max_steps;
@@ -250,6 +255,7 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
   TransportDriver* driver = malloc(sizeof(TransportDriver));
 
   // Get basic simulation parameters.
+  driver->description = AlquimiaStringDup(input->description);
   driver->coupling = input->coupling;
   driver->t_min = input->t_min; 
   driver->t_max = input->t_max;
@@ -316,12 +322,15 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
     AllocateAlquimiaAuxiliaryOutputData(&driver->chem_sizes, &driver->chem_aux_output[i]);
   }
 
-  // NOTE: we rely on the engine's input file for kinetics, so size the 
-  // NOTE: aqueous kinetic rate constant vectors to zero in the properties. If 
+  // NOTE: we rely on the engine's input file for kinetics and minerals, so 
+  // NOTE: size the rate constant vectors to zero in the properties. If 
   // NOTE: we don't do this, PFlotran copies our (zero) values in and uses them.
   // FIXME: Is this a feature or a bug???
   for (int i = 0; i < driver->num_cells; ++i)
+  {
     FreeAlquimiaVectorDouble(&(driver->chem_properties[i].aqueous_kinetic_rate_cnst));
+    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].mineral_rate_cnst));
+  }
 
   // Metadata.
   driver->chem.GetProblemMetaData(&driver->chem_engine, 
@@ -363,6 +372,8 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
 
 void TransportDriver_Free(TransportDriver* driver)
 {
+  free(driver->description);
+
   // Destroy advection bookkeeping.
   free(driver->advective_fluxes);
   FreeAlquimiaState(&driver->advected_chem_state);
@@ -673,6 +684,8 @@ static int Run_GlobalImplicit(TransportDriver* driver)
 
 int TransportDriver_Run(TransportDriver* driver)
 {
+  if (driver->verbose)
+    printf("TransportDriver: running %s\n", driver->description);
   if (driver->coupling == TRANSPORT_OPERATOR_SPLIT)
     return Run_OperatorSplit(driver);
   else
