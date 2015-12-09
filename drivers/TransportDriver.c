@@ -128,6 +128,8 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
   input->saturation = 1.0;
   input->temperature = 25.0;
   input->velocity = 0.0;
+  input->left_bc_name = NULL;
+  input->right_bc_name = NULL;
 
   // Fill in fields by parsing the input file.
   int error = ini_parse(input_file, ParseInput, input);
@@ -322,14 +324,18 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
     AllocateAlquimiaAuxiliaryOutputData(&driver->chem_sizes, &driver->chem_aux_output[i]);
   }
 
-  // NOTE: we rely on the engine's input file for kinetics and minerals, so 
-  // NOTE: size the rate constant vectors to zero in the properties. If 
-  // NOTE: we don't do this, PFlotran copies our (zero) values in and uses them.
-  // FIXME: Is this a feature or a bug???
+  // NOTE: we rely on the engine's input file for kinetics, minerals, and 
+  // NOTE: sorption isotherms, so size the rate constant vectors to zero in the 
+  // NOTE: properties. If we don't do this, PFlotran copies our (zero) values 
+  // NOTE: in and uses them.
+  // FIXME: This should be easier in "hands-off" mode.
   for (int i = 0; i < driver->num_cells; ++i)
   {
     FreeAlquimiaVectorDouble(&(driver->chem_properties[i].aqueous_kinetic_rate_cnst));
     FreeAlquimiaVectorDouble(&(driver->chem_properties[i].mineral_rate_cnst));
+    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].isotherm_kd));
+    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].langmuir_b));
+    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].freundlich_n));
   }
 
   // Metadata.
@@ -711,18 +717,19 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
   int num_minerals = driver->chem_sizes.num_minerals;
   int num_surface_sites = driver->chem_sizes.num_surface_sites;
   int num_ion_exchange_sites = driver->chem_sizes.num_ion_exchange_sites;
+  int num_aqueous_complexes = driver->chem_sizes.num_aqueous_complexes;
   int num_aqueous_kinetics = driver->chem_sizes.num_aqueous_kinetics;
-  int num_vars = 1 +                      // grid cell locations 
-                 num_primary +            // total mobile
-                 num_sorbed +             // total immobile
-                 2 * num_minerals +       // mineral volume fractions, specific surface area
-                 num_surface_sites +      // surface site density
-                 num_ion_exchange_sites + // cation exchange capacity
-                 1 +                      // pH
-                 num_aqueous_kinetics +   // aqueous kinetic rate
-                 2 * num_minerals +       // mineral saturation index, reaction rate
-                 2 * num_primary +        // primary free ion concentration, activity coeff
-                 2 * num_sorbed;          // secondary free ion concentration, activity coeff
+  int num_vars = 1 +                        // grid cell locations 
+                 num_primary +              // total mobile
+                 num_sorbed +               // total immobile
+                 2 * num_minerals +         // mineral volume fractions, specific surface area
+                 num_surface_sites +        // surface site density
+                 num_ion_exchange_sites +   // cation exchange capacity
+                 1 +                        // pH
+                 num_aqueous_kinetics +     // aqueous kinetic rate
+                 2 * num_minerals +         // mineral saturation index, reaction rate
+                 2 * num_primary +          // primary free ion concentration, activity coeff
+                 2 * num_aqueous_complexes; // secondary free ion concentration, activity coeff
   int counter = 0;
   AllocateAlquimiaVectorString(num_vars, var_names);
   AllocateAlquimiaVectorDouble(num_vars * driver->num_cells, var_data);
@@ -826,7 +833,7 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
     for (int j = 0; j < num_cells; ++j)
       var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].primary_activity_coeff.data[i];
   }
-  for (int i = 0; i < num_sorbed; ++i, ++counter)
+  for (int i = 0; i < num_aqueous_complexes; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "secondary_free_ion_concentration[%d]", i);
@@ -834,7 +841,7 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
     for (int j = 0; j < num_cells; ++j)
       var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].secondary_free_ion_concentration.data[i];
   }
-  for (int i = 0; i < num_sorbed; ++i, ++counter)
+  for (int i = 0; i < num_aqueous_complexes; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "secondary_activity_coeff[%d]", i);
