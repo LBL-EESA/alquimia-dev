@@ -86,14 +86,12 @@ CHEMISTRY
 
   MINERAL_KINETICS
     Quartz
-      :RATE_CONSTANT 4.51856e-14
       RATE_CONSTANT -13.345 mol/cm^2-sec
     /
     Kaolinite
       RATE_CONSTANT -12.967 mol/cm^2-sec
       PREFACTOR
-      : acid
-        RATE_CONSTANT -12.967 mol/cm^2-sec
+        RATE_CONSTANT -12.967 mol/cm^2-sec <-- acid
         PREFACTOR_SPECIES H+
           ALPHA 0.777
         /
@@ -103,8 +101,7 @@ CHEMISTRY
       RATE_CONSTANT -7.94 mol/cm^2-sec
     /
     Schoepite
-      : equilibrium => fast rate
-      RATE_CONSTANT 2.0 mol/cm^2-sec
+      RATE_CONSTANT 2.0 mol/cm^2-sec <-- equilibrium (fast rate)
     /
     Gibbsite
       RATE_CONSTANT -11.5 mol/cm^2-sec
@@ -116,23 +113,20 @@ CHEMISTRY
       RATE_CONSTANT -8.0 mol/cm^2-sec
     /
     Opal
-      : dissolution
-      RATE_CONSTANT -12.135 mol/cm^2-sec
+      RATE_CONSTANT -12.135 mol/cm^2-sec <-- dissolution
     /
   /
 
   SORPTION
     SURFACE_COMPLEXATION_RXN
       EQUILIBRIUM
-      :MINERAL bulk sediment
-      SITE >davis_OH 1.56199E-01  : [mol/m^3 bulk]
+      SITE >davis_OH 1.56199E-01  : [mol/m^3 bulk] <-- bulk sediment
       COMPLEXES
         (>davis_O)UO2+
       /
     /
     ION_EXCHANGE_RXN
-      :MINERAL Kaolinite
-      CEC 2.75  : [mol/m^3 bulk]
+      CEC 2.75  : [mol/m^3 bulk] <-- Kaolinite
       CATIONS
         Na+   1.0
         Ca++  0.316227766017
@@ -140,18 +134,19 @@ CHEMISTRY
         H+    0.0251188643151
       /
     /
-  END :sorption
+  /
 
-
-  DATABASE ascem-2012-farea-full.dat
+  DATABASE farea.dat
   LOG_FORMULATION
   ACTIVITY_COEFFICIENTS TIMESTEP
-
+  OUTPUT
+    All
+    TOTAL
+  /
 END
 
 :=========================== constraints ======================================
-CONSTRAINT background
-  : initial condition
+CONSTRAINT background : initial condition
   CONCENTRATIONS  : total aqueous [moles/kg_h2o]
     H+       5.4        P
     Al+++    3.09d-8    M Kaolinite
@@ -182,8 +177,7 @@ CONSTRAINT background
 
 END
 
-CONSTRAINT seepage
-  : west BC
+CONSTRAINT seepage : west BC
   CONCENTRATIONS  : total aqueous [moles/kg_h2o]
     H+       2.05       P
     Al+++    1.00d-8    T
