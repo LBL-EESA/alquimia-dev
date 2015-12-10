@@ -97,6 +97,10 @@ static int ParseInput(void* user,
     input->left_bc_name = AlquimiaStringDup(value);
   else if (MATCH("chemistry", "right_boundary_condition"))
     input->right_bc_name = AlquimiaStringDup(value);
+  else if (MATCH("chemistry", "cation_exchange_capacity"))
+    input->cation_exchange_capacity = atof(value);
+  else if (MATCH("chemistry", "surface_site_density"))
+    input->surface_site_density = atof(value);
 
   // Output section.
   else if (MATCH("output", "verbose"))
@@ -130,6 +134,8 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
   input->velocity = 0.0;
   input->left_bc_name = NULL;
   input->right_bc_name = NULL;
+  input->cation_exchange_capacity = 0.0;
+  input->surface_site_density = 0.0;
 
   // Fill in fields by parsing the input file.
   int error = ini_parse(input_file, ParseInput, input);
@@ -367,6 +373,20 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
   }
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_right_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_right_aux_data);
+
+  // Copy the miscellaneous chemistry state information in.
+  // NOTE: For now, we only allow one of each of these reactions.
+  for (int i = 0; i < driver->num_cells; ++i)
+  {
+    for (int j = 0; j < driver->chem_state[i].cation_exchange_capacity.size; ++j)
+      driver->chem_state[i].cation_exchange_capacity.data[j] = input->cation_exchange_capacity;
+    for (int j = 0; j < driver->chem_state[i].surface_site_density.size; ++j)
+      driver->chem_state[i].surface_site_density.data[j] = input->surface_site_density;
+  }
+  for (int j = 0; j < driver->chem_left_state.cation_exchange_capacity.size; ++j)
+    driver->chem_left_state.cation_exchange_capacity.data[j] = input->cation_exchange_capacity;
+  for (int j = 0; j < driver->chem_right_state.cation_exchange_capacity.size; ++j)
+    driver->chem_right_state.cation_exchange_capacity.data[j] = input->cation_exchange_capacity;
 
   // Bookkeeping.
   AllocateAlquimiaState(&driver->chem_sizes, &driver->advected_chem_state);

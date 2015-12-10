@@ -90,6 +90,12 @@ typedef struct
   char* chemistry_engine;
   char* chemistry_input_file;
 
+  // -----------------
+  // Geochemistry data
+  // -----------------
+  double cation_exchange_capacity;
+  double surface_site_density;
+
   // ------------------
   // Output information
   // ------------------
