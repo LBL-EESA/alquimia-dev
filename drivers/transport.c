@@ -27,6 +27,7 @@
 
 #include "petsc.h"
 #include "alquimia/alquimia_memory.h"
+#include "alquimia/alquimia_util.h"
 #include "TransportDriver.h"
 #include "DriverOutput.h"
 
@@ -58,9 +59,9 @@ int main(int argc, char* argv[])
 
   // Set up output.
   DriverOutput* output = NULL;
-  if (strcasecmp(input->output_type, "python") == 0)
+  if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "python"))
     output = PythonDriverOutput_New();
-  else if (strcasecmp(input->output_type, "gnuplot") == 0)
+  else if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "gnuplot"))
     output = GnuplotDriverOutput_New();
 
   // Create a TransportDriver from the parsed input.
