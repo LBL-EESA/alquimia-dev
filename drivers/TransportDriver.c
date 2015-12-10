@@ -106,9 +106,9 @@ static int ParseInput(void* user,
   else if (MATCH("output", "verbose"))
   {
     input->verbose = ((strcmp(value, "1") == 0) || 
-                      (strcasecmp(value, "true") == 0) ||
-                      (strcasecmp(value, "yes") == 0) ||
-                      (strcasecmp(value, "on") == 0)) ? true : false;
+                      AlquimiaCaseInsensitiveStringCompare(value, "true") ||
+                      AlquimiaCaseInsensitiveStringCompare(value, "yes") ||
+                      AlquimiaCaseInsensitiveStringCompare(value, "on")) ? true : false;
   }
   else if (MATCH("output", "type"))
     input->output_type = AlquimiaStringDup(value);
