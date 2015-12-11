@@ -641,7 +641,7 @@ static int ComputeAdvectiveFluxes(TransportDriver* driver,
 #endif
 
       // Compute the interface porosity.
-      double phi = 0.5 * (driver->chem_state[i-1].porosity + driver->chem_state[i].porosity);
+      double phi = 0.5 * (driver->chem_state[i].porosity + driver->chem_state[i+1].porosity);
 
       // Compute the flux.
       advective_fluxes[num_primary * (i+1) + c] = phi * driver->vx * interface_conc;
