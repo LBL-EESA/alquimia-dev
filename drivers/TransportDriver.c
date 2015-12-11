@@ -385,8 +385,12 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
   }
   for (int j = 0; j < driver->chem_left_state.cation_exchange_capacity.size; ++j)
     driver->chem_left_state.cation_exchange_capacity.data[j] = input->cation_exchange_capacity;
+  for (int j = 0; j < driver->chem_left_state.surface_site_density.size; ++j)
+    driver->chem_left_state.surface_site_density.data[j] = input->surface_site_density;
   for (int j = 0; j < driver->chem_right_state.cation_exchange_capacity.size; ++j)
     driver->chem_right_state.cation_exchange_capacity.data[j] = input->cation_exchange_capacity;
+  for (int j = 0; j < driver->chem_right_state.surface_site_density.size; ++j)
+    driver->chem_right_state.surface_site_density.data[j] = input->surface_site_density;
 
   // Bookkeeping.
   AllocateAlquimiaState(&driver->chem_sizes, &driver->advected_chem_state);
@@ -805,7 +809,7 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
     snprintf(var_name, 1023, "cation_exchange_capacity[%s]", driver->chem_metadata.ion_exchange_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
     for (int j = 0; j < num_cells; ++j)
-      var_data->data[num_vars*counter + j] = driver->chem_state[j].cation_exchange_capacity.data[i];
+      var_data->data[num_vars*j + counter] = driver->chem_state[j].cation_exchange_capacity.data[i];
   }
   {
     var_names->data[counter] = AlquimiaStringDup("pH");
