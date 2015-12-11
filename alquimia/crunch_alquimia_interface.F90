@@ -309,7 +309,7 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
   ! Alquimia sizes
   call SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
                         nexchange, nsurf, ndecay, npot, &
-                        nretard, sizes)
+                        nretard, ikin, sizes)
 
   ! Engine functionality
   ! note: no need to pass anything for now
@@ -615,7 +615,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
 
   ! function parameters
   type (c_ptr), intent(inout) :: cf_engine_state
-  real (c_double), intent(in) :: delta_t
+  real (c_double), value, intent(in) :: delta_t
   type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
@@ -1315,7 +1315,7 @@ end subroutine SetEngineFunctionality
 ! **************************************************************************** !
 subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
                             nexchange, nsurf, ndecay, npot, &
-                            nretard, sizes)
+                            nretard, ikin, sizes)
 
 ! note(smr): zeros denote unavailable processes for now, aug 8 2014
 
@@ -1336,6 +1336,7 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   integer(i4b), intent(in) :: nsurf
   integer(i4b), intent(in) :: ndecay
   integer(i4b), intent(in) :: npot
+  integer(i4b), intent(in) :: ikin
   integer(i4b), intent(inout) :: nretard
   type (AlquimiaSizes), intent(out) :: sizes
 
@@ -1366,6 +1367,7 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
   else
      sizes%num_sorbed = 0
   end if
+  sizes%num_aqueous_kinetics = ikin
   call GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
                              sizes%num_aux_integers, sizes%num_aux_doubles)

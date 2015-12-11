@@ -63,7 +63,7 @@ extern "C" {
       AlquimiaEngineStatus* status);
   void pflotran_alquimia_reactionstepoperatorsplit(
       void* pft_engine_state,
-      double* delta_t,
+      double delta_t,
       AlquimiaProperties* material_properties,
       AlquimiaState* state,
       AlquimiaAuxiliaryData* aux_data,

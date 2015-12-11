@@ -63,7 +63,7 @@ extern "C" {
       AlquimiaEngineStatus* status);
   void crunch_alquimia_reactionstepoperatorsplit(
       void* cf_engine_state,
-      double* delta_t,
+      double delta_t,
       AlquimiaProperties* properties,
       AlquimiaState* state,
       AlquimiaAuxiliaryData* aux_data,

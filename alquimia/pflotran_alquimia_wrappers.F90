@@ -144,7 +144,7 @@ subroutine PFloTran_Alquimia_ReactionStepOperatorSplit( &
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
-  real (c_double), intent(in) :: delta_t
+  real (c_double), value, intent(in) :: delta_t
   type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data

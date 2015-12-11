@@ -28,22 +28,30 @@
 */
 
 
-/*******************************************************************************
- **
- **  C utilities for working with alquimia data structures
- **
- *******************************************************************************/
+//------------------------------------------------------------------------
+//
+//   C utilities for working with alquimia data structures
+//
+//------------------------------------------------------------------------
 
 #include "alquimia/alquimia_util.h"
 #include "alquimia/alquimia_containers.h"
 #include "alquimia/alquimia_interface.h"
 #include "alquimia/alquimia_constants.h"
 
-/*******************************************************************************
- **
- **  Strings
- **
- *******************************************************************************/
+//------------------------------------------------------------------------
+//
+//   Strings
+//
+//------------------------------------------------------------------------
+char* AlquimiaStringDup(const char* str)
+{
+  int len = strlen(str);
+  char* copy = malloc((len+1)*sizeof(char));
+  strcpy(copy, str);
+  return copy;
+}
+
 bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                           const char* const str2) {
   int i;
@@ -61,11 +69,11 @@ bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
   return equal;
 }  /* end AlquimiaCaseInsensitiveStringCompare() */
 
-/*******************************************************************************
- **
- **  Mapping Species names - and indices
- **
- *******************************************************************************/
+//------------------------------------------------------------------------
+//
+//   Mapping Species names - and indices
+//
+//------------------------------------------------------------------------
 void AlquimiaFindIndexFromName(const char* const name,
                                const AlquimiaVectorString* const names,
                                int* index) {
@@ -80,191 +88,375 @@ void AlquimiaFindIndexFromName(const char* const name,
 }  /* end AlquimiaFindIndexFromName() */
 
 
-/*******************************************************************************
- **
- **  Printing Vectors
- **
- *******************************************************************************/
-void PrintAlquimiaVectorDouble(const char* const name,
-                               const AlquimiaVectorDouble* const vector) {
-  int i;
-  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
-  fprintf(stdout, "   [ ");
-  for (i = 0; i < vector->size; ++i) {
-    fprintf(stdout, "%e, ", vector->data[i]);
+//------------------------------------------------------------------------
+//
+//   Copying containers
+//
+//------------------------------------------------------------------------
+void CopyAlquimiaVectorDouble(const AlquimiaVectorDouble* const source,
+                              AlquimiaVectorDouble* destination)
+{
+  if (destination->size != source->size)
+  {
+    destination->size = source->size;
+    destination->data = realloc(destination->data, sizeof(double) * destination->size);
   }
-  fprintf(stdout, "]\n");
+  memcpy(destination->data, source->data, sizeof(double) * destination->size);
+}
+
+void CopyAlquimiaVectorInt(const AlquimiaVectorInt* const source,
+                           AlquimiaVectorInt* destination)
+{
+  if (destination->size != source->size)
+  {
+    destination->size = source->size;
+    destination->data = realloc(destination->data, sizeof(int) * destination->size);
+  }
+  memcpy(destination->data, source->data, sizeof(int) * destination->size);
+}
+
+void CopyAlquimiaVectorString(const AlquimiaVectorString* const source,
+                              AlquimiaVectorString* destination)
+{
+  if (destination->size != source->size)
+  {
+    destination->size = source->size;
+    destination->data = realloc(destination->data, sizeof(char*) * destination->size);
+  }
+  for (int i = 0; i < destination->size; ++i)
+    destination->data[i] = AlquimiaStringDup(source->data[i]);
+}
+
+void CopyAlquimiaSizes(const AlquimiaSizes* const source, 
+                       AlquimiaSizes* destination)
+{
+  memcpy(destination, source, sizeof(AlquimiaSizes));
+}
+
+void CopyAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const source, 
+                                 AlquimiaProblemMetaData* destination)
+{
+  CopyAlquimiaVectorString(&source->primary_names, &destination->primary_names);
+  CopyAlquimiaVectorInt(&source->positivity, &destination->positivity);
+  CopyAlquimiaVectorString(&source->mineral_names, &destination->mineral_names);
+  CopyAlquimiaVectorString(&source->surface_site_names, &destination->surface_site_names);
+  CopyAlquimiaVectorString(&source->ion_exchange_names, &destination->ion_exchange_names);
+  CopyAlquimiaVectorString(&source->isotherm_species_names, &destination->isotherm_species_names);
+  CopyAlquimiaVectorString(&source->aqueous_kinetic_names, &destination->aqueous_kinetic_names);
+}
+
+void CopyAlquimiaProperties(const AlquimiaProperties* const source, 
+                            AlquimiaProperties* destination)
+{
+  destination->volume = source->volume;
+  destination->saturation = source->saturation;
+  CopyAlquimiaVectorDouble(&source->isotherm_kd, &destination->isotherm_kd);
+  CopyAlquimiaVectorDouble(&source->freundlich_n, &destination->freundlich_n);
+  CopyAlquimiaVectorDouble(&source->langmuir_b, &destination->langmuir_b);
+  CopyAlquimiaVectorDouble(&source->mineral_rate_cnst, &destination->mineral_rate_cnst);
+  CopyAlquimiaVectorDouble(&source->aqueous_kinetic_rate_cnst, &destination->aqueous_kinetic_rate_cnst);
+}
+
+void CopyAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const source, 
+                                     AlquimiaEngineFunctionality* destination)
+{
+  memcpy(destination, source, sizeof(AlquimiaEngineFunctionality));
+}
+
+void CopyAlquimiaState(const AlquimiaState* const source, 
+                       AlquimiaState* destination)
+{
+  destination->water_density = source->water_density;
+  destination->porosity = source->porosity;
+  destination->temperature = source->temperature;
+  destination->aqueous_pressure = source->aqueous_pressure;
+  CopyAlquimiaVectorDouble(&source->total_mobile, &destination->total_mobile);
+  CopyAlquimiaVectorDouble(&source->total_immobile, &destination->total_immobile);
+  CopyAlquimiaVectorDouble(&source->mineral_volume_fraction, &destination->mineral_volume_fraction);
+  CopyAlquimiaVectorDouble(&source->mineral_specific_surface_area, &destination->mineral_specific_surface_area);
+  CopyAlquimiaVectorDouble(&source->surface_site_density, &destination->surface_site_density);
+  CopyAlquimiaVectorDouble(&source->cation_exchange_capacity, &destination->cation_exchange_capacity);
+}
+
+void CopyAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const source, 
+                               AlquimiaAuxiliaryData* destination)
+{
+  CopyAlquimiaVectorInt(&source->aux_ints, &destination->aux_ints);
+  CopyAlquimiaVectorDouble(&source->aux_doubles, &destination->aux_doubles);
+}
+
+void CopyAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const source, 
+                                     AlquimiaAuxiliaryOutputData* destination)
+{
+  destination->pH = source->pH;
+  CopyAlquimiaVectorDouble(&source->aqueous_kinetic_rate, &destination->aqueous_kinetic_rate);
+  CopyAlquimiaVectorDouble(&source->mineral_saturation_index, &destination->mineral_saturation_index);
+  CopyAlquimiaVectorDouble(&source->mineral_reaction_rate, &destination->mineral_reaction_rate);
+  CopyAlquimiaVectorDouble(&source->primary_free_ion_concentration, &destination->primary_free_ion_concentration);
+  CopyAlquimiaVectorDouble(&source->primary_activity_coeff, &destination->primary_activity_coeff);
+  CopyAlquimiaVectorDouble(&source->secondary_free_ion_concentration, &destination->secondary_free_ion_concentration);
+  CopyAlquimiaVectorDouble(&source->secondary_activity_coeff, &destination->secondary_activity_coeff);
+}
+
+void CopyAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const source, 
+                                      AlquimiaGeochemicalCondition* destination)
+{
+  if (destination->name != NULL)
+    free(destination->name);
+  destination->name = AlquimiaStringDup(source->name);
+  CopyAlquimiaAqueousConstraintVector(&source->aqueous_constraints, &destination->aqueous_constraints);
+  CopyAlquimiaMineralConstraintVector(&source->mineral_constraints, &destination->mineral_constraints);
+}
+
+void CopyAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* source, 
+                                            AlquimiaGeochemicalConditionVector* destination)
+{
+  if (destination->size != source->size)
+  {
+    destination->size = source->size;
+    destination->data = realloc(destination->data, sizeof(AlquimiaGeochemicalCondition) * destination->size);
+  }
+  for (int i = 0; i < destination->size; ++i)
+    CopyAlquimiaGeochemicalCondition(&source->data[i], &destination->data[i]);
+}
+
+void CopyAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const source, 
+                                   AlquimiaAqueousConstraint* destination)
+{
+  if (destination->primary_species_name != NULL)
+    free(destination->primary_species_name);
+  destination->primary_species_name = AlquimiaStringDup(source->primary_species_name);
+  if (destination->constraint_type != NULL)
+    free(destination->constraint_type);
+  destination->constraint_type = AlquimiaStringDup(source->constraint_type);
+  if (destination->associated_species != NULL)
+    free(destination->associated_species);
+  destination->associated_species = AlquimiaStringDup(source->associated_species);
+  destination->value = source->value;
+}
+
+void CopyAlquimiaAqueousConstraintVector(const AlquimiaAqueousConstraintVector* const source, 
+                                         AlquimiaAqueousConstraintVector* destination)
+{
+  if (destination->size != source->size)
+  {
+    destination->size = source->size;
+    destination->data = realloc(destination->data, sizeof(AlquimiaAqueousConstraint) * destination->size);
+  }
+  for (int i = 0; i < destination->size; ++i)
+    CopyAlquimiaAqueousConstraint(&source->data[i], &destination->data[i]);
+}
+
+void CopyAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const source, 
+                                   AlquimiaMineralConstraint* destination)
+{
+  if (destination->mineral_name != NULL)
+    free(destination->mineral_name);
+  destination->mineral_name = AlquimiaStringDup(source->mineral_name);
+  destination->volume_fraction = source->volume_fraction;
+  destination->specific_surface_area = source->specific_surface_area;
+}
+
+void CopyAlquimiaMineralConstraintVector(const AlquimiaMineralConstraintVector* const source, 
+                                         AlquimiaMineralConstraintVector* destination)
+{
+  if (destination->size != source->size)
+  {
+    destination->size = source->size;
+    destination->data = realloc(destination->data, sizeof(AlquimiaMineralConstraint) * destination->size);
+  }
+  for (int i = 0; i < destination->size; ++i)
+    CopyAlquimiaMineralConstraint(&source->data[i], &destination->data[i]);
+}
+
+//------------------------------------------------------------------------
+//
+//   Printing vectors
+//
+//------------------------------------------------------------------------
+void PrintAlquimiaVectorDouble(const char* const name,
+                               const AlquimiaVectorDouble* const vector,
+                               FILE* file) {
+  int i;
+  fprintf(file, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
+  fprintf(file, "   [ ");
+  for (i = 0; i < vector->size; ++i) {
+    fprintf(file, "%e, ", vector->data[i]);
+  }
+  fprintf(file, "]\n");
 }  /* end PrintAlqumiaVectorDouble() */
 
 void PrintAlquimiaVectorInt(const char* const name,
-                            const AlquimiaVectorInt* const vector) {
+                            const AlquimiaVectorInt* const vector,
+                            FILE* file) {
   int i;
-  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
-  fprintf(stdout, "   [ ");
+  fprintf(file, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
+  fprintf(file, "   [ ");
   for (i = 0; i < vector->size; ++i) {
-    fprintf(stdout, "%d, ", vector->data[i]);
+    fprintf(file, "%d, ", vector->data[i]);
   }
-  fprintf(stdout, "]\n");
+  fprintf(file, "]\n");
 }  /* end PrintAlqumiaVectorInt() */
 
 void PrintAlquimiaVectorString(const char* const name,
-                               const AlquimiaVectorString* const vector) {
+                               const AlquimiaVectorString* const vector,
+                               FILE* file) {
   int i;
-  fprintf(stdout, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
-  fprintf(stdout, "   [ ");
+  fprintf(file, "    %s (%d) (%p):\n", name, vector->size, (void*)(&vector->data));
+  fprintf(file, "   [ ");
   for (i = 0; i < vector->size; ++i) {
-    fprintf(stdout, "'%s', ", vector->data[i]);
+    fprintf(file, "'%s', ", vector->data[i]);
   }
-  fprintf(stdout, "]\n");
+  fprintf(file, "]\n");
 }  /* end PrintAlqumiaVectorInt() */
 
 
-/*******************************************************************************
- **
- **  Printing Containers
- **
- *******************************************************************************/
-void PrintAlquimiaData(const AlquimiaData* const data) {
-  fprintf(stdout, "- Alquimia Data ----------------------------------------\n");
-  fprintf(stdout, "  engine_state : %p\n", data->engine_state);
-  PrintAlquimiaSizes(&data->sizes);
-  PrintAlquimiaEngineFunctionality(&data->functionality);
-  PrintAlquimiaState(&data->state);
-  PrintAlquimiaProperties(&data->properties);
-  PrintAlquimiaAuxiliaryData(&data->aux_data);
-  PrintAlquimiaProblemMetaData(&data->meta_data);
-  PrintAlquimiaAuxiliaryOutputData(&data->aux_output);
-  fprintf(stdout, "---------------------------------------- Alquimia Data -\n");
+//------------------------------------------------------------------------
+//
+//   Printing containers
+//
+//------------------------------------------------------------------------
+void PrintAlquimiaData(const AlquimiaData* const data, FILE* file) {
+  fprintf(file, "- Alquimia Data ----------------------------------------\n");
+  fprintf(file, "  engine_state : %p\n", data->engine_state);
+  PrintAlquimiaSizes(&data->sizes, file);
+  PrintAlquimiaEngineFunctionality(&data->functionality, file);
+  PrintAlquimiaState(&data->state, file);
+  PrintAlquimiaProperties(&data->properties, file);
+  PrintAlquimiaAuxiliaryData(&data->aux_data, file);
+  PrintAlquimiaProblemMetaData(&data->meta_data, file);
+  PrintAlquimiaAuxiliaryOutputData(&data->aux_output, file);
+  fprintf(file, "---------------------------------------- Alquimia Data -\n");
 }  /* end PrintAlquimiaData() */
 
-void PrintAlquimiaSizes(const AlquimiaSizes* const sizes) {
-  fprintf(stdout, "-- Alquimia Sizes :\n");
-  fprintf(stdout, "     num primary species : %d\n", sizes->num_primary);
-  fprintf(stdout, "     num sorbed : %d\n", sizes->num_sorbed);
-  fprintf(stdout, "     num minerals : %d\n", sizes->num_minerals);
-  fprintf(stdout, "     num aqueous complexes : %d\n", sizes->num_aqueous_complexes);
-  fprintf(stdout, "     num aqueous kinetics : %d\n", sizes->num_aqueous_kinetics);
-  fprintf(stdout, "     num surface sites : %d\n", sizes->num_surface_sites);
-  fprintf(stdout, "     num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
-  fprintf(stdout, "     num auxiliary integers : %d\n", sizes->num_aux_integers);
-  fprintf(stdout, "     num auxiliary doubles : %d\n", sizes->num_aux_doubles);
+void PrintAlquimiaSizes(const AlquimiaSizes* const sizes, FILE* file) {
+  fprintf(file, "-- Alquimia Sizes :\n");
+  fprintf(file, "     num primary species : %d\n", sizes->num_primary);
+  fprintf(file, "     num sorbed : %d\n", sizes->num_sorbed);
+  fprintf(file, "     num minerals : %d\n", sizes->num_minerals);
+  fprintf(file, "     num aqueous complexes : %d\n", sizes->num_aqueous_complexes);
+  fprintf(file, "     num aqueous kinetics : %d\n", sizes->num_aqueous_kinetics);
+  fprintf(file, "     num surface sites : %d\n", sizes->num_surface_sites);
+  fprintf(file, "     num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
+  fprintf(file, "     num auxiliary integers : %d\n", sizes->num_aux_integers);
+  fprintf(file, "     num auxiliary doubles : %d\n", sizes->num_aux_doubles);
 }  /* end PrintAlquimiaSizes() */
 
-void PrintAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const functionality) {
+void PrintAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const functionality, FILE* file) {
 
-  fprintf(stdout, "-- Alquimia Engine Functionality :\n");
-  fprintf(stdout, "     thread_safe : %d\n", functionality->thread_safe);
-  fprintf(stdout, "     temperature_dependent : %d\n",
+  fprintf(file, "-- Alquimia Engine Functionality :\n");
+  fprintf(file, "     thread_safe : %d\n", functionality->thread_safe);
+  fprintf(file, "     temperature_dependent : %d\n",
           functionality->temperature_dependent);
-  fprintf(stdout, "     pressure_dependent : %d\n", 
+  fprintf(file, "     pressure_dependent : %d\n", 
           functionality->pressure_dependent);
-  fprintf(stdout, "     porosity_update  : %d\n", functionality->porosity_update);
-  fprintf(stdout, "     index base : %d\n", functionality->index_base);
+  fprintf(file, "     porosity_update  : %d\n", functionality->porosity_update);
+  fprintf(file, "     index base : %d\n", functionality->index_base);
 }  /* end PrintAlquimiaEngineFunctionality() */
 
-void PrintAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const meta_data) {
+void PrintAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const meta_data, FILE* file) {
 
-  fprintf(stdout, "-- Alquimia Problem Meta Data :\n");
-  PrintAlquimiaVectorString("primary names", &(meta_data->primary_names));
-  PrintAlquimiaVectorInt("positivity names", &(meta_data->positivity));
-  PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names));
-  PrintAlquimiaVectorString("surface site names", &(meta_data->surface_site_names));
-  PrintAlquimiaVectorString("ion exchange names", &(meta_data->ion_exchange_names));
-  PrintAlquimiaVectorString("isotherm species names", &(meta_data->isotherm_species_names));
-  PrintAlquimiaVectorString("aqueous kinetic names", &(meta_data->aqueous_kinetic_names));
+  fprintf(file, "-- Alquimia Problem Meta Data :\n");
+  PrintAlquimiaVectorString("primary names", &(meta_data->primary_names), file);
+  PrintAlquimiaVectorInt("positivity names", &(meta_data->positivity), file);
+  PrintAlquimiaVectorString("mineral names", &(meta_data->mineral_names), file);
+  PrintAlquimiaVectorString("surface site names", &(meta_data->surface_site_names), file);
+  PrintAlquimiaVectorString("ion exchange names", &(meta_data->ion_exchange_names), file);
+  PrintAlquimiaVectorString("isotherm species names", &(meta_data->isotherm_species_names), file);
+  PrintAlquimiaVectorString("aqueous kinetic names", &(meta_data->aqueous_kinetic_names), file);
 }  /* end PrintAlquimiaProblemMetaData() */
 
-void PrintAlquimiaProperties(const AlquimiaProperties* const mat_prop) {
+void PrintAlquimiaProperties(const AlquimiaProperties* const mat_prop, FILE* file) {
 
-  fprintf(stdout, "-- Alquimia Properties :\n");
-  fprintf(stdout, "     volume : %f\n", mat_prop->volume);
-  fprintf(stdout, "     saturation : %f\n", mat_prop->saturation);
-  PrintAlquimiaVectorDouble("isotherm kd", &(mat_prop->isotherm_kd));
-  PrintAlquimiaVectorDouble("freundlich n", &(mat_prop->freundlich_n));
-  PrintAlquimiaVectorDouble("langmuir b", &(mat_prop->langmuir_b));
-  PrintAlquimiaVectorDouble("mineral rate cnst", &(mat_prop->mineral_rate_cnst));
-  PrintAlquimiaVectorDouble("aqueous kinetic rate cnst", &(mat_prop->aqueous_kinetic_rate_cnst));
+  fprintf(file, "-- Alquimia Properties :\n");
+  fprintf(file, "     volume : %f\n", mat_prop->volume);
+  fprintf(file, "     saturation : %f\n", mat_prop->saturation);
+  PrintAlquimiaVectorDouble("isotherm kd", &(mat_prop->isotherm_kd), file);
+  PrintAlquimiaVectorDouble("freundlich n", &(mat_prop->freundlich_n), file);
+  PrintAlquimiaVectorDouble("langmuir b", &(mat_prop->langmuir_b), file);
+  PrintAlquimiaVectorDouble("mineral rate cnst", &(mat_prop->mineral_rate_cnst), file);
+  PrintAlquimiaVectorDouble("aqueous kinetic rate cnst", &(mat_prop->aqueous_kinetic_rate_cnst), file);
 }  /* end PrintAlquimiaProperties() */
 
-void PrintAlquimiaState(const AlquimiaState* const state) {
+void PrintAlquimiaState(const AlquimiaState* const state, FILE* file) {
 
-  fprintf(stdout, "-- Alquimia State:\n");
-  fprintf(stdout, "     water density : %f\n", state->water_density);
-  fprintf(stdout, "     porosity : %f\n", state->porosity);
-  fprintf(stdout, "     temperature : %f\n", state->temperature);
-  fprintf(stdout, "     aqueous_pressure : %f\n", state->aqueous_pressure);
+  fprintf(file, "-- Alquimia State:\n");
+  fprintf(file, "     water density : %f\n", state->water_density);
+  fprintf(file, "     porosity : %f\n", state->porosity);
+  fprintf(file, "     temperature : %f\n", state->temperature);
+  fprintf(file, "     aqueous_pressure : %f\n", state->aqueous_pressure);
 
-  PrintAlquimiaVectorDouble("total_mobile", &(state->total_mobile));
-  PrintAlquimiaVectorDouble("total_immobile", &(state->total_immobile));
+  PrintAlquimiaVectorDouble("total_mobile", &(state->total_mobile), file);
+  PrintAlquimiaVectorDouble("total_immobile", &(state->total_immobile), file);
   PrintAlquimiaVectorDouble("kinetic minerals volume fraction",
-                            &(state->mineral_volume_fraction));
+                            &(state->mineral_volume_fraction), file);
   PrintAlquimiaVectorDouble("kinetic minerals specific surface area",
-                            &(state->mineral_specific_surface_area));
+                            &(state->mineral_specific_surface_area), file);
   PrintAlquimiaVectorDouble("cation_exchange_capacity",
-                            &(state->cation_exchange_capacity));
+                            &(state->cation_exchange_capacity), file);
   PrintAlquimiaVectorDouble("surface_site_density",
-                            &(state->surface_site_density));
+                            &(state->surface_site_density), file);
 }  /* end PrintAlquimiaState() */
 
-void PrintAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const aux_data) {
+void PrintAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const aux_data, FILE* file) {
 
-  fprintf(stdout, "-- Alquimia Auxiliary Data:\n");
-  PrintAlquimiaVectorInt("auxiliary integers", &(aux_data->aux_ints));
-  PrintAlquimiaVectorDouble("auxiliary doubles", &(aux_data->aux_doubles));
+  fprintf(file, "-- Alquimia Auxiliary Data:\n");
+  PrintAlquimiaVectorInt("auxiliary integers", &(aux_data->aux_ints), file);
+  PrintAlquimiaVectorDouble("auxiliary doubles", &(aux_data->aux_doubles), file);
 }  /* end PrintAlquimiaAuxiliaryData() */
 
-void PrintAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const aux_output) {
+void PrintAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const aux_output, FILE* file) {
 
-  fprintf(stdout, "-- Alquimia Auxiliary Output Data:\n");
-  fprintf(stdout, "     pH : %f\n", aux_output->pH);
+  fprintf(file, "-- Alquimia Auxiliary Output Data:\n");
+  fprintf(file, "     pH : %f\n", aux_output->pH);
 
   PrintAlquimiaVectorDouble("mineral saturation index",
-                            &(aux_output->mineral_saturation_index));
+                            &(aux_output->mineral_saturation_index), file);
   PrintAlquimiaVectorDouble("mineral reaction rate",
-                            &(aux_output->mineral_reaction_rate));
+                            &(aux_output->mineral_reaction_rate), file);
   PrintAlquimiaVectorDouble("primary free ion concentrations",
-                            &(aux_output->primary_free_ion_concentration));
+                            &(aux_output->primary_free_ion_concentration), file);
   PrintAlquimiaVectorDouble("primary activity coeff",
-                            &(aux_output->primary_activity_coeff));
+                            &(aux_output->primary_activity_coeff), file);
   PrintAlquimiaVectorDouble("secondary free ion concentrations",
-                            &(aux_output->secondary_free_ion_concentration));
+                            &(aux_output->secondary_free_ion_concentration), file);
   PrintAlquimiaVectorDouble("secondary activity coeff",
-                            &(aux_output->secondary_activity_coeff));
+                            &(aux_output->secondary_activity_coeff), file);
 }  /* end PrintAlquimiaAuxiliaryOutputData() */
 
-void PrintAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* const condition_list) {
+void PrintAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* const condition_list, FILE* file) {
   int i;
-  fprintf(stdout, "- Alquimia Geochemical Condition List ------------------\n");
+  fprintf(file, "- Alquimia Geochemical Condition List ------------------\n");
   for (i = 0; i < condition_list->size; ++i) {
-    PrintAlquimiaGeochemicalCondition(&(condition_list->data[i]));
-    fprintf(stdout, "\n");
+    PrintAlquimiaGeochemicalCondition(&(condition_list->data[i]), file);
+    fprintf(file, "\n");
   }
-  fprintf(stdout, "------------------ Alquimia Geochemical Condition List -\n");
+  fprintf(file, "------------------ Alquimia Geochemical Condition List -\n");
 }  /*  PrintAlquimiaGeochemicalConditionVector() */
 
-void PrintAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const condition) {
+void PrintAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const condition, FILE* file) {
   int i;
-  fprintf(stdout, "-- Alquimia Geochemical Condition : %s\n", condition->name);
+  fprintf(file, "-- Alquimia Geochemical Condition : %s\n", condition->name);
   for (i = 0; i < condition->aqueous_constraints.size; ++i) {
-    PrintAlquimiaAqueousConstraint(&(condition->aqueous_constraints.data[i]));
+    PrintAlquimiaAqueousConstraint(&(condition->aqueous_constraints.data[i]), file);
   }
   for (i = 0; i < condition->mineral_constraints.size; ++i) {
-    PrintAlquimiaMineralConstraint(&(condition->mineral_constraints.data[i]));
+    PrintAlquimiaMineralConstraint(&(condition->mineral_constraints.data[i]), file);
   }
-  fprintf(stdout, "\n");
+  fprintf(file, "\n");
 }  /*  PrintAlquimiaGeochemicalCondition() */
 
-void PrintAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const constraint) {
-  fprintf(stdout, "--- Alquimia Aqueous Constraint : \n");
-  fprintf(stdout, "      primary species : %s\n", constraint->primary_species_name);
-  fprintf(stdout, "      constraint type : %s\n", constraint->constraint_type);
-  fprintf(stdout, "      associated species : %s\n", constraint->associated_species);
-  fprintf(stdout, "      value : %e\n", constraint->value);
+void PrintAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const constraint, FILE* file) {
+  fprintf(file, "--- Alquimia Aqueous Constraint : \n");
+  fprintf(file, "      primary species : %s\n", constraint->primary_species_name);
+  fprintf(file, "      constraint type : %s\n", constraint->constraint_type);
+  fprintf(file, "      associated species : %s\n", constraint->associated_species);
+  fprintf(file, "      value : %e\n", constraint->value);
 }  /*  PrintAlquimiaAqueousConstraint() */
 
-void PrintAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const constraint) {
-  fprintf(stdout, "--- Alquimia Mineral Constraint : \n");
-  fprintf(stdout, "      mineral : %s\n", constraint->mineral_name);
-  fprintf(stdout, "      volume fraction : %e\n", constraint->volume_fraction);
-  fprintf(stdout, "      specific surface area : %e\n", constraint->specific_surface_area);
+void PrintAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const constraint, FILE* file) {
+  fprintf(file, "--- Alquimia Mineral Constraint : \n");
+  fprintf(file, "      mineral : %s\n", constraint->mineral_name);
+  fprintf(file, "      volume fraction : %e\n", constraint->volume_fraction);
+  fprintf(file, "      specific surface area : %e\n", constraint->specific_surface_area);
 }  /*  PrintAlquimiaMineralConstraint() */

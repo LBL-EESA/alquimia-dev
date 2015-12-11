@@ -37,32 +37,72 @@
 extern "C" {
 #endif /* __cplusplus */
 
+  // String manipulation functions.
+  char* AlquimiaStringDup(const char* str);
   bool AlquimiaCaseInsensitiveStringCompare(const char* const str1,
                                             const char* const str2);
 
   void AlquimiaFindIndexFromName(const char* const name,
                                  const AlquimiaVectorString* const names,
-                                   int* index);
+                                 int* index);
 
+  // Functions for copying Alquimia containers.
+  void CopyAlquimiaVectorDouble(const AlquimiaVectorDouble* const source,
+                                AlquimiaVectorDouble* destination);
+  void CopyAlquimiaVectorInt(const AlquimiaVectorInt* const source,
+                             AlquimiaVectorInt* destination);
+  void CopyAlquimiaVectorString(const AlquimiaVectorString* const source,
+                                AlquimiaVectorString* destination);
+  void CopyAlquimiaSizes(const AlquimiaSizes* const source, 
+                         AlquimiaSizes* destination);
+  void CopyAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const source, 
+                                   AlquimiaProblemMetaData* destination);
+  void CopyAlquimiaProperties(const AlquimiaProperties* const source, 
+                              AlquimiaProperties* destination);
+  void CopyAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const source, 
+                                       AlquimiaEngineFunctionality* destination);
+  void CopyAlquimiaState(const AlquimiaState* const source, 
+                         AlquimiaState* destination);
+  void CopyAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const source, 
+                                 AlquimiaAuxiliaryData* destination);
+  void CopyAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const source, 
+                                       AlquimiaAuxiliaryOutputData* destination);
+  void CopyAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const source, 
+                                        AlquimiaGeochemicalCondition* destination);
+  void CopyAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* source, 
+                                              AlquimiaGeochemicalConditionVector* destination);
+  void CopyAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const source, 
+                                     AlquimiaAqueousConstraint* destination);
+  void CopyAlquimiaAqueousConstraintVector(const AlquimiaAqueousConstraintVector* const source, 
+                                           AlquimiaAqueousConstraintVector* destination);
+  void CopyAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const source, 
+                                     AlquimiaMineralConstraint* destination);
+  void CopyAlquimiaMineralConstraintVector(const AlquimiaMineralConstraintVector* const source, 
+                                           AlquimiaMineralConstraintVector* destination);
+
+  // The following functions write data to the given FILE.
   void PrintAlquimiaVectorDouble(const char* const name,
-                                 const AlquimiaVectorDouble* const vector);
+                                 const AlquimiaVectorDouble* const vector,
+                                 FILE* file);
   void PrintAlquimiaVectorInt(const char* const name,
-                              const AlquimiaVectorInt* const vector);
+                              const AlquimiaVectorInt* const vector,
+                              FILE* file);
   void PrintAlquimiaVectorString(const char* const name,
-                                 const AlquimiaVectorString* const vector);
+                                 const AlquimiaVectorString* const vector,
+                                 FILE* file);
 
-  void PrintAlquimiaData(const AlquimiaData* const data);
-  void PrintAlquimiaSizes(const AlquimiaSizes* const sizes);
-  void PrintAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const meta_data);
-  void PrintAlquimiaProperties(const AlquimiaProperties* const prop);
-  void PrintAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const functionality);
-  void PrintAlquimiaState(const AlquimiaState* const state);
-  void PrintAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const aux_data);
-  void PrintAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const aux_output);
-  void PrintAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* condition_list);
-  void PrintAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const condition);
-  void PrintAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const constraint);
-  void PrintAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const constraint);
+  void PrintAlquimiaData(const AlquimiaData* const data, FILE* file);
+  void PrintAlquimiaSizes(const AlquimiaSizes* const sizes, FILE* file);
+  void PrintAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const meta_data, FILE* file);
+  void PrintAlquimiaProperties(const AlquimiaProperties* const prop, FILE* file);
+  void PrintAlquimiaEngineFunctionality(const AlquimiaEngineFunctionality* const functionality, FILE* file);
+  void PrintAlquimiaState(const AlquimiaState* const state, FILE* file);
+  void PrintAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const aux_data, FILE* file);
+  void PrintAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const aux_output, FILE* file);
+  void PrintAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* condition_list, FILE* file);
+  void PrintAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const condition, FILE* file);
+  void PrintAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const constraint, FILE* file);
+  void PrintAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const constraint, FILE* file);
 
 #ifdef __cplusplus
 }

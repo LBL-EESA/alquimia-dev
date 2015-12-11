@@ -89,7 +89,7 @@ extern "C" {
     /* take one (or more?) reaction steps in operator split mode */
     void (*ReactionStepOperatorSplit)(
         void* pft_engine_state,
-        double* delta_t,
+        double delta_t,
         AlquimiaProperties* props,
         AlquimiaState* state,
         AlquimiaAuxiliaryData* aux_data,
