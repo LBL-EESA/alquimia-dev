@@ -143,6 +143,8 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
   input->right_bc_name = NULL;
   input->cation_exchange_capacity = 0.0;
   input->surface_site_density = 0.0;
+  input->output_type = NULL;
+  input->output_file = NULL;
 
   // Fill in fields by parsing the input file.
   int error = ini_parse(input_file, ParseInput, input);
@@ -180,17 +182,27 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
   char default_output_file[FILENAME_MAX];
   if (input->output_file == NULL)
   {
-    // Start at the first . we find from the end.
-    int i = strlen(input_file)-1;
-    while ((i > 0) && (input_file[i] != '.')) --i;
-    if (i == 0)
-      sprintf(default_output_file, "%s.gnuplot", input_file);
+    // Find the last '.' in the input filename.
+    int dot = strlen(input_file)-1;
+    while ((dot > 0) && (input_file[dot] != '.')) --dot;
+    char suffix[16];
+
+    // Determine the suffix from the output type.
+    if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "gnuplot"))
+      sprintf(suffix, ".gnuplot");
+    else if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "python"))
+      sprintf(suffix, ".py");
+
+    // Append the suffix.
+    if (dot == 0)
+      sprintf(default_output_file, "%s%s", input_file, suffix);
     else
     {
-      memcpy(default_output_file, input_file, sizeof(char) * i);
-      strcat(default_output_file, ".gnuplot");
+      memcpy(default_output_file, input_file, sizeof(char) * dot);
+      strcat(default_output_file, suffix);
     }
-    input->output_type = AlquimiaStringDup(default_output_file);
+
+    input->output_file = AlquimiaStringDup(default_output_file);
   }
 
   return input;
