@@ -202,6 +202,18 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
       strcat(default_output_file, suffix);
     }
 
+    // Python modules can't have hyphens in their names, so we replace them 
+    // with underscores.
+    if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "python"))
+    {
+      int len = strlen(default_output_file);
+      for (int i = 0; i < len; ++i)
+      {
+        if (default_output_file[i] == '-')
+          default_output_file[i] = '_';
+      }
+    }
+
     input->output_file = AlquimiaStringDup(default_output_file);
   }
 
