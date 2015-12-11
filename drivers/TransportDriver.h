@@ -51,6 +51,10 @@ typedef struct
   // ---------------------
   TransportCoupling coupling;
 
+  // Do we use hands-off mode to read property data directly from the engine's
+  // input file?
+  bool hands_off;
+
   // Start/stop time, max number of steps.
   double t_min, t_max;
   int max_steps;

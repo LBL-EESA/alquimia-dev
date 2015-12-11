@@ -43,6 +43,15 @@ static inline double Max(double a, double b)
   return (a >= b) ? a : b;
 }
 
+// Returns true if the given value string matches a "true" boolean value.
+static bool ValueIsTrue(const char* value)
+{
+  return ((strcmp(value, "1") == 0) || 
+          AlquimiaCaseInsensitiveStringCompare(value, "true") ||
+          AlquimiaCaseInsensitiveStringCompare(value, "yes") ||
+          AlquimiaCaseInsensitiveStringCompare(value, "on")) ? true : false;
+}
+
 // Input parsing stuff. See https://github.com/benhoyt/inih for details.
 static int ParseInput(void* user,
                       const char* section,
@@ -55,6 +64,8 @@ static int ParseInput(void* user,
   // Simulation section
   if (MATCH("simulation","description"))
     input->description = AlquimiaStringDup(value);
+  else if (MATCH("simulation", "hands_off"))
+    input->hands_off = ValueIsTrue(value);
   else if (MATCH("simulation","t_min"))
     input->t_min = atof(value);
   else if (MATCH("simulation","t_max"))
@@ -104,12 +115,7 @@ static int ParseInput(void* user,
 
   // Output section.
   else if (MATCH("output", "verbose"))
-  {
-    input->verbose = ((strcmp(value, "1") == 0) || 
-                      AlquimiaCaseInsensitiveStringCompare(value, "true") ||
-                      AlquimiaCaseInsensitiveStringCompare(value, "yes") ||
-                      AlquimiaCaseInsensitiveStringCompare(value, "on")) ? true : false;
-  }
+    input->verbose = ValueIsTrue(value);
   else if (MATCH("output", "type"))
     input->output_type = AlquimiaStringDup(value);
   else if (MATCH("output", "filename"))
@@ -124,6 +130,7 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
   memset(input, 0, sizeof(TransportDriverInput));
 
   // Make sure we have some meaningful defaults.
+  input->hands_off = true; // Hands-off by default.
   input->t_min = 0.0;
   input->max_steps = INT_MAX;
   input->dt = FLT_MAX;
@@ -146,6 +153,8 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
   }
 
   // Verify that our required fields are filled properly.
+  if (!input->hands_off)
+    alquimia_error("TransportDriver: simulation->hands_off must be set to true at the moment.");
   if (input->t_max <= input->t_min)
     alquimia_error("TransportDriver: simulation->t_max must be greater than simulation->t_min.");
   if (input->max_steps < 0)
@@ -301,6 +310,7 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
   // Set up the engine and get storage requirements.
   AlquimiaEngineFunctionality chem_engine_functionality;
   driver->chem.Setup(input->chemistry_input_file,
+                     input->hands_off,
                      &driver->chem_engine,
                      &driver->chem_sizes,
                      &chem_engine_functionality,
@@ -328,20 +338,6 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
     AllocateAlquimiaProperties(&driver->chem_sizes, &driver->chem_properties[i]);
     AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_aux_data[i]);
     AllocateAlquimiaAuxiliaryOutputData(&driver->chem_sizes, &driver->chem_aux_output[i]);
-  }
-
-  // NOTE: we rely on the engine's input file for kinetics, minerals, and 
-  // NOTE: sorption isotherms, so size the rate constant vectors to zero in the 
-  // NOTE: properties. If we don't do this, PFlotran copies our (zero) values 
-  // NOTE: in and uses them.
-  // FIXME: This should be easier in "hands-off" mode.
-  for (int i = 0; i < driver->num_cells; ++i)
-  {
-    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].aqueous_kinetic_rate_cnst));
-    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].mineral_rate_cnst));
-    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].isotherm_kd));
-    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].langmuir_b));
-    FreeAlquimiaVectorDouble(&(driver->chem_properties[i].freundlich_n));
   }
 
   // Metadata.
