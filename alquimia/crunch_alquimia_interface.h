@@ -46,6 +46,7 @@ extern "C" {
 #if ALQUIMIA_HAVE_CRUNCHFLOW
   void crunch_alquimia_setup(
       const char* input_filename,
+      bool hands_off,
       void* cf_engine_state,
       AlquimiaSizes* sizes,
       AlquimiaEngineFunctionality* functionality,

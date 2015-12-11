@@ -118,6 +118,7 @@ module PFloTranAlquimiaInterface_module
      type (material_auxvar_type), pointer :: material_auxvar
      type(tran_constraint_list_type), pointer :: transport_constraints
      type(tran_constraint_coupler_type), pointer :: constraint_coupler 
+     logical :: hands_off
   end type PFloTranEngineState
 
 contains
@@ -130,13 +131,13 @@ contains
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
+subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, functionality, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 !
 !  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
 !    been called by the driver
 
-  use, intrinsic :: iso_c_binding, only : c_char, c_ptr
+  use, intrinsic :: iso_c_binding, only : c_char, c_ptr, c_bool
 
   use c_f_interface_module, only : f_c_string_ptr
 
@@ -159,6 +160,7 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
+  logical (c_bool), value, intent(in) :: hands_off
   type (c_ptr), intent(out) :: pft_engine_state
   type (AlquimiaSizes), intent(out) :: sizes
   type (AlquimiaEngineFunctionality), intent(out) :: functionality
@@ -261,6 +263,8 @@ subroutine Setup(input_filename, pft_engine_state, sizes, functionality, status)
   engine_state%material_auxvar => material_auxvar
   engine_state%constraint_coupler => constraint_coupler
   engine_state%transport_constraints => transport_constraints
+
+  engine_state%hands_off = hands_off
 
   pft_engine_state = c_loc(engine_state)
 
@@ -372,7 +376,8 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
 
   ! NOTE(bja): the data stored in alquimia's aux_data is uninitialized
   ! at this point, so don't want to copy it! (copy_auxdata = false)
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, engine_state%hands_off, &
+       state, aux_data, properties, &
        engine_state%reaction, engine_state%global_auxvar, &
        engine_state%material_auxvar, engine_state%rt_auxvar)
 
@@ -488,7 +493,8 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   !call PrintState(state)
 
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, engine_state%hands_off, &
+       state, aux_data, properties, &
        engine_state%reaction, engine_state%global_auxvar, engine_state%material_auxvar, &
        engine_state%rt_auxvar)
 
@@ -1396,7 +1402,8 @@ end function ConvertAlquimiaConditionToPflotran
 
 
 ! **************************************************************************** !
-subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
+subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
+  state, aux_data, prop, &
   reaction, global_auxvar, material_auxvar, rt_auxvar)
 
   use, intrinsic :: iso_c_binding, only : c_double, c_f_pointer
@@ -1413,6 +1420,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
 
   ! function parameters
   logical, intent(in) :: copy_auxdata
+  logical, intent(in) :: hands_off
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaProperties), intent(in) :: prop
@@ -1471,6 +1479,13 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
   end do
 
   !
+  ! in hands-off mode CEC and site density, as well as any property
+  ! are not provided by the driver so copying them over would
+  ! lose pflotran's input file values 
+  !
+  if_hands_off: if (.not. hands_off .and. .not. copy_auxdata) then
+  
+  !
   ! ion exchange, CEC only present in reaction, not aux_vars?
   !
   call c_f_pointer(state%cation_exchange_capacity%data, data, &
@@ -1528,6 +1543,8 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
       reaction%general_kr(i) = 0.0d0
   end do
 
+  end if if_hands_off
+  
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
   end if

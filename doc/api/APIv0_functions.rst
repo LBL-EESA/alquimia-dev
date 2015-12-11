@@ -68,10 +68,21 @@ including reading database, swapping basis, etc.
 
     void AlquimiaSetup(
         in: engine_native_input_filename <string>,
+        in: hands_off <boolean>,
         output: engine_internal_state <void pointer>,
         output: sizes <struct: Alquimia Sizes>,
 	output: functionality <struct: Alquimia Engine Functionality>
 	output: status <struct: Alquimia Status>)
+
+The engine's native input file contains input that is used to describe 
+the chemical properties of the system of interest. 
+
+The hands_off parameter determines whether input should be read directly 
+from the native input file, or whether it will be provided by the caller to 
+Alquimia. If hands_off is true, the data in AlquimiaProperties will be ignored, 
+and only state variables will be copied between the caller and the 
+engine. If false, the engine will use all of the data supplied by the caller 
+in the Alquimia containers.
 
 The sizes structure contains the number of degrees of freedom for the
 mobile phase (aqueous components) and immobile phases (sorbed,

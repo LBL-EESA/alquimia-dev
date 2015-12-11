@@ -156,6 +156,7 @@ module CrunchAlquimiaInterface_module
      real(dp)                 :: corrmax
      real(dp)                 :: deltmin
      real(dp)                 :: time
+     logical                   :: hands_off
   end type CrunchEngineState
   
 contains
@@ -168,13 +169,13 @@ contains
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
+subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionality, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 !
 !  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
 !    been called by the driver
 
-  use, intrinsic :: iso_c_binding, only : c_char, c_ptr
+  use, intrinsic :: iso_c_binding, only : c_char, c_ptr, c_bool
 
   use c_f_interface_module, only : f_c_string_ptr
 
@@ -189,6 +190,7 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
+  logical (c_bool), value, intent(in) :: hands_off
   type (c_ptr), intent(out) :: cf_engine_state
   type (AlquimiaSizes), intent(out) :: sizes
   type (AlquimiaEngineFunctionality), intent(out) :: functionality
@@ -345,6 +347,8 @@ subroutine Setup(input_filename, cf_engine_state, sizes, functionality, status)
   engine_state%corrmax = corrmax
   engine_state%deltmin = deltmin
   engine_state%time = 0.0d0 ! hardwired -- this disables lag time for microbial growth
+
+  engine_state%hands_off = hands_off
   
   cf_engine_state = c_loc(engine_state)
 
@@ -561,7 +565,8 @@ subroutine ProcessCondition(cf_engine_state, condition, properties, &
 
   ! move here for now, we need to know now what condition we are dealing with
   jinit(1,1,1) = nco
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata, engine_state%hands_off, &
+                             state, aux_data, properties, &
                              ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
 
   if (allocated(stmp)) DEALLOCATE(stmp) !! to revisit ?
@@ -704,7 +709,8 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   deltmin = engine_state%deltmin
   time = engine_state%time
 
-  call CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, properties, &
+  call CopyAlquimiaToAuxVars(copy_auxdata,   engine_state%hands_off, &
+                             state, aux_data, properties, &
                              ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
 
   IF (nexchange > 0) THEN
@@ -2180,7 +2186,8 @@ end subroutine ConvertAlquimiaConditionToCrunch
 
 
 ! **************************************************************************** !
-subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
+subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
+                                 state, aux_data, prop, &
                                  ncomp, nspec, nkin, nrct, ngas, &
                                  nexchange, nsurf, ndecay, npot, &
                                  nretard )
@@ -2213,6 +2220,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
 
   ! function parameters
   logical, intent(in) :: copy_auxdata
+  logical, intent(in) :: hands_off
   type (AlquimiaState), intent(in) :: state
   type (AlquimiaAuxiliaryData), intent(in) :: aux_data
   type (AlquimiaProperties), intent(in) :: prop
@@ -2299,6 +2307,13 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
   end do
 
   !
+  ! in hands-off mode geochemical properties
+  ! are not provided by the driver so copying them over would
+  ! lose crunchflow's input file values 
+  !
+  if_hands_off: if (.not. hands_off .and. .not. copy_auxdata) then
+  
+  !
   ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
   !
   call c_f_pointer(prop%isotherm_kd%data, data, (/nretard/))
@@ -2344,6 +2359,8 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, state, aux_data, prop, &
        ratek(1,i) = data(i) * secyr      ! 1 -->hardwired for now to 1 pathway
   end do
 
+  end if if_hands_off
+  
   if (copy_auxdata) then
      call UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
                                       nexchange, nsurf, ndecay, npot, &
