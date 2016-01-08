@@ -8,8 +8,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 option(USE_XSDK_DEFAULTS "Set to use xSDK defaults for options [ON]." ON)
 option(CMAKE_INSTALL_PREFIX "Sets installation prefix [/usr/local].")
 option(XSDK_ENABLE_DEBUG "Enables Debug mode builds [OFF]." OFF)
-#option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
-set(BUILD_SHARED_LIBS OFF) # Shared libs currently not supported! PFlotran doesn't like it.
+option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
+#set(BUILD_SHARED_LIBS OFF) # Shared libs currently not supported! PFlotran doesn't like it.
 option(XSDK_WITH_PFLOTRAN "Enables support for the PFlotran chemistry engine [OFF]." OFF)
 option(TPL_PFLOTRAN_LIBRARIES "List of absolute paths to PFlotran link libraries [].")
 option(TPL_PFLOTRAN_INCLUDE_DIRS "List of absolute paths to PFlotran include directories [].")
