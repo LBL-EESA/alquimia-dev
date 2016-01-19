@@ -9,13 +9,17 @@ option(USE_XSDK_DEFAULTS "Set to use xSDK defaults for options [ON]." ON)
 option(CMAKE_INSTALL_PREFIX "Sets installation prefix [/usr/local].")
 option(XSDK_ENABLE_DEBUG "Enables Debug mode builds [OFF]." OFF)
 option(BUILD_SHARED_LIBS "Builds shared libraries [ON]." ON)
-#set(BUILD_SHARED_LIBS OFF) # Shared libs currently not supported! PFlotran doesn't like it.
 option(XSDK_WITH_PFLOTRAN "Enables support for the PFlotran chemistry engine [OFF]." OFF)
 option(TPL_PFLOTRAN_LIBRARIES "List of absolute paths to PFlotran link libraries [].")
 option(TPL_PFLOTRAN_INCLUDE_DIRS "List of absolute paths to PFlotran include directories [].")
 option(XSDK_WITH_CRUNCHFLOW "Enables support for the CrunchFlow chemistry engine [OFF]." OFF)
 option(TPL_CRUNCHFLOW_LIBRARIES "List of absolute paths to CrunchFlow link libraries [].")
 option(TPL_CRUNCHFLOW_INCLUDE_DIRS "List of absolute paths to CrunchFlow include directories [].")
+
+# For now, we disable shared libs on Macs.
+if (APPLE)
+  set(BUILD_SHARED_LIBS OFF)
+endif()
 
 if (NOT CMAKE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX /usr/local)
