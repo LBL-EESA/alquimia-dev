@@ -31,7 +31,7 @@ endif()
 
 include_directories(${ALQUIMIA_INCLUDE_DIRS})
 link_libraries(${ALQUIMIA_TPLS})
-add_library(alquimia STATIC ${ALQUIMIA_SOURCES})
+add_library(alquimia ${ALQUIMIA_SOURCES})
 
 # Stuff for provenance.
 if (BUILD_SHARED_LIBS)

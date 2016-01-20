@@ -55,7 +55,8 @@ some recent version of Visual Studio and a decent Fortran compiler such as
 Intel's.
 
 Both engines require PETSc 3.5.x to be installed, with the PETSC_DIR and 
-PETSC_ARCH environment variables set properly. 
+PETSC_ARCH environment variables set properly. Currently, PETSc must be 
+configured to use 32-bit indices.
 
 PFlotran engine
 ===============
