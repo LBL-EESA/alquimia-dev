@@ -220,7 +220,11 @@ if (ALQUIMIA_NEED_PETSC)
   # add the include path to its CMake-generated file. This is a bug, so we 
   # accommodate it here. A tad excrutiating.
   if (PETSC_HAVE_VALGRIND)
-    file(READ $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/petscvariables petscvariables)
+    if (EXISTS $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/petscvariables)
+      file(READ $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/petscvariables petscvariables)
+    else()
+      file(READ $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/lib/petsc/conf/petscvariables petscvariables)
+    endif()
     string(FIND ${petscvariables} "VALGRIND_INCLUDE" start_index)
     math(EXPR start_index ${start_index}+19)
     string(SUBSTRING ${petscvariables} ${start_index} -1 valgrind_include)
