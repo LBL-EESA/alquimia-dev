@@ -68,11 +68,15 @@ https://bitbucket.org/pflotran/pflotran-dev/get/611092f80ddb.zip
 
 *NOTE ABOUT BUILDING WITH PETSC 3.6 or later: This version of PFlotran was 
 written to use PETSC 3.5.x, which is slightly different from the later minor 
-releases of PETSc. If you use a later version of PETSc, please note the following:
+releases of PETSc. If you use a later version of PETSc, please note the following:*
 
-1. You must create the following symbolic links within $PETSC_DIR:*
-ln -s $PETSC_DIR/lib/petsc/conf $PETSC_DIR/conf
-ln -s $PETSC_DIR/include/petsc/finclude $PETSC_DIR/include/finclude
+*1. You must create the following symbolic links within $PETSC_DIR:*
+
+::
+
+  ln -s $PETSC_DIR/lib/petsc/conf $PETSC_DIR/conf
+
+  ln -s $PETSC_DIR/include/petsc/finclude $PETSC_DIR/include/finclude
 
 *2. You will see a linking error (for a missing symbol _petsclogbegin_) when 
 building the pflotran_rxn executable. This doesn't prevent libpflotran_rxn.a 
