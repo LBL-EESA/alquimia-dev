@@ -14,6 +14,8 @@ if (ALQUIMIA_HAVE_PFLOTRAN)
   list(APPEND ALQUIMIA_TPLS ${TPL_PFLOTRAN_LIBRARIES})
   list(APPEND ALQUIMIA_INCLUDE_DIRS ${TPL_PFLOTRAN_INCLUDE_DIRS})
   list(APPEND ALQUIMIA_SOURCES pflotran_alquimia_interface.F90 pflotran_alquimia_wrappers.F90)
+  add_library(pflotran_petsc_stubs pflotran_petsc_stubs.F90)
+  list(APPEND ALQUIMIA_TPLS pflotran_petsc_stubs)
 endif()
 
 # CrunchFlow engine.

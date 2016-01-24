@@ -21,14 +21,15 @@ compiler:
 install: ./.install-$TRAVIS_OS_NAME-deps.sh
 
 env:
-  - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc-3.5.4 PETSC_ARCH=petsc_debug PFLOTRAN_DIR=$PWD/pflotran 
-  - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc-3.5.4 PETSC_ARCH=petsc_opt PFLOTRAN_DIR=$PWD/pflotran 
+  - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc-3.6.3 PETSC_ARCH=petsc_debug PFLOTRAN_DIR=$PWD/pflotran 
+  - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc-3.6.3 PETSC_ARCH=petsc_opt PFLOTRAN_DIR=$PWD/pflotran 
 
 script: 
   - mkdir build && cd build
   - cmake .. -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_Fortran_COMPILER=`which mpif90` -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DXSDK_WITH_PFLOTRAN=ON -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran
   - make -j4
   - make test
+  - cd ..
 
 after_failure: 
-  - cat build/*/Testing/Temporary/LastTest.log
+  - cat build/Testing/Temporary/LastTest.log

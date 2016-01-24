@@ -54,7 +54,7 @@ capable version of Make installed as well. To build on Windows, you'll need
 some recent version of Visual Studio and a decent Fortran compiler such as 
 Intel's.
 
-Both engines require PETSc 3.5.x to be installed, with the PETSC_DIR and 
+Both engines require PETSc to be installed, with the PETSC_DIR and 
 PETSC_ARCH environment variables set properly. Currently, PETSc must be 
 configured to use 32-bit indices.
 
@@ -65,6 +65,18 @@ Currently, Alquimia only works with a particular version of PFlotran:
 hash 611092f80ddb from the pflotran-dev repository. You can download this 
 revision directly as a ZIP file from 
 https://bitbucket.org/pflotran/pflotran-dev/get/611092f80ddb.zip
+
+*NOTE ABOUT BUILDING WITH PETSC 3.6 or later: This version of PFlotran was 
+written to use PETSC 3.5.x, which is slightly different from the later minor 
+releases of PETSc. If you use a later version of PETSc, please note the following:
+
+1. You must create the following symbolic links within $PETSC_DIR:*
+ln -s $PETSC_DIR/lib/petsc/conf $PETSC_DIR/conf
+ln -s $PETSC_DIR/include/petsc/finclude $PETSC_DIR/include/finclude
+
+*2. You will see a linking error (for a missing symbol _petsclogbegin_) when 
+building the pflotran_rxn executable. This doesn't prevent libpflotran_rxn.a 
+from being built, nor does it prevent Alquimia from working properly with PFlotran.*
 
 The instructions below assume that you are on a UNIX or UNIX-like system, 
 and you have set the environment variable PFLOTRAN_DIR to the top of your 
@@ -77,7 +89,6 @@ PFlotran source directory.
 
 To build PFlotran on Windows, see the instructions 
 [here](https://bitbucket.org/pflotran/pflotran-dev/wiki/Installation/Windows_with_Visual_Studio).
-*Make sure to install PETSC 3.5.x instead of petsc-dev!*
 
 CrunchFlow engine
 =================
