@@ -66,6 +66,12 @@ project (alquimia)
 message("-- C compiler is ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID})")
 message("-- Fortran compiler is ${CMAKE_Fortran_COMPILER} (${CMAKE_Fortran_COMPILER_ID})")
 
+if (BUILD_SHARED_LIBS)
+  message("-- Alquimia will be built as a shared library.")
+else()
+  message("-- Alquimia will be built as a static library.")
+endif()
+
 # Version numbers.
 set (ALQUIMIA_MAJOR_VERSION 0)
 set (ALQUIMIA_MINOR_VERSION 4)
@@ -189,6 +195,9 @@ if (ALQUIMIA_NEED_PETSC)
   if ($ENV{PETSC_ARCH} STREQUAL "")
     message(FATAL_ERROR "PETSC_ARCH must be set for the requested engines to be enabled.")
   endif()
+  # We have to stash our own value of BUILD_SHARED_LIBS so we can re-apply it after we 
+  # read PETSc's configuration files.
+  set (ALQUIMIA_SHARED_LIBS ${BUILD_SHARED_LIBS})
   if (EXISTS $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/PETScConfig.cmake)
     include($ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/PETScConfig.cmake)
   else()
@@ -215,10 +224,10 @@ if (ALQUIMIA_NEED_PETSC)
   endif()
   set_target_properties(petsc PROPERTIES IMPORTED_LOCATION ${PETSC_LIBRARY})
   set(PETSC_LIBRARIES ${PETSC_LIBRARY};${PETSC_PACKAGE_LIBS})
+  set(BUILD_SHARED_LIBS ${ALQUIMIA_SHARED_LIBS})
+  set(BUILD_SHARED_LIBS ${ALQUIMIA_SHARED_LIBS} CACHE BOOL "Build shared libraries" FORCE)
 
-  # PETSc 3.5.x sniffs out Valgrind if you don't ask it to, and then doesn't 
-  # add the include path to its CMake-generated file. This is a bug, so we 
-  # accommodate it here. A tad excrutiating.
+  # Make sure the Valgrind include path is included if PETSc sniffs out Valgrind.
   if (PETSC_HAVE_VALGRIND)
     if (EXISTS $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/petscvariables)
       file(READ $ENV{PETSC_DIR}/$ENV{PETSC_ARCH}/conf/petscvariables petscvariables)
