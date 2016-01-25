@@ -26,9 +26,10 @@ env:
 
 script: 
   - mkdir build && cd build
-  - cmake .. -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_Fortran_COMPILER=`which mpif90` -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DXSDK_WITH_PFLOTRAN=ON -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran
+  - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/../alquimia-install -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_Fortran_COMPILER=`which mpif90` -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DXSDK_WITH_PFLOTRAN=ON -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran
   - make -j4
   - make test
+  - make install
   - cd ..
 
 after_failure: 

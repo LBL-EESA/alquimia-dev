@@ -273,9 +273,6 @@ configure_file(
   @ONLY
 )
 
-# Install all source headers.
-install(DIRECTORY ${PROJECT_BINARY_DIR}/include/ DESTINATION include/alquimia)
-
 # Install miscellaneous build/test files.
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/alquimia.cmake DESTINATION share/alquimia)
 
