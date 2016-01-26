@@ -16,14 +16,11 @@ option(XSDK_WITH_CRUNCHFLOW "Enables support for the CrunchFlow chemistry engine
 option(TPL_CRUNCHFLOW_LIBRARIES "List of absolute paths to CrunchFlow link libraries [].")
 option(TPL_CRUNCHFLOW_INCLUDE_DIRS "List of absolute paths to CrunchFlow include directories [].")
 
-# For now, we disable shared libs on Macs.
-if (APPLE)
-  set(BUILD_SHARED_LIBS OFF)
-endif()
-
 if (NOT CMAKE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX /usr/local)
 endif()
+
+set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 
 # Make sure compilers are set. This must be done before enabling languages.
 if (NOT CMAKE_C_COMPILER)
