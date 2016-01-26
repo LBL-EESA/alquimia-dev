@@ -28,7 +28,7 @@
 
 #include "petscversion.h"
 
-#if !PETSC_VERSION_RELEASE
+#if PETSC_VERSION_GE(3,7,0)
 
 subroutine petsclogbegin()
 end subroutine
