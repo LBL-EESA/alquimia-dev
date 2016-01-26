@@ -10,7 +10,7 @@ ln -s /usr/local/lib/gcc/5/libgfortran.a /usr/local/lib/libgfortran.a
 wget http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.6.3.tar.gz
 tar xzf petsc-lite-3.6.3.tar.gz
 pushd $PETSC_DIR
-./configure --with-mpi=1 --with-debug=$DEBUG --with-shared-libraries=0
+./configure --with-mpi=1 --with-debug=$DEBUG --with-shared-libraries=1
 make
 ln -s $PETSC_DIR/lib/petsc/conf $PETSC_DIR/conf
 ln -s $PETSC_DIR/include/petsc/finclude $PETSC_DIR/include/finclude
