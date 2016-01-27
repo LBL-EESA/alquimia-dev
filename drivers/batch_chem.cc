@@ -377,13 +377,13 @@ int CommandLineOptions(char const * const prog_name,
   PetscBool value_set = PETSC_FALSE;
   char temp_str[kAlquimiaMaxStringLength];
 
-#if !PETSC_VERSION_RELEASE
+#if PETSC_VERSION_GE(3,7,0)
   PetscOptionsHasName(NULL,NULL, "-d", debug_batch_driver);
 #else
   PetscOptionsHasName(NULL, "-d", debug_batch_driver);
 #endif
 
-#if !PETSC_VERSION_RELEASE
+#if PETSC_VERSION_GE(3,7,0)
   PetscOptionsGetString(NULL,NULL, "-i", temp_str, kAlquimiaMaxStringLength, &value_set);
 #else
   PetscOptionsGetString(NULL, "-i", temp_str, kAlquimiaMaxStringLength, &value_set);
@@ -391,7 +391,7 @@ int CommandLineOptions(char const * const prog_name,
   input_file_name->assign(temp_str);
   PetscStrncpy(temp_str, "", kAlquimiaMaxStringLength);
 
-#if !PETSC_VERSION_RELEASE
+#if PETSC_VERSION_GE(3,7,0)
   PetscOptionsGetString(NULL,NULL, "-t", temp_str, kAlquimiaMaxStringLength, &value_set);
 #else
   PetscOptionsGetString(NULL, "-t", temp_str, kAlquimiaMaxStringLength, &value_set);
