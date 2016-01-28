@@ -16,11 +16,6 @@ option(XSDK_WITH_CRUNCHFLOW "Enables support for the CrunchFlow chemistry engine
 option(TPL_CRUNCHFLOW_LIBRARIES "List of absolute paths to CrunchFlow link libraries [].")
 option(TPL_CRUNCHFLOW_INCLUDE_DIRS "List of absolute paths to CrunchFlow include directories [].")
 
-# For now, we disable shared libs on Macs.
-if (APPLE)
-  set(BUILD_SHARED_LIBS OFF)
-endif()
-
 if (NOT CMAKE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX /usr/local)
 endif()
@@ -67,6 +62,10 @@ message("-- C compiler is ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID})")
 message("-- Fortran compiler is ${CMAKE_Fortran_COMPILER} (${CMAKE_Fortran_COMPILER_ID})")
 
 if (BUILD_SHARED_LIBS)
+  SET(CMAKE_SKIP_BUILD_RPATH FALSE)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   message("-- Alquimia will be built as a shared library.")
 else()
   message("-- Alquimia will be built as a static library.")
