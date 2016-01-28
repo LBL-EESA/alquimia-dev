@@ -58,6 +58,8 @@ enable_language(Fortran)
 # We declare the project here.
 project (alquimia)
 
+# ToDo: You need to add XSDKDefaults.cmake module.
+
 message("-- C compiler is ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID})")
 message("-- Fortran compiler is ${CMAKE_Fortran_COMPILER} (${CMAKE_Fortran_COMPILER_ID})")
 
