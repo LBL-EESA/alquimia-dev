@@ -36,7 +36,7 @@ static void default_error_handler(const char* message)
 {
   printf("alquimia: Fatal error: %s\n", message);
   exit(-1);
-}
+//} quite evil, yes?
 
 void alquimia_error(const char* message, ...)
 {
