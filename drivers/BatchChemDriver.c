@@ -76,21 +76,27 @@ static int ParseInput(void* user,
     input->dt = atof(value);
 
   // Material section.
-  else if (MATCH("material", "porosity"))
-    input->porosity = atof(value);
+  else if (MATCH("material", "volume"))
+    input->volume = atof(value);
   else if (MATCH("material", "saturation"))
     input->saturation = atof(value);
 
   // State section.
-  else if (MATCH("flow", "temperature"))
+  else if (MATCH("state", "density"))
+    input->water_density = atof(value);
+  else if (MATCH("state", "porosity"))
+    input->porosity = atof(value);
+  else if (MATCH("state", "temperature"))
     input->temperature = atof(value);
+  else if (MATCH("state", "pressure"))
+    input->aqueous_pressure = atof(value);
 
   // Chemistry section.
   else if (MATCH("chemistry", "engine"))
     input->chemistry_engine = AlquimiaStringDup(value);
   else if (MATCH("chemistry", "input_file"))
     input->chemistry_input_file = AlquimiaStringDup(value);
-  else if (MATCH("chemistry", "geochemical_condition"))
+  else if (MATCH("chemistry", "initial_condition"))
     input->cond_name = AlquimiaStringDup(value);
   else if (MATCH("chemistry", "cation_exchange_capacity"))
     input->cation_exchange_capacity = atof(value);
@@ -116,8 +122,10 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
   // Make sure we have some meaningful defaults.
   input->hands_off = true; // Hands-off by default.
   input->t_min = 0.0;
+  input->t_max = FLT_MAX;
   input->max_steps = INT_MAX;
   input->dt = FLT_MAX;
+  input->volume = 1.0;
   input->saturation = 1.0;
   input->water_density = 999.9720;    // density of water in kg/m**3
   input->temperature = 25.0;
@@ -175,6 +183,7 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
     else
     {
       memcpy(default_output_file, input_file, sizeof(char) * dot);
+      default_output_file[dot] = '\0';
       strcat(default_output_file, suffix);
     }
 
@@ -248,6 +257,12 @@ struct BatchChemDriver
 
   // Initial condition.
   AlquimiaGeochemicalCondition chem_cond;
+
+  // Stored history of data.
+  int history_size, history_cap;
+  double* history_times;
+  AlquimiaState* chem_state_history;
+  AlquimiaAuxiliaryOutputData* chem_aux_output_history;
 };
 
 BatchChemDriver* BatchChemDriver_New(BatchChemDriverInput* input)
@@ -275,6 +290,13 @@ BatchChemDriver* BatchChemDriver_New(BatchChemDriverInput* input)
   // Simulation state.
   driver->time = driver->t_min;
   driver->step = 0;
+
+  // History.
+  driver->history_size = 0;
+  driver->history_cap = 32;
+  driver->history_times = malloc(sizeof(double) * driver->history_cap);
+  driver->chem_state_history = malloc(sizeof(AlquimiaState) * driver->history_cap);
+  driver->chem_aux_output_history = malloc(sizeof(AlquimiaAuxiliaryOutputData) * driver->history_cap);
 
   // Set up the chemistry engine.
   AllocateAlquimiaEngineStatus(&driver->chem_status);
@@ -344,11 +366,41 @@ void BatchChemDriver_Free(BatchChemDriver* driver)
   FreeAlquimiaAuxiliaryOutputData(&driver->chem_aux_output);
   FreeAlquimiaProblemMetaData(&driver->chem_metadata);
 
+  // Destroy history data.
+  for (int i = 0; i < driver->history_size; ++i)
+  {
+    FreeAlquimiaState(&driver->chem_state_history[i]);
+    FreeAlquimiaAuxiliaryOutputData(&driver->chem_aux_output_history[i]);
+  }
+  free(driver->history_times);
+  free(driver->chem_state_history);
+  free(driver->chem_aux_output_history);
+
   // Destroy chemistry engine.
   driver->chem.Shutdown(&driver->chem_engine, 
                         &driver->chem_status);
   FreeAlquimiaEngineStatus(&driver->chem_status);
+
   free(driver);
+}
+
+static void BatchChemDriver_RecordHistory(BatchChemDriver* driver)
+{
+  if (driver->history_size == driver->history_cap)
+  {
+    driver->history_cap *= 2;
+    driver->history_times = realloc(driver->history_times, sizeof(double) * driver->history_cap);
+    driver->chem_state_history = realloc(driver->chem_state_history, 
+                                         sizeof(AlquimiaState) * driver->history_cap);
+    driver->chem_aux_output_history = realloc(driver->chem_aux_output_history, 
+                                              sizeof(AlquimiaAuxiliaryOutputData) * driver->history_cap);
+  }
+  driver->history_times[driver->history_size] = driver->time;
+  AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_state_history[driver->history_size]);
+  CopyAlquimiaState(&driver->chem_state, &driver->chem_state_history[driver->history_size]);
+  AllocateAlquimiaAuxiliaryOutputData(&driver->chem_sizes, &driver->chem_aux_output_history[driver->history_size]);
+  CopyAlquimiaAuxiliaryOutputData(&driver->chem_aux_output, &driver->chem_aux_output_history[driver->history_size]);
+  ++driver->history_size;
 }
 
 static int BatchChemDriver_Initialize(BatchChemDriver* driver)
@@ -382,6 +434,9 @@ static int BatchChemDriver_Initialize(BatchChemDriver* driver)
 
   // Overwrite the stuff that might have changed.
   driver->chem_state.porosity = driver->porosity;
+
+  // Append our state and auxiliary output to our history.
+  BatchChemDriver_RecordHistory(driver);
 
   if (driver->verbose)
     printf("BatchChemDriver: Finished initializing.\n");
@@ -421,11 +476,28 @@ int BatchChemDriver_Run(BatchChemDriver* driver)
       break;
     }
 
+    // Fetch auxiliary output.
+    driver->chem.GetAuxiliaryOutput(&driver->chem_engine, 
+                                    &driver->chem_properties,
+                                    &driver->chem_state,
+                                    &driver->chem_aux_data,
+                                    &driver->chem_aux_output,
+                                    &driver->chem_status);
+    if (driver->chem_status.error != 0)
+    {
+      status = driver->chem_status.error;
+      printf("BatchChemDriver: auxiliary output fetch failed: %s\n", driver->chem_status.message);
+      break;
+    }
+
     // FIXME: Why is the porosity being set to zero here??
     driver->chem_state.porosity = driver->porosity;
 
     driver->time += dt;
     driver->step += 1;
+
+    // Append our state and auxiliary output to our history.
+    BatchChemDriver_RecordHistory(driver);
   }
 
   return status;
@@ -444,6 +516,7 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
 
   // Construct a list of all variables, which are those in the state and 
   // the auxiliary output data, and fill their data.
+  int num_times = driver->history_size;
   int num_primary = driver->chem_sizes.num_primary;
   int num_sorbed = driver->chem_sizes.num_sorbed;
   int num_minerals = driver->chem_sizes.num_minerals;
@@ -451,7 +524,8 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
   int num_ion_exchange_sites = driver->chem_sizes.num_ion_exchange_sites;
   int num_aqueous_complexes = driver->chem_sizes.num_aqueous_complexes;
   int num_aqueous_kinetics = driver->chem_sizes.num_aqueous_kinetics;
-  int num_vars = num_primary +              // total mobile
+  int num_vars = 1 +                        // time
+                 num_primary +              // total mobile
                  num_sorbed +               // total immobile
                  2 * num_minerals +         // mineral volume fractions, specific surface area
                  num_surface_sites +        // surface site density
@@ -463,52 +537,65 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
                  2 * num_aqueous_complexes; // secondary free ion concentration, activity coeff
   int counter = 0;
   AllocateAlquimiaVectorString(num_vars, var_names);
-  AllocateAlquimiaVectorDouble(num_vars, var_data);
+  AllocateAlquimiaVectorDouble(num_vars * num_times, var_data);
+  {
+    var_names->data[counter] = AlquimiaStringDup("time");
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->history_times[j];
+    ++counter;
+  }
   for (int i = 0; i < num_primary; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "total_mobile[%s]", driver->chem_metadata.primary_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_state.total_mobile.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state_history[j].total_mobile.data[i];
   }
   for (int i = 0; i < num_sorbed; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "total_immobile[%d]", i);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_state.total_immobile.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state_history[j].total_immobile.data[i];
   }
   for (int i = 0; i < num_minerals; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "mineral_volume_fractions[%s]", driver->chem_metadata.mineral_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_state.mineral_volume_fraction.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state_history[j].mineral_volume_fraction.data[i];
   }
   for (int i = 0; i < num_minerals; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "mineral_specific_surface_area[%s]", driver->chem_metadata.mineral_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_state.mineral_specific_surface_area.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state_history[j].mineral_specific_surface_area.data[i];
   }
   for (int i = 0; i < num_surface_sites; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "surface_site_density[%s]", driver->chem_metadata.surface_site_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_state.surface_site_density.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state_history[j].surface_site_density.data[i];
   }
   for (int i = 0; i < num_ion_exchange_sites; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "cation_exchange_capacity[%s]", driver->chem_metadata.ion_exchange_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_state.cation_exchange_capacity.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state_history[j].cation_exchange_capacity.data[i];
   }
   {
     var_names->data[counter] = AlquimiaStringDup("pH");
-    var_data->data[counter] = driver->chem_aux_output.pH;
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output.pH;
     ++counter;
   }
   for (int i = 0; i < num_aqueous_kinetics; ++i, ++counter)
@@ -516,49 +603,56 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
     char var_name[1024];
     snprintf(var_name, 1023, "aqueous_kinetic_rate[%s]", driver->chem_metadata.aqueous_kinetic_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_aux_output.aqueous_kinetic_rate.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].aqueous_kinetic_rate.data[i];
   }
   for (int i = 0; i < num_minerals; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "mineral_saturation_index[%s]", driver->chem_metadata.mineral_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_aux_output.mineral_saturation_index.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].mineral_saturation_index.data[i];
   }
   for (int i = 0; i < num_minerals; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "mineral_reaction_rate[%s]", driver->chem_metadata.mineral_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_aux_output.mineral_reaction_rate.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].mineral_reaction_rate.data[i];
   }
   for (int i = 0; i < num_primary; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "primary_free_ion_concentration[%s]", driver->chem_metadata.primary_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_aux_output.primary_free_ion_concentration.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].primary_free_ion_concentration.data[i];
   }
   for (int i = 0; i < num_primary; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "primary_activity_coeff[%s]", driver->chem_metadata.primary_names.data[i]);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_aux_output.primary_activity_coeff.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].primary_activity_coeff.data[i];
   }
   for (int i = 0; i < num_aqueous_complexes; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "secondary_free_ion_concentration[%d]", i);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_aux_output.secondary_free_ion_concentration.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].secondary_free_ion_concentration.data[i];
   }
   for (int i = 0; i < num_aqueous_complexes; ++i, ++counter)
   {
     char var_name[1024];
     snprintf(var_name, 1023, "secondary_activity_coeff[%d]", i);
     var_names->data[counter] = AlquimiaStringDup(var_name);
-    var_data->data[counter] = driver->chem_aux_output.secondary_activity_coeff.data[i];
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].secondary_activity_coeff.data[i];
   }
 }
 

@@ -30,10 +30,10 @@
 
 #include "alquimia/alquimia_containers.h"
 
-// This type stores the metadata for a reactive transport simulation.
+// This type stores the metadata for a reactive batch chemistgry simulation.
 typedef struct BatchChemDriver BatchChemDriver;
 
-// This type holds simulation input information for the transport driver.
+// This type holds simulation input information for the batch chemistry driver.
 typedef struct
 {
   // Problem description.
@@ -102,11 +102,14 @@ BatchChemDriver* BatchChemDriver_New(BatchChemDriverInput* input);
 // Destroys the given BatchChemDriver object, freeing its resources.
 void BatchChemDriver_Free(BatchChemDriver* driver);
 
-// Runs the transport simulation as defined by input.
+// Takes a single step in the given batch simulation.
+int BatchChemDriver_Run(BatchChemDriver* driver);
+
+// Runs the batcbatch simulation as defined by input.
 int BatchChemDriver_Run(BatchChemDriver* driver);
 
 // Retrieves all solute data and auxiliary data corresponding to the 
-// internal state of the transport model, placing the names of the variables
+// internal state of the batch chemistry model, placing the names of the variables
 // into var_names, and placing the various data into components of the 
 // multi-component vector var_data. These vectors must be destroyed by the 
 // caller.
