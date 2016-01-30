@@ -199,6 +199,7 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
     else
     {
       memcpy(default_output_file, input_file, sizeof(char) * dot);
+      default_output_file[dot] = '\0';
       strcat(default_output_file, suffix);
     }
 
@@ -709,12 +710,27 @@ static int Run_OperatorSplit(TransportDriver* driver)
                i, driver->chem_status.message);
         break;
       }
+
       // FIXME: Why is the porosity being set to zero here??
       driver->advected_chem_state.porosity = driver->porosity;
 
       // Copy the advected/reacted state back into place.
       CopyAlquimiaState(&driver->advected_chem_state, &driver->chem_state[i]);
       CopyAlquimiaAuxiliaryData(&driver->advected_chem_aux_data, &driver->chem_aux_data[i]);
+
+      // Fetch auxiliary output.
+      driver->chem.GetAuxiliaryOutput(&driver->chem_engine, 
+                                      &driver->chem_properties[i],
+                                      &driver->chem_state[i],
+                                      &driver->chem_aux_data[i],
+                                      &driver->chem_aux_output[i],
+                                      &driver->chem_status);
+      if (driver->chem_status.error != 0)
+      {
+        status = driver->chem_status.error;
+        printf("TransportDriver: auxiliary output fetch failed: %s\n", driver->chem_status.message);
+        break;
+      }
     }
 
     if (status != 0) break;
