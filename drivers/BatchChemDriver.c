@@ -159,6 +159,16 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
     alquimia_error("BatchChemDriver: flow->water_density must be positive.");
   if (input->temperature <= 0.0)
     alquimia_error("BatchChemDriver: flow->temperature must be positive.");
+  if (input->chemistry_engine == NULL)
+    alquimia_error("BatchChemDriver: chemistry->engine not specified.");
+  if (input->chemistry_input_file == NULL)
+    alquimia_error("BatchChemDriver: chemistry->input_file not specified.");
+  if (input->cond_name == NULL)
+    alquimia_error("BatchChemDriver: chemistry->initial_condition not specified.");
+
+  // Default description -> input file name.
+  if (input->description == NULL)
+    input->description = AlquimiaStringDup(input_file);
 
   // Default output.
   if (input->output_type == NULL)
@@ -207,8 +217,7 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
 
 void BatchChemDriverInput_Free(BatchChemDriverInput* input)
 {
-  if (input->description != NULL)
-    free(input->description);
+  free(input->description);
   if (input->cond_name != NULL)
     free(input->cond_name);
   if (input->chemistry_engine != NULL)
