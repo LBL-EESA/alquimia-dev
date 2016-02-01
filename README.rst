@@ -30,10 +30,10 @@ perform publicly and display publicly, and to permit others to do so.
 Description
 -----------
 
-Alquimia is an biogeochemistry API and wrapper library developed as part of 
-the [ASCEM](http://esd.lbl.gov/research/projects/ascem/) project, and is 
-an interoperable component of the Department of Energy's 
-[IDEAS](https://ideas-productivity.org/) software productivity project.
+Alquimia is a biogeochemistry API and wrapper library, originally developed as 
+part of the DOE ASCEM project, and is an interoperable component of the 
+Department of Energy's [IDEAS](https://ideas-productivity.org/) software 
+productivity project.
 
 The aim is to provide a unified interface to existing "geochemistry
 engines" such as
