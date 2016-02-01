@@ -125,6 +125,11 @@ else ()
   endif ()
 endif ()
 
+# Here we make sure CMake-installed binaries use the correct runpath, and 
+# that the path is not stripped during installation.
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # Check third-party library dependencies.
 set(ALQUIMIA_NEED_PETSC 0)
 
@@ -202,6 +207,9 @@ if (ALQUIMIA_NEED_PETSC)
     message(FATAL_ERROR "PETSc was not found.")
   endif()
   include_directories(${PETSC_INCLUDES})
+
+  # Include PETSc in the rpath.
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${PETSC_DIR}/${PETSC_ARCH}/lib")
 endif()
 
 # Include the binary directory in the header file search path,
