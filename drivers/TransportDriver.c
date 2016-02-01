@@ -186,6 +186,7 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
     int dot = strlen(input_file)-1;
     while ((dot > 0) && (input_file[dot] != '.')) --dot;
     char suffix[16];
+    suffix[0] = '\0';
 
     // Determine the suffix from the output type.
     if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "gnuplot"))
@@ -199,6 +200,7 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
     else
     {
       memcpy(default_output_file, input_file, sizeof(char) * dot);
+      default_output_file[dot] = '\0';
       strcat(default_output_file, suffix);
     }
 
@@ -384,6 +386,8 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
     AllocateAlquimiaGeochemicalCondition(strlen(input->left_bc_name), 0, 0, &driver->chem_left_bc);
     strcpy(driver->chem_left_bc.name, input->left_bc_name);
   }
+  else
+    driver->chem_left_bc.name = NULL;
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_left_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_left_aux_data);
   if (input->right_bc_name != NULL)
@@ -391,6 +395,8 @@ TransportDriver* TransportDriver_New(TransportDriverInput* input)
     AllocateAlquimiaGeochemicalCondition(strlen(input->right_bc_name), 0, 0, &driver->chem_right_bc);
     strcpy(driver->chem_right_bc.name, input->right_bc_name);
   }
+  else
+    driver->chem_right_bc.name = NULL;
   AllocateAlquimiaState(&driver->chem_sizes, &driver->chem_right_state);
   AllocateAlquimiaAuxiliaryData(&driver->chem_sizes, &driver->chem_right_aux_data);
 
