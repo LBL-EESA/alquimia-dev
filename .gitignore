@@ -12,3 +12,9 @@
 # Generated files
 build/
 
+# Benchmark output.
+*.gnuplot 
+*.out
+*.out.alquimia
+*crunch.txt
+*pflotran.txt

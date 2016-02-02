@@ -52,6 +52,47 @@ static bool ValueIsTrue(const char* value)
           AlquimiaCaseInsensitiveStringCompare(value, "on")) ? true : false;
 }
 
+static void GetIndexLabel(const char* name, char* label)
+{
+  size_t br1 = strstr(name, "[") - name;
+  size_t br2 = strstr(name, "]") - name;
+  memcpy(label, &name[br1], sizeof(char) * (br2-br1));
+}
+
+// The following macros are for parsing values that are indexed by names.
+// Avert your eyes.
+#define DECLARE_INDEXED_VALUE_PARSER(IndexName, name_array, num_index_var) \
+static int IndexName##Index(BatchChemDriverInput* input, const char* item) \
+{ \
+  int i = 0; \
+  for (; i < input->num_index_var; ++i) \
+  { \
+    if (strncmp(input->name_array[i], item, 127) == 0) \
+      break; \
+  } \
+  if (i == input->num_index_var) \
+  { \
+    input->name_array[i] = AlquimiaStringDup(item); \
+    ++input->num_index_var; \
+  } \
+  return i; \
+} \
+\
+static void Get##IndexName##Value(BatchChemDriverInput* input,\
+                                  const char* name, \
+                                  const char* value, \
+                                  double* array) \
+{ \
+  char item[128]; \
+  GetIndexLabel(name, item); \
+  int index = IndexName##Index(input, item); \
+  array[index] = atof(value); \
+}
+
+DECLARE_INDEXED_VALUE_PARSER(Isotherm, isotherm_species, num_isotherm_species)
+DECLARE_INDEXED_VALUE_PARSER(IonExchange, ion_exchange_sites, num_ion_exchange_sites)
+DECLARE_INDEXED_VALUE_PARSER(SurfaceSite, surface_sites, num_surface_sites)
+
 // Input parsing stuff. See https://github.com/benhoyt/inih for details.
 static int ParseInput(void* user,
                       const char* section,
@@ -59,7 +100,8 @@ static int ParseInput(void* user,
                       const char* value)
 {
   BatchChemDriverInput* input = user;
-#define MATCH(s, n) (strcmp(section, s) == 0) && (strcmp(name, n) == 0)
+#define MATCH(s, x) (strcmp(section, s) == 0) && (strcmp(name, x) == 0)
+#define MATCH_N(s, x, n) (strcmp(section, s) == 0) && (strncmp(name, x, n) == 0)
 
   // Simulation section
   if (MATCH("simulation","description"))
@@ -80,6 +122,12 @@ static int ParseInput(void* user,
     input->volume = atof(value);
   else if (MATCH("material", "saturation"))
     input->saturation = atof(value);
+  else if (MATCH_N("material", "isotherm_kd[", 12))
+    GetIsothermValue(input, name, value, input->isotherm_kd);
+  else if (MATCH_N("material", "langmuir_b[", 11))
+    GetIsothermValue(input, name, value, input->langmuir_b);
+  else if (MATCH_N("material", "freundlich_n[", 13))
+    GetIsothermValue(input, name, value, input->freundlich_n);
 
   // State section.
   else if (MATCH("state", "density"))
@@ -90,6 +138,10 @@ static int ParseInput(void* user,
     input->temperature = atof(value);
   else if (MATCH("state", "pressure"))
     input->aqueous_pressure = atof(value);
+  else if (MATCH_N("state", "surface_site_density[", 21))
+    GetSurfaceSiteValue(input, name, value, input->surface_site_density);
+  else if (MATCH_N("state", "cation_exchange_capacity[", 25))
+    GetIonExchangeValue(input, name, value, input->cation_exchange_capacity);
 
   // Chemistry section.
   else if (MATCH("chemistry", "engine"))
@@ -98,10 +150,6 @@ static int ParseInput(void* user,
     input->chemistry_input_file = AlquimiaStringDup(value);
   else if (MATCH("chemistry", "initial_condition"))
     input->cond_name = AlquimiaStringDup(value);
-  else if (MATCH("chemistry", "cation_exchange_capacity"))
-    input->cation_exchange_capacity = atof(value);
-  else if (MATCH("chemistry", "surface_site_density"))
-    input->surface_site_density = atof(value);
 
   // Output section.
   else if (MATCH("output", "verbose"))
@@ -125,14 +173,20 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
   input->t_max = FLT_MAX;
   input->max_steps = INT_MAX;
   input->dt = FLT_MAX;
+  input->num_isotherm_species = 0;
+  memset(input->isotherm_kd, 0, sizeof(double) * BATCH_CHEM_INPUT_MAX);
+  memset(input->langmuir_b, 0, sizeof(double) * BATCH_CHEM_INPUT_MAX);
+  memset(input->freundlich_n, 0, sizeof(double) * BATCH_CHEM_INPUT_MAX);
+  input->num_ion_exchange_sites = 0;
+  memset(input->cation_exchange_capacity, 0, sizeof(double) * BATCH_CHEM_INPUT_MAX);
+  input->num_surface_sites = 0;
+  memset(input->surface_site_density, 0, sizeof(double) * BATCH_CHEM_INPUT_MAX);
   input->volume = 1.0;
   input->saturation = 1.0;
   input->water_density = 999.9720;    // density of water in kg/m**3
   input->temperature = 25.0;
   input->porosity = 1.0;
   input->aqueous_pressure = 201325.0; // pressure in Pa.
-  input->cation_exchange_capacity = 0.0;
-  input->surface_site_density = 0.0;
   input->output_type = NULL;
   input->output_file = NULL;
 
@@ -218,6 +272,12 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
 void BatchChemDriverInput_Free(BatchChemDriverInput* input)
 {
   free(input->description);
+  for (int i = 0; i < input->num_isotherm_species; ++i)
+    free(input->isotherm_species[i]);
+  for (int i = 0; i < input->num_ion_exchange_sites; ++i)
+    free(input->ion_exchange_sites[i]);
+  for (int i = 0; i < input->num_surface_sites; ++i)
+    free(input->surface_sites[i]);
   if (input->cond_name != NULL)
     free(input->cond_name);
   if (input->chemistry_engine != NULL)
@@ -353,10 +413,30 @@ BatchChemDriver* BatchChemDriver_New(BatchChemDriverInput* input)
 
   // Copy the chemistry state information in.
   // NOTE: For now, we only allow one of each of these reactions.
-  for (int i = 0; i < driver->chem_state.cation_exchange_capacity.size; ++i)
-    driver->chem_state.cation_exchange_capacity.data[i] = input->cation_exchange_capacity;
-  for (int i = 0; i < driver->chem_state.surface_site_density.size; ++i)
-    driver->chem_state.surface_site_density.data[i] = input->surface_site_density;
+  if (input->num_ion_exchange_sites > 0) 
+  {
+    for (int i = 0; i < driver->chem_state.cation_exchange_capacity.size; ++i)
+      driver->chem_state.cation_exchange_capacity.data[i] = input->cation_exchange_capacity[i];
+    for (int i = 0; i < driver->chem_state.surface_site_density.size; ++i)
+      driver->chem_state.surface_site_density.data[i] = input->surface_site_density[i];
+  }
+  else
+  {
+    for (int i = 0; i < driver->chem_state.cation_exchange_capacity.size; ++i)
+      driver->chem_state.cation_exchange_capacity.data[i] = 0.0;
+    for (int i = 0; i < driver->chem_state.surface_site_density.size; ++i)
+      driver->chem_state.surface_site_density.data[i] = 0.0;
+  }
+
+  if (input->num_isotherm_species > 0) 
+  {
+    for (int i = 0; i < driver->chem_properties.isotherm_kd.size; ++i)
+      driver->chem_properties.isotherm_kd.data[i] = input->isotherm_kd[i];
+    for (int i = 0; i < driver->chem_properties.langmuir_b.size; ++i)
+      driver->chem_properties.langmuir_b.data[i] = input->langmuir_b[i];
+    for (int i = 0; i < driver->chem_properties.freundlich_n.size; ++i)
+      driver->chem_properties.freundlich_n.data[i] = input->freundlich_n[i];
+  }
 
   return driver;
 }

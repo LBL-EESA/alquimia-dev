@@ -33,6 +33,9 @@
 // This type stores the metadata for a reactive batch chemistgry simulation.
 typedef struct BatchChemDriver BatchChemDriver;
 
+// This is a ceiling on the number of primary/secondary species, complexes, etc.
+#define BATCH_CHEM_INPUT_MAX 128
+
 // This type holds simulation input information for the batch chemistry driver.
 typedef struct
 {
@@ -54,15 +57,28 @@ typedef struct
   // Specified timestep.
   double dt;
 
+  // --------
+  // Metadata
+  // --------
+  int num_isotherm_species, num_ion_exchange_sites, num_surface_sites;
+  char* isotherm_species[BATCH_CHEM_INPUT_MAX];
+  char* ion_exchange_sites[BATCH_CHEM_INPUT_MAX];
+  char* surface_sites[BATCH_CHEM_INPUT_MAX];
+
   // ---------------
   // State variables
   // ---------------
   double water_density, temperature, porosity, aqueous_pressure;
+  double surface_site_density[BATCH_CHEM_INPUT_MAX];
+  double cation_exchange_capacity[BATCH_CHEM_INPUT_MAX];
 
   // -------------------
   // Material properties
   // -------------------
   double volume, saturation;
+  double isotherm_kd[BATCH_CHEM_INPUT_MAX];
+  double langmuir_b[BATCH_CHEM_INPUT_MAX];
+  double freundlich_n[BATCH_CHEM_INPUT_MAX];
 
   // ----------------------
   // Geochemical condition.
@@ -74,12 +90,6 @@ typedef struct
   // ---------------------
   char* chemistry_engine;
   char* chemistry_input_file;
-
-  // -----------------
-  // Geochemistry data
-  // -----------------
-  double cation_exchange_capacity;
-  double surface_site_density;
 
   // ------------------
   // Output information
