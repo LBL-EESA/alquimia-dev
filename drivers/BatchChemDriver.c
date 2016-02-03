@@ -416,9 +416,15 @@ BatchChemDriver* BatchChemDriver_New(BatchChemDriverInput* input)
   if (input->num_ion_exchange_sites > 0) 
   {
     for (int i = 0; i < driver->chem_state.cation_exchange_capacity.size; ++i)
-      driver->chem_state.cation_exchange_capacity.data[i] = input->cation_exchange_capacity[i];
+    {
+      int j = IonExchangeIndex(input, driver->chem_metadata.ion_exchange_names.data[i]);
+      driver->chem_state.cation_exchange_capacity.data[i] = input->cation_exchange_capacity[j];
+    }
     for (int i = 0; i < driver->chem_state.surface_site_density.size; ++i)
-      driver->chem_state.surface_site_density.data[i] = input->surface_site_density[i];
+    {
+      int j = IonExchangeIndex(input, driver->chem_metadata.surface_site_names.data[i]);
+      driver->chem_state.surface_site_density.data[i] = input->surface_site_density[j];
+    }
   }
   else
   {
@@ -431,11 +437,20 @@ BatchChemDriver* BatchChemDriver_New(BatchChemDriverInput* input)
   if (input->num_isotherm_species > 0) 
   {
     for (int i = 0; i < driver->chem_properties.isotherm_kd.size; ++i)
-      driver->chem_properties.isotherm_kd.data[i] = input->isotherm_kd[i];
+    {
+      int j = IonExchangeIndex(input, driver->chem_metadata.isotherm_species_names.data[i]);
+      driver->chem_properties.isotherm_kd.data[i] = input->isotherm_kd[j];
+    }
     for (int i = 0; i < driver->chem_properties.langmuir_b.size; ++i)
-      driver->chem_properties.langmuir_b.data[i] = input->langmuir_b[i];
+    {
+      int j = IonExchangeIndex(input, driver->chem_metadata.isotherm_species_names.data[i]);
+      driver->chem_properties.langmuir_b.data[i] = input->langmuir_b[j];
+    }
     for (int i = 0; i < driver->chem_properties.freundlich_n.size; ++i)
-      driver->chem_properties.freundlich_n.data[i] = input->freundlich_n[i];
+    {
+      int j = IonExchangeIndex(input, driver->chem_metadata.isotherm_species_names.data[i]);
+      driver->chem_properties.freundlich_n.data[i] = input->freundlich_n[j];
+    }
   }
 
   return driver;
