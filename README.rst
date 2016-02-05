@@ -75,7 +75,6 @@ releases of PETSc. If you use a later version of PETSc, please note the followin
 ::
 
   ln -s $PETSC_DIR/lib/petsc/conf $PETSC_DIR/conf
-
   ln -s $PETSC_DIR/include/petsc/finclude $PETSC_DIR/include/finclude
 
 *2. You will see a linking error (for a missing symbol _petsclogbegin_) when 
@@ -127,6 +126,7 @@ invoke CMake.
     cd $ALQUIMIA_DIR
     mkdir build ; cd build
     cmake .. \
+      -DCMAKE_INSTALL_PREFIX=<installation prefix> \
       -DCMAKE_C_COMPILER=<C compiler> \
       -DCMAKE_CXX_COMPILER=<C++ compiler> \
       -DCMAKE_Fortran_COMPILER=<Fortran compiler> \
@@ -142,13 +142,14 @@ invoke CMake.
 If you don't specify any chemistry engine, Alquimia will halt and remind you 
 that building it without an engine is pointless. So, for example, to build 
 Alquimia with an install of PFlotran at $PFLOTRAN_DIR using MPI compilers, 
-in Debug mode:
+in Debug mode, to be installed in /usr/local:
 
 :: 
 
     cd $ALQUIMIA_DIR
     mkdir build ; cd build
     cmake .. \
+      -DCMAKE_INSTALL_PREFIX=/usr/local \
       -DCMAKE_C_COMPILER=`which mpicc` \
       -DCMAKE_CXX_COMPILER=`which mpicxx` \
       -DCMAKE_Fortran_COMPILER=`which mpif90` \
@@ -174,3 +175,24 @@ optimization level, shared/static libraries, build prefix, etc. Alquimia
 supports all xSDK-compliant build options, which can be passed to CMake 
 when configuring your build.
 
+Installation
+------------
+
+You can install the Alquimia library and the demo drivers into your desired 
+location, type
+
+::
+
+    make install
+
+This will install libraries into ${CMAKE_INSTALL_PREFIX}/lib, headers into 
+${CMAKE_INSTALL_PREFIX}/include/alquimia, and the demo drivers into 
+${CMAKE_INSTALL_PREFIX}/bin. To run some basic sanity checks on these installed
+drivers, you can type
+
+::
+
+    make test_install
+
+This will run a few benchmark tests to make sure that the executables have been 
+properly linked and installed.
