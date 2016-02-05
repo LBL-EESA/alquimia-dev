@@ -9,6 +9,6 @@ add_executable(batch_chem batch_chem.cc cfg_reader.cc demo_containers.cc
 # Reactive transport (1D) driver.
 add_executable(transport TransportDriver.c DriverOutput.c transport.c ini.c)
 
-# Install executable.
+# Install executables.
 install(TARGETS batch_chem transport DESTINATION bin)
 
