@@ -46,18 +46,18 @@ extern "C" {
 #endif /* __cplusplus */
 
   typedef struct {
-    int size;
+    int size, capacity;
     double* data;
   } AlquimiaVectorDouble;
 
   typedef struct {
-    int size;
+    int size, capacity;
     int* data;
   } AlquimiaVectorInt;
 
   typedef struct {
     /* NOTE: this is a vector of strings */
-    int size;
+    int size, capacity;
     char** data;
   } AlquimiaVectorString;
 
@@ -154,7 +154,7 @@ extern "C" {
   } AlquimiaAqueousConstraint;
 
   typedef struct {
-    int size;
+    int size, capacity;
     AlquimiaAqueousConstraint* data;
   } AlquimiaAqueousConstraintVector;
 
@@ -165,7 +165,7 @@ extern "C" {
   } AlquimiaMineralConstraint;
   
   typedef struct {
-    int size;
+    int size, capacity;
     AlquimiaMineralConstraint* data;
   } AlquimiaMineralConstraintVector;
 
@@ -177,7 +177,7 @@ extern "C" {
   } AlquimiaGeochemicalCondition;
 
   typedef struct {
-    int size;
+    int size, capacity;
     AlquimiaGeochemicalCondition* data;
   } AlquimiaGeochemicalConditionVector;
   
