@@ -7,9 +7,9 @@ add_executable(batch_chem BatchChemDriver.c DriverOutput.c batch_chem.c ini.c)
 #                          demo_output.cc demo_utils.cc string_tokenizer.cc
 #                          fpe.c)
 
-# Reactive transport (0D) driver.
+# Reactive transport (1D) driver.
 add_executable(transport TransportDriver.c DriverOutput.c transport.c ini.c)
 
-# Install executable.
+# Install executables.
 install(TARGETS batch_chem transport DESTINATION bin)
 
