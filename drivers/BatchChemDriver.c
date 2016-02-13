@@ -101,6 +101,7 @@ static int ParseInput(void* user,
 {
   BatchChemDriverInput* input = user;
 #define MATCH(s, x) (strcmp(section, s) == 0) && (strcmp(name, x) == 0)
+#define PARTIAL_MATCH(s, x, n) (strstr(section, s) != NULL) && (strstr(name, x, n) != NULL)
 #define MATCH_N(s, x, n) (strcmp(section, s) == 0) && (strncmp(name, x, n) == 0)
 
   // Simulation section
