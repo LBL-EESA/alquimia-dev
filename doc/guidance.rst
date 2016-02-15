@@ -1,5 +1,5 @@
 ..
-   Alquimia Copyright (c) 2013-2015, The Regents of the University of California, 
+   Alquimia Copyright (c) 2013-2016, The Regents of the University of California, 
    through Lawrence Berkeley National Laboratory (subject to receipt of any 
    required approvals from the U.S. Dept. of Energy).  All rights reserved.
    
@@ -130,11 +130,11 @@ pseudocode:
      }
    }
 
-*Note:* Some :doc:`Alquimia functions <api/APIv0_functions>` have been used 
+*Note:* Some :doc:`Alquimia functions <api/APIv1_functions>` have been used 
 here but the signature is not that of the API. The signature used here is only
 for the purpose of illustrating the hands-off coupling, with an emphasis on the 
 arguments that are central to this approach. The exact signature of the 
-functions :doc:`as defined by API <api/APIv0_functions>` is required for actual
+functions :doc:`as defined by API <api/APIv1_functions>` is required for actual
 coding.
    
 Hands-on mode
@@ -241,14 +241,14 @@ pseudocode:
      }
    }
 
-*Note:* Some :doc:`Alquimia functions <api/APIv0_functions>` and 
-:doc:`Alquimia structures <api/APIv0_structures>` have been used 
+*Note:* Some :doc:`Alquimia functions <api/APIv1_functions>` and 
+:doc:`Alquimia structures <api/APIv1_structures>` have been used 
 here but the signature is not that of the API. The signature used here is only
 for the purpose of illustrating the hands-on coupling, with an emphasis on the 
 arguments that are central to this approach. The exact signature of the 
-functions :doc:`as defined by the API <api/APIv0_functions>` is required for 
+functions :doc:`as defined by the API <api/APIv1_functions>` is required for 
 actual coding. The same applies to 
-:doc:`Alquimia structures <api/APIv0_structures>`.
+:doc:`Alquimia structures <api/APIv1_structures>`.
 
    
 Fine-grained control of chemistry feedback processes    
