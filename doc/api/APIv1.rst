@@ -1,5 +1,5 @@
 ..
-   Alquimia Copyright (c) 2013-2015, The Regents of the University of California, 
+   Alquimia Copyright (c) 2013-2016, The Regents of the University of California, 
    through Lawrence Berkeley National Laboratory (subject to receipt of any 
    required approvals from the U.S. Dept. of Energy).  All rights reserved.
    
@@ -32,9 +32,9 @@ Alquimia will use `Semantic Versioning <http://semver.org/>`_ for its public API
 
 Required parts of the interface API include:
 
-* :doc:`function <APIv0_functions>` call signatures
-* :doc:`data structures <APIv0_structures>`
-* :doc:`constants <APIv0_constants>`
+* :doc:`function <APIv1_functions>` call signatures
+* :doc:`data structures <APIv1_structures>`
+* :doc:`constants <APIv1_constants>`
 
 The required parts of the interface will be compiled into
 ``libalquimia_c.a`` and ``libalquimia_fortran.a``.
@@ -42,7 +42,7 @@ The required parts of the interface will be compiled into
 There is also an optional C utility library containing reuseable code
 for common tasks (allocating memory, printing data)
 
-* :doc:`c utility library <APIv0_c_utils>`
+* :doc:`c utility library <APIv1_c_utils>`
 
 
 
@@ -71,9 +71,9 @@ geochemistry :term:`engine`\ s in a generic interface:
 
 Alquimia has two parts.
     * An engine independent API consisting of :doc:`function
-      <APIv0_functions>` call signatures and :doc:`data structures
-      <APIv0_structures>`.
-    * An optional :doc:`utility <APIv0_c_utils>` library to handle
+      <APIv1_functions>` call signatures and :doc:`data structures
+      <APIv1_structures>`.
+    * An optional :doc:`utility <APIv1_c_utils>` library to handle
       data memory allocation/freeing, printing structs, etc.
 
 
@@ -97,7 +97,7 @@ Alquimia Interface
 ------------------
 
 * Defines the engine independent API, including function call
-  signatures and data transfer :doc:`containers <APIv0_structures>`.
+  signatures and data transfer :doc:`containers <APIv1_structures>`.
 
 * The API must be compatible with mixed language programing, C++
   calling fortran or fortran calling C, etc.
