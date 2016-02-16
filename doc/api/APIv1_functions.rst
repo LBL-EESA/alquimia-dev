@@ -1,5 +1,5 @@
 ..
-   Alquimia Copyright (c) 2013-2015, The Regents of the University of California, 
+   Alquimia Copyright (c) 2013-2016, The Regents of the University of California, 
    through Lawrence Berkeley National Laboratory (subject to receipt of any 
    required approvals from the U.S. Dept. of Energy).  All rights reserved.
    
@@ -40,7 +40,7 @@ parameters must be either:
 * structures containing POD. Nested structures are OK. The ordering
   and size of data contained in the structures is important. It must
   be the same for C and FORTRAN. All structures must defined on the
-  :doc:`structures <APIv0_structures>` page.
+  :doc:`structures <APIv1_structures>` page.
 
 * strings should be c style strings, i.e. null terminated arrays of characters.
 
@@ -195,7 +195,7 @@ value contained in aux_output to determine how much data to write.
 Alquimia: Global Implicit Reaction Step
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-NOTE: This will not be implemented in version 1.0.0 of the alquimia API. By not specifying it in version 1.0, it can be added as a backward compatible feature in version 1.x. 
+This is not implemented in version 1.0.0 of the alquimia API. It can be added as a backward compatible feature in version 1.x. 
 
 NOTE: need to keep track of whether driver and engine are using row-major or column-major ordering....
 
