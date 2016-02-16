@@ -721,6 +721,20 @@ static int Run_OperatorSplit(TransportDriver* driver)
       // Copy the advected/reacted state back into place.
       CopyAlquimiaState(&driver->advected_chem_state, &driver->chem_state[i]);
       CopyAlquimiaAuxiliaryData(&driver->advected_chem_aux_data, &driver->chem_aux_data[i]);
+      
+      // Fetch auxiliary output.
+      driver->chem.GetAuxiliaryOutput(&driver->chem_engine, 
+                                      &driver->chem_properties[i],
+                                      &driver->chem_state[i],
+                                      &driver->chem_aux_data[i],
+                                      &driver->chem_aux_output[i],
+                                      &driver->chem_status);
+      if (driver->chem_status.error != 0)
+      {
+        status = driver->chem_status.error;
+        printf("TransportDriver: auxiliary output fetch failed: %s\n", driver->chem_status.message);
+        break;
+      }
     }
 
     if (status != 0) break;
