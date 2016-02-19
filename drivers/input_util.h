@@ -25,63 +25,112 @@
 ** and to permit others to do so.
 */
 
-#ifndef ALQUIMIA_INPUT_UTILS_H
-#define ALQUIMIA_INPUT_UTILS_H
+#ifndef ALQUIMIA_INPUT_UTIL_H
+#define ALQUIMIA_INPUT_UTIL_H
 
-#include "alquimia/alquimia_containers.h"
+#include "alquimia/alquimia_interface.h"
 
 // This file contains functions that can be helpful in parsing input from an 
 // ini_handler.
 
+//------------------------------------------------------------------------
+//                      High-level parsing utilities
+//------------------------------------------------------------------------
+// These can be used to perform sweeps of the input files to gather 
+// information, and rely on the low-level parsing utilities below.
+//------------------------------------------------------------------------
+
+// Creates an Alquimia interface using the information in the [chemistry]
+// section of the input file, initializing the interface and the other given 
+// containers. Note that engine_status must be allocated before this call.
+void Input_CreateAlquimiaInterface(const char* input_file,
+                                   AlquimiaInterface* engine_interface,
+                                   AlquimiaSizes* engine_sizes,
+                                   AlquimiaEngineFunctionality* engine_functionality,
+                                   AlquimiaEngineStatus* engine_status);
+
+// Reads the names of regions from the input file.
+void Input_GetRegions(const char* input_file,
+                      AlquimiaVectorString* region_names);
+
+// Reads the data (state, properties, initial condition, list of cells) for 
+// the region with the given name from the input file.
+void Input_GetRegionData(const char* input_file,
+                         const char* region_name,
+                         AlquimiaProblemMetaData* problem_metadata,
+                         AlquimiaState* region_state,
+                         AlquimiaProperties* region_properties,
+                         AlquimiaGeochemicalCondition* region_initial_condition,
+                         AlquimiaVectorInt* region_cells);
+
+// Reads any geochemical conditions specified in the file that are not 
+// initial conditions for regions.
+void Input_GetGeochemicalConditions(const char* input_file,
+                                    AlquimiaGeochemicalConditionVector* conditions);
+
+// Reads any output options/parameters in the file, storing them in the arguments.
+// output_type is currently set to "python" or "gnuplot".
+void Input_GetOutputParameters(const char* input_file,
+                               char* output_type,
+                               char* output_file,
+                               bool* verbose);
+
+//------------------------------------------------------------------------
+//                      Low-level parsing utilities
+//------------------------------------------------------------------------
+// These can be used within the INIH parser to retrieve data from specific
+// sections.
+//------------------------------------------------------------------------
+
 // Returns true if the given section name corresponds to a state, and 
 // if so, fills state_name with the name of the state.
-bool IsStateSection(const char* section, char* state_name);
+bool Input_IsStateSection(const char* section, char* state_name);
 
 // Parses the given input value into the given state container. Problem 
 // metadata is used to properly sort values associated with species, etc.
-void ParseStateInput(const char* section, 
-                     const char* name,
-                     const char* value,
-                     AlquimiaProblemMetaData* metadata,
-                     AlquimiaState* state);
+void Input_ParseState(const char* section, 
+                      const char* name,
+                      const char* value,
+                      AlquimiaProblemMetaData* metadata,
+                      AlquimiaState* state);
 
 // Returns true if the given section name corresponds to a (material) property,
 // and if so, fills properties_name with the name of the set of properties.
-bool IsPropertiesSection(const char* section, char* properties_name);
+bool Input_IsPropertiesSection(const char* section, char* properties_name);
 
 // Parses the given input value into the given properties container. Problem
 // metadata is used to properly sort values associated with species, etc.
-void ParsePropertyInput(const char* section,
-                        const char* name,
-                        const char* value,
-                        AlquimiaProblemMetaData* metadata,
-                        AlquimiaProperties* properties);
+void Input_ParseProperty(const char* section,
+                         const char* name,
+                         const char* value,
+                         AlquimiaProblemMetaData* metadata,
+                         AlquimiaProperties* properties);
 
 // Returns true if the given section name corresponds to a geochemical condition,
 // and if so, fills condition_name with the name of the geochemical condition.
-bool IsGeochemicalConditionSection(const char* section, char* condtion_name);
+bool Input_IsGeochemicalConditionSection(const char* section, char* condtion_name);
 
 // Parses the given input value into the given properties container.
-void ParseGeochemicalConditionInput(const char* name,
-                                    const char* value,
-                                    AlquimiaGeochemicalCondition* condition);
+void Input_ParseGeochemicalCondition(const char* name,
+                                     const char* value,
+                                     AlquimiaGeochemicalCondition* condition);
 
 // Returns true if the given section name corresponds to an aqueous constraint,
 // and if so, fills constraint_name with the name of the constraint.
-bool IsAqueousConstraintSection(const char* section, char* constraint_name);
+bool Input_IsAqueousConstraintSection(const char* section, char* constraint_name);
 
 // Parses the given input value into the given aqueous constraint.
-void ParseAqueousConstraintInput(const char* primary_species,
-                                 const char* text,
-                                 AlquimiaAqueousConstraint* constraint);
+void Input_ParseAqueousConstraint(const char* primary_species,
+                                  const char* text,
+                                  AlquimiaAqueousConstraint* constraint);
 
 // Returns true if the given section name corresponds to a mineral constraint, and 
 // if so, fills constraint_name with the name of the constraint.
-bool IsMineralConstraintSection(const char* section, char* constraint_name);
+bool Input_IsMineralConstraintSection(const char* section, char* constraint_name);
 
 // Parses the given input value into the given aqueous constraint.
-void ParseMineralConstraintInput(const char* mineral_name,
-                                 const char* text,
-                                 AlquimiaMineralConstraint* constraint);
+void Input_ParseMineralConstraint(const char* mineral_name,
+                                  const char* text,
+                                  AlquimiaMineralConstraint* constraint);
 
 #endif 

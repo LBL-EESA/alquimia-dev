@@ -258,9 +258,9 @@ void ResizeAlquimiaVectorDouble(AlquimiaVectorDouble* vec, int new_size)
   {
     while (vec->capacity < new_size)
       vec->capacity *= 2;
-    vec->size = new_size;
     vec->data = realloc(vec->data, sizeof(double) * vec->capacity);
   }
+  vec->size = new_size;
 }
 
 void ResizeAlquimiaVectorInt(AlquimiaVectorInt* vec, int new_size)
@@ -271,9 +271,9 @@ void ResizeAlquimiaVectorInt(AlquimiaVectorInt* vec, int new_size)
   {
     while (vec->capacity < new_size)
       vec->capacity *= 2;
-    vec->size = new_size;
     vec->data = realloc(vec->data, sizeof(int) * vec->capacity);
   }
+  vec->size = new_size;
 }
 
 void ResizeAlquimiaVectorString(AlquimiaVectorString* vec, int new_size)
@@ -284,9 +284,9 @@ void ResizeAlquimiaVectorString(AlquimiaVectorString* vec, int new_size)
   {
     while (vec->capacity < new_size)
       vec->capacity *= 2;
-    vec->size = new_size;
     vec->data = realloc(vec->data, sizeof(char*) * vec->capacity);
   }
+  vec->size = new_size;
 }
 
 void ResizeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* vec, int new_size)
@@ -297,9 +297,9 @@ void ResizeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector
   {
     while (vec->capacity < new_size)
       vec->capacity *= 2;
-    vec->size = new_size;
     vec->data = realloc(vec->data, sizeof(AlquimiaGeochemicalCondition) * vec->capacity);
   }
+  vec->size = new_size;
 }
 
 void ResizeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vec, int new_size)
@@ -310,9 +310,9 @@ void ResizeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vec,
   {
     while (vec->capacity < new_size)
       vec->capacity *= 2;
-    vec->size = new_size;
     vec->data = realloc(vec->data, sizeof(AlquimiaAqueousConstraint) * vec->capacity);
   }
+  vec->size = new_size;
 }
 
 void ResizeAlquimiaMineralConstraintVector(AlquimiaMineralConstraintVector* vec, int new_size)
@@ -323,9 +323,9 @@ void ResizeAlquimiaMineralConstraintVector(AlquimiaMineralConstraintVector* vec,
   {
     while (vec->capacity < new_size)
       vec->capacity *= 2;
-    vec->size = new_size;
     vec->data = realloc(vec->data, sizeof(AlquimiaMineralConstraint) * vec->capacity);
   }
+  vec->size = new_size;
 }
 
 //------------------------------------------------------------------------
