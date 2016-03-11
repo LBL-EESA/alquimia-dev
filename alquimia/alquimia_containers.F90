@@ -75,16 +75,19 @@ module AlquimiaContainers_module
 
   type, public, bind(c) :: AlquimiaVectorDouble
      integer (c_int) :: size
+     integer (c_int) :: capacity
      type (c_ptr) :: data
   end type AlquimiaVectorDouble
 
   type, public, bind(c) :: AlquimiaVectorInt
      integer (c_int) :: size
+     integer (c_int) :: capacity
      type (c_ptr) :: data
   end type AlquimiaVectorInt
 
   type, public, bind(c) :: AlquimiaVectorString
      integer (c_int) :: size
+     integer (c_int) :: capacity
      type (c_ptr) :: data
   end type AlquimiaVectorString
 
@@ -179,6 +182,7 @@ module AlquimiaContainers_module
 
   type, public, bind(c) :: AlquimiaAqueousConstraintVector
      integer (c_int) :: size
+     integer (c_int) :: capacity
      type (c_ptr) :: data
   end type AlquimiaAqueousConstraintVector
 
@@ -190,6 +194,7 @@ module AlquimiaContainers_module
 
   type, public, bind(c) :: AlquimiaMineralConstraintVector
      integer (c_int) :: size
+     integer (c_int) :: capacity
      type (c_ptr) :: data
   end type AlquimiaMineralConstraintVector
 

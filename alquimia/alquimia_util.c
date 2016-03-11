@@ -35,7 +35,7 @@
 //------------------------------------------------------------------------
 
 #include "alquimia/alquimia_util.h"
-#include "alquimia/alquimia_containers.h"
+#include "alquimia/alquimia_memory.h"
 #include "alquimia/alquimia_interface.h"
 #include "alquimia/alquimia_constants.h"
 
@@ -96,33 +96,21 @@ void AlquimiaFindIndexFromName(const char* const name,
 void CopyAlquimiaVectorDouble(const AlquimiaVectorDouble* const source,
                               AlquimiaVectorDouble* destination)
 {
-  if (destination->size != source->size)
-  {
-    destination->size = source->size;
-    destination->data = realloc(destination->data, sizeof(double) * destination->size);
-  }
+  ResizeAlquimiaVectorDouble(destination, source->size);
   memcpy(destination->data, source->data, sizeof(double) * destination->size);
 }
 
 void CopyAlquimiaVectorInt(const AlquimiaVectorInt* const source,
                            AlquimiaVectorInt* destination)
 {
-  if (destination->size != source->size)
-  {
-    destination->size = source->size;
-    destination->data = realloc(destination->data, sizeof(int) * destination->size);
-  }
+  ResizeAlquimiaVectorInt(destination, source->size);
   memcpy(destination->data, source->data, sizeof(int) * destination->size);
 }
 
 void CopyAlquimiaVectorString(const AlquimiaVectorString* const source,
                               AlquimiaVectorString* destination)
 {
-  if (destination->size != source->size)
-  {
-    destination->size = source->size;
-    destination->data = realloc(destination->data, sizeof(char*) * destination->size);
-  }
+  ResizeAlquimiaVectorString(destination, source->size);
   for (int i = 0; i < destination->size; ++i)
     destination->data[i] = AlquimiaStringDup(source->data[i]);
 }
@@ -211,11 +199,7 @@ void CopyAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const 
 void CopyAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* source, 
                                             AlquimiaGeochemicalConditionVector* destination)
 {
-  if (destination->size != source->size)
-  {
-    destination->size = source->size;
-    destination->data = realloc(destination->data, sizeof(AlquimiaGeochemicalCondition) * destination->size);
-  }
+  ResizeAlquimiaGeochemicalConditionVector(destination, source->size);
   for (int i = 0; i < destination->size; ++i)
     CopyAlquimiaGeochemicalCondition(&source->data[i], &destination->data[i]);
 }
@@ -238,11 +222,7 @@ void CopyAlquimiaAqueousConstraint(const AlquimiaAqueousConstraint* const source
 void CopyAlquimiaAqueousConstraintVector(const AlquimiaAqueousConstraintVector* const source, 
                                          AlquimiaAqueousConstraintVector* destination)
 {
-  if (destination->size != source->size)
-  {
-    destination->size = source->size;
-    destination->data = realloc(destination->data, sizeof(AlquimiaAqueousConstraint) * destination->size);
-  }
+  ResizeAlquimiaAqueousConstraintVector(destination, source->size);
   for (int i = 0; i < destination->size; ++i)
     CopyAlquimiaAqueousConstraint(&source->data[i], &destination->data[i]);
 }
@@ -260,13 +240,92 @@ void CopyAlquimiaMineralConstraint(const AlquimiaMineralConstraint* const source
 void CopyAlquimiaMineralConstraintVector(const AlquimiaMineralConstraintVector* const source, 
                                          AlquimiaMineralConstraintVector* destination)
 {
-  if (destination->size != source->size)
-  {
-    destination->size = source->size;
-    destination->data = realloc(destination->data, sizeof(AlquimiaMineralConstraint) * destination->size);
-  }
+  ResizeAlquimiaMineralConstraintVector(destination, source->size);
   for (int i = 0; i < destination->size; ++i)
     CopyAlquimiaMineralConstraint(&source->data[i], &destination->data[i]);
+}
+
+//------------------------------------------------------------------------
+//
+//   Resizing vectors
+//
+//------------------------------------------------------------------------
+void ResizeAlquimiaVectorDouble(AlquimiaVectorDouble* vec, int new_size)
+{
+  if (vec->size == 0)
+    AllocateAlquimiaVectorDouble(new_size, vec);
+  else if (new_size > vec->capacity)
+  {
+    while (vec->capacity < new_size)
+      vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(double) * vec->capacity);
+  }
+  vec->size = new_size;
+}
+
+void ResizeAlquimiaVectorInt(AlquimiaVectorInt* vec, int new_size)
+{
+  if (vec->size == 0)
+    AllocateAlquimiaVectorInt(new_size, vec);
+  else if (new_size > vec->capacity)
+  {
+    while (vec->capacity < new_size)
+      vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(int) * vec->capacity);
+  }
+  vec->size = new_size;
+}
+
+void ResizeAlquimiaVectorString(AlquimiaVectorString* vec, int new_size)
+{
+  if (vec->size == 0)
+    AllocateAlquimiaVectorString(new_size, vec);
+  else if (new_size > vec->capacity)
+  {
+    while (vec->capacity < new_size)
+      vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(char*) * vec->capacity);
+  }
+  vec->size = new_size;
+}
+
+void ResizeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* vec, int new_size)
+{
+  if (vec->size == 0)
+    AllocateAlquimiaGeochemicalConditionVector(new_size, vec);
+  else if (new_size > vec->capacity)
+  {
+    while (vec->capacity < new_size)
+      vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(AlquimiaGeochemicalCondition) * vec->capacity);
+  }
+  vec->size = new_size;
+}
+
+void ResizeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vec, int new_size)
+{
+  if (vec->size == 0)
+    AllocateAlquimiaAqueousConstraintVector(new_size, vec);
+  else if (new_size > vec->capacity)
+  {
+    while (vec->capacity < new_size)
+      vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(AlquimiaAqueousConstraint) * vec->capacity);
+  }
+  vec->size = new_size;
+}
+
+void ResizeAlquimiaMineralConstraintVector(AlquimiaMineralConstraintVector* vec, int new_size)
+{
+  if (vec->size == 0)
+    AllocateAlquimiaMineralConstraintVector(new_size, vec);
+  else if (new_size > vec->capacity)
+  {
+    while (vec->capacity < new_size)
+      vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(AlquimiaMineralConstraint) * vec->capacity);
+  }
+  vec->size = new_size;
 }
 
 //------------------------------------------------------------------------

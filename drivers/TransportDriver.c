@@ -175,6 +175,14 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
     alquimia_error("TransportDriver: flow->temperature must be positive.");
   if ((input->left_bc_name == NULL) && (input->right_bc_name == NULL) && (input->velocity != 0.0))
     alquimia_error("TransportDriver: When velocity != 0, left or right boundary condition must be given.");
+  if (input->chemistry_engine == NULL)
+    alquimia_error("TransportDriver: chemistry->engine not specified.");
+  if (input->chemistry_input_file == NULL)
+    alquimia_error("TransportDriver: chemistry->input_file not specified.");
+
+  // Default description -> input file name.
+  if (input->description == NULL)
+    input->description = AlquimiaStringDup(input_file);
 
   // Default output.
   if (input->output_type == NULL)
@@ -224,8 +232,7 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
 
 void TransportDriverInput_Free(TransportDriverInput* input)
 {
-  if (input->description != NULL)
-    free(input->description);
+  free(input->description);
   if (input->ic_name != NULL)
     free(input->ic_name);
   if (input->left_bc_name != NULL)
@@ -715,13 +722,14 @@ static int Run_OperatorSplit(TransportDriver* driver)
                i, driver->chem_status.message);
         break;
       }
+
       // FIXME: Why is the porosity being set to zero here??
       driver->advected_chem_state.porosity = driver->porosity;
 
       // Copy the advected/reacted state back into place.
       CopyAlquimiaState(&driver->advected_chem_state, &driver->chem_state[i]);
       CopyAlquimiaAuxiliaryData(&driver->advected_chem_aux_data, &driver->chem_aux_data[i]);
-      
+
       // Fetch auxiliary output.
       driver->chem.GetAuxiliaryOutput(&driver->chem_engine, 
                                       &driver->chem_properties[i],
