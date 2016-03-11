@@ -86,7 +86,11 @@ extern "C" {
                                             const int num_aqueous_constraints, 
                                             const int num_mineral_constraints,
                                             AlquimiaGeochemicalCondition* condition);
+  void AllocateAlquimiaAqueousConstraintVector(const int num_constraints,
+                                               AlquimiaAqueousConstraintVector* constraint_list);
   void AllocateAlquimiaAqueousConstraint(AlquimiaAqueousConstraint* constraint);
+  void AllocateAlquimiaMineralConstraintVector(const int num_constraints,
+                                               AlquimiaMineralConstraintVector* constraint_list);
   void AllocateAlquimiaMineralConstraint(AlquimiaMineralConstraint* constraint);
 
   void FreeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* condition_list);

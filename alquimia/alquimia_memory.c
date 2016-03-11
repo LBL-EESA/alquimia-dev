@@ -50,6 +50,16 @@
 #include "alquimia/alquimia_constants.h"
 #include "alquimia/alquimia_containers.h"
 
+// Returns the nearest power of 2 greater than or equal to n, or 0 if n == 0.
+static inline int nearest_power_of_2(int n)
+{
+  if (n == 0) return 0;
+  int twop = 1;
+  while (twop < n)
+    twop *= 2;
+  return twop;
+}
+
 /*******************************************************************************
  **
  **  Alquimia Vectors
@@ -58,10 +68,12 @@
 void AllocateAlquimiaVectorDouble(const int size, AlquimiaVectorDouble* vector) {
   if (size > 0) {
     vector->size = size;
-    vector->data = (double*) calloc((unsigned int)size, sizeof(double));
+    vector->capacity = nearest_power_of_2(size);
+    vector->data = (double*) calloc((size_t)vector->capacity, sizeof(double));
     ALQUIMIA_ASSERT(NULL != vector->data);
   } else {
     vector->size = 0;
+    vector->capacity = 0;
     vector->data = NULL;
   }
 }  /* end AllocateAlquimiaVectorDouble() */
@@ -71,16 +83,19 @@ void FreeAlquimiaVectorDouble(AlquimiaVectorDouble* vector) {
     free(vector->data);
     vector->data = NULL;
     vector->size = 0;
+    vector->capacity = 0;
   }
 }  /* end FreeAlquimiaVectorDouble() */
 
 void AllocateAlquimiaVectorInt(const int size, AlquimiaVectorInt* vector) {
   if (size > 0) {
     vector->size = size;
-    vector->data = (int*) calloc((unsigned int)size, sizeof(int));
+    vector->capacity = nearest_power_of_2(size);
+    vector->data = (int*) calloc((size_t)vector->capacity, sizeof(int));
     ALQUIMIA_ASSERT(NULL != vector->data);
   } else {
     vector->size = 0;
+    vector->capacity = 0;
     vector->data = NULL;
   }
 }  /* end AllocateAlquimiaVectorInt() */
@@ -90,6 +105,7 @@ void FreeAlquimiaVectorInt(AlquimiaVectorInt* vector) {
     free(vector->data);
     vector->data = NULL;
     vector->size = 0;
+    vector->capacity = 0;
   }
 }  /* end FreeAlquimiaVectorInt() */
 
@@ -97,14 +113,16 @@ void AllocateAlquimiaVectorString(const int size, AlquimiaVectorString* vector) 
   int i;
   if (size > 0) {
     vector->size = size;
-    vector->data = (char**) calloc((unsigned int)size, sizeof(char*));
+    vector->capacity = nearest_power_of_2(size);
+    vector->data = (char**) calloc((size_t)vector->capacity, sizeof(char*));
     ALQUIMIA_ASSERT(NULL != vector->data);
     for (i = 0; i < vector->size; ++i) {
-      vector->data[i] = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
+      vector->data[i] = (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
       ALQUIMIA_ASSERT(NULL != vector->data[i]);
     }
   } else {
     vector->size = 0;
+    vector->capacity = 0;
     vector->data = NULL;
   }
 }  /* end AllocateAlquimiaVectorString() */
@@ -118,6 +136,7 @@ void FreeAlquimiaVectorString(AlquimiaVectorString* vector) {
     free(vector->data);
     vector->data = NULL;
     vector->size = 0;
+    vector->capacity = 0;
   }
 }  /* end FreeAlquimiaVectorString() */
 
@@ -307,7 +326,7 @@ void FreeAlquimiaAuxiliaryOutputData(AlquimiaAuxiliaryOutputData* aux_output) {
 
 void AllocateAlquimiaEngineStatus(AlquimiaEngineStatus* status) {
 
-  status->message = (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
+  status->message = (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
   if (NULL == status->message) {
     /* TODO(bja): error handling */
   }
@@ -336,10 +355,11 @@ void AllocateAlquimiaGeochemicalConditionVector(const int num_conditions,
   fprintf(stdout, " AllocateAlquimiaGeochemicalConditionList() : %d\n",
           num_conditions);
   condition_list->size = num_conditions;
+  condition_list->capacity = nearest_power_of_2(num_conditions);
 
   if (condition_list->size > 0) {
     condition_list->data = (AlquimiaGeochemicalCondition*)
-        calloc((unsigned int)condition_list->size, 
+        calloc((size_t)condition_list->capacity, 
                sizeof(AlquimiaGeochemicalCondition));
   }
 }  /* end AllocateAlquimiaGeochemicalConditionVector() */
@@ -352,45 +372,54 @@ void AllocateAlquimiaGeochemicalCondition(const int size_name,
      the actual condstraints themselves. */
   if (condition != NULL) {
     /* size_name + 1 to include the null character! */
-    condition->name = (char*) calloc((unsigned int)size_name+1, sizeof(char));
-
-    condition->aqueous_constraints.size = num_aqueous_constraints;
-    if (condition->aqueous_constraints.size > 0) {
-      condition->aqueous_constraints.data = (AlquimiaAqueousConstraint*)
-          calloc((unsigned int)condition->aqueous_constraints.size, 
-                 sizeof(AlquimiaAqueousConstraint));
-    }
-    else
-      condition->aqueous_constraints.data = NULL;
-
-    condition->mineral_constraints.size = num_mineral_constraints;
-    if (condition->mineral_constraints.size > 0) {
-      condition->mineral_constraints.data = (AlquimiaMineralConstraint*)
-          calloc((unsigned int)condition->mineral_constraints.size, 
-                 sizeof(AlquimiaMineralConstraint));
-    }
-    else
-      condition->mineral_constraints.data = NULL;
-
+    condition->name = (char*) calloc((size_t)size_name+1, sizeof(char));
+    AllocateAlquimiaAqueousConstraintVector(num_aqueous_constraints, &condition->aqueous_constraints);
+    AllocateAlquimiaMineralConstraintVector(num_mineral_constraints, &condition->mineral_constraints);
   }
 }  /* end AllocateAlquimiaGeochemicalCondition() */
 
 void AllocateAlquimiaAqueousConstraint(AlquimiaAqueousConstraint* constraint) {
   constraint->primary_species_name =
-      (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
+      (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
   constraint->constraint_type =
-      (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
+      (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
   constraint->associated_species =
-      (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
+      (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
   constraint->value = 0.0;
 }  /* end AllocateAlquimiaAqueousConstraint() */
 
+void AllocateAlquimiaAqueousConstraintVector(int num_constraints,
+                                             AlquimiaAqueousConstraintVector* constraint_list) {
+  constraint_list->size = num_constraints;
+  constraint_list->capacity = nearest_power_of_2(num_constraints);
+  if (constraint_list->size > 0) {
+    constraint_list->data = (AlquimiaAqueousConstraint*)
+      calloc((size_t)constraint_list->capacity, 
+             sizeof(AlquimiaAqueousConstraint));
+  }
+  else
+    constraint_list->data = NULL;
+}
+
 void AllocateAlquimiaMineralConstraint(AlquimiaMineralConstraint* constraint) {
   constraint->mineral_name =
-      (char*) calloc((unsigned int)kAlquimiaMaxStringLength, sizeof(char));
+      (char*) calloc((size_t)kAlquimiaMaxStringLength, sizeof(char));
   constraint->volume_fraction = -1.0;
   constraint->specific_surface_area = -1.0;
 }  /* end AllocateAlquimiaMineralConstraint() */
+
+void AllocateAlquimiaMineralConstraintVector(int num_constraints,
+                                             AlquimiaMineralConstraintVector* constraint_list) {
+  constraint_list->size = num_constraints;
+  constraint_list->capacity = nearest_power_of_2(num_constraints);
+  if (constraint_list->size > 0) {
+    constraint_list->data = (AlquimiaMineralConstraint*)
+      calloc((size_t)constraint_list->capacity, 
+             sizeof(AlquimiaMineralConstraint));
+  }
+  else
+    constraint_list->data = NULL;
+}
 
 void FreeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* condition_list) {
   int i;
@@ -403,6 +432,7 @@ void FreeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* 
       condition_list->data = NULL;
     }
     condition_list->size = 0;
+    condition_list->capacity = 0;
   }
 }  /* end FreeAlquimiaGeochemicalConditionList() */
 
@@ -428,6 +458,7 @@ void FreeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vector
       vector->data = NULL;
     }
     vector->size = 0;
+    vector->capacity = 0;
   }
 }  /* end FreeAlquimiaAqueousConstraintVector() */
 
@@ -449,6 +480,7 @@ void FreeAlquimiaMineralConstraintVector(AlquimiaMineralConstraintVector* vector
     free(vector->data);
     vector->data = NULL;
     vector->size = 0;
+    vector->capacity = 0;
   }
 }  /* end FreeAlquimiaMineralConstraintVector() */
 

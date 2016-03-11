@@ -80,6 +80,14 @@ extern "C" {
   void CopyAlquimiaMineralConstraintVector(const AlquimiaMineralConstraintVector* const source, 
                                            AlquimiaMineralConstraintVector* destination);
 
+  // Functions for resizing Alquimia vectors.
+  void ResizeAlquimiaVectorDouble(AlquimiaVectorDouble* vec, int new_size);
+  void ResizeAlquimiaVectorInt(AlquimiaVectorInt* vec, int new_size);
+  void ResizeAlquimiaVectorString(AlquimiaVectorString* vec, int new_size);
+  void ResizeAlquimiaGeochemicalConditionVector(AlquimiaGeochemicalConditionVector* vec, int new_size);
+  void ResizeAlquimiaAqueousConstraintVector(AlquimiaAqueousConstraintVector* vec, int new_size);
+  void ResizeAlquimiaMineralConstraintVector(AlquimiaMineralConstraintVector* vec, int new_size);
+
   // The following functions write data to the given FILE.
   void PrintAlquimiaVectorDouble(const char* const name,
                                  const AlquimiaVectorDouble* const vector,
