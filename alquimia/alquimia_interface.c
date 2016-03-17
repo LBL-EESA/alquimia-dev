@@ -52,6 +52,7 @@ void CreateAlquimiaInterface(const char* const engine_name,
     interface->Shutdown = &pflotran_alquimia_shutdown;
     interface->ProcessCondition = &pflotran_alquimia_processcondition;
     interface->ReactionStepOperatorSplit = &pflotran_alquimia_reactionstepoperatorsplit;
+    interface->ComputeJacobianAndResidual = &pflotran_alquimia_computejacobianandresidual;
     interface->GetAuxiliaryOutput = &pflotran_alquimia_getauxiliaryoutput;
     interface->GetProblemMetaData = &pflotran_alquimia_getproblemmetadata;
     status->error = kAlquimiaNoError;
@@ -71,6 +72,7 @@ void CreateAlquimiaInterface(const char* const engine_name,
     interface->Shutdown = &crunch_alquimia_shutdown;
     interface->ProcessCondition = &crunch_alquimia_processcondition;
     interface->ReactionStepOperatorSplit = &crunch_alquimia_reactionstepoperatorsplit;
+    interface->ComputeJacobianAndResidual = &crunch_alquimia_computejacobianandresidual;
     interface->GetAuxiliaryOutput = &crunch_alquimia_getauxiliaryoutput;
     interface->GetProblemMetaData = &crunch_alquimia_getproblemmetadata;
     status->error = kAlquimiaNoError;

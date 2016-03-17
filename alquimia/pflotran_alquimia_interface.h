@@ -68,6 +68,14 @@ extern "C" {
       AlquimiaState* state,
       AlquimiaAuxiliaryData* aux_data,
       AlquimiaEngineStatus* status);
+  void pflotran_alquimia_computejacobianandresidual(
+      void* pft_engine_state,
+      AlquimiaProperties* material_properties,
+      AlquimiaState* state,
+      AlquimiaAuxiliaryData* aux_data,
+      double* J,
+      double* R,
+      AlquimiaEngineStatus* status);
   void pflotran_alquimia_getauxiliaryoutput(
       void* pft_engine_state,
       AlquimiaProperties* material_properties,

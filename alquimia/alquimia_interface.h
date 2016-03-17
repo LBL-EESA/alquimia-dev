@@ -95,8 +95,22 @@ extern "C" {
         AlquimiaAuxiliaryData* aux_data,
         AlquimiaEngineStatus* status);
     
-    /* Access to user selected geochemical data for output, i.e. pH, 
-       mineral SI, reaction rates */
+    // computes the Jacobian matrix and the residual vector for a reaction
+    // at a single site, given the properties and state. The Jacobian J is 
+    // an Nc x Nc dense matrix, where Nc is the number of concentrations; J 
+    // is stored in column-major order. The Nc x 1 residual vector R is stored
+    // as an array.
+    void (*ComputeJacobianAndResidual)(
+        void* pft_engine_state,
+        AlquimiaProperties* props,
+        AlquimiaState* state,
+        AlquimiaAuxiliaryData* aux_data,
+        double* J,
+        double* R,
+        AlquimiaEngineStatus* status);
+    
+    // Access to user selected geochemical data for output, i.e. pH, 
+    // mineral SI, reaction rates 
     void (*GetAuxiliaryOutput)(
         void* pft_engine_state,
         AlquimiaProperties* props,

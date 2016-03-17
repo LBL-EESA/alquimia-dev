@@ -68,6 +68,14 @@ extern "C" {
       AlquimiaState* state,
       AlquimiaAuxiliaryData* aux_data,
       AlquimiaEngineStatus* status);
+  void crunch_alquimia_computejacobianandresidual(
+      void* cf_engine_state,
+      AlquimiaProperties* properties,
+      AlquimiaState* state,
+      AlquimiaAuxiliaryData* aux_data,
+      double* J,
+      double* R,
+      AlquimiaEngineStatus* status);
   void crunch_alquimia_getauxiliaryoutput(
       void* cf_engine_state,
       AlquimiaProperties* properties,

@@ -74,6 +74,7 @@ module PFloTranAlquimiaInterface_module
        Shutdown, &
        ProcessCondition, &
        ReactionStepOperatorSplit, &
+       ComputeJacobianAndResidual, &
        GetAuxiliaryOutput, &
        GetProblemMetaData
 
@@ -131,7 +132,8 @@ contains
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, functionality, status)
+subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
+                 functionality, status) bind(C, name="pflotran_alquimia_setup")
 !  NOTE: Function signature is dictated by the alquimia API.
 !
 !  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
@@ -276,7 +278,7 @@ end subroutine Setup
 
 
 ! **************************************************************************** !
-subroutine Shutdown(pft_engine_state, status)
+subroutine Shutdown(pft_engine_state, status) bind(C, name="pflotran_alquimia_shutdown")
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_f_pointer
@@ -327,7 +329,7 @@ end subroutine Shutdown
 
 ! **************************************************************************** !
 subroutine ProcessCondition(pft_engine_state, condition, properties, &
-     state, aux_data, status)
+     state, aux_data, status) bind(C, name="pflotran_alquimia_processcondition")
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_f_pointer
@@ -451,7 +453,7 @@ end subroutine ProcessCondition
 
 ! **************************************************************************** !
 subroutine ReactionStepOperatorSplit(pft_engine_state, &
-     delta_t, properties, state, aux_data, status)
+     delta_t, properties, state, aux_data, status) bind(C, name="pflotran_alquimia_reactionstepoperatorsplit")
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
@@ -541,6 +543,73 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 end subroutine ReactionStepOperatorSplit
 
 
+! **************************************************************************** !
+subroutine ComputeJacobianAndResidual(pft_engine_state, &
+     properties, state, aux_data, J, R, status) bind(C, name="pflotran_alquimia_computejacobianandresidual") 
+!  NOTE: Function signature is dictated by the alquimia API.
+
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
+
+  use c_f_interface_module, only : f_c_string_ptr
+
+  use AlquimiaContainers_module
+
+  ! pflotran
+  use Reaction_module, only : RReact, RUpdateKineticState, RTAuxVarCompute
+
+  implicit none
+
+  ! function parameters
+  type (c_ptr), intent(inout) :: pft_engine_state
+  type (AlquimiaProperties), intent(in) :: properties
+  type (AlquimiaState), intent(in) :: state
+  type (AlquimiaAuxiliaryData), intent(in) :: aux_data
+  type (c_ptr), intent(inout) :: J
+  type (c_ptr), intent(inout) :: R
+  type (AlquimiaEngineStatus), intent(out) :: status
+
+  ! local variables
+  type(PFloTranEngineState), pointer :: engine_state
+  PetscReal :: porosity, volume, vol_frac_prim
+  PetscReal :: tran_xx(state%total_mobile%size)
+  PetscInt :: i, num_newton_iterations
+  PetscInt, parameter :: phase_index = 1
+  logical, parameter :: copy_auxdata = .true.
+  PetscReal, pointer :: Jdata, Rdata
+
+  call c_f_pointer(pft_engine_state, engine_state)
+  if (engine_state%integrity_check /= integrity_check_value) then
+     status%error = kAlquimiaErrorEngineIntegrity
+     call f_c_string_ptr("DEV_ERROR: pointer to engine state is not valid!", &
+          status%message, kAlquimiaMaxStringLength)
+     return
+  end if
+
+  ! Access the J and R arrays.
+
+  call CopyAlquimiaToAuxVars(copy_auxdata, engine_state%hands_off, &
+       state, aux_data, properties, &
+       engine_state%reaction, engine_state%global_auxvar, engine_state%material_auxvar, &
+       engine_state%rt_auxvar)
+
+  ! copy total primaries into dummy transport variable
+  do i = 1, state%total_mobile%size
+     tran_xx(i) = engine_state%rt_auxvar%total(i, phase_index)
+  enddo
+
+  vol_frac_prim = 1.0
+
+  ! Compute the Jacobian and residual here.
+  ! FIXME
+
+  ! Copy the diagnostic information into the status object.
+  status%error = kAlquimiaNoError
+  status%converged = .false.
+  status%num_rhs_evaluations = status%num_rhs_evaluations + 1
+  status%num_jacobian_evaluations = status%num_jacobian_evaluations + 1
+
+end subroutine ComputeJacobianAndResidual
+
 
 ! **************************************************************************** !
 subroutine GetAuxiliaryOutput( &
@@ -549,7 +618,7 @@ subroutine GetAuxiliaryOutput( &
      state, &
      aux_data, &
      aux_output, &
-     status)
+     status) bind(C, name="pflotran_alquimia_getauxiliaryoutput")
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
@@ -664,7 +733,7 @@ end subroutine GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
+subroutine GetProblemMetaData(pft_engine_state, meta_data, status) bind(C, name="pflotran_alquimia_getproblemmetadata")
   !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_int, c_char, c_f_pointer

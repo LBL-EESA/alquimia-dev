@@ -74,6 +74,7 @@ module CrunchAlquimiaInterface_module
        Shutdown, &
        ProcessCondition, &
        ReactionStepOperatorSplit, &
+       ComputeJacobianAndResidual, &
        GetAuxiliaryOutput, &
        GetProblemMetaData
 
@@ -169,7 +170,8 @@ contains
 ! **************************************************************************** !
 
 ! **************************************************************************** !
-subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionality, status)
+subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, &
+                 functionality, status) bind(C, name="crunch_alquimia_setup")
 !  NOTE: Function signature is dictated by the alquimia API.
 !
 !  NOTE: Assumes that MPI_Init() and / or PetscInitialize() have already
@@ -360,7 +362,7 @@ end subroutine Setup
 
 
 ! **************************************************************************** !
-subroutine Shutdown(cf_engine_state, status)
+subroutine Shutdown(cf_engine_state, status) bind(C, name="crunch_alquimia_shutdown")
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_f_pointer
@@ -403,7 +405,7 @@ end subroutine Shutdown
 
 ! **************************************************************************** !
 subroutine ProcessCondition(cf_engine_state, condition, properties, &
-     state, aux_data, status)
+     state, aux_data, status) bind(C,name="crunch_alquimia_processcondition")
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_f_pointer
@@ -591,7 +593,7 @@ end subroutine ProcessCondition
 
 ! **************************************************************************** !
 subroutine ReactionStepOperatorSplit(cf_engine_state, &
-     delta_t, properties, state, aux_data, status)
+     delta_t, properties, state, aux_data, status) bind(C, name="crunch_alquimia_reactionstepoperatorsplit")
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
@@ -929,6 +931,124 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   end if   
 
 end subroutine ReactionStepOperatorSplit
+! **************************************************************************** !
+
+
+! **************************************************************************** !
+subroutine ComputeJacobianAndResidual(cf_engine_state, &
+     properties, state, aux_data, J, R, status) bind(C, name="crunch_alquimia_computejacobianandresidual")
+
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
+
+  use c_f_interface_module, only : f_c_string_ptr
+
+  use AlquimiaContainers_module
+
+  ! crunchflow
+  use crunchtype
+  use params, only: secyr
+  use runtime, only: iterat, Duan
+  use medium, only: isaturate
+  use concentration, only: ulab, &
+                           sp10, sp, spold, &
+                           s, sn, &
+                           spex, spexold, &
+                           spsurf10, spsurf, spsurfold, &
+                           xgram, xgramOld
+  implicit none
+
+  ! function parameters
+  type (c_ptr), intent(inout) :: cf_engine_state
+  type (AlquimiaProperties), intent(in) :: properties
+  type (AlquimiaState), intent(inout) :: state
+  type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
+  type (c_ptr), intent(inout) :: J
+  type (c_ptr), intent(inout) :: R
+  type (AlquimiaEngineStatus), intent(out) :: status
+
+  ! local variables
+  type(CrunchEngineState), pointer :: engine_state
+  
+  integer(i4b)          :: ncomp
+  integer(i4b)          :: nspec
+  integer(i4b)          :: nkin
+  integer(i4b)          :: nrct
+  integer(i4b)          :: ngas
+  integer(i4b)          :: npot
+  integer(i4b)          :: nexchange
+  integer(i4b)          :: nexch_sec
+  integer(i4b)          :: nsurf
+  integer(i4b)          :: nsurf_sec
+  integer(i4b)          :: ndecay
+  integer(i4b)          :: ikin
+  integer(i4b)          :: neqn
+  integer(i4b)          :: nretard
+  integer(i4b)          :: nx
+  integer(i4b)          :: ny
+  integer(i4b)          :: nz
+
+  integer(i4b)          :: igamma ! gamma coeff update type
+  integer(i4b)          :: ikph   ! points to pH
+  integer(i4b)          :: jpor   ! porosity update type (0 is constant)
+  real(dp)              :: corrmax ! max unknown update log scale
+  real(dp)              :: deltmin ! minimum delta time
+  real(dp)              :: time    ! time
+  logical, parameter :: copy_auxdata = .true.
+
+  call c_f_pointer(cf_engine_state, engine_state)
+  if (engine_state%integrity_check /= integrity_check_value) then
+     status%error = kAlquimiaErrorEngineIntegrity
+     call f_c_string_ptr("DEV_ERROR: pointer to engine state is not valid!", &
+          status%message, kAlquimiaMaxStringLength)
+     return
+  end if
+
+  ! 1st: GET ENGINE STATE FROM ALQUIMIA AND UPDATE CRUNCHFLOW VARIABLES WITH ALQUIMIA STATE
+
+  ! geochemical system sizes
+  ncomp = engine_state%ncomp
+  nspec = engine_state%nspec  
+  nkin = engine_state%nkin 
+  nrct = engine_state%nrct 
+  ngas = engine_state%ngas 
+  npot = engine_state%npot 
+  nexchange = engine_state%nexchange
+  nexch_sec = engine_state%nexch_sec
+  nsurf = engine_state%nsurf
+  nsurf_sec = engine_state%nsurf_sec
+  ndecay = engine_state%ndecay
+  ikin = engine_state%ikin
+  neqn = engine_state%neqn
+  nretard = engine_state%nretard
+  ! domain size (start98-alquimia sets it to nx=ny=nz=1)
+  nx = engine_state%nx
+  ny = engine_state%ny
+  nz = engine_state%nz
+  ! flags, pointer indexes, parameters
+  igamma = engine_state%igamma
+  jpor = engine_state%jpor
+  corrmax = engine_state%corrmax
+  time = engine_state%time
+
+  call CopyAlquimiaToAuxVars(copy_auxdata,   engine_state%hands_off, &
+                             state, aux_data, properties, &
+                             ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
+
+  IF (nexchange > 0) THEN
+    CALL UpdateExchanger(nx,ny,nz,nexchange)
+  END IF
+
+  ! Now compute the Jacobian and the residual.
+  ! FIXME
+  
+  ! report alquimia status
+  status%error = kAlquimiaNoError
+  status%converged = .false.
+  status%num_rhs_evaluations = status%num_rhs_evaluations + 1
+  status%num_jacobian_evaluations = status%num_jacobian_evaluations + 1
+
+end subroutine ComputeJacobianAndResidual
+! **************************************************************************** !
 
 
 ! **************************************************************************** !
@@ -938,7 +1058,7 @@ subroutine GetAuxiliaryOutput( &
      state, &
      aux_data, &
      aux_output, &
-     status)
+     status) bind(C, name="crunch_alquimia_getauxiliaryoutput")
 !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
@@ -1047,7 +1167,7 @@ end subroutine GetAuxiliaryOutput
 
 
 ! **************************************************************************** !
-subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
+subroutine GetProblemMetaData(cf_engine_state, meta_data, status) bind(C, name="crunch_alquimia_getproblemmetadata")
   !  NOTE: Function signature is dictated by the alquimia API.
 
   use, intrinsic :: iso_c_binding, only : c_int, c_char, c_f_pointer
