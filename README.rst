@@ -159,7 +159,12 @@ in Debug mode, to be installed in /usr/local:
       -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran
     make 
 
-*Windows instructions go here.*
+If you are using a geochemical engine that requires PETSc, and you want to 
+specify the exact locations of PETSc's libraries and include directories, 
+you can specify these with the -DTPL_PETSC_INCLUDE_DIRS=<list of dirs> and 
+-DTPL_PETSC_LIBRARIES=<list of libs> arguments. Normally, these options are 
+omitted and Alquimia automatically detects PETSc's location using the PETSC_DIR
+and PETSC_ARCH environment variables.
 
 Testing
 -------
