@@ -194,33 +194,29 @@ if (ALQUIMIA_NEED_PETSC)
 
   # Do we have settings for PETSc's libraries/includes?
   if (TPL_PETSC_INCLUDE_DIRS)
-    if (NOT TPL_PETSC_LIBRARIES)
-      message(FATAL_ERROR "TPL_PETSC_LIBRARIES must be given if TPL_PETSC_INCLUDE_DIRS is given.")
+    if (NOT TPL_PETSC_LDFLAGS)
+      message(FATAL_ERROR "TPL_PETSC_LDFLAGS must be given if TPL_PETSC_INCLUDE_DIRS is given.")
     endif()
-  elseif (TPL_PETSC_LIBRARIES)
-    message(FATAL_ERROR "TPL_PETSC_INCLUDE_DIRS must be given if TPL_PETSC_LIBRARIES is given.")
+  elseif (TPL_PETSC_LDFLAGS)
+    message(FATAL_ERROR "TPL_PETSC_INCLUDE_DIRS must be given if TPL_PETSC_LDFLAGS is given.")
   endif()
 
   # Find PETSc.
   if (TPL_PETSC_INCLUDE_DIRS)
 
-    # Validate the paths we've been given.
+    # Validate the include directories we've been given.
     foreach(inc ${TPL_PETSC_INCLUDE_DIRS})
       if (NOT EXISTS ${inc})
         message(FATAL_ERROR "Invalid PETSc include dir: ${inc}")
       endif()
     endforeach()
-    foreach(lib ${TPL_PETSC_LIBRARIES})
-      if (NOT EXISTS ${lib})
-        message(FATAL_ERROR "Invalid PETSc library: ${lib}")
-      endif()
-    endforeach()
 
     message(STATUS "Using PETSc includes: ${TPL_PETSC_INCLUDE_DIRS}")
-    message(STATUS "Using PETSc libraries: ${TPL_PETSC_LIBRARIES}")
+    message(STATUS "Using PETSc library flags: ${TPL_PETSC_LDFLAGS}")
     set(PETSC_INCLUDES ${TPL_PETSC_INCLUDE_DIRS})
-    set(PETSC_LIBRARIES ${TPL_PETSC_LIBRARIES})
+    set(PETSC_LDFLAGS ${TPL_PETSC_LDFLAGS})
     set(PETSC_FOUND TRUE)
+    set(CMAKE_EXE_LINKER_FLAGS "${PETSC_LDFLAGS} ${CMAKE_EXE_LINKER_FLAGS}")
   else()
     # Try to detect PETSc if we haven't been told where it is.
     find_package(PETSc)
