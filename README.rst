@@ -1,3 +1,9 @@
+Travis CI Status 
+-----
+
+.. image:: https://travis-ci.org/LBL-EESA/alquimia-dev.svg?branch=master
+    :target: https://travis-ci.org/LBL-EESA/alquimia-dev
+
 Legal
 -----
 
