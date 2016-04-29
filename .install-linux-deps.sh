@@ -13,9 +13,9 @@ ln -s $PETSC_DIR/include/petsc/finclude $PETSC_DIR/include/finclude
 popd
 
 # Go get pflotran and build it.
-wget https://bitbucket.org/pflotran/pflotran-dev/get/611092f80ddb.zip
-unzip -q 611092f80ddb.zip
-mv pflotran-pflotran-dev-611092f80ddb $PFLOTRAN_DIR
+wget https://bitbucket.org/pflotran/pflotran-dev/get/3fe478242357.zip
+unzip -q 3fe478242357.zip
+mv pflotran-pflotran-dev-3fe478242357 $PFLOTRAN_DIR
 pushd $PFLOTRAN_DIR/src/pflotran
 make pflotran_rxn
 popd

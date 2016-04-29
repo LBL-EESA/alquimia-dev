@@ -62,7 +62,7 @@ PFlotran engine
 ===============
 
 Currently, Alquimia only works with a particular version of PFlotran: 
-hash 611092f80ddb from the pflotran-dev repository. You can download this 
+hash 3fe478242357 from the pflotran-dev repository. You can download this 
 revision directly as a ZIP file from 
 https://bitbucket.org/pflotran/pflotran-dev/get/611092f80ddb.zip
 
