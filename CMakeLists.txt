@@ -113,8 +113,13 @@ endif ()
 
 # Here we make sure CMake-installed binaries use the correct runpath, and 
 # that the path is not stripped during installation.
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+if (BUILD_SHARED_LIBS)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  set(CMAKE_SKIP_INSTALL_RPATH FALSE)
+else ()
+  set(CMAKE_SKIP_INSTALL_RPATH TRUE)
+endif ()
 
 # Check third-party library dependencies.
 set(ALQUIMIA_NEED_PETSC 0)
