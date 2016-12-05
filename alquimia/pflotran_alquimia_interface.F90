@@ -479,7 +479,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   PetscReal :: tran_xx(state%total_mobile%size)
   PetscInt :: i, num_newton_iterations
   PetscInt, parameter :: phase_index = 1
-  logical, parameter :: copy_auxdata = .true.
+  logical, parameter :: copy_auxdata = .false. !.true.
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then

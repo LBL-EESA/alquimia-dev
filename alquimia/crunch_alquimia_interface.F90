@@ -659,7 +659,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   real(dp) :: porosity, volume, vol_frac_prim    
   integer(i4b) :: jx, jy, jz
   integer(i4b) :: i, is, ix, ik
-  logical, parameter :: copy_auxdata = .true.
+  logical, parameter :: copy_auxdata = .false. !.true.
 
   ! crunchflow local
   integer(i4b)                :: newtmax
