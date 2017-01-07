@@ -544,7 +544,6 @@ subroutine ProcessCondition(cf_engine_state, condition, properties, &
      do_crunchCond: do nco = 1,nchem     
 
        if (trim(condlabel(nco)) == trim(name)) then         
-         
          found = nco
          exit do_crunchCond
        end if
@@ -659,7 +658,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   real(dp) :: porosity, volume, vol_frac_prim    
   integer(i4b) :: jx, jy, jz
   integer(i4b) :: i, is, ix, ik
-  logical, parameter :: copy_auxdata = .false. !.true.
+  logical, parameter :: copy_auxdata = .true.
 
   ! crunchflow local
   integer(i4b)                :: newtmax
@@ -678,7 +677,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   end if
 
   !write (*, '(a)') "F_CrunchAlquimiaInterface::ReactionStepOperatorSplit() :"
-
+  !write(*,*)'------- GOING IN -----------------------------------------'
   !call PrintState(state)
 
   ! 1st: GET ENGINE STATE FROM ALQUIMIA AND UPDATE CRUNCHFLOW VARIABLES WITH ALQUIMIA STATE
@@ -923,6 +922,9 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
       status%num_rhs_evaluations = iterat
       status%num_jacobian_evaluations = iterat
       status%num_newton_iterations = iterat
+ 
+      !write(*,*)'------- GOING OUT ----------------------------------------'
+      !call PrintState(state)
 
     end if
   
@@ -2311,7 +2313,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   ! are not provided by the driver so copying them over would
   ! lose crunchflow's input file values 
   !
-  if_hands_off: if (.not. hands_off .and. .not. copy_auxdata) then
+  if_hands_off: if (.not. hands_off) then
   
   !
   ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
@@ -2871,16 +2873,46 @@ subroutine PrintState(state)
   ! local variables
   integer :: i
   real (c_double), pointer :: conc(:)
-
+  real (c_double), pointer :: immo(:)
+  real (c_double), pointer :: vofx(:)
+  real (c_double), pointer :: surf(:)
+  real (c_double), pointer :: sites(:)
+  real (c_double), pointer :: cec(:)
+  
   write (*, '(a)') "state : "
   write (*, '(a, 1es13.6)') "  density water : ", state%water_density
   write (*, '(a, 1es13.6)') "  porosity : ", state%porosity
   write (*, '(a, 1es13.6)') "  temperature : ", state%temperature
   write (*, '(a, 1es13.6)') "  aqueous pressure : ", state%aqueous_pressure
-  write (*, '(a, i4, a)') "  total primary (", state%total_mobile%size, ") : "
+  write (*, '(a, i4, a)') "  total mobile (", state%total_mobile%size, ") : "
   call c_f_pointer(state%total_mobile%data, conc, (/state%total_mobile%size/))
   do i=1, state%total_mobile%size
      write (*, '(1es13.6)') conc(i)
+  end do
+  write (*, '(a, i4, a)') "  total immobile (", state%total_immobile%size, ") : "
+  call c_f_pointer(state%total_immobile%data, immo, (/state%total_immobile%size/))
+  do i=1, state%total_immobile%size
+     write (*, '(1es13.6)') immo(i)
+  end do
+  write (*, '(a, i4, a)') "  mineral volume fraction (", state%mineral_volume_fraction%size, ") : "
+  call c_f_pointer(state%mineral_volume_fraction%data, vofx, (/state%mineral_volume_fraction%size/))
+  do i=1, state%mineral_volume_fraction%size
+     write (*, '(1es13.6)') vofx(i)
+  end do
+  write (*, '(a, i4, a)') "  mineral surface area (", state%mineral_specific_surface_area%size, ") : "
+  call c_f_pointer(state%mineral_specific_surface_area%data, surf, (/state%mineral_specific_surface_area%size/))
+  do i=1, state%mineral_specific_surface_area%size
+     write (*, '(1es13.6)') surf(i)
+  end do
+  write (*, '(a, i4, a)') "  surface site density (", state%surface_site_density%size, ") : "
+  call c_f_pointer(state%surface_site_density%data, sites, (/state%surface_site_density%size/))
+  do i=1, state%surface_site_density%size
+     write (*, '(1es13.6)') sites(i)
+  end do
+  write (*, '(a, i4, a)') "  cation exchange capacity (", state%cation_exchange_capacity%size, ") : "
+  call c_f_pointer(state%cation_exchange_capacity%data, cec, (/state%cation_exchange_capacity%size/))
+  do i=1, state%cation_exchange_capacity%size
+     write (*, '(1es13.6)') cec(i)
   end do
 end subroutine PrintState
 
