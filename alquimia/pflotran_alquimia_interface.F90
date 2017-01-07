@@ -479,7 +479,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   PetscReal :: tran_xx(state%total_mobile%size)
   PetscInt :: i, num_newton_iterations
   PetscInt, parameter :: phase_index = 1
-  logical, parameter :: copy_auxdata = .false. !.true.
+  logical, parameter :: copy_auxdata = .true.
 
   call c_f_pointer(pft_engine_state, engine_state)
   if (engine_state%integrity_check /= integrity_check_value) then
@@ -1483,7 +1483,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   ! are not provided by the driver so copying them over would
   ! lose pflotran's input file values 
   !
-  if_hands_off: if (.not. hands_off .and. .not. copy_auxdata) then
+  if_hands_off: if (.not. hands_off) then
   
   !
   ! ion exchange, CEC only present in reaction, not aux_vars?
@@ -1842,16 +1842,46 @@ subroutine PrintState(state)
   ! local variables
   integer :: i
   real (c_double), pointer :: conc(:)
+  real (c_double), pointer :: immo(:)
+  real (c_double), pointer :: vofx(:)
+  real (c_double), pointer :: surf(:)
+  real (c_double), pointer :: sites(:)
+  real (c_double), pointer :: cec(:)
 
   write (*, '(a)') "state : "
   write (*, '(a, 1es13.6)') "  density water : ", state%water_density
   write (*, '(a, 1es13.6)') "  porosity : ", state%porosity
   write (*, '(a, 1es13.6)') "  temperature : ", state%temperature
   write (*, '(a, 1es13.6)') "  aqueous pressure : ", state%aqueous_pressure
-  write (*, '(a, i4, a)') "  total primary (", state%total_mobile%size, ") : "
+  write (*, '(a, i4, a)') "  total mobile (", state%total_mobile%size, ") : "
   call c_f_pointer(state%total_mobile%data, conc, (/state%total_mobile%size/))
   do i=1, state%total_mobile%size
      write (*, '(1es13.6)') conc(i)
+  end do
+    write (*, '(a, i4, a)') "  total immobile (", state%total_immobile%size, ") : "
+  call c_f_pointer(state%total_immobile%data, immo, (/state%total_immobile%size/))
+  do i=1, state%total_immobile%size
+     write (*, '(1es13.6)') immo(i)
+  end do
+  write (*, '(a, i4, a)') "  mineral volume fraction (", state%mineral_volume_fraction%size, ") : "
+  call c_f_pointer(state%mineral_volume_fraction%data, vofx, (/state%mineral_volume_fraction%size/))
+  do i=1, state%mineral_volume_fraction%size
+     write (*, '(1es13.6)') vofx(i)
+  end do
+  write (*, '(a, i4, a)') "  mineral surface area (", state%mineral_specific_surface_area%size, ") : "
+  call c_f_pointer(state%mineral_specific_surface_area%data, surf, (/state%mineral_specific_surface_area%size/))
+  do i=1, state%mineral_specific_surface_area%size
+     write (*, '(1es13.6)') surf(i)
+  end do
+  write (*, '(a, i4, a)') "  surface site density (", state%surface_site_density%size, ") : "
+  call c_f_pointer(state%surface_site_density%data, sites, (/state%surface_site_density%size/))
+  do i=1, state%surface_site_density%size
+     write (*, '(1es13.6)') sites(i)
+  end do
+  write (*, '(a, i4, a)') "  cation exchange capacity (", state%cation_exchange_capacity%size, ") : "
+  call c_f_pointer(state%cation_exchange_capacity%data, cec, (/state%cation_exchange_capacity%size/))
+  do i=1, state%cation_exchange_capacity%size
+     write (*, '(1es13.6)') cec(i)
   end do
 end subroutine PrintState
 
