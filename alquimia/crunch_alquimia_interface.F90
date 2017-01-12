@@ -291,7 +291,7 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
   !!iprnt = 0     
 
   ! initialize CrunchFlow
-  CALL start98(ncomp,nspec,nkin,nrct,ngas,npot,nx,ny,nz,data1,ipath,igamma,  &
+  CALL StartTope(ncomp,nspec,nkin,nrct,ngas,npot,nx,ny,nz,data1,ipath,igamma,  &
                ikmast,ikph,iko2,ltitle,tstep,delt,deltmin,ttol,jpor,ikin,nstop,       &
                corrmax,nseries,nexchange,nexch_sec,nsurf,nsurf_sec,ndecay,str_mon,    &
                str_day,str_hr,str_min,str_sec,NumInputFiles,InputFileCounter)
