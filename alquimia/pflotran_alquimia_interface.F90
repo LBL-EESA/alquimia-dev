@@ -67,7 +67,7 @@ module PFloTranAlquimiaInterface_module
   use Transport_Constraint_module, only : tran_constraint_list_type, tran_constraint_coupler_type
 
   use PFLOTRAN_Constants_module
-
+#include "finclude/petscsys.h"
   implicit none
 
   public :: Setup, &
@@ -155,8 +155,6 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, functionali
        tran_constraint_coupler_type, TranConstraintCouplerCreate
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
@@ -342,8 +340,6 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
   use Option_module, only : printMsg
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -838,10 +834,10 @@ subroutine SetupPFloTranOptions(input_filename, option)
   use c_f_interface_module, only : c_f_string_chars
 
   use Option_module, only : option_type
-
+  use petscsys
   implicit none
 
-#include "finclude/petscsys.h"
+
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
@@ -955,10 +951,10 @@ subroutine InitializeScreenOutput(option, input)
   use Input_Aux_module, only : input_type, InputReadPflotranString, InputReadWord, &
        InputCheckExit, InputError, InputErrorMsg, InputReadStringErrorMsg
   use String_module, only : StringToUpper
-
+  use petscsys
   implicit none
 
-#include "finclude/petscsys.h"
+
 
   ! function parameters
   type(option_type), pointer, intent(inout) :: option
@@ -1016,10 +1012,9 @@ subroutine InitializeTemperatureDependence(option, input)
   ! pflotran
   use Option_module, only : option_type
   use Input_Aux_module, only : input_type, InputFindStringInFile, InputError
+  use petscsys
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(inout) :: option
@@ -1051,10 +1046,8 @@ subroutine InitializePFloTranReactions(option, input, reaction)
   use Reaction_Database_module, only : DatabaseRead, BasisInit
   use Option_module, only : option_type
   use Input_Aux_module, only : input_type, InputFindStringInFile, InputError
-
+  use petscsys
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1111,10 +1104,8 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
   use Transport_Constraint_module, only : tran_constraint_list_type, tran_constraint_type, &
        TranConstraintRead, TranConstraintInitList, TranConstraintAddToList, &
        TranConstraintCreate
-
+  use petscsys
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1182,10 +1173,8 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
   use Material_Aux_class, only : material_auxvar_type
   use Transport_Constraint_module, only : tran_constraint_type, tran_constraint_coupler_type
   use Option_module, only : option_type, printMsg
-
+  use petscsys
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1260,7 +1249,7 @@ end subroutine ProcessPFloTranConstraint
 function ConvertAlquimiaConditionToPflotran(&
      option, reaction, alquimia_condition)
   use, intrinsic :: iso_c_binding
-
+  use petscsys
   use c_f_interface_module, only : c_f_string_ptr
 
   use AlquimiaContainers_module
@@ -1275,11 +1264,9 @@ function ConvertAlquimiaConditionToPflotran(&
        CONSTRAINT_FREE, CONSTRAINT_TOTAL, CONSTRAINT_TOTAL_SORB, &
        CONSTRAINT_PH, CONSTRAINT_MINERAL, &
        CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL
-
+  use petscsys
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1959,8 +1946,6 @@ subroutine PrintTranConstraint(tran_constraint)
   use Transport_Constraint_module, only : tran_constraint_type
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type (tran_constraint_type), pointer :: tran_constraint
