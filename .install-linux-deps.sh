@@ -1,10 +1,9 @@
 # Install necessary software.
 sudo apt-get update -qq
-sudo apt-get install -y cmake gcc libopenmpi-dev openmpi-bin liblapack-dev gfortran mercurial wget
+sudo apt-get install -y cmake gcc libopenmpi-dev openmpi-bin liblapack-dev gfortran git
 
 # Go get PETSc and build it.
-wget https://bitbucket.org/petsc/petsc.zip
-unzip -q petsc.zip
+git clone https://bitbucket/org/petsc/petsc petsc
 pushd $PETSC_DIR
 ./configure --with-mpi=1 --with-debug=$DEBUG --with-shared-libraries=1 --download-pflotran
 make
