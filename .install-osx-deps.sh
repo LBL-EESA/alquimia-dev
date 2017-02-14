@@ -1,6 +1,6 @@
 # Install required software
 brew update
-brew install openmpi git
+brew install openmpi
 
 # Make sure the weird gfortran library links are in place.
 ln -s /usr/local/lib/gcc/5/libgfortran.dylib /usr/local/lib/libgfortran.dylib
