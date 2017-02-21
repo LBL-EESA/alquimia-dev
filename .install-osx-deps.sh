@@ -12,6 +12,7 @@ git clone https://bitbucket.org/petsc/petsc petsc
 pushd $PETSC_DIR
 ./configure --with-mpi=1 --with-debug=$DEBUG --with-shared-libraries=1 --download-pflotran
 make
+make test
 popd
 
 # Go get pflotran and build it.
