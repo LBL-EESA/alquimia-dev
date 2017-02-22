@@ -30,7 +30,7 @@ script:
   - ls $PETSC_DIR
   - ls $PETSC_DIR/$PETSC_ARCH
   - ls $PETSC_DIR/$PETSC_ARCH/lib
-  - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/../alquimia-install -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_Fortran_COMPILER=`which mpif90` -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DXSDK_WITH_PFLOTRAN=ON -DTPL_PFLOTRAN_LIBRARIES=$PETSC_DIR/$PETSC_ARCH/externalpackages/git.pflotran/src/pflotran/libpflotranchem.a -DTPL_PFLOTRAN_INCLUDE_DIRS=$PETSC_DIR/$PETSC_ARCH/externalpackages/git.pflotran/src/pflotran
+  - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/../alquimia-install -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_Fortran_COMPILER=`which mpif90` -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DXSDK_WITH_PFLOTRAN=ON -DTPL_PFLOTRAN_LIBRARIES=$PETSC_DIR/$PETSC_ARCH/externalpackages/git.pflotran/src/pflotran/libpflotranchem.a -DTPL_PFLOTRAN_INCLUDE_DIRS=$PETSC_DIR/$PETSC_ARCH/externalpackages/git.pflotran/src/pflotran -DTPL_PETSC_INCLUDE_DIRS=$PETSC_DIR/$PETSC_ARCH/include;$PETSC_DIR/include
   - make -j4
   - make test
   - make install
