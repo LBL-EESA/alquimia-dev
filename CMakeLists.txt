@@ -225,6 +225,8 @@ if (ALQUIMIA_NEED_PETSC)
     # Try to detect PETSc if we haven't been told where it is.
     find_package(PETSc)
     message(STATUS "--- SM: finding PETSc with find_package")
+    message(STATUS "--- SM: PETSC_INCLUDES >>> ${PETSC_INCLUDES}")
+    message(STATUS "--- SM: PETSC_LDFLAGS >>> ${PETSC_LDFLAGS}")
   endif()
   if (NOT PETSC_FOUND)
     message(FATAL_ERROR "PETSc was not found.")
