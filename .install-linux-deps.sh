@@ -1,6 +1,7 @@
 # Install necessary software.
 sudo apt-get update -qq
 sudo apt-get install -y cmake gcc libopenmpi-dev openmpi-bin liblapack-dev gfortran git
+export TMPDIR=/tmp
 
 # Go get PETSc and build it.
 git clone https://bitbucket.org/petsc/petsc petsc

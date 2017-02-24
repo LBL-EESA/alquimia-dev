@@ -199,9 +199,9 @@ if (ALQUIMIA_NEED_PETSC)
   
   # Do we have settings for PETSc's libraries/includes?
   if (TPL_PETSC_INCLUDE_DIRS)
-#    if (NOT TPL_PETSC_LDFLAGS)
-#      message(FATAL_ERROR "TPL_PETSC_LDFLAGS must be given if TPL_PETSC_INCLUDE_DIRS is given.")
-#    endif()
+    if (NOT TPL_PETSC_LDFLAGS)
+      message(FATAL_ERROR "TPL_PETSC_LDFLAGS must be given if TPL_PETSC_INCLUDE_DIRS is given.")
+    endif()
   elseif (TPL_PETSC_LDFLAGS)
     message(FATAL_ERROR "TPL_PETSC_INCLUDE_DIRS must be given if TPL_PETSC_LDFLAGS is given.")
   endif()
