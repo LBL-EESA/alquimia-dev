@@ -64,10 +64,10 @@ module PFloTranAlquimiaInterface_module
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
   use Global_Aux_module, only : global_auxvar_type
   use Material_Aux_class, only : material_auxvar_type
-  use Constraint_module, only : tran_constraint_list_type, tran_constraint_coupler_type
+  use Transport_Constraint_module, only : tran_constraint_list_type, tran_constraint_coupler_type
 
   use PFLOTRAN_Constants_module
-
+#include "finclude/petscsys.h"
   implicit none
 
   public :: Setup, &
@@ -151,12 +151,10 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, functionali
   use Material_Aux_class, only : material_auxvar_type, MaterialAuxVarInit
   use Option_module, only : option_type, OptionCreate
   use Input_Aux_module, only : input_type, InputCreate, InputDestroy
-  use Constraint_module, only : tran_constraint_list_type, &
+  use Transport_Constraint_module, only : tran_constraint_list_type, &
        tran_constraint_coupler_type, TranConstraintCouplerCreate
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
@@ -288,7 +286,7 @@ subroutine Shutdown(pft_engine_state, status)
   ! pflotran
   use Option_module, only : OptionDestroy
   use Reaction_aux_module, only : ReactionDestroy
-  use Constraint_module, only : TranConstraintCouplerDestroy, TranConstraintDestroyList
+  use Transport_Constraint_module, only : TranConstraintCouplerDestroy, TranConstraintDestroyList
 
   implicit none
 
@@ -338,12 +336,10 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
 
   ! pflotran
   use String_module, only : StringCompareIgnoreCase
-  use Constraint_module, only : tran_constraint_type, TranConstraintAddToList
+  use Transport_Constraint_module, only : tran_constraint_type, TranConstraintAddToList
   use Option_module, only : printMsg
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type (c_ptr), intent(inout) :: pft_engine_state
@@ -559,7 +555,7 @@ subroutine GetAuxiliaryOutput( &
   use AlquimiaContainers_module
 
   ! pflotran
-  use Mineral_module, only : RMineralSaturationIndex
+  use Reaction_Mineral_module, only : RMineralSaturationIndex
 
   implicit none
 
@@ -838,10 +834,10 @@ subroutine SetupPFloTranOptions(input_filename, option)
   use c_f_interface_module, only : c_f_string_chars
 
   use Option_module, only : option_type
-
+  use petscsys
   implicit none
 
-#include "finclude/petscsys.h"
+
 
   ! function parameters
   character(kind=c_char), dimension(*), intent(in) :: input_filename
@@ -955,10 +951,10 @@ subroutine InitializeScreenOutput(option, input)
   use Input_Aux_module, only : input_type, InputReadPflotranString, InputReadWord, &
        InputCheckExit, InputError, InputErrorMsg, InputReadStringErrorMsg
   use String_module, only : StringToUpper
-
+  use petscsys
   implicit none
 
-#include "finclude/petscsys.h"
+
 
   ! function parameters
   type(option_type), pointer, intent(inout) :: option
@@ -1016,10 +1012,9 @@ subroutine InitializeTemperatureDependence(option, input)
   ! pflotran
   use Option_module, only : option_type
   use Input_Aux_module, only : input_type, InputFindStringInFile, InputError
+  use petscsys
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(inout) :: option
@@ -1048,13 +1043,11 @@ subroutine InitializePFloTranReactions(option, input, reaction)
   ! pflotran
   use Reaction_module, only : ReactionInit, ReactionReadPass2
   use Reaction_Aux_module, only : reaction_type, ACT_COEF_FREQUENCY_OFF
-  use Database_module, only : DatabaseRead, BasisInit
+  use Reaction_Database_module, only : DatabaseRead, BasisInit
   use Option_module, only : option_type
   use Input_Aux_module, only : input_type, InputFindStringInFile, InputError
-
+  use petscsys
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1108,13 +1101,11 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
   use Input_Aux_module, only : input_type, InputReadPflotranString, InputReadWord, &
        InputErrorMsg, InputError
   use String_module, only : StringToUpper
-  use Constraint_module, only : tran_constraint_list_type, tran_constraint_type, &
+  use Transport_Constraint_module, only : tran_constraint_list_type, tran_constraint_type, &
        TranConstraintRead, TranConstraintInitList, TranConstraintAddToList, &
        TranConstraintCreate
-
+  use petscsys
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1180,12 +1171,10 @@ subroutine ProcessPFloTranConstraint(option, reaction, &
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
   use Global_Aux_module, only : global_auxvar_type
   use Material_Aux_class, only : material_auxvar_type
-  use Constraint_module, only : tran_constraint_type, tran_constraint_coupler_type
+  use Transport_Constraint_module, only : tran_constraint_type, tran_constraint_coupler_type
   use Option_module, only : option_type, printMsg
-
+  use petscsys
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1260,7 +1249,7 @@ end subroutine ProcessPFloTranConstraint
 function ConvertAlquimiaConditionToPflotran(&
      option, reaction, alquimia_condition)
   use, intrinsic :: iso_c_binding
-
+  use petscsys
   use c_f_interface_module, only : c_f_string_ptr
 
   use AlquimiaContainers_module
@@ -1269,17 +1258,15 @@ function ConvertAlquimiaConditionToPflotran(&
   use Option_module, only : option_type, printErrMsg, printMsg
   use Reaction_aux_module, only : reaction_type, aq_species_constraint_type, &
        AqueousSpeciesConstraintCreate
-  use Mineral_aux_module, only : mineral_constraint_type, MineralConstraintCreate
+  use Reaction_Mineral_Aux_module, only : mineral_constraint_type, MineralConstraintCreate
   use String_module, only : StringCompareIgnoreCase
-  use Constraint_module, only : tran_constraint_type, TranConstraintCreate, &
+  use Transport_Constraint_module, only : tran_constraint_type, TranConstraintCreate, &
        CONSTRAINT_FREE, CONSTRAINT_TOTAL, CONSTRAINT_TOTAL_SORB, &
        CONSTRAINT_PH, CONSTRAINT_MINERAL, &
        CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL
-
+  use petscsys
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type(option_type), pointer, intent(in) :: option
@@ -1530,7 +1517,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   call c_f_pointer(prop%mineral_rate_cnst%data, data, &
        (/prop%mineral_rate_cnst%size/))
   do i = 1, prop%mineral_rate_cnst%size
-     reaction%mineral%kinmnrl_rate(i) = data(i)
+     reaction%mineral%kinmnrl_rate_constant(i) = data(i)
   end do
 
   !
@@ -1956,11 +1943,9 @@ end subroutine PrintStatus
 ! **************************************************************************** !
 subroutine PrintTranConstraint(tran_constraint)
 
-  use Constraint_module, only : tran_constraint_type
+  use Transport_Constraint_module, only : tran_constraint_type
 
   implicit none
-
-#include "finclude/petscsys.h"
 
   ! function parameters
   type (tran_constraint_type), pointer :: tran_constraint
@@ -2004,7 +1989,7 @@ end subroutine PrintAqueousSpeciesConstraint
 
 subroutine PrintMineralConstraint(minerals)
 
-  use Mineral_aux_module, only : mineral_constraint_type
+  use Reaction_Mineral_Aux_module, only : mineral_constraint_type
 
   implicit none
 

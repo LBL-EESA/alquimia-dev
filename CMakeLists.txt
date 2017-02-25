@@ -194,6 +194,9 @@ if (ALQUIMIA_NEED_PETSC)
   set(PETSC_DIR $ENV{PETSC_DIR})
   set(PETSC_ARCH $ENV{PETSC_ARCH})
 
+  message(STATUS "--- SM: PETSC_DIR >>> ${PETSC_DIR}")
+  message(STATUS "--- SM: PETSC_ARCH >>> ${PETSC_ARCH}")
+  
   # Do we have settings for PETSc's libraries/includes?
   if (TPL_PETSC_INCLUDE_DIRS)
     if (NOT TPL_PETSC_LDFLAGS)
@@ -221,6 +224,9 @@ if (ALQUIMIA_NEED_PETSC)
   else()
     # Try to detect PETSc if we haven't been told where it is.
     find_package(PETSc)
+    message(STATUS "--- SM: finding PETSc with find_package")
+    message(STATUS "--- SM: PETSC_INCLUDES >>> ${PETSC_INCLUDES}")
+    message(STATUS "--- SM: PETSC_LDFLAGS >>> ${PETSC_LDFLAGS}")
   endif()
   if (NOT PETSC_FOUND)
     message(FATAL_ERROR "PETSc was not found.")
@@ -229,6 +235,7 @@ if (ALQUIMIA_NEED_PETSC)
 
   # Include PETSc in the rpath.
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${PETSC_DIR}/${PETSC_ARCH}/lib")
+  message(STATUS "--- SM: cmake install rpath")
 endif()
 
 # Include the binary directory in the header file search path,
