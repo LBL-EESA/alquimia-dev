@@ -19,7 +19,7 @@ Intellectual Property Management at TTD@lbl.gov referring to "Alquimia
 
  
 
-NOTICE.  This software was developed under funding from the
+NOTICE. This software was developed under funding from the
 U.S. Department of Energy.  As such, the U.S. Government has been
 granted for itself and others acting on its behalf a paid-up,
 nonexclusive, irrevocable, worldwide license in the Software to
