@@ -189,7 +189,7 @@ if (ALQUIMIA_NEED_PETSC)
     message(FATAL_ERROR "PETSC_DIR must be set for the requested engines to be enabled.")
   endif()
   set(PETSC_DIR $ENV{PETSC_DIR})
-  if(DEFINED $ENV{PETSC_ARCH})
+  if(DEFINED ENV{PETSC_ARCH})
     set(PETSC_ARCH $ENV{PETSC_ARCH})
   endif()
 
