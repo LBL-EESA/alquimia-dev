@@ -233,7 +233,7 @@ if (ALQUIMIA_NEED_PETSC)
   include_directories(${PETSC_INCLUDES})
 
   # Include PETSc in the rpath.
-  if(DEFINED ${PETSC_ARCH})
+  if(DEFINED ENV{PETSC_ARCH})
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${PETSC_DIR}/${PETSC_ARCH}/lib")
   else()
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${PETSC_DIR}/lib")
