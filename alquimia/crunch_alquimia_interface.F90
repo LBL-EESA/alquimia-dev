@@ -94,7 +94,8 @@ module CrunchAlquimiaInterface_module
        PrintState, &
        PrintEngineFunctionality, &
        PrintProblemMetaData, &
-       PrintStatus
+       PrintStatus, &
+       PrintAuxiliaryData
 
   integer(kind=8), private, parameter :: integrity_check_value = 1793265457844299968_8 ! _8 is an 8-byte integer constant, make different from other engines
 
@@ -708,6 +709,11 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   deltmin = engine_state%deltmin
   time = engine_state%time
 
+  !call PrintAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
+  !                        nexchange, nsurf, ndecay, npot, &
+  !                        aux_data)
+
+
   call CopyAlquimiaToAuxVars(copy_auxdata,   engine_state%hands_off, &
                              state, aux_data, properties, &
                              ncomp, nspec, nkin, nrct, ngas, nexchange, nsurf, ndecay, npot, nretard)
@@ -853,7 +859,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
     ! time step cut to adjust to complete mineral depletion
     ! delt = dtnewest
 
-    write(*,*)'time step cut required'
+      write(*,*)'time step cut required'
 
       ! recover initial guesses
       DO jz = 1,nz
@@ -888,33 +894,6 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
     else
     
       ! actual success
-      ! update old concentrations to be used in next time step as initial guesses
-      ! straight from CrunchFlow.f90
-      DO jz = 1,nz
-        DO jy = 1,ny
-          DO jx = 1,nx
-            CALL oldcon(ncomp,nspec,nexchange,nexch_sec,nsurf,nsurf_sec,jx,jy,jz)  
-            CALL oldkd(ncomp,jx,jy,jz)  ! smr
-            IF (isaturate == 1) THEN
-              CALL oldcongas(ncomp,ngas,jx,jy,jz)
-            END IF
-            CALL oldsurf(ncomp,nsurf,nsurf_sec,jx,jy,jz)
-          END DO
-        END DO
-      END DO
-
-      CALL xmass(nx,ny,nz,ncomp,nspec)
-      xgramOld = xgram
-      ! end straight from CrunchFlow.f90
-      
-      ! update density
-      CALL density(jx,jy,jz)
-      !!roOld = ro
-
-      ! send state variables back to Alquimia state with solution of this solve
-      call CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
-                                 nexchange, nsurf, ndecay, npot, &
-                                 nretard, state, aux_data )
     
       ! report alquimia status
       status%error = kAlquimiaNoError
@@ -922,13 +901,46 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
       status%num_rhs_evaluations = iterat
       status%num_jacobian_evaluations = iterat
       status%num_newton_iterations = iterat
- 
-      !write(*,*)'------- GOING OUT ----------------------------------------'
-      !call PrintState(state)
 
     end if
   
-  end if   
+  end if
+
+  ! update old concentrations to be used in next time step as initial guesses
+  ! straight from CrunchFlow.f90 (done there before transport step)
+  DO jz = 1,nz
+     DO jy = 1,ny
+        DO jx = 1,nx
+           CALL oldcon(ncomp,nspec,nexchange,nexch_sec,nsurf,nsurf_sec,jx,jy,jz)  
+           CALL oldkd(ncomp,jx,jy,jz)  ! smr
+           IF (isaturate == 1) THEN
+              CALL oldcongas(ncomp,ngas,jx,jy,jz)
+           END IF
+           CALL oldsurf(ncomp,nsurf,nsurf_sec,jx,jy,jz)
+        END DO
+     END DO
+  END DO
+
+  CALL xmass(nx,ny,nz,ncomp,nspec)
+  xgramOld = xgram
+  ! end straight from CrunchFlow.f90
+
+  ! update density
+  CALL density(jx,jy,jz)
+  !!roOld = ro
+
+  ! send state variables back to Alquimia state with solution of this solve
+  call CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
+                             nexchange, nsurf, ndecay, npot, &
+                             nretard, state, aux_data )
+
+  !write(*,*)'------- GOING OUT ----------------------------------------'
+  !call PrintState(state)
+  !call PrintAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
+  !                        nexchange, nsurf, ndecay, npot, &
+  !                        aux_data)
+
+  return
 
 end subroutine ReactionStepOperatorSplit
 
@@ -1687,6 +1699,7 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
 !!CIS        STOP
 !!CIS      END IF
 
+      t(jx,jy,jz) = tempc
       CALL density(jx,jy,jz)
 
 !  Change the site concentrations to sites per bulk volume porous medium
@@ -1742,7 +1755,8 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
   END IF
 ! end: from CrunchFlow.f90
 
-! initialize old concentrations 
+! initialize old concentrations
+  call exchange(ncomp,nexchange,nexch_sec,jx,jy,jz)
   CALL oldcon(ncomp,nspec,nexchange,nexch_sec,nsurf,nsurf_sec,jx,jy,jz)  
   CALL oldkd(ncomp,jx,jy,jz)  
   IF (isaturate == 1) THEN
@@ -2651,6 +2665,7 @@ subroutine PackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   do i = 1, ncomp
      dindex = dindex + 1
      data(dindex) = sexold(i,jx,jy,jz)
+!     write(*,*)'pack sexold: ',sexold(i,jx,jy,jz)
   end do  
 
   ! surface primary
@@ -2703,8 +2718,8 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   use AlquimiaContainers_module, only : AlquimiaAuxiliaryData
   
   use crunchtype
-  use concentration, only : sp10, sp, gam, &
-                            spex, spex10, &
+  use concentration, only : sp10, sp, spold, gam, &
+                            spex, spex10, spexold, &
                             spsurf, LogTotalSurface, &
                             sexold, ssurfold, & 
                             skdold, &
@@ -2759,6 +2774,7 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   do i = 1, ncomp
      dindex = dindex + 1
      sp(i,jx,jy,jz) = data(dindex)
+     spold(i,jx,jy,jz) = data(dindex)
   end do
 
   ! primary activity coeff
@@ -2777,6 +2793,7 @@ subroutine UnpackAlquimiaAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
   do i = 1, nexchange
      dindex = dindex + 1
      spex(i,jx,jy,jz) = data(dindex)
+     spexold(i,jx,jy,jz) = data(dindex)
   end do
 
   ! ion exchange
@@ -3050,5 +3067,165 @@ end subroutine PrintStatus
 !!
 !!end subroutine PrintMineralConstraint
 
+subroutine PrintAuxiliaryData(ncomp, nspec, nkin, nrct, ngas, &
+                              nexchange, nsurf, ndecay, npot, &
+                              aux_data)
+
+  use, intrinsic :: iso_c_binding, only : c_int, c_double, c_f_pointer
+
+  use AlquimiaContainers_module, only : AlquimiaAuxiliaryData
+
+  use crunchtype
+  use concentration, only : sp10, sp, gam, &
+                            spex, spex10, &
+                            spsurf, LogTotalSurface, &
+                            sexold, ssurfold, &
+                            skdold, &
+                            jinit
+  use mineral, only : LogPotential
+  use medium, only : porin
+
+  ! function parameters  
+  integer(i4b), intent(in) :: ncomp
+  integer(i4b), intent(in) :: nspec
+  integer(i4b), intent(in) :: nkin
+  integer(i4b), intent(in) :: nrct
+  integer(i4b), intent(in) :: ngas
+  integer(i4b), intent(in) :: nexchange
+  integer(i4b), intent(in) :: nsurf
+  integer(i4b), intent(in) :: ndecay
+  integer(i4b), intent(in) :: npot
+  type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
+
+  ! local variables
+  integer (c_int) :: num_ints, num_doubles
+  integer(c_int), pointer :: idata(:)
+  real (c_double), pointer :: data(:)
+  integer :: i, dindex, idindex
+  integer(i4b), parameter :: jx=1
+  integer(i4b), parameter :: jy=1
+  integer(i4b), parameter :: jz=1
+
+  ! local variables
+  real (c_double), pointer :: conc(:)
+  real (c_double), pointer :: immo(:)
+  real (c_double), pointer :: vofx(:)
+  real (c_double), pointer :: surf(:)
+  real (c_double), pointer :: sites(:)
+  real (c_double), pointer :: cec(:)
+  
+
+  call GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
+                             nexchange, nsurf, ndecay, npot, &
+                             num_ints, num_doubles)
+
+  write (*, '(a)') "auxiliary data for crunchflow: "
+  write (*, '(a)') "-- integers: "
+
+! integers
+  call c_f_pointer(aux_data%aux_ints%data, idata, (/num_ints/))
+  idindex = 0
+
+! jinit
+  idindex = idindex + 1
+  write (*, '(a, i4)') "  jinit : ",   idata(idindex)
+
+  write (*, '(a)') "-- doubles: "
+  
+! doubles
+  call c_f_pointer(aux_data%aux_doubles%data, data, (/num_doubles/))
+  dindex = 0
+  
+  ! sp10 (primary species concs)
+  write (*, '(a, i4, a)') "  primary species concs (", ncomp, ") : "
+  do i = 1, ncomp
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+  
+  ! sp (primary species log concs)
+  write (*, '(a, i4, a)') "  primary species log concs (", ncomp, ") : "
+  do i = 1, ncomp
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+  ! primary activity coeff
+  write (*, '(a, i4, a)') "  primary activity coeff (", ncomp, ") : "
+  do i = 1, ncomp
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+  ! secondary aqueous complexes activity coeffs
+  write (*, '(a, i4, a)') "  secondary aqueous complexes activity coeffs (", nspec, ") : "
+  do i = 1, nspec
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+  ! ion exchange
+  write (*, '(a, i4, a)') "  ion exchange spex (", nexchange, ") : "
+  do i = 1, nexchange
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do  
+
+  ! ion exchange
+  write (*, '(a, i4, a)') "  ion exchange spex10 (", nexchange, ") : "
+  do i = 1, nexchange
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do  
+
+  ! ion exchange
+  write (*, '(a, i4, a)') "  ion exchange sexold (", ncomp, ") : "
+  do i = 1, ncomp
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+  ! surface primary
+  write (*, '(a, i4, a)') "  surface primary spsurf (", nsurf, ") : "
+  do i = 1, nsurf
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+  ! total surface
+  write (*, '(a, i4, a)') "  total surface LogTotalSurface (", nsurf, ") : "
+  do i = 1, nsurf
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+  ! surface potential
+  write (*, '(a, i4, a)') "  surface potential LogPotential (", npot, ") : "
+  do i = 1, npot
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+  ! surface
+  write (*, '(a, i4, a)') "  surface total old ssurfold (", ncomp, ") : "
+  do i = 1, ncomp
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+  ! surface
+  write (*, '(a, i4, a)') "  kd surface conc old skold (", ncomp, ") : "
+  do i = 1, ncomp
+     dindex = dindex + 1
+     write (*, '(1es13.6)') data(dindex)
+  end do
+
+! initial porosity 
+  dindex = dindex + 1
+  write (*, '(a, 1es13.6)') "  initial porosity : ", data(dindex)
+
+  return
+
+end subroutine PrintAuxiliaryData
 
 end module CrunchAlquimiaInterface_module
