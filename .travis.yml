@@ -30,6 +30,9 @@ script:
   - mpif90 --version
   - mpicc --version
   - ls /usr/local
+  - ls /usr/local/bin
+  - ls /usr/local/lib
+  - ls /usr/local/lib/gcc
   - mkdir build && cd build
   - ls $PWD
   - ls $PETSC_DIR
