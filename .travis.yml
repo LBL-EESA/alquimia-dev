@@ -18,7 +18,7 @@ branches:
 compiler:
   - gcc
 
-install: travis_wait 40 ./.install-$TRAVIS_OS_NAME-deps.sh
+install: travis_wait 60 ./.install-$TRAVIS_OS_NAME-deps.sh
 
 env:
   - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_debug DEBUG=1
