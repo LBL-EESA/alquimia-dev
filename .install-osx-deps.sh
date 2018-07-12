@@ -4,8 +4,8 @@ brew install open-mpi
 export TMPDIR=/tmp
 
 # Make sure the weird gfortran library links are in place.
-ln -s /usr/local/lib/gcc/8/libgfortran.dylib /usr/local/lib/libgfortran.dylib
-ln -s /usr/local/lib/gcc/8/libgfortran.a /usr/local/lib/libgfortran.a
+ln -s /usr/local/lib/gcc/9/libgfortran.dylib /usr/local/lib/libgfortran.dylib
+ln -s /usr/local/lib/gcc/9/libgfortran.a /usr/local/lib/libgfortran.a
 
 # Go get PETSc 3.6.x and build it.
 git clone https://bitbucket.org/petsc/petsc petsc

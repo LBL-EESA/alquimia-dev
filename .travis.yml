@@ -24,7 +24,9 @@ env:
   - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_debug DEBUG=1
   - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_opt DEBUG=0
 
-script: 
+script:
+  - which gfortran
+  - ls /usr/local/lib/gcc 
   - mkdir build && cd build
   - ls $PWD
   - ls $PETSC_DIR
