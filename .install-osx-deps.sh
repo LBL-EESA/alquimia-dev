@@ -1,5 +1,6 @@
 # Install required software
 brew update
+brew install gcc
 brew install open-mpi
 export TMPDIR=/tmp
 
