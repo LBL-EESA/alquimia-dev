@@ -21,10 +21,18 @@ compiler:
 install: ./.install-$TRAVIS_OS_NAME-deps.sh
 
 env:
-  - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_debug
-  - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_opt
+  - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_debug DEBUG=1
+  - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_opt DEBUG=0
 
-script: 
+script:
+  - gfortran --version
+  - gcc --version
+  - mpif90 --version
+  - mpicc --version
+  - ls /usr/local
+  - ls /usr/local/bin
+  - ls /usr/local/lib
+  - ls /usr/local/lib/gcc
   - mkdir build && cd build
   - ls $PWD
   - ls $PETSC_DIR
