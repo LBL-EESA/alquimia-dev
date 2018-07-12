@@ -25,8 +25,11 @@ env:
   - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_opt DEBUG=0
 
 script:
-  - which gfortran
-  - ls /usr/local/lib/gcc 
+  - gfortran --version
+  - gcc --version
+  - mpif90 --version
+  - mpicc --version
+  - ls /usr/local
   - mkdir build && cd build
   - ls $PWD
   - ls $PETSC_DIR
