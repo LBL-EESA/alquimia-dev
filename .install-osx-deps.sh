@@ -2,8 +2,7 @@
 brew update
 brew install open-mpi
 export TMPDIR=/tmp
-ls /usr/local/lib/gcc
-ls /usr/local/lib/gcc/5
+gfortran --version
 
 # Make sure the weird gfortran library links are in place.
 ln -s /usr/local/lib/gcc/5/libgfortran.dylib /usr/local/lib/libgfortran.dylib
