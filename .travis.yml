@@ -18,15 +18,14 @@ branches:
 compiler:
   - gcc
 
-install: ./.install-$TRAVIS_OS_NAME-deps.sh
+install: travis_wait 60 ./.install-$TRAVIS_OS_NAME-deps.sh
 
 env:
-  - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_debug
-  - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_opt
+  - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_debug DEBUG=1
+  - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_opt DEBUG=0
 
 script: 
   - mkdir build && cd build
-  - ls $PWD
   - ls $PETSC_DIR
   - ls $PETSC_DIR/$PETSC_ARCH
   - ls $PETSC_DIR/$PETSC_ARCH/lib
