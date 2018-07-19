@@ -11,7 +11,7 @@ ln -s /usr/local/lib/gcc/7/libgfortran.a /usr/local/lib/libgfortran.a
 # Go get PETSc 3.6.x and build it.
 git clone https://bitbucket.org/petsc/petsc petsc
 pushd $PETSC_DIR
-./configure --with-mpi=1 --with-debug=$DEBUG --with-shared-libraries=1 --download-pflotran
+./configure --with-mpi=1 --with-debug=$DEBUG --with-shared-libraries=1 --download-pflotran --download-pflotran-commit=origin/master
 make
 make test
 popd
