@@ -213,7 +213,7 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, functionali
   ! assign default state values, not really needed?
   global_auxvar%pres = option%reference_pressure
   global_auxvar%temp = option%reference_temperature
-  global_auxvar%den_kg = option%reference_water_density
+  global_auxvar%den_kg = option%reference_density(option%liquid_phase)
   global_auxvar%sat = option%reference_saturation  
 
   material_auxvar%porosity = option%reference_porosity
@@ -881,7 +881,7 @@ subroutine SetupPFloTranOptions(input_filename, option)
   !
   option%nphase = 1
   option%liquid_phase = 1
-  option%reference_water_density = 997.16
+  option%reference_density(option%liquid_phase) = 997.16
   option%use_isothermal = PETSC_TRUE
 
 end subroutine SetupPFloTranOptions
