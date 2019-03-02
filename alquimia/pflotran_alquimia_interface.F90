@@ -1292,8 +1292,8 @@ function ConvertAlquimiaConditionToPflotran(&
   call printMsg(option)
   tran_constraint => TranConstraintCreate(option)
   tran_constraint%name = trim(name)
-  ! NOTE(bja): requires_equilibration not used in pflotran?
-  tran_constraint%requires_equilibration = PETSC_FALSE
+  ! NOTE(bja): equilibrate_at_each_cell not used in pflotran?
+  tran_constraint%equilibrate_at_each_cell = PETSC_FALSE
 
   !
   ! aqueous species
@@ -1953,7 +1953,7 @@ subroutine PrintTranConstraint(tran_constraint)
   write (*, '(a)') "TranConstraint :"
   write (*, '(a, i4)') "    id : ", tran_constraint%id
   write (*, '(a, a)') "    name : ", tran_constraint%name
-  write (*, '(a, L1)') "    requires equilibration : ", tran_constraint%requires_equilibration
+  write (*, '(a, L1)') "    requires equilibration : ", tran_constraint%equilibrate_at_each_cell
   call PrintAqueousSpeciesConstraint(tran_constraint%aqueous_species)
   call PrintMineralConstraint(tran_constraint%minerals)
 !    type(mineral_constraint_type), pointer :: minerals
