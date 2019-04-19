@@ -11,7 +11,7 @@ make
 ##popd
 
 # Get and build CrunchTope, inside external packages for convenience
-cd externalpackages
+cd $PETSC_ARCH/externalpackages
 git clone https://bitbucket.org/crunchflow/crunchtope-dev.git --branch petsc-upgrade
 cd crunchtope-dev/source
 git apply MakefileForAlquimia.patch
