@@ -52,7 +52,7 @@ set(ALQUIMIA_TPLS ${ALQUIMIA_TPLS} PARENT_SCOPE)
 set(ALQUIMIA_LIBRARIES ${ALQUIMIA_LIBRARY};${ALQUIMIA_TPLS} PARENT_SCOPE)
 
 # Install library.
-install(TARGETS alquimia pflotran_petsc_stubs DESTINATION lib)
+install(TARGETS alquimia DESTINATION lib)
 
 # Install headers, including generated files.
 file(GLOB HEADERS *.h)
