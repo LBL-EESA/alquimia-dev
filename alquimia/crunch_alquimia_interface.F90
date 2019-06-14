@@ -1800,9 +1800,6 @@ subroutine ConvertAlquimiaConditionToCrunch(state,properties, &
                      site_density,umin
   use params, only: mls, mchem
 
-! pflotran
- ! use String_module, only : StringCompareIgnoreCase
-
   implicit none
  
 ! function parameters
