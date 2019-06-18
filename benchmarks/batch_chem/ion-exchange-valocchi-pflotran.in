@@ -1,0 +1,136 @@
+:Description: batch test problem for equilibrium ion exchange based on Valocchi et al., 1981
+
+:=========================== chemistry ========================================
+CHEMISTRY
+  PRIMARY_SPECIES
+    Na+
+    Ca++
+    Mg++
+    Cl-
+  /
+  MINERALS
+    Halite
+  /
+  MINERAL_KINETICS
+    Halite
+      RATE_CONSTANT 1.d-40
+    /
+  /
+  SORPTION
+    ION_EXCHANGE_RXN
+      MINERAL Halite
+      CEC 750. eq/m^3
+      CATIONS
+        Ca++  3.38638672536d0 ! big K = 1.84
+        Na+   1.d0 REFERENCE
+        Mg++  6.00240096038d0 ! big K = 2.45
+      /
+    /
+  /
+  DATABASE ion-exchange-valocchi.dat
+  LOG_FORMULATION
+
+  OUTPUT
+    ALL
+    TOTAL_SORBED
+    TOTAL
+  /
+END
+
+:=========================== solver options ===================================
+TIMESTEPPER TRANSPORT
+  TS_ACCELERATION 15
+/
+
+:=========================== discretization ===================================
+GRID
+  TYPE structured
+  ORIGIN 0.d0 0.d0 0.d0
+  NXYZ 1 1 1
+  BOUNDS
+    0.d0 1.d0
+    0.d0 1.d0
+    0.d0 1.d0
+  /
+END
+
+:=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+/
+
+:=========================== material properties ==============================
+MATERIAL_PROPERTY soil1
+  ID 1
+  POROSITY 0.25d0
+/
+
+:=========================== observation points ===============================
+OBSERVATION
+  REGION all
+  AT_CELL_CENTER
+/
+
+:=========================== output options ===================================
+OUTPUT
+  PERIODIC_OBSERVATION TIMESTEP 1
+/
+
+:=========================== times ============================================
+TIME
+  FINAL_TIME 1.d0 y
+  INITIAL_TIMESTEP_SIZE 1.d0 y
+  MAXIMUM_TIMESTEP_SIZE 1.d0 y
+END
+
+:=========================== regions ==========================================
+REGION all
+  COORDINATES
+    0.d0 0.d0 0.d0
+    1.d0 1.d0 1.d0
+  /
+END
+
+:=========================== transport conditions =============================
+TRANSPORT_CONDITION initial
+  TYPE zero_gradient
+  CONSTRAINT_LIST
+    0.d0 initial
+  /
+END
+
+
+:=========================== constraints ======================================
+CONSTRAINT initial
+  CONCENTRATIONS
+    Na+     8.65d-2 T
+    Ca++    1.82d-2 T
+    Mg++    1.11d-2 T
+    Cl-     2.d-3   Z
+  /
+  MINERALS
+    Halite 1.d-5 1.d0
+  /
+END
+
+:CONSTRAINT inlet
+:  CONCENTRATIONS
+:    Na+     9.4d-3  T
+:    Ca++    5.d-4   T
+:    Mg++    2.13d-3 T
+:    Cl-     1.d-2  Z
+:  /
+:END
+
+:=========================== condition couplers ===============================
+: initial condition
+INITIAL_CONDITION
+  TRANSPORT_CONDITION initial
+  REGION all
+END
+
+:=========================== stratigraphy couplers ============================
+STRATA
+  REGION all
+  MATERIAL soil1
+END

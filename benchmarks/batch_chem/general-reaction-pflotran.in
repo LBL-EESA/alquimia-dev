@@ -1,0 +1,104 @@
+:Description: 1D problem for testing
+
+:=========================== chemistry ========================================
+CHEMISTRY
+  PRIMARY_SPECIES
+    A(aq)
+    B(aq)
+  /
+  GENERAL_REACTION
+    REACTION A(aq) <-> B(aq)
+    FORWARD_RATE 1.15741d-6 ! 0.1 1/d
+    BACKWARD_RATE 0.d0
+  /
+  DATABASE ./general-rxn.dat
+  OUTPUT
+    ALL
+    TOTAL
+  /
+/
+
+:=========================== solver options ===================================
+TIMESTEPPER TRANSPORT
+  TS_ACCELERATION 15
+/
+
+:=========================== discretization ===================================
+GRID
+  TYPE structured
+  ORIGIN 0.d0 0.d0 0.d0
+  NXYZ 1 1 1
+  BOUNDS
+    0.d0 1.d0
+    0.d0 1.d0
+    0.d0 1.d0
+  /
+END
+
+:=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+/
+
+:=========================== material properties ==============================
+MATERIAL_PROPERTY soil1
+  ID 1
+  POROSITY 0.9d0
+/
+
+:=========================== observation points ===============================
+OBSERVATION
+  REGION all
+  AT_CELL_CENTER
+/
+
+:=========================== output options ===================================
+OUTPUT
+  PERIODIC_OBSERVATION TIMESTEP 1
+  :SCREEN OFF
+/
+
+:=========================== times ============================================
+TIME
+  FINAL_TIME 50 d
+  INITIAL_TIMESTEP_SIZE 1.0 d
+  MAXIMUM_TIMESTEP_SIZE 1.0 d
+/
+
+:=========================== regions ==========================================
+REGION all
+  COORDINATES
+    0.d0 0.d0 0.d0
+    1.d0 1.d0 1.d0
+  /
+/
+
+:=========================== transport conditions =============================
+TRANSPORT_CONDITION initial
+  TYPE zero_gradient
+  CONSTRAINT_LIST
+    0.d0 initial
+  /
+END
+
+
+:=========================== constraints ======================================
+CONSTRAINT initial
+  CONCENTRATIONS
+    A(aq)  1.d-4  F
+    B(aq)  2.d-5  F
+  /
+END
+
+:=========================== condition couplers ===============================
+: initial condition
+INITIAL_CONDITION
+  TRANSPORT_CONDITION initial
+  REGION all
+END
+
+:=========================== stratigraphy couplers ============================
+STRATA
+  REGION all
+  MATERIAL soil1
+END

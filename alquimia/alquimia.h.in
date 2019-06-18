@@ -1,0 +1,108 @@
+/* -*-  mode: c++; c-default-style: "google"; indent-tabs-mode: nil -*- */
+
+/*
+** Alquimia Copyright (c) 2013-2016, The Regents of the University of California, 
+** through Lawrence Berkeley National Laboratory (subject to receipt of any 
+** required approvals from the U.S. Dept. of Energy).  All rights reserved.
+** 
+** Alquimia is available under a BSD license. See LICENSE.txt for more
+** information.
+**
+** If you have questions about your rights to use or distribute this software, 
+** please contact Berkeley Lab's Technology Transfer and Intellectual Property 
+** Management at TTD@lbl.gov referring to Alquimia (LBNL Ref. 2013-119).
+** 
+** NOTICE.  This software was developed under funding from the U.S. Department 
+** of Energy.  As such, the U.S. Government has been granted for itself and 
+** others acting on its behalf a paid-up, nonexclusive, irrevocable, worldwide 
+** license in the Software to reproduce, prepare derivative works, and perform 
+** publicly and display publicly.  Beginning five (5) years after the date 
+** permission to assert copyright is obtained from the U.S. Department of Energy, 
+** and subject to any subsequent five (5) year renewals, the U.S. Government is 
+** granted for itself and others acting on its behalf a paid-up, nonexclusive, 
+** irrevocable, worldwide license in the Software to reproduce, prepare derivative
+** works, distribute copies to the public, perform publicly and display publicly, 
+** and to permit others to do so.
+*/
+
+#ifndef ALQUIMIA_H_
+#define ALQUIMIA_H_
+
+// Version information.
+#define ALQUIMIA_MAJOR_VERSION @ALQUIMIA_MAJOR_VERSION@
+#define ALQUIMIA_MINOR_VERSION @ALQUIMIA_MINOR_VERSION@
+#define ALQUIMIA_PATCH_VERSION @ALQUIMIA_PATCH_VERSION@
+#define ALQUIMIA_VERSION "@ALQUIMIA_VERSION@"
+
+// Support for chemistry engines.
+#define ALQUIMIA_HAVE_PFLOTRAN @ALQUIMIA_HAVE_PFLOTRAN@
+#define ALQUIMIA_HAVE_CRUNCHFLOW @ALQUIMIA_HAVE_CRUNCHFLOW@
+
+// Assertion macro.
+#ifndef NDEBUG
+#define ALQUIMIA_ASSERT(x) \
+  if (!(x)) \
+    alquimia_abort("Assertion %s failed\nat %s: %d\n", #x, __FILE__, __LINE__);
+#else
+#define ALQUIMIA_ASSERT(x) 
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// C Boolean support.
+#define ALQUIMIA_HAVE_BOOL @ALQUIMIA_HAVE_BOOL@
+#ifndef __cplusplus
+
+#if ALQUIMIA_HAVE_BOOL
+#include <stdbool.h>
+#else // probably Windows
+#define	bool	_Bool
+typedef	int   _Bool;
+#define	false 0
+#define	true  1
+#endif
+
+#endif
+
+// Windows platform stuff.
+#ifdef WINDOWS
+#define snprintf _snprintf
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus 
+
+// This function type handles errors encountered in Alquimia.
+typedef void (*alquimia_error_handler_function)(const char*);
+
+// Issues an error with the given message. By default, an error issues a 
+// message to stdout and exits the program with status -1.
+void alquimia_error(const char* message, ...);
+
+// Sets the error handler for the Alquimia library.
+void alquimia_set_error_handler(alquimia_error_handler_function handler);
+
+// This function type performs aborts, which halt a program when a fatal 
+// error is encountered in Alquimia.
+typedef void (*alquimia_abort_function)(const char*);
+
+// Aborts the program using the set abort function, issuing the given 
+// message to a file.
+void alquimia_abort(const char* message, ...);
+
+// Sets the abort function for the Alquimia library.
+void alquimia_set_abort_function(alquimia_abort_function function);
+
+// This function writes version information to the given file descriptor.
+void alquimia_version_fprintf(const char* exe_name, FILE* stream);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus 
+
+#endif
+

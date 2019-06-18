@@ -1,0 +1,41 @@
+# This configuration file is used by Travis CI to build/test TECA.
+
+language: c
+
+os:
+  - linux
+#  - osx
+
+sudo: required
+
+dist: trusty # Ubuntu 14.04.
+
+# Build/test only on the master branch.
+branches:
+  only:
+    - master
+
+compiler:
+  - gcc
+
+install: travis_wait 60 ./.install-$TRAVIS_OS_NAME-deps.sh
+
+env:
+  - BUILD_TYPE=Debug PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_debug DEBUG=1
+  - BUILD_TYPE=Release PETSC_DIR=$PWD/petsc PETSC_ARCH=petsc_opt DEBUG=0
+
+script: 
+  - mkdir build && cd build
+  - ls $PETSC_DIR
+  - ls $PETSC_DIR/$PETSC_ARCH
+  - ls $PETSC_DIR/$PETSC_ARCH/lib
+  - export TMPDIR=/tmp
+  - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/../alquimia-install -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_Fortran_COMPILER=`which mpif90` -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DXSDK_WITH_PFLOTRAN=ON -DTPL_PFLOTRAN_LIBRARIES=$PETSC_DIR/$PETSC_ARCH/externalpackages/git.pflotran/src/pflotran/libpflotranchem.a -DTPL_PFLOTRAN_INCLUDE_DIRS=$PETSC_DIR/$PETSC_ARCH/externalpackages/git.pflotran/src/pflotran -DXSDK_WITH_CRUNCHFLOW=ON -DTPL_CRUNCHFLOW_LIBRARIES=$PETSC_DIR/$PETSC_ARCH/externalpackages/crunchtope-dev/source/libcrunchchem.a -DTPL_CRUNCHFLOW_INCLUDE_DIRS=$PETSC_DIR/$PETSC_ARCH/externalpackages/crunchtope-dev/source
+  - make -j4
+  - make test
+  - make install
+  - make test_install
+  - cd ..
+
+after_failure: 
+  - cat build/Testing/Temporary/LastTest.log

@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 ..
-   Alquimia Copyright (c) 2013, The Regents of the University of California, 
+   Alquimia Copyright (c) 2013-2016, The Regents of the University of California, 
    through Lawrence Berkeley National Laboratory (subject to receipt of any 
    required approvals from the U.S. Dept. of Energy).  All rights reserved.
    
@@ -75,17 +75,25 @@ followed consistently on both sides (driver and engine) of the
 interface wrapper code. Engines are obviously allowed to use their own
 internal coding styles in their own code.
 
+Guidance for use
+----------------
+
+.. toctree::
+   :maxdepth: 2
+
+   guidance
+
 Contents
 --------
 
 .. toctree::
    :maxdepth: 2
 
-   api/APIv0
-   api/APIv0_functions
-   api/APIv0_structures
-   api/APIv0_constants
-   api/APIv0_c_utils
+   api/APIv1
+   api/APIv1_functions
+   api/APIv1_structures
+   api/APIv1_constants
+   api/APIv1_c_utils
 
    batch-tests
 
