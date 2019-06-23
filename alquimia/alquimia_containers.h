@@ -70,8 +70,8 @@ extern "C" {
     int num_surface_sites;
     int num_ion_exchange_sites;
     int num_isotherm_species;
-    int num_total_gases;
-    int num_gas_species;
+    //    int num_total_gases;
+    int num_gases;
     int num_aux_integers;
     int num_aux_doubles;
   } AlquimiaSizes;
@@ -87,7 +87,7 @@ extern "C" {
     AlquimiaVectorDouble mineral_specific_surface_area; /* [m^2 mineral/m^3 bulk] */
     AlquimiaVectorDouble surface_site_density;  /* [moles/m^3 bulk] */
     AlquimiaVectorDouble cation_exchange_capacity; /* [moles/m^3 bulk] */
-    AlquimiaVectorDouble total_gas;  /* [moles/L gas] */
+    //    AlquimiaVectorDouble total_gas;  /* [moles/L gas] */
     AlquimiaVectorDouble gas_concentration;  /* [moles/L gas] */
   } AlquimiaState;
   

@@ -1416,7 +1416,8 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
      sizes%num_sorbed = 0
   end if
   sizes%num_aqueous_kinetics = ikin
-  sizes%num_gas_species = ngas
+  sizes%num_gases = ngas
+!!  sizes%num_total_gases = ngas
   call GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
                              sizes%num_aux_integers, sizes%num_aux_doubles)
@@ -2262,6 +2263,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
                             jinit, &
                             xgram, &
                             ratek, &
+                            sgas, &
                             sgasn, &
                             spgas10
 
@@ -2362,12 +2364,12 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   !
   ! total gas concentrations
   !
-  if (ngas > 0) then
-    call c_f_pointer(state%total_gas%data, data, (/ncomp/))
-    do i = 1, ncomp
-       sgasn(i,jx,jy,jz) = data(i)
-    end do
-  end if
+!!  if (ngas > 0) then
+!!    call c_f_pointer(state%total_gas%data, data, (/ncomp/))
+!!    do i = 1, ncomp
+!!       sgasn(i,jx,jy,jz) = data(i)
+!!    end do
+!!  end if
 
   !
   ! gas concentrations
@@ -2376,6 +2378,11 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   do i = 1, ngas
      spgas10(i,jx,jy,jz) = data(i)
   end do
+  ! calculate total gas conentrations
+  if (ngas>0) then
+     call totgas(ncomp,nspec,ngas,jx,jy,jz)
+     sgasn = sgas
+  end if
 
   ! in hands-off mode geochemical properties
   ! are not provided by the driver so copying them over would
@@ -2565,12 +2572,12 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   !
   ! total gas concentrations
   !
-  if (ngas > 0) then
-    call c_f_pointer(state%total_gas%data, data, (/ncomp/))
-    do i = 1, ncomp
-       data(i) = sgasn(i,jx,jy,jz) 
-    end do
-  end if
+!  if (ngas > 0) then
+!    call c_f_pointer(state%gas_concentration%data, data, (/ncomp/))
+!    do i = 1, ngas
+!       data(i) = sgasn(i,jx,jy,jz) 
+!    end do
+!  end if
 
   !
   ! gas species concentrations
@@ -2941,7 +2948,7 @@ subroutine PrintSizes(sizes)
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
-  write (*, '(a, i4)') "  num gas species : ", sizes%num_gas_species
+  write (*, '(a, i4)') "  num gas species : ", sizes%num_gases
   write (*, '(a, i4)') "  num aux integers : ", sizes%num_aux_integers
   write (*, '(a, i4)') "  num aux doubles : ", sizes%num_aux_doubles
   return

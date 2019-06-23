@@ -936,8 +936,8 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
   sizes%num_isotherm_species = reaction%neqkdrxn
-  sizes%num_total_gases = 0 ! placeholder - gas capabilities not available for pflotran yet
-  sizes%num_gas_species = 0 ! placeholder - gas capabilities not available for pflotran yet
+!!  sizes%num_total_gases = 0 ! placeholder - gas capabilities not available for pflotran yet
+  sizes%num_gases = 0 ! placeholder - gas capabilities not available for pflotran yet
   call GetAuxiliaryDataSizes(reaction, &
        sizes%num_aux_integers, sizes%num_aux_doubles)
 
@@ -1104,7 +1104,7 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
        InputErrorMsg, InputError
   use String_module, only : StringToUpper
   use Transport_Constraint_module, only : tran_constraint_list_type, tran_constraint_type, &
-       TranConstraintRead, TranConstraintInitList, TranConstraintAddToList, &
+       TranConstraintReadRT, TranConstraintInitList, TranConstraintAddToList, &
        TranConstraintCreate
   use petscsys
   implicit none
@@ -1152,7 +1152,7 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
         if (debug) then
            call printMsg(option, tran_constraint%name)
         end if
-        call TranConstraintRead(tran_constraint, reaction, input, option)
+        call TranConstraintReadRT(tran_constraint, reaction, input, option)
         call TranConstraintAddToList(tran_constraint, transport_constraints)
         nullify(tran_constraint)
 
@@ -1813,7 +1813,7 @@ subroutine PrintSizes(sizes)
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
-  write (*, '(a, i4)') "  num gas species : ", sizes%num_gas_species
+  write (*, '(a, i4)') "  num gases : ", sizes%num_gases
 end subroutine PrintSizes
 
 

@@ -1,0 +1,76 @@
+TITLE
+Batch calcite dissolution - CrunchFlow
+END
+
+RUNTIME
+time_units      minutes
+timestep_max    1.0d-1
+timestep_init   1.0d-1
+time_tolerance  0.01
+coordinate      rectangular
+correction_max  1.0
+debye-huckel    true
+database        ch4-o2.dbs
+kinetic_database ch4-o2.dbsx
+master          H+
+speciate_only   false
+database_sweep  false
+screen_output   1
+hindmarsh       false
+gimrt           false
+graphics        tecplot
+fix_saturation  0.8
+END
+
+OUTPUT
+time_units  minutes
+spatial_profile       4.0
+time_series           ch4-o2-series.out  1 1 1 
+time_series_print    CH4(aq) O2(aq)
+time_series_interval  1
+END
+
+PRIMARY_SPECIES
+CH4(aq)
+O2(aq)
+END
+
+SECONDARY_SPECIES 
+END
+
+MINERALS
+END
+
+GASES
+CH4(g)
+O2(g)
+END
+
+AQUEOUS_KINETICS
+CH4-O2
+END
+
+DISCRETIZATION
+distance_units  meters
+xzones  1  1.0
+END
+ 
+Condition initial
+units            mol/kg
+temperature      25.0
+CH4(aq)          CH4(g)  0.10
+O2(aq)            O2(g)  0.20
+END
+ 
+INITIAL_CONDITIONS
+initial    1-1  1-1
+END
+ 
+POROSITY
+fix_porosity     0.5
+porosity_update  false
+END
+ 
+TEMPERATURE
+set_temperature  25.0
+END

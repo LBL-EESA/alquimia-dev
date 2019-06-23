@@ -131,6 +131,7 @@ void CopyAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const source,
   CopyAlquimiaVectorString(&source->ion_exchange_names, &destination->ion_exchange_names);
   CopyAlquimiaVectorString(&source->isotherm_species_names, &destination->isotherm_species_names);
   CopyAlquimiaVectorString(&source->aqueous_kinetic_names, &destination->aqueous_kinetic_names);
+  CopyAlquimiaVectorString(&source->gas_names, &destination->gas_names);
 }
 
 void CopyAlquimiaProperties(const AlquimiaProperties* const source, 
@@ -164,6 +165,7 @@ void CopyAlquimiaState(const AlquimiaState* const source,
   CopyAlquimiaVectorDouble(&source->mineral_specific_surface_area, &destination->mineral_specific_surface_area);
   CopyAlquimiaVectorDouble(&source->surface_site_density, &destination->surface_site_density);
   CopyAlquimiaVectorDouble(&source->cation_exchange_capacity, &destination->cation_exchange_capacity);
+  CopyAlquimiaVectorDouble(&source->gas_concentration, &destination->gas_concentration);
 }
 
 void CopyAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const source, 
@@ -184,6 +186,7 @@ void CopyAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const so
   CopyAlquimiaVectorDouble(&source->primary_activity_coeff, &destination->primary_activity_coeff);
   CopyAlquimiaVectorDouble(&source->secondary_free_ion_concentration, &destination->secondary_free_ion_concentration);
   CopyAlquimiaVectorDouble(&source->secondary_activity_coeff, &destination->secondary_activity_coeff);
+  CopyAlquimiaVectorDouble(&source->gas_partial_pressure, &destination->gas_partial_pressure);
 }
 
 void CopyAlquimiaGeochemicalCondition(const AlquimiaGeochemicalCondition* const source, 
@@ -397,6 +400,7 @@ void PrintAlquimiaSizes(const AlquimiaSizes* const sizes, FILE* file) {
   fprintf(file, "     num aqueous kinetics : %d\n", sizes->num_aqueous_kinetics);
   fprintf(file, "     num surface sites : %d\n", sizes->num_surface_sites);
   fprintf(file, "     num ion exchange sites : %d\n", sizes->num_ion_exchange_sites);
+  fprintf(file, "     num gases: %d\n", sizes->num_gases);
   fprintf(file, "     num auxiliary integers : %d\n", sizes->num_aux_integers);
   fprintf(file, "     num auxiliary doubles : %d\n", sizes->num_aux_doubles);
 }  /* end PrintAlquimiaSizes() */
@@ -423,6 +427,7 @@ void PrintAlquimiaProblemMetaData(const AlquimiaProblemMetaData* const meta_data
   PrintAlquimiaVectorString("ion exchange names", &(meta_data->ion_exchange_names), file);
   PrintAlquimiaVectorString("isotherm species names", &(meta_data->isotherm_species_names), file);
   PrintAlquimiaVectorString("aqueous kinetic names", &(meta_data->aqueous_kinetic_names), file);
+  PrintAlquimiaVectorString("gas names", &(meta_data->gas_names), file);
 }  /* end PrintAlquimiaProblemMetaData() */
 
 void PrintAlquimiaProperties(const AlquimiaProperties* const mat_prop, FILE* file) {
@@ -455,6 +460,7 @@ void PrintAlquimiaState(const AlquimiaState* const state, FILE* file) {
                             &(state->cation_exchange_capacity), file);
   PrintAlquimiaVectorDouble("surface_site_density",
                             &(state->surface_site_density), file);
+  PrintAlquimiaVectorDouble("gas_concentration", &(state->gas_concentration), file);
 }  /* end PrintAlquimiaState() */
 
 void PrintAlquimiaAuxiliaryData(const AlquimiaAuxiliaryData* const aux_data, FILE* file) {
@@ -481,6 +487,8 @@ void PrintAlquimiaAuxiliaryOutputData(const AlquimiaAuxiliaryOutputData* const a
                             &(aux_output->secondary_free_ion_concentration), file);
   PrintAlquimiaVectorDouble("secondary activity coeff",
                             &(aux_output->secondary_activity_coeff), file);
+  PrintAlquimiaVectorDouble("gas_partial_pressure",
+                            &(aux_output->gas_partial_pressure), file);
 }  /* end PrintAlquimiaAuxiliaryOutputData() */
 
 void PrintAlquimiaGeochemicalConditionVector(const AlquimiaGeochemicalConditionVector* const condition_list, FILE* file) {

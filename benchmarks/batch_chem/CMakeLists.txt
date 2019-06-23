@@ -31,5 +31,9 @@ if (ALQUIMIA_HAVE_CRUNCHFLOW)
   add_alquimia_batch_chem_benchmark(isotherms_cc_crunch isotherms-cc-crunch.cfg)
 #  add_alquimia_batch_chem_benchmark(surface_complexation_2_ac_crunch surface-complexation-2-ac-crunch.cfg)
   add_alquimia_batch_chem_benchmark(surface_complexation_2_cc_crunch surface-complexation-2-cc-crunch.cfg)
+#
+  add_alquimia_batch_chem_benchmark(calcite_co2_crunch_cc calcite-co2-crunch-cc.cfg)
+#
+  add_alquimia_batch_chem_benchmark(ch4_o2_crunch_cc ch4-o2-crunch-cc.cfg)
 endif()
 
