@@ -37,13 +37,14 @@ module c_f_interface_module
 
   implicit none
 
-  private
+  private :: To_lower
 
   public :: &
        c_f_string_ptr, &
        c_f_string_chars, &
        f_c_string_ptr, &
-       f_c_string_chars
+       f_c_string_chars, &
+       CaseInsensitiveStrcmp
 
 contains
 
@@ -138,5 +139,51 @@ subroutine f_c_string_chars(f_string, c_string_chars, c_string_len)
   c_string_chars(string_len + 1) = c_null_char
 
 end subroutine f_c_string_chars
+
+
+function CaseInsensitiveStrcmp(str1, str2)
+  ! this need to be here for alquimia to compile without pflotran
+  implicit none
+
+  character(len=*), intent(in) :: str1, str2
+  character(len=512) :: low1, low2
+  integer :: len1, len2, i
+  logical :: CaseInsensitiveStrcmp
+
+  len1 = len_trim(str1)
+  len2 = len_trim(str2)
+
+  if (len1 /= len2) then
+    CaseInsensitiveStrcmp = .false.
+    return
+  endif
+
+  low1 = str1
+  low2 = str2 
+
+  call To_lower(low1)
+  call To_lower(low2)
+
+  do i=1,len1
+    if (low1(i:i) /= low2(i:i)) then
+      CaseInsensitiveStrcmp = .false.
+      return
+    endif
+  enddo
+
+  CaseInsensitiveStrcmp = .true.
+end function CaseInsensitiveStrcmp
+
+
+subroutine To_lower(str)
+  character(*), intent(in out) :: str
+  integer :: i
+  do i = 1, len(str)
+    select case(str(i:i))
+      case("A":"Z")
+        str(i:i) = achar(iachar(str(i:i))+32)
+    end select
+  end do  
+end subroutine To_Lower
 
 end module c_f_interface_module
