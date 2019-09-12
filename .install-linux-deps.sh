@@ -4,7 +4,8 @@ sudo apt-get install -y cmake gcc libopenmpi-dev openmpi-bin liblapack-dev gfort
 export TMPDIR=/tmp
 
 # Go get PETSc and build it.
-git clone https://bitbucket.org/petsc/petsc petsc
+#git clone https://bitbucket.org/petsc/petsc petsc
+git clone https://gitlab.com/petsc/petsc.git petsc
 pushd $PETSC_DIR
 ./configure --with-mpi=1 --download-hdf5 --with-debug=$DEBUG --with-shared-libraries=1 --download-pflotran --download-pflotran-commit=origin/master
 make
