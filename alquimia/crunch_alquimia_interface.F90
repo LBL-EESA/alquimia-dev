@@ -153,6 +153,7 @@ module CrunchAlquimiaInterface_module
      integer(i4b)             :: nz
      integer(i4b)             :: igamma
      integer(i4b)             :: ikph
+     integer(i4b)             :: iko2
      integer(i4b)             :: jpor
      real(dp)                 :: corrmax
      real(dp)                 :: deltmin
@@ -227,6 +228,7 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
   !
   integer(i4b)          :: igamma ! gamma coeff update type
   integer(i4b)          :: ikph   ! points to pH
+  integer(i4b)          :: iko2   ! points to O2
   integer(i4b)          :: jpor   ! porosity update type (0 is constant)
   real(dp)              :: corrmax ! max change in unknown in log units
   real(dp)              :: deltmin ! minimum delta time
@@ -236,7 +238,6 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
   !
   integer(i4b) :: ipath  ! reaction_path calculations
   integer(i4b) :: ikmast ! points to master species
-  integer(i4b) :: ikO2   ! points to O2
   integer(i4b) :: nstop  ! # output times for CF
   integer(i4b) :: nseries ! time series print for CF   
   integer(i4b) :: str_mon ! time keeping for CF
@@ -348,6 +349,7 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
   ! flags, pointer indexes, parameters
   engine_state%igamma = igamma
   engine_state%ikph = ikph
+  engine_state%iko2 = iko2
   engine_state%jpor = jpor
   engine_state%corrmax = corrmax
   engine_state%deltmin = deltmin
@@ -654,6 +656,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   !
   integer(i4b)          :: igamma ! gamma coeff update type
   integer(i4b)          :: ikph   ! points to pH
+  integer(i4b)          :: iko2   ! points to O2
   integer(i4b)          :: jpor   ! porosity update type (0 is constant)
   real(dp)              :: corrmax ! max unknown update log scale
   real(dp)              :: deltmin ! minimum delta time
@@ -984,7 +987,7 @@ subroutine GetAuxiliaryOutput( &
 
   ! local variables
   type(CrunchEngineState), pointer :: engine_state
-  integer :: i, ikph
+  integer :: i, ikph, iko2
   real (c_double), pointer :: local_array(:)
   !!PetscReal :: porosity, volume
   logical, parameter :: copy_auxdata = .true.
@@ -1012,6 +1015,8 @@ subroutine GetAuxiliaryOutput( &
      aux_output%pH = -100.d0
   end if
 
+  iko2 = engine_state%iko2
+  
   !
   ! mineral data
   !
@@ -1155,7 +1160,10 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
       if (i == engine_state%ikph) then
 !       H+ component can be negative
         idata(i) = 0
-      else
+      else if (i == engine_state%iko2) then
+!       O2 component can be negative
+        idata(i) = 0
+      else       
         idata(i) = 1 
       end if
   end do
@@ -1492,6 +1500,7 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
   !
   integer(i4b)           :: igamma ! gamma coeff update type
   integer(i4b)           :: ikph   ! points to pH
+  integer(i4b)           :: iko2   ! points to O2
   integer(i4b)           :: jpor   ! porosity update type (0 is constant)
     
   ! actual local variables
@@ -1539,6 +1548,7 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
   ! flags, pointer indexes, parameters
   igamma = engine_state%igamma
   ikph = engine_state%ikph
+  iko2 = engine_state%iko2
   jpor = engine_state%jpor
 
 ! allocate work variable
