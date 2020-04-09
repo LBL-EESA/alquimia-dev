@@ -1104,7 +1104,7 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
        InputErrorMsg, InputError
   use String_module, only : StringToUpper
   use Transport_Constraint_module, only : tran_constraint_list_type, tran_constraint_type, &
-       TranConstraintReadRT, TranConstraintInitList, TranConstraintAddToList, &
+       TranConstraintRead, TranConstraintInitList, TranConstraintAddToList, &
        TranConstraintCreate
   use petscsys
   implicit none
@@ -1152,7 +1152,7 @@ subroutine ReadPFloTranConstraints(option, input, reaction, transport_constraint
         if (debug) then
            call printMsg(option, tran_constraint%name)
         end if
-        call TranConstraintReadRT(tran_constraint, reaction, input, option)
+        call TranConstraintRead(tran_constraint, reaction, input, option)
         call TranConstraintAddToList(tran_constraint, transport_constraints)
         nullify(tran_constraint)
 

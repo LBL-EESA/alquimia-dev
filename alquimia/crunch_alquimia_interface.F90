@@ -1822,7 +1822,7 @@ subroutine ConvertAlquimiaConditionToCrunch(state,properties, &
                                             alquimia_condition)
   use, intrinsic :: iso_c_binding
 
-  use c_f_interface_module, only : c_f_string_ptr
+  use c_f_interface_module, only : c_f_string_ptr, CaseInsensitiveStrcmp
   use AlquimiaContainers_module
 
   use runtime, only: nchem, DensityModule
@@ -1835,9 +1835,6 @@ subroutine ConvertAlquimiaConditionToCrunch(state,properties, &
   use mineral, only: volin, areain, iarea, specific, volmol, wtmin, &
                      site_density,umin
   use params, only: mls, mchem
-
-! pflotran
-  use String_module, only : StringCompareIgnoreCase
 
   implicit none
  
@@ -1977,11 +1974,11 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
 !
 !    assign type of constraint, and name associated with it if mineral or gas constraint
 !
-     if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
+     if (CaseInsensitiveStrcmp(constraint_type, kAlquimiaStringFree)) then
         itype(i,nchem) = 8
         ctot(i,nchem)    = alq_aqueous_constraints(j)%value
         guess(i,nchem) = alq_aqueous_constraints(j)%value
-     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueous)) then
+     else if (CaseInsensitiveStrcmp(constraint_type, kAlquimiaStringTotalAqueous)) then
         itype(i,nchem) = 1
         guess(i,nchem) = alq_aqueous_constraints(j)%value
         ctot(i,nchem)    = alq_aqueous_constraints(j)%value
@@ -1997,17 +1994,17 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
           end if
         end if if_Hplus
 
-     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalSorbed)) then
+     else if (CaseInsensitiveStrcmp(constraint_type, kAlquimiaStringTotalSorbed)) then
         itype(i,nchem) = 1
 !        equilibrate(i,nchem) = .true.
-     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringPH)) then
+     else if (CaseInsensitiveStrcmp(constraint_type, kAlquimiaStringPH)) then
         itype(i,nchem) = 7
         ph(nchem) = alq_aqueous_constraints(j)%value
         guess(i,nchem) = 10**(-ph(nchem))
-     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringMineral)) then
+     else if (CaseInsensitiveStrcmp(constraint_type, kAlquimiaStringMineral)) then
         itype(i,nchem) = 3
         ncon(i,nchem) = trim(associated_species)
-     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringGas)) then
+     else if (CaseInsensitiveStrcmp(constraint_type, kAlquimiaStringGas)) then
         itype(i,nchem) = 4
         ncon(i,nchem) = trim(associated_species)
         gaspp(i,nchem) = alq_aqueous_constraints(j)%value
@@ -2015,7 +2012,7 @@ call reallocate(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_
           gaspp(i,nchem) = 1.e-30
          end if
          ctot(i,nchem) = gaspp(i,nchem)
-     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringCharge)) then
+     else if (CaseInsensitiveStrcmp(constraint_type, kAlquimiaStringCharge)) then
         itype(i,nchem) = 2
      else
         write(*,*)'Constraint type: ' // trim(constraint_type) // &
