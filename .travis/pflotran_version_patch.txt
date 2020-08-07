@@ -1,0 +1,13 @@
+diff --git a/src/pflotran/pflotran_constants.F90 b/src/pflotran/pflotran_constants.F90
+index dd88e7265..86d0816c4 100644
+--- a/src/pflotran/pflotran_constants.F90
++++ b/src/pflotran/pflotran_constants.F90
+@@ -16,7 +16,7 @@ module PFLOTRAN_Constants_module
+   PetscInt, parameter :: PFLOTRAN_VERSION_PATCH = 0 ! (alpha < -1; beta = -1)
+ 
+ #define VMAJOR 3
+-#define VMINOR 13
++#define VMINOR 11
+ #define VSUBMINOR 0
+ #if (PETSC_VERSION_MAJOR < VMAJOR ||                    \
+      (PETSC_VERSION_MAJOR == VMAJOR &&                  \
