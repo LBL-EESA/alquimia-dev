@@ -54,8 +54,8 @@
 
 
 ! **************************************************************************** !
-subroutine PFloTran_Alquimia_Setup(input_filename, hands_off, pft_engine_state, &
-     sizes, functionality, status) bind(C)
+subroutine PFloTran_Alquimia_Setup(input_filename, hands_off, &
+     pft_engine_state, sizes, functionality, status) bind(C)
 
   use, intrinsic :: iso_c_binding
 
