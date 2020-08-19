@@ -70,6 +70,7 @@ module PFLOTRANAlquimiaInterface_module
 
   use PFLOTRAN_Constants_module
 #include "finclude/petscsys.h"
+#include "petsc/finclude/petscsys.h"
   implicit none
 
   public :: Setup, &
