@@ -8,7 +8,7 @@ os:
 
 sudo: required
 
-dist: trusty # Ubuntu 14.04.
+dist: bionic # Ubuntu 18.04.
 
 # Build/test only on the master branch.
 branches:
