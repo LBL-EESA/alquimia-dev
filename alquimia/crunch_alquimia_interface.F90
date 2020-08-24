@@ -440,6 +440,7 @@ subroutine ProcessCondition(cf_engine_state, condition, properties, &
 
   integer(i4b) :: found
   integer(i4b) :: nco
+  integer(i4b) :: nlen
   !
   ! geochemical sytem sizes, domain sizes
   !
@@ -494,7 +495,11 @@ subroutine ProcessCondition(cf_engine_state, condition, properties, &
   call  c_f_string_ptr(condition%name, name)
   !! note: need to replace with crunchflow print message call for rank 0!!
   !!engine_state%option%io_buffer = "processing : " // trim(name)
-  !!call printMsg(engine_state%option) 
+  !!call printMsg(engine_state%option)
+
+
+  nlen = LEN(name)
+  call majuscules(name,nlen)
 
   if (condition%aqueous_constraints%size > 0) then
      ! the driver is supplying the constraint data, so we need to
