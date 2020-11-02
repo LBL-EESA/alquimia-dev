@@ -543,25 +543,39 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
        reaction, natural_id, engine_state%option, ierror)
   deallocate(guess)
 
-  call RUpdateKineticState(engine_state%rt_auxvar, engine_state%global_auxvar, &
-       engine_state%material_auxvar, engine_state%reaction, engine_state%option)
 
-  call CopyAuxVarsToAlquimia( &
-       engine_state%reaction, &
-       engine_state%global_auxvar, &
-       engine_state%rt_auxvar, &
-       porosity, &
-       state, aux_data)
+  if (ierror /= 1) then
+
+     call RUpdateKineticState(engine_state%rt_auxvar, engine_state%global_auxvar, &
+          engine_state%material_auxvar, engine_state%reaction, engine_state%option)
+
+     call CopyAuxVarsToAlquimia( &
+          engine_state%reaction, &
+          engine_state%global_auxvar, &
+          engine_state%rt_auxvar, &
+          porosity, &
+          state, aux_data)
 
   ! Copy the diagnostic information into the status object.
   ! PFlotran doesn't do anything really fancy in its Newton step, so
   ! the numbers of RHS evaluations, Jacobian evaluations, and Newton 
   ! iterations are all the same.
-  status%error = kAlquimiaNoError
-  status%converged = .true.
-  status%num_rhs_evaluations = num_newton_iterations
-  status%num_jacobian_evaluations = num_newton_iterations
-  status%num_newton_iterations = num_newton_iterations
+     status%error = kAlquimiaNoError
+     status%converged = .true.
+     status%num_rhs_evaluations = num_newton_iterations
+     status%num_jacobian_evaluations = num_newton_iterations
+     status%num_newton_iterations = num_newton_iterations
+
+  else
+  ! not converged (ierror == 1)
+
+     status%error = kAlquimiaNoError
+     status%converged = .false.
+     status%num_rhs_evaluations = num_newton_iterations
+     status%num_jacobian_evaluations = num_newton_iterations
+     status%num_newton_iterations = num_newton_iterations
+
+  endif
 
 end subroutine ReactionStepOperatorSplit
 
