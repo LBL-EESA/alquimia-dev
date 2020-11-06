@@ -731,6 +731,9 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
 ! IN= seconds, CF=years
   delt = delta_t / secyr
 
+! this is allocated inside the calculations, not as part of setup
+  if (allocated(stmp)) DEALLOCATE(stmp)
+
 ! 2ND: CALL OS3D_NEWTON
 
 ! straight from CrunchFlow's CrunchFlow.f90 subroutine, except where noted ------------------------
