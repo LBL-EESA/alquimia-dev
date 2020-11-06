@@ -615,7 +615,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
                            s, sn, &
                            spex, spexold, &
                            spsurf10, spsurf, spsurfold, &
-                           xgram, xgramOld
+                           xgram, xgramOld, stmp
   implicit none
 
   ! function parameters
@@ -730,6 +730,9 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
 ! set delt variable in CrunchFlow units
 ! IN= seconds, CF=years
   delt = delta_t / secyr
+
+! this is allocated inside the calculations, not as part of setup
+  if (allocated(stmp)) DEALLOCATE(stmp)
 
 ! 2ND: CALL OS3D_NEWTON
 
