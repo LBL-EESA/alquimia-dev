@@ -615,7 +615,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
                            s, sn, &
                            spex, spexold, &
                            spsurf10, spsurf, spsurfold, &
-                           xgram, xgramOld
+                           xgram, xgramOld, stmp
   implicit none
 
   ! function parameters
