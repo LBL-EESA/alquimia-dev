@@ -410,6 +410,7 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
      tran_constraint_base => tran_constraint
      call TranConstraintAddToList(tran_constraint_base, &
                                   engine_state%transport_constraints)
+     engine_state%constraint_coupler%constraint => tran_constraint_base
   else
     ! the driver just supplied a name, so we check for a constraint
     ! with that name in the pflotran input file and use that.
@@ -1284,7 +1285,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   use Material_Aux_class, only : material_auxvar_type
   use Transport_Constraint_RT_module, only : tran_constraint_rt_type, &
                                              tran_constraint_coupler_rt_type
-  use Option_module, only : option_type, printMsg
+  use Option_module, only : option_type, printMsg, printErrMsg
   use petscsys
   implicit none
 
@@ -1303,7 +1304,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   character(len=MAXWORDLENGTH) :: word
   PetscBool :: use_prev_soln_as_guess
   PetscInt :: num_iterations
-
+  integer :: i
   !
   ! process constraints
   !
@@ -1317,6 +1318,8 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
 
   if (.not. associated(tran_constraint)) then
      ! TODO(bja) : report error
+     option%io_buffer = "tran_constraint not associated"
+     call printErrMsg(option)
   end if
   ! initialize constraints
   option%io_buffer = "initializing constraint : " // tran_constraint%name
@@ -1334,6 +1337,13 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
          num_iterations, &
          use_prev_soln_as_guess, &
          option)
+
+  ! Pflotran does not seem to apply the constraint to immobile species in
+  ! ReactionEquilibrateConstraint
+  ! So we will apply it by hand here
+  do i = 1, reaction%immobile%nimmobile
+    rt_auxvar%immobile(i) = tran_constraint%immobile_species%constraint_conc(i)
+  enddo
 
   ! link the constraint to the constraint coupler so we can print it
   constraint_coupler%global_auxvar => global_auxvar
@@ -1512,6 +1522,7 @@ function ConvertAlquimiaConditionToPflotran(&
           alq_mineral_constraints(i)%volume_fraction
      pft_mineral_constraint%constraint_area(i) = &
           alq_mineral_constraints(i)%specific_surface_area
+      pft_mineral_constraint%constraint_area_units(i) = 'm^2/m^3'
   end do
   tran_constraint%minerals => pft_mineral_constraint
 
