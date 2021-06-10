@@ -720,6 +720,9 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   use AlquimiaContainers_module
 
+  use Reaction_Aux_module, only : general_rxn_type
+  use Reaction_Microbial_Aux_module, only : microbial_rxn_type
+
   implicit none
 
   ! function parameters
@@ -735,6 +738,8 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   integer :: i, list_size, id
   integer(c_int), pointer :: idata(:)
   type(PFLOTRANEngineState), pointer :: engine_state
+  type(general_rxn_type), pointer :: cur_gen_rxn
+  type(microbial_rxn_type), pointer :: cur_mic_rxn
 
   !write (*, '(a)') "PFLOTRAN_Alquimia_GetEngineMetaData() :"
 
@@ -881,6 +886,36 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
           trim(engine_state%reaction%primary_species_names(id)), &
           name, kAlquimiaMaxStringLength)
   end do
+  
+  !
+  ! aqueous kinetic names
+  !
+  list_size = meta_data%aqueous_kinetic_names%size
+  call c_f_pointer(meta_data%aqueous_kinetic_names%data, name_list, &
+       (/list_size/))
+   ! General reactions
+   cur_gen_rxn => engine_state%reaction%general_rxn_list
+   i=1
+   do
+     if (.not.associated(cur_gen_rxn)) exit
+     call c_f_pointer(name_list(i), name)
+     call f_c_string_chars( &
+          trim(cur_gen_rxn%reaction), &
+          name, kAlquimiaMaxStringLength)
+    cur_gen_rxn => cur_gen_rxn%next
+    i = i+1
+   enddo
+   ! Microbial reactions
+   cur_mic_rxn => engine_state%reaction%microbial%microbial_rxn_list
+   do
+     if (.not.associated(cur_mic_rxn)) exit
+     call c_f_pointer(name_list(i), name)
+     call f_c_string_chars( &
+          trim(cur_mic_rxn%reaction), &
+          name, kAlquimiaMaxStringLength)
+    cur_mic_rxn => cur_mic_rxn%next
+    i = i+1
+   enddo
 
   status%error = 0
 end subroutine GetProblemMetaData
@@ -999,7 +1034,7 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   end if
   sizes%num_minerals = reaction%mineral%nkinmnrl
   sizes%num_aqueous_complexes = reaction%neqcplx
-  sizes%num_aqueous_kinetics = reaction%ngeneral_rxn
+  sizes%num_aqueous_kinetics = reaction%ngeneral_rxn + reaction%microbial%nrxn
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
   sizes%num_isotherm_species = reaction%neqkdrxn
@@ -1627,9 +1662,12 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   !
   call c_f_pointer(prop%aqueous_kinetic_rate_cnst%data, data, &
        (/prop%aqueous_kinetic_rate_cnst%size/))
-  do i = 1, prop%aqueous_kinetic_rate_cnst%size
+  do i = 1, reaction%ngeneral_rxn
       reaction%general_kf(i) = data(i)
       reaction%general_kr(i) = 0.0d0
+  end do
+  do i=1, reaction%microbial%nrxn
+    reaction%microbial%rate_constant(i) = data(i+reaction%ngeneral_rxn)
   end do
 
   end if if_hands_off
