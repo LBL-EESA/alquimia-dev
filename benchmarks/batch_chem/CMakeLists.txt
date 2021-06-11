@@ -16,6 +16,7 @@ if (ALQUIMIA_HAVE_PFLOTRAN)
   add_alquimia_batch_chem_benchmark(isotherms_pc_pflotran isotherms-pc-pflotran.cfg)
 #  add_alquimia_batch_chem_benchmark(surface_complexation_2_ac_pflotran surface-complexation-2-ac-pflotran.cfg)
   add_alquimia_batch_chem_benchmark(surface_complexation_2_pc_pflotran surface-complexation-2-pc-pflotran.cfg)
+  add_alquimia_batch_chem_benchmark(microbial_pflotran microbial-pflotran.cfg)
 endif()
 
 if (ALQUIMIA_HAVE_CRUNCHFLOW)

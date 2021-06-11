@@ -410,6 +410,7 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
      tran_constraint_base => tran_constraint
      call TranConstraintAddToList(tran_constraint_base, &
                                   engine_state%transport_constraints)
+     engine_state%constraint_coupler%constraint => tran_constraint_base
   else
     ! the driver just supplied a name, so we check for a constraint
     ! with that name in the pflotran input file and use that.
@@ -672,15 +673,23 @@ subroutine GetAuxiliaryOutput( &
   !
   call c_f_pointer(aux_output%primary_free_ion_concentration%data, local_array, &
        (/aux_output%primary_free_ion_concentration%size/))
-  do i = 1, aux_output%primary_free_ion_concentration%size
+  do i = 1, engine_state%reaction%naqcomp
      local_array(i) = engine_state%rt_auxvar%pri_molal(i)
   end do
+  ! Immobile species have zero free ion conc by definition
+  do i = 1, engine_state%reaction%immobile%nimmobile
+    local_array(i+engine_state%reaction%offset_immobile) = 0.0
+ end do
 
   call c_f_pointer(aux_output%primary_activity_coeff%data, local_array, &
        (/aux_output%primary_activity_coeff%size/))
   do i = 1, aux_output%primary_activity_coeff%size
      local_array(i) = engine_state%rt_auxvar%pri_act_coef(i)
   end do
+  ! Immobile species have zero primary activity
+  do i = 1, engine_state%reaction%immobile%nimmobile
+    local_array(i+engine_state%reaction%offset_immobile) = 0.0
+   end do
 
   !
   ! secondary aqueous complex data
@@ -712,6 +721,9 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   use AlquimiaContainers_module
 
+  use Reaction_Aux_module, only : general_rxn_type
+  use Reaction_Microbial_Aux_module, only : microbial_rxn_type
+
   implicit none
 
   ! function parameters
@@ -727,6 +739,8 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   integer :: i, list_size, id
   integer(c_int), pointer :: idata(:)
   type(PFLOTRANEngineState), pointer :: engine_state
+  type(general_rxn_type), pointer :: cur_gen_rxn
+  type(microbial_rxn_type), pointer :: cur_mic_rxn
 
   !write (*, '(a)') "PFLOTRAN_Alquimia_GetEngineMetaData() :"
 
@@ -742,12 +756,14 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   ! copy primary indices and names
   !
 
+! In Pflotran, reaction%ncomp includes primary species, colloids, and immobile species
+! so if a simulation includes colloids or immobile species, this may need to change to reaction%naqcomp
   if (meta_data%primary_names%size /= engine_state%reaction%ncomp) then
      write (*, '(a, i3, a, i3, a)') "meta_data%primary_names%size (", &
           meta_data%primary_names%size, ") != pflotran%reaction%ncomp(", &
           engine_state%reaction%ncomp, ")"
   end if
-  list_size = meta_data%primary_names%size
+  list_size = engine_state%reaction%naqcomp
 
   pflotran_names => engine_state%reaction%primary_species_names
 
@@ -757,6 +773,19 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
      call f_c_string_chars(trim(pflotran_names(i)), &
           name, kAlquimiaMaxStringLength)     
   end do
+
+  ! Immobile species names
+  list_size = engine_state%reaction%ncomp
+  
+  pflotran_names => engine_state%reaction%immobile%names
+  
+  call c_f_pointer(meta_data%primary_names%data, name_list, (/list_size/))
+  do i = 1, engine_state%reaction%immobile%nimmobile
+     call c_f_pointer(name_list(i+engine_state%reaction%offset_immobile), name)
+     call f_c_string_chars(trim(pflotran_names(i)), &
+          name, kAlquimiaMaxStringLength)     
+  end do
+
 
 !
 ! positivity constraints
@@ -858,6 +887,36 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
           trim(engine_state%reaction%primary_species_names(id)), &
           name, kAlquimiaMaxStringLength)
   end do
+  
+  !
+  ! aqueous kinetic names
+  !
+  list_size = meta_data%aqueous_kinetic_names%size
+  call c_f_pointer(meta_data%aqueous_kinetic_names%data, name_list, &
+       (/list_size/))
+   ! General reactions
+   cur_gen_rxn => engine_state%reaction%general_rxn_list
+   i=1
+   do
+     if (.not.associated(cur_gen_rxn)) exit
+     call c_f_pointer(name_list(i), name)
+     call f_c_string_chars( &
+          trim(cur_gen_rxn%reaction), &
+          name, kAlquimiaMaxStringLength)
+    cur_gen_rxn => cur_gen_rxn%next
+    i = i+1
+   enddo
+   ! Microbial reactions
+   cur_mic_rxn => engine_state%reaction%microbial%microbial_rxn_list
+   do
+     if (.not.associated(cur_mic_rxn)) exit
+     call c_f_pointer(name_list(i), name)
+     call f_c_string_chars( &
+          trim(cur_mic_rxn%reaction), &
+          name, kAlquimiaMaxStringLength)
+    cur_mic_rxn => cur_mic_rxn%next
+    i = i+1
+   enddo
 
   status%error = 0
 end subroutine GetProblemMetaData
@@ -967,18 +1026,20 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   class (reaction_rt_type), intent(in) :: reaction
   type (AlquimiaSizes), intent(out) :: sizes
 
+! This may need to change to reaction%naqcomp if there are colloids and/or immobile species defined
   sizes%num_primary = reaction%ncomp
-  if (reaction%nsorb > 0) then
+  if (reaction%nsorb > 0 .or. reaction%immobile%nimmobile > 0) then
      sizes%num_sorbed = reaction%ncomp
   else
      sizes%num_sorbed = 0
   end if
   sizes%num_minerals = reaction%mineral%nkinmnrl
   sizes%num_aqueous_complexes = reaction%neqcplx
-  sizes%num_aqueous_kinetics = reaction%ngeneral_rxn
+  sizes%num_aqueous_kinetics = reaction%ngeneral_rxn + reaction%microbial%nrxn
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
   sizes%num_isotherm_species = reaction%neqkdrxn
+  
   call GetAuxiliaryDataSizes(reaction, &
        sizes%num_aux_integers, sizes%num_aux_doubles)
 
@@ -1224,7 +1285,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   use Material_Aux_class, only : material_auxvar_type
   use Transport_Constraint_RT_module, only : tran_constraint_rt_type, &
                                              tran_constraint_coupler_rt_type
-  use Option_module, only : option_type, printMsg
+  use Option_module, only : option_type, printMsg, printErrMsg
   use petscsys
   implicit none
 
@@ -1243,7 +1304,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   character(len=MAXWORDLENGTH) :: word
   PetscBool :: use_prev_soln_as_guess
   PetscInt :: num_iterations
-
+  integer :: i
   !
   ! process constraints
   !
@@ -1257,6 +1318,8 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
 
   if (.not. associated(tran_constraint)) then
      ! TODO(bja) : report error
+     option%io_buffer = "tran_constraint not associated"
+     call printErrMsg(option)
   end if
   ! initialize constraints
   option%io_buffer = "initializing constraint : " // tran_constraint%name
@@ -1274,6 +1337,13 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
          num_iterations, &
          use_prev_soln_as_guess, &
          option)
+
+  ! Pflotran does not seem to apply the constraint to immobile species in
+  ! ReactionEquilibrateConstraint
+  ! So we will apply it by hand here
+  do i = 1, reaction%immobile%nimmobile
+    rt_auxvar%immobile(i) = tran_constraint%immobile_species%constraint_conc(i)
+  enddo
 
   ! link the constraint to the constraint coupler so we can print it
   constraint_coupler%global_auxvar => global_auxvar
@@ -1305,7 +1375,8 @@ function ConvertAlquimiaConditionToPflotran(&
         TranConstraintRTCreate, &
         CONSTRAINT_FREE, CONSTRAINT_TOTAL, CONSTRAINT_TOTAL_SORB, &
         CONSTRAINT_PH, CONSTRAINT_MINERAL, &
-        CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL
+        CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL, CONSTRAINT_TOTAL_AQ_PLUS_SORB
+  use Reaction_Immobile_Aux_module, only : immobile_constraint_type, ImmobileConstraintCreate
   use petscsys
 
   implicit none
@@ -1319,15 +1390,16 @@ function ConvertAlquimiaConditionToPflotran(&
   class (tran_constraint_rt_type), pointer :: ConvertAlquimiaConditionToPflotran
 
   ! local variables
-  integer :: i
+  integer :: i,i_all,i_immobile,jimmobile
   character (kAlquimiaMaxStringLength) :: name, constraint_type
   character (kAlquimiaMaxStringLength) :: associated_species
   class (tran_constraint_rt_type), pointer :: tran_constraint
   type(aq_species_constraint_type), pointer :: pft_aq_species_constraint
   type(mineral_constraint_type), pointer :: pft_mineral_constraint
+  type(immobile_constraint_type), pointer :: pft_immobile_species_constraint
   type (AlquimiaAqueousConstraint), pointer :: alq_aqueous_constraints(:)
   type (AlquimiaMineralConstraint), pointer :: alq_mineral_constraints(:)
-
+  logical :: is_immobile
 
   call c_f_string_ptr(alquimia_condition%name, name)
   option%io_buffer = "building : " // trim(name)
@@ -1340,7 +1412,7 @@ function ConvertAlquimiaConditionToPflotran(&
   !
   ! aqueous species
   !
-  if (alquimia_condition%aqueous_constraints%size /= reaction%naqcomp) then
+  if (alquimia_condition%aqueous_constraints%size /= reaction%naqcomp+reaction%immobile%nimmobile) then
      option%io_buffer = 'Number of aqueous constraints ' // &
           'does not equal the number of primary chemical ' // &
           'components in constraint: ' // &
@@ -1352,22 +1424,47 @@ function ConvertAlquimiaConditionToPflotran(&
   pft_aq_species_constraint => &
        AqueousSpeciesConstraintCreate(reaction, option)
 
+  pft_immobile_species_constraint => &
+      ImmobileConstraintCreate(reaction%immobile, option)
+
   call c_f_pointer(alquimia_condition%aqueous_constraints%data, &
        alq_aqueous_constraints, (/alquimia_condition%aqueous_constraints%size/))
 
-  do i = 1, alquimia_condition%aqueous_constraints%size
-     call c_f_string_ptr(alq_aqueous_constraints(i)%primary_species_name, name)
-     pft_aq_species_constraint%names(i) = trim(name)
+  i_immobile=0
+  i=0
+  do i_all = 1, alquimia_condition%aqueous_constraints%size
+   call c_f_string_ptr(alq_aqueous_constraints(i_all)%primary_species_name, name)
 
-     pft_aq_species_constraint%constraint_conc(i) = alq_aqueous_constraints(i)%value
+   ! Check if it is an immobile species
+   is_immobile = .FALSE.
+   do jimmobile = 1, reaction%immobile%nimmobile
+      if (StringCompareIgnoreCase(name, &
+                        reaction%immobile%names(jimmobile), &
+                        MAXWORDLENGTH)) then
+         is_immobile = .TRUE.
+         exit
+      endif
+   enddo
 
-     call c_f_string_ptr(alq_aqueous_constraints(i)%constraint_type, constraint_type)
+   if(is_immobile) then
+      i_immobile=i_immobile+1
+      pft_immobile_species_constraint%names(i_immobile) = trim(name)
+      pft_immobile_species_constraint%constraint_conc(i_immobile) = alq_aqueous_constraints(i_all)%value
+   else
+      i=i+1
+      pft_aq_species_constraint%names(i) = trim(name)
 
-     call c_f_string_ptr(alq_aqueous_constraints(i)%associated_species, &
+     pft_aq_species_constraint%constraint_conc(i) = alq_aqueous_constraints(i_all)%value
+
+     call c_f_string_ptr(alq_aqueous_constraints(i_all)%constraint_type, constraint_type)
+
+     call c_f_string_ptr(alq_aqueous_constraints(i_all)%associated_species, &
           associated_species)
 
      if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
         pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_FREE
+     else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueousPlusSorbed)) then
+        pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL_AQ_PLUS_SORB
 
      else if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringTotalAqueous)) then
         pft_aq_species_constraint%constraint_type(i) = CONSTRAINT_TOTAL
@@ -1395,8 +1492,10 @@ function ConvertAlquimiaConditionToPflotran(&
              ' not recognized in constraint,concentration'
         call printErrMsg(option)
      end if
+   end if
   end do
   tran_constraint%aqueous_species => pft_aq_species_constraint
+  tran_constraint%immobile_species => pft_immobile_species_constraint
 
   !
   ! minerals
@@ -1423,6 +1522,7 @@ function ConvertAlquimiaConditionToPflotran(&
           alq_mineral_constraints(i)%volume_fraction
      pft_mineral_constraint%constraint_area(i) = &
           alq_mineral_constraints(i)%specific_surface_area
+      pft_mineral_constraint%constraint_area_units(i) = 'm^2/m^3'
   end do
   tran_constraint%minerals => pft_mineral_constraint
 
@@ -1489,6 +1589,14 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
      call c_f_pointer(state%total_immobile%data, data, (/reaction%naqcomp/))
      do i = 1, reaction%naqcomp
         rt_auxvar%total_sorb_eq(i) = data(i)
+     end do
+  end if
+  
+  ! immobile species
+  if (reaction%immobile%nimmobile > 0) then
+     call c_f_pointer(state%total_immobile%data, data, (/reaction%ncomp/))
+     do i = 1, reaction%immobile%nimmobile
+        rt_auxvar%immobile(i) = data(i + reaction%offset_immobile)
      end do
   end if
 
@@ -1567,9 +1675,12 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   !
   call c_f_pointer(prop%aqueous_kinetic_rate_cnst%data, data, &
        (/prop%aqueous_kinetic_rate_cnst%size/))
-  do i = 1, prop%aqueous_kinetic_rate_cnst%size
+  do i = 1, reaction%ngeneral_rxn
       reaction%general_kf(i) = data(i)
       reaction%general_kr(i) = 0.0d0
+  end do
+  do i=1, reaction%microbial%nrxn
+    reaction%microbial%rate_constant(i) = data(i+reaction%ngeneral_rxn)
   end do
 
   end if if_hands_off
@@ -1634,6 +1745,15 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
      call c_f_pointer(state%total_immobile%data, data, (/reaction%naqcomp/))
      do i = 1, reaction%naqcomp
         data(i) = rt_auxvar%total_sorb_eq(i)
+     end do
+  end if
+  !
+  ! immobile species
+  !
+  if (reaction%immobile%nimmobile > 0) then
+     call c_f_pointer(state%total_immobile%data, data, (/reaction%ncomp/))
+     do i = 1, reaction%immobile%nimmobile
+        data(i + reaction%offset_immobile) = rt_auxvar%immobile(i)
      end do
   end if
   !
@@ -1708,7 +1828,7 @@ subroutine GetAuxiliaryDataSizes(reaction, num_ints, num_doubles)
   num_ints = 0
 
   num_doubles = &
-       2 * reaction%naqcomp + &
+       2 * reaction%ncomp + &
        reaction%neqcplx + &
        reaction%neqionxrxn + &
        reaction%surface_complexation%nsrfcplxrxn
@@ -1744,11 +1864,24 @@ subroutine PackAlquimiaAuxiliaryData(reaction, rt_auxvar, aux_data)
      dindex = dindex + 1
      data(dindex) = rt_auxvar%pri_molal(i)
   end do
+  
+  ! Fake these (0) for immobile species
+  ! free ion
+  do i = 1, reaction%immobile%nimmobile
+     dindex = dindex + 1
+     data(dindex) = 0.0
+  end do
 
   ! primary activity coeff
   do i = 1, reaction%naqcomp
      dindex = dindex + 1
      data(dindex) = rt_auxvar%pri_act_coef(i)
+  end do
+  
+  ! Fake it for immobile species
+  do i = 1, reaction%immobile%nimmobile
+     dindex = dindex + 1
+     data(dindex) = 0.0
   end do
 
   ! secondary aqueous complexe activity coeffs
@@ -1802,12 +1935,16 @@ subroutine UnpackAlquimiaAuxiliaryData(aux_data, reaction, rt_auxvar)
      rt_auxvar%pri_molal(i) = data(dindex)
   end do
 
+  ! Skip immobile species, which driver model thinks are primary species
+  dindex = dindex + reaction%immobile%nimmobile
 
   ! primary activity coeff
   do i = 1, reaction%naqcomp
      dindex = dindex + 1
      rt_auxvar%pri_act_coef(i) = data(dindex)
   end do
+  
+  dindex = dindex + reaction%immobile%nimmobile
 
   ! aqueous complexes activity coeff
   do i = 1, reaction%neqcplx
