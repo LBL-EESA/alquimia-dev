@@ -1331,6 +1331,7 @@ function ConvertAlquimiaConditionToPflotran(&
         CONSTRAINT_FREE, CONSTRAINT_TOTAL, CONSTRAINT_TOTAL_SORB, &
         CONSTRAINT_PH, CONSTRAINT_MINERAL, &
         CONSTRAINT_GAS, CONSTRAINT_CHARGE_BAL
+  use Reaction_Immobile_Aux_module, only : immobile_constraint_type, ImmobileConstraintCreate
   use petscsys
 
   implicit none
@@ -1344,15 +1345,16 @@ function ConvertAlquimiaConditionToPflotran(&
   class (tran_constraint_rt_type), pointer :: ConvertAlquimiaConditionToPflotran
 
   ! local variables
-  integer :: i
+  integer :: i,i_all,i_immobile,jimmobile
   character (kAlquimiaMaxStringLength) :: name, constraint_type
   character (kAlquimiaMaxStringLength) :: associated_species
   class (tran_constraint_rt_type), pointer :: tran_constraint
   type(aq_species_constraint_type), pointer :: pft_aq_species_constraint
   type(mineral_constraint_type), pointer :: pft_mineral_constraint
+  type(immobile_constraint_type), pointer :: pft_immobile_species_constraint
   type (AlquimiaAqueousConstraint), pointer :: alq_aqueous_constraints(:)
   type (AlquimiaMineralConstraint), pointer :: alq_mineral_constraints(:)
-
+  logical :: is_immobile
 
   call c_f_string_ptr(alquimia_condition%name, name)
   option%io_buffer = "building : " // trim(name)
@@ -1365,7 +1367,7 @@ function ConvertAlquimiaConditionToPflotran(&
   !
   ! aqueous species
   !
-  if (alquimia_condition%aqueous_constraints%size /= reaction%naqcomp) then
+  if (alquimia_condition%aqueous_constraints%size /= reaction%naqcomp+reaction%immobile%nimmobile) then
      option%io_buffer = 'Number of aqueous constraints ' // &
           'does not equal the number of primary chemical ' // &
           'components in constraint: ' // &
@@ -1377,18 +1379,41 @@ function ConvertAlquimiaConditionToPflotran(&
   pft_aq_species_constraint => &
        AqueousSpeciesConstraintCreate(reaction, option)
 
+  pft_immobile_species_constraint => &
+      ImmobileConstraintCreate(reaction%immobile, option)
+
   call c_f_pointer(alquimia_condition%aqueous_constraints%data, &
        alq_aqueous_constraints, (/alquimia_condition%aqueous_constraints%size/))
 
-  do i = 1, alquimia_condition%aqueous_constraints%size
-     call c_f_string_ptr(alq_aqueous_constraints(i)%primary_species_name, name)
-     pft_aq_species_constraint%names(i) = trim(name)
+  i_immobile=0
+  i=0
+  do i_all = 1, alquimia_condition%aqueous_constraints%size
+   call c_f_string_ptr(alq_aqueous_constraints(i_all)%primary_species_name, name)
 
-     pft_aq_species_constraint%constraint_conc(i) = alq_aqueous_constraints(i)%value
+   ! Check if it is an immobile species
+   is_immobile = .FALSE.
+   do jimmobile = 1, reaction%immobile%nimmobile
+      if (StringCompareIgnoreCase(name, &
+                        reaction%immobile%names(jimmobile), &
+                        MAXWORDLENGTH)) then
+         is_immobile = .TRUE.
+         exit
+      endif
+   enddo
 
-     call c_f_string_ptr(alq_aqueous_constraints(i)%constraint_type, constraint_type)
+   if(is_immobile) then
+      i_immobile=i_immobile+1
+      pft_immobile_species_constraint%names(i_immobile) = trim(name)
+      pft_immobile_species_constraint%constraint_conc(i_immobile) = alq_aqueous_constraints(i_all)%value
+   else
+      i=i+1
+      pft_aq_species_constraint%names(i) = trim(name)
 
-     call c_f_string_ptr(alq_aqueous_constraints(i)%associated_species, &
+     pft_aq_species_constraint%constraint_conc(i) = alq_aqueous_constraints(i_all)%value
+
+     call c_f_string_ptr(alq_aqueous_constraints(i_all)%constraint_type, constraint_type)
+
+     call c_f_string_ptr(alq_aqueous_constraints(i_all)%associated_species, &
           associated_species)
 
      if (StringCompareIgnoreCase(constraint_type, kAlquimiaStringFree)) then
@@ -1420,8 +1445,10 @@ function ConvertAlquimiaConditionToPflotran(&
              ' not recognized in constraint,concentration'
         call printErrMsg(option)
      end if
+   end if
   end do
   tran_constraint%aqueous_species => pft_aq_species_constraint
+  tran_constraint%immobile_species => pft_immobile_species_constraint
 
   !
   ! minerals
