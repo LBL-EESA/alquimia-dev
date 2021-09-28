@@ -17,10 +17,10 @@ Description
 Alquimia provides a generic interface between flow and transport simulators (drivers) and biogeochemical reaction capabilities (engines). Alquimia consists of two parts: an application programming interface, API, and a wrapper library. The API describes in detail how information is exchanged between the driver and the engine. This includes the function call signatures and data structures required for implementing alquimia in a mixed language (C/C++/Fortran) programming environment. The library is an implementation of the documented API, providing an interface into the biogeochemistry routines supplied by other codes: Alquimia does not do any geochemical calculations. Version 1.0 provides interfaces to the open source codes (BSD) CrunchFlow/CrunchTope and (LGPL) PFLOTRAN. Version 1.0 meets the policies set forth by (and is part of) the Extreme-scale Scientific Software Development Kit, xSDK version 0.6.0.
 
 Originally developed as part of the DOE ASCEM project, it is now mantained and developed under the 
-U.S. Department of Energy's `IDEAS Watersheds<https://ideas-productivity.org/>` project
+U.S. Department of Energy's `IDEAS Watersheds <https://ideas-productivity.org/>`_ project
 
-Currently, the geochemical engines suported are `CrunchFlow<https://bitbucket.org/crunchflow/crunchtope-dev>` and
-`PFLOTRAN<(https://bitbucket.org/pflotran/pflotran-dev>`.
+Currently, the geochemical engines suported are `CrunchFlow <https://bitbucket.org/crunchflow/crunchtope-dev>`_ and
+`PFLOTRAN <https://bitbucket.org/pflotran/pflotran-dev>`_.
 
 
 Legal
@@ -45,7 +45,7 @@ works, and perform publicly and display publicly, and to permit others to do so.
 Citing Alquimia
 ---------------
 
-Andre, B., Molins, S., Johnson, J., and Steefel, C.I. Alquimia. Computer Software. https://github.com/LBL-EESA/alquimia-dev. USDOE. 01 Aug. 2013. Web. `doi:10.11578/dc.20210416.49<https://doi.org/10.11578/dc.20210416.49>`.
+Andre, B., Molins, S., Johnson, J., and Steefel, C.I. Alquimia. Computer Software. https://github.com/LBL-EESA/alquimia-dev. USDOE. 01 Aug. 2013. Web. `doi:10.11578/dc.20210416.49 <https://doi.org/10.11578/dc.20210416.49>`_.
 
 
 Building
@@ -94,7 +94,7 @@ PFlotran source directory.
     make pflotran_rxn
 
 To build PFlotran on Windows, see the instructions 
-[here](https://bitbucket.org/pflotran/pflotran-dev/wiki/Installation/Windows_with_Visual_Studio).
+`here <https://bitbucket.org/pflotran/pflotran-dev/wiki/Installation/Windows_with_Visual_Studio>`_.
 
 CrunchFlow engine
 =================
