@@ -11,52 +11,42 @@ Stable:
 .. image:: https://travis-ci.org/LBL-EESA/alquimia-dev.svg?branch=stable
     :target: https://travis-ci.org/LBL-EESA/alquimia-dev
 	     
-Legal
------
-
-"Alquimia Copyright (c) 2013-2016, The Regents of the University of
-California, through Lawrence Berkeley National Laboratory (subject to
-receipt of any required approvals from the U.S. Dept. of Energy).  All
-rights reserved.
-
-If you have questions about your rights to use or distribute this
-software, please contact Berkeley Lab's Technology Transfer and
-Intellectual Property Management at TTD@lbl.gov referring to "Alquimia
-(LBNL Ref. 2013-119)."
-
- 
-
-NOTICE.  This software was developed under funding from the
-U.S. Department of Energy.  As such, the U.S. Government has been
-granted for itself and others acting on its behalf a paid-up,
-nonexclusive, irrevocable, worldwide license in the Software to
-reproduce, prepare derivative works, and perform publicly and display
-publicly.  Beginning five (5) years after the date permission to
-assert copyright is obtained from the U.S. Department of Energy, and
-subject to any subsequent five (5) year renewals, the U.S. Government
-is granted for itself and others acting on its behalf a paid-up,
-nonexclusive, irrevocable, worldwide license in the Software to
-reproduce, prepare derivative works, distribute copies to the public,
-perform publicly and display publicly, and to permit others to do so.
-
-
 Description
 -----------
 
-Alquimia is a biogeochemistry API and wrapper library, originally developed as 
-part of the DOE ASCEM project, and is an interoperable component of the 
-Department of Energy's [IDEAS](https://ideas-productivity.org/) software 
-productivity project.
+Alquimia provides a generic interface between flow and transport simulators (drivers) and biogeochemical reaction capabilities (engines). Alquimia consists of two parts: an application programming interface, API, and a wrapper library. The API describes in detail how information is exchanged between the driver and the engine. This includes the function call signatures and data structures required for implementing alquimia in a mixed language (C/C++/Fortran) programming environment. The library is an implementation of the documented API, providing an interface into the biogeochemistry routines supplied by other codes: Alquimia does not do any geochemical calculations. Version 1.0 provides interfaces to the open source codes (BSD) CrunchFlow/CrunchTope and (LGPL) PFLOTRAN. Version 1.0 meets the policies set forth by (and is part of) the Extreme-scale Scientific Software Development Kit, xSDK version 0.6.0.
 
-The aim is to provide a unified interface to existing "geochemistry
-engines" such as
-[CrunchFlow](http://www.csteefel.com/CrunchFlowIntroduction.html) or
-[PFLOTRAN](https://bitbucket.org/pflotran/pflotran-dev), allowing
-subsurface flow and transport simulators to access a range of
-functionality.
+Originally developed as part of the DOE ASCEM project, it is now mantained and developed under the 
+U.S. Department of Energy's `IDEAS Watersheds<https://ideas-productivity.org/>` project
 
-It is not an implementation of a biogeochemistry reaction library, and
-does not do any geochemical calculations.
+Currently, the geochemical engines suported are `CrunchFlow<https://bitbucket.org/crunchflow/crunchtope-dev>` and
+`PFLOTRAN<(https://bitbucket.org/pflotran/pflotran-dev>`.
+
+
+Legal
+-----
+
+Alquimia Copyright (c) 2013-2021, The Regents of the University of
+California, through Lawrence Berkeley National Laboratory (subject
+to receipt of any required approvals from the U.S. Dept. of Energy). 
+All rights reserved.
+
+If you have questions about your rights to use or distribute this software,
+please contact Berkeley Lab's Intellectual Property Office at
+IPO@lbl.gov.
+
+NOTICE.  This Software was developed under funding from the U.S. Department
+of Energy and the U.S. Government consequently retains certain rights.  As
+such, the U.S. Government has been granted for itself and others acting on
+its behalf a paid-up, nonexclusive, irrevocable, worldwide license in the
+Software to reproduce, distribute copies to the public, prepare derivative 
+works, and perform publicly and display publicly, and to permit others to do so.
+
+Citing Alquimia
+---------------
+
+Andre, B., Molins, S., Johnson, J., and Steefel, C.I. Alquimia. Computer Software. https://github.com/LBL-EESA/alquimia-dev. USDOE. 01 Aug. 2013. Web. `doi:10.11578/dc.20210416.49<https://doi.org/10.11578/dc.20210416.49>`.
+
 
 Building
 --------
