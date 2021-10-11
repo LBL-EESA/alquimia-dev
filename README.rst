@@ -115,7 +115,8 @@ To build PFLOTRAN on Windows, see the instructions
 CrunchFlow engine
 =================
 
-CrunchFlow is a powerful software package for simulating reactive transport
+`CrunchFlow <https://bitbucket.org/crunchflow/crunchtope-dev>`_
+is a powerful software package for simulating reactive transport
 developed by Carl Steefel and co-workers and applied since 1988 to a variety
 of problems in the earth and environmental sciences. Alquimia provides access
 to the geochemical capabilities of CrunchFlow; more speficically, the
