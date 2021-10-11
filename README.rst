@@ -77,7 +77,7 @@ CrunchFlow is currently not part of the xSDK but generally the development branc
 in `CrunchFlow <https://bitbucket.org/crunchflow/crunchtope-dev>`_ will work.
 
 +------------+------------+
-             | Version    |
+|            | Version    |
 +============+============+
 |xSDK        | 0.7.0      |
 +============+============+
