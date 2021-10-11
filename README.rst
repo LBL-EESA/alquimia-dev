@@ -100,7 +100,7 @@ access to the geochemical capabilities of PFLOTRAN; more speficically, the
 geochemical capabilities available under the operator splitting mode.
 
 Follow the instruction to download and build PFLOTRAN found
-`here <http://doc-dev.pflotran.org/user_guide/how_to/installation/installation.html`_,
+`here <http://doc-dev.pflotran.org/user_guide/how_to/installation/installation.html>`_,
 Do not build the pflotran target rather pflotran_rxn:
 
 ::
