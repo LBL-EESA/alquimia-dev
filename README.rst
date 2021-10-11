@@ -76,15 +76,19 @@ to ensure compatibility. xSDK packages may be build using `Spack <https://spack.
 CrunchFlow is currently not part of the xSDK but generally the development branch 
 in `CrunchFlow <https://bitbucket.org/crunchflow/crunchtope-dev>`_ will work.
 
-=========   ========
-            Version
----------   --------
-xSDK        0.7.0
-Alquimia    1.0.9
-PETSc       3.16
-PFLOTRAN    3.0.2
-CrunchFlow  dev
-==========  ========
++------------+------------+
+             | Version    |
++============+============+
+|xSDK        | 0.7.0      |
++============+============+
+|Alquimia    | 1.0.9      |
++============+============+
+|PETSc       | 3.16       |
++============+============+
+|PFLOTRAN    | 3.0.2      |
++============+============+
+|CrunchFlow  | dev        |
++============+============+
 
 
 PFlotran engine
