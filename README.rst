@@ -45,7 +45,9 @@ works, and perform publicly and display publicly, and to permit others to do so.
 Citing Alquimia
 ---------------
 
-Andre, B., Molins, S., Johnson, J., and Steefel, C.I. Alquimia. Computer Software. https://github.com/LBL-EESA/alquimia-dev. USDOE. 01 Aug. 2013. Web. `doi:10.11578/dc.20210416.49 <https://doi.org/10.11578/dc.20210416.49>`_.
+Andre, B., Molins, S., Johnson, J., and Steefel, C.I. Alquimia. Computer Software.
+https://github.com/LBL-EESA/alquimia-dev. USDOE. 01 Aug. 2013. Web.
+`doi:10.11578/dc.20210416.49 <https://doi.org/10.11578/dc.20210416.49>`_.
 
 
 Building
@@ -57,63 +59,74 @@ capable version of Make installed as well. To build on Windows, you'll need
 some recent version of Visual Studio and a decent Fortran compiler such as 
 Intel's.
 
-Both engines require PETSc to be installed, with the PETSC_DIR and 
-PETSC_ARCH environment variables set properly. Currently, PETSc must be 
-configured to use 32-bit indices.
+Required packages and versions
+==============================
+
+Currently, to be built, Alquimia requires PETSc and at least one of the two
+geochemical engines, either PFLOTRAN or CrunchFlow. The PETSc requirement stems
+from the fact that both engines require PETSc. The PETSC_DIR and PETSC_ARCH
+environment variables must set properly.
+
+Alquimia is part of the `Extreme-scale Scientific Software Development Kit (xSDK) <https://xsdk.info>`_, 
+along with PETSc and PFLOTRAN. xSDK releases ensure that certain version of these
+software packages will build together. It is strongly recommended to use the version
+of the packages in `the latest release of the xSDK <https://xsdk.info/releases/>`_
+to ensure compatibility. xSDK packages may be build using `Spack <https://spack.io>`_.
+
+CrunchFlow is currently not part of the xSDK but generally the development branch 
+in `CrunchFlow <https://bitbucket.org/crunchflow/crunchtope-dev>`_ will work.
+
+=========   ========
+            Version
+---------   --------
+xSDK        0.7.0
+Alquimia    1.0.9
+PETSc       3.16
+PFLOTRAN    3.0.2
+CrunchFlow  dev
+==========  ========
+
 
 PFlotran engine
 ===============
 
-Currently, Alquimia only works with a particular version of PFlotran: 
-hash 611092f80ddb from the pflotran-dev repository. You can download this 
-revision directly as a ZIP file from 
-https://bitbucket.org/pflotran/pflotran-dev/get/611092f80ddb.zip
+`PFLOTRAN <https://www.pflotran.org>`_ is an open source, state-of-the-art
+massively parallel subsurface flow and reactive transport code. Alquimia provides
+access to the geochemical capabilities of PFLOTRAN; more speficically, the
+geochemical capabilities available under the operator splitting mode.
 
-*NOTE ABOUT BUILDING WITH PETSC 3.6 or later: This version of PFlotran was 
-written to use PETSC 3.5.x, which is slightly different from the later minor 
-releases of PETSc. If you use a later version of PETSc, please note the following:*
-
-*1. You must create the following symbolic links within $PETSC_DIR:*
-
-::
-
-  ln -s $PETSC_DIR/lib/petsc/conf $PETSC_DIR/conf
-  ln -s $PETSC_DIR/include/petsc/finclude $PETSC_DIR/include/finclude
-
-*2. You will see a linking error (for a missing symbol _petsclogbegin_) when 
-building the pflotran_rxn executable. This doesn't prevent libpflotran_rxn.a 
-from being built, nor does it prevent Alquimia from working properly with PFlotran.*
-
-The instructions below assume that you are on a UNIX or UNIX-like system, 
-and you have set the environment variable PFLOTRAN_DIR to the top of your 
-PFlotran source directory.
+Follow the instruction to download and build PFLOTRAN found
+`here <http://doc-dev.pflotran.org/user_guide/how_to/installation/installation.html`_,
+Do not build the pflotran target rather pflotran_rxn:
 
 ::
 
     cd $PFLOTRAN_DIR/src/pflotran
     make pflotran_rxn
 
-To build PFlotran on Windows, see the instructions 
+To build PFLOTRAN on Windows, see the instructions 
 `here <https://bitbucket.org/pflotran/pflotran-dev/wiki/Installation/Windows_with_Visual_Studio>`_.
+
 
 CrunchFlow engine
 =================
 
-The CrunchFlow geochemistry engine is located in a special "alquimia" branch
-of the crunchtope repository on bitbucket. Currently, you need to be a 
-collaborator to access this repository, but steps are being taken to release 
-an open-source version.
+CrunchFlow is a powerful software package for simulating reactive transport
+developed by Carl Steefel and co-workers and applied since 1988 to a variety
+of problems in the earth and environmental sciences. Alquimia provides access
+to the geochemical capabilities of CrunchFlow; more speficically, the
+geochemical capabilities available under the operator splitting mode.
 
-When you have the alquimia branch of the repository located at $CRUNCHFLOW_DIR, 
-you can build the geochemistry reaction library by typing
+Download the master branch of CrunchFlow, apply the makefile patch and build
+the libcrunchchem.a target: 
 
 ::
 
-    cd $CRUNCHFLOW_DIR
+    cd $CRUNCHFLOW_DIR/source
+    git apply MakefileForAlquimia.patch
     make libcrunchchem.a
 
-At this time, building CrunchFlow's geochemistry engine on Windows is not 
-supported.
+More detailed instructions for building CrunchFlow will be forthcoming. 
 
 Alquimia interface
 ==================
