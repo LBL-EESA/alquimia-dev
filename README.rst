@@ -63,18 +63,17 @@ Required packages and versions
 ==============================
 
 Currently, to be built, Alquimia requires PETSc and at least one of the two
-geochemical engines, either PFLOTRAN or CrunchFlow. The PETSc requirement stems
-from the fact that both engines require PETSc. The PETSC_DIR and PETSC_ARCH
-environment variables must set properly.
+geochemical engines, either PFLOTRAN or CrunchFlow.
 
 Alquimia is part of the `Extreme-scale Scientific Software Development Kit (xSDK) <https://xsdk.info>`_, 
 along with PETSc and PFLOTRAN. xSDK releases ensure that certain version of these
-software packages will build together. It is strongly recommended to use the version
-of the packages in `the latest release of the xSDK <https://xsdk.info/releases/>`_
-to ensure compatibility. xSDK packages may be build using `Spack <https://spack.io>`_.
+software packages will build together. In addition to the instructions that follow,
+note that Alquimia -like the other xSDK packages- may also be built using the
+package manager `Spack <https://spack.io>`_. 
 
-CrunchFlow is currently not part of the xSDK but generally the development branch 
-in `CrunchFlow <https://bitbucket.org/crunchflow/crunchtope-dev>`_ will work.
+To build Alquimia, use the version of the packages in
+`the latest release of the xSDK <https://xsdk.info/releases/>`_
+to ensure compatibility. Currently:
 
 +------------+------------+
 |            | Version    |
@@ -90,8 +89,26 @@ in `CrunchFlow <https://bitbucket.org/crunchflow/crunchtope-dev>`_ will work.
 |CrunchFlow  | dev        |
 +------------+------------+
 
+CrunchFlow is currently not part of the xSDK but generally the development
+branch in `CrunchFlow <https://bitbucket.org/crunchflow/crunchtope-dev>`_
+will work.
 
-PFlotran engine
+PETSc
+=====
+
+`PETSc <https://petsc.org>`_ is a suite of data structures and routines for
+the scalable (parallel) solution of scientific applications modeled by partial
+differential equations. The PETSc requirement in Alquimia stems from the fact
+that both engines, PFLOTRAN or CrunchFlow, require PETSc.
+
+To download and install PETSc, please follow the instructions in
+`petsc.org <https://petsc.org>`_ or in
+`pflotran.org <http://doc-dev.pflotran.org/user_guide/how_to/installation/installation.html>`_. 
+At the end of the installation, the PETSC_DIR and PETSC_ARCH environment variables
+must set properly.
+
+
+PFLOTRAN engine
 ===============
 
 `PFLOTRAN <https://www.pflotran.org>`_ is an open source, state-of-the-art
