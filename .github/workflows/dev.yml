@@ -33,10 +33,10 @@ jobs:
       run: |
         printenv PETSC_DIR
         printenv PETSC_ARCH
-        ls $PETSC_DIR/$PETSC_ARCH
-        ls $PETSC_DIR/$PETSC_ARCH/include
-        ls $PETSC_DIR/$PETSC_ARCH/lib
-        ls $PETSC_DIR/$PETSC_ARCH/externalpackages
+#        ls $PETSC_DIR/$PETSC_ARCH
+#        ls $PETSC_DIR/$PETSC_ARCH/include
+#        ls $PETSC_DIR/$PETSC_ARCH/lib
+        ls $PETSC_DIR/$PETSC_ARCH/externalpackages/include
         export PFLOTRAN_DIR=$HOME/pflotran
         echo "PFLOTRAN_DIR=$HOME/pflotran" >> $GITHUB_ENV
         git clone https://bitbucket.org/pflotran/pflotran --branch v3.0.2 $PFLOTRAN_DIR
