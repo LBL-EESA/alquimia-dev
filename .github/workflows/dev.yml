@@ -17,7 +17,6 @@ jobs:
       run: |
         sudo apt-get -qq update
         sudo apt -qq install gfortran libopenmpi-dev libhdf5-openmpi-dev hdf5-helpers
-        which h5dump
 
     - name: petsc-install
       run: |
