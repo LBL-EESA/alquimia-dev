@@ -3,7 +3,7 @@ name: dev
 
 on:
   workflow_dispatch:
-    branches: [ newCI ]
+    branches: [ $default-branch ]
   push:
     branches: [ $default-branch ]
   pull_request:
