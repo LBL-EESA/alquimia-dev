@@ -1,13 +1,7 @@
 # CI for changes in Alquimia not TPLs
 name: dev
 
-on:
-  workflow_dispatch:
-    branches: [ $default-branch ]
-  push:
-    branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
+on: [workflow_dispatch, push, pull_request]
 
 env:
   # Customizing build type
