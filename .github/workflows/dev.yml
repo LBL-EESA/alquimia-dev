@@ -17,7 +17,7 @@ jobs:
       run: |
         sudo apt-get -qq update
         sudo apt -qq install gfortran libopenmpi-dev libhdf5-openmpi-dev hdf5-helpers
-	which h5dump
+        which h5dump
 
     - name: petsc-install
       run: |
@@ -27,14 +27,14 @@ jobs:
         cd $PETSC_DIR
         echo "Alquimia >> Configuring petsc"
         PETSC_ARCH=debug ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1
-	echo "PETSC_ARCH=debug" >> $GITHUB_ENV
+        echo "PETSC_ARCH=debug" >> $GITHUB_ENV
         echo "Alquimia >> Building petsc"
         make
         
     - name: pflotran-install
       run: |
         printenv PETSC_DIR
-	printenv PETSC_ARCH
+        printenv PETSC_ARCH
         export PFLOTRAN_DIR=$HOME/pflotran
         echo "PFLOTRAN_DIR=$HOME/pflotran" >> $GITHUB_ENV
         git clone https://bitbucket.org/pflotran/pflotran --branch v3.0.2 $PFLOTRAN_DIR
