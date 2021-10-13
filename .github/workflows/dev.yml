@@ -33,7 +33,7 @@ jobs:
       run: |
         printenv PETSC_DIR
         printenv PETSC_ARCH
-        ls $PETSC_DIR/$PETSC_ARCH/externalpackages/include
+        ls $PETSC_DIR/$PETSC_ARCH/externalpackages/hdf5-1.12.1/include
         export PFLOTRAN_DIR=$HOME/pflotran
         echo "PFLOTRAN_DIR=$HOME/pflotran" >> $GITHUB_ENV
         git clone https://bitbucket.org/pflotran/pflotran --branch v3.0.2 $PFLOTRAN_DIR
