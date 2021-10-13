@@ -46,7 +46,7 @@ jobs:
       run: |
         git clone https://bitbucket.org/crunchflow/crunchtope-dev $CRUNCH_DIR
         cd $CRUNCH_DIR/source
-	git apply MakefileForAlquimia.patch
+        git apply MakefileForAlquimia.patch
         echo "Building libcrunchchem.a"
         make libcrunchchem.a
 
