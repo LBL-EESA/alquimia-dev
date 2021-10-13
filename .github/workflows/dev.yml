@@ -25,7 +25,7 @@ jobs:
         git clone https://gitlab.com/petsc/petsc.git --branch v3.16.0 $PETSC_DIR
         cd $PETSC_DIR
         echo "Alquimia >> Configuring petsc"
-        PETSC_ARCH=debug ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1
+        PETSC_ARCH=debug ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1 --with-hdf5-dir=/usr/lib
         echo "PETSC_ARCH=debug" >> $GITHUB_ENV
         echo "Alquimia >> Building petsc"
         make
