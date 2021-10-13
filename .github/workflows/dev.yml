@@ -1,4 +1,3 @@
-# CI for changes in Alquimia not TPLs
 name: dev
 
 on: [workflow_dispatch, push, pull_request]
@@ -16,7 +15,7 @@ jobs:
     - name: package-install
       run: |
         sudo apt-get -qq update
-        sudo apt -qq install gfortran libopenmpi-dev libhdf5-openmpi-dev hdf5-helpers
+        sudo apt -qq install gfortran libopenmpi-dev
 
     - name: petsc-install
       run: |
@@ -25,7 +24,7 @@ jobs:
         git clone https://gitlab.com/petsc/petsc.git --branch v3.16.0 $PETSC_DIR
         cd $PETSC_DIR
         echo "Alquimia >> Configuring petsc"
-        PETSC_ARCH=debug ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1 --with-hdf5-dir=/usr/lib
+        PETSC_ARCH=debug ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1 --download-hdf5=1
         echo "PETSC_ARCH=debug" >> $GITHUB_ENV
         echo "Alquimia >> Building petsc"
         make
