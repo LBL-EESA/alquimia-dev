@@ -34,7 +34,7 @@ jobs:
         printenv PETSC_DIR
         printenv PETSC_ARCH
         ls $PETSC_DIR/$PETSC_ARCH
-	ls $PETSC_DIR/$PETSC_ARCH/include
+        ls $PETSC_DIR/$PETSC_ARCH/include
         ls $PETSC_DIR/$PETSC_ARCH/lib
         ls $PETSC_DIR/$PETSC_ARCH/externalpackages
         export PFLOTRAN_DIR=$HOME/pflotran
