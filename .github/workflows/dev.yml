@@ -26,9 +26,9 @@ jobs:
 	echo "PETSC_DIR=$HOME/petsc" >> $GITHUB_ENV
         git clone https://gitlab.com/petsc/petsc.git --branch v3.16.0 $PETSC_DIR
 	cd $PETSC_DIR
-	echo "Configuring petsc"
+        echo "Configuring petsc"
         ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1
-	echo "Building petsc"
+        echo "Building petsc"
         make
         
     - name: pflotran-install
@@ -36,18 +36,18 @@ jobs:
         export PFLOTRAN_DIR=$HOME/pflotran
         echo "PFLOTRAN_DIR=$HOME/pflotran" >> $GITHUB_ENV
         git clone https://bitbucket.org/pflotran/pflotran --branch v3.0.2 $PFLOTRAN_DIR
-	cd $PFLOTRAN_DIR/src/pflotran
-	echo "Building libpflotranchem.a"	
-	make libpflotranchem.a
+        cd $PFLOTRAN_DIR/src/pflotran
+        echo "Building libpflotranchem.a"	
+        make libpflotranchem.a
 
     - name: crunchflow-install
       run: |
         export CRUNCH_DIR=$HOME/crunchtope-dev
         echo "CRUNCH_DIR=$HOME/crunchtope-dev" >> $GITHUB_ENV
         git clone https://bitbucket.org/crunchflow/crunchtope-dev $CRUNCH_DIR
-	cd $CRUNCH_DIR/source
-	echo "Building libcrunchchem.a"
-	make libcrunchchem.a
+        cd $CRUNCH_DIR/source
+        echo "Building libcrunchchem.a"
+        make libcrunchchem.a
 
     - uses: actions/checkout@v2
 
@@ -64,9 +64,9 @@ jobs:
     - name: build
       run: |
         cd alquimia-dev/build
-	make -j2
+        make -j2
 
     - name: test
       run: |
         cd alquimia-dev/build
-	make test
+        make test
