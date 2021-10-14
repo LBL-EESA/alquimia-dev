@@ -24,7 +24,7 @@ jobs:
         echo "PFLOTRAN_DIR=$HOME/pflotran" >> $GITHUB_ENV
         echo "CRUNCH_DIR=$HOME/crunchtope-dev" >> $GITHUB_ENV
         echo "ALQUIMIA_DIR=$HOME/work/install" >> $GITHUB_ENV
-        echo "ALQUIMIA_REPO_DIR=$HOME/work/alquimia-dev" >> $GITHUB_ENV
+        echo "ALQUIMIA_REPO_DIR=$HOME/work/alquimia-dev/alquimia-dev" >> $GITHUB_ENV
 
     - name: petsc-install
       run: |
@@ -62,10 +62,10 @@ jobs:
 
     - name: build
       run: |
-        cd alquimia-dev/build
+        cd $ALQUIMIA_REPO_DIR/build
         make -j2
 
     - name: test
       run: |
-        cd alquimia-dev/build
+        cd $ALQUIMIA_REPO_DIR/build
         make test
