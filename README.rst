@@ -39,6 +39,9 @@ works, and perform publicly and display publicly, and to permit others to do so.
 Citing Alquimia
 ---------------
 
+.. |doi| image:: https://img.shields.io/badge/doi-10.11578%2Fdc%2E20210416.49-1abc9c.svg
+   :target: https://doi.org/10.11578/dc.20210416.49
+
 Andre, B., Molins, S., Johnson, J., and Steefel, C.I. Alquimia. Computer Software.
 https://github.com/LBL-EESA/alquimia-dev. USDOE. 01 Aug. 2013. Web.
 `doi:10.11578/dc.20210416.49 <https://doi.org/10.11578/dc.20210416.49>`_.
