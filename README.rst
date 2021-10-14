@@ -1,16 +1,8 @@
-Travis CI Status 
+CI Status 
 -----
 
-Master:
+[![Build Status](https://github.com/LBL-EESA/alquimia-dev/actions/workflows/dev.yml/badge.svg)](https://github.com/LBL-EESA/alquimia-dev/actions)
 
-.. image:: https://travis-ci.org/LBL-EESA/alquimia-dev.svg?branch=master
-    :target: https://travis-ci.org/LBL-EESA/alquimia-dev
-
-Stable:
-
-.. image:: https://travis-ci.org/LBL-EESA/alquimia-dev.svg?branch=stable
-    :target: https://travis-ci.org/LBL-EESA/alquimia-dev
-	     
 Description
 -----------
 
