@@ -1,4 +1,4 @@
-name: CI for Alquimia changes
+name: Alquimia CI
 
 on: [workflow_dispatch, push, pull_request]
 
