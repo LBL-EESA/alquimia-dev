@@ -1,7 +1,7 @@
 CI Status 
 -----
 
-![CI for Alquimia changes](https://github.com/LBL-EESA/alquimia-dev/actions/workflows/dev.yml/badge.svg)](https://github.com/LBL-EESA/alquimia-dev/actions)
+![CI for Alquimia changes](https://github.com/LBL-EESA/alquimia-dev/actions/workflows/dev.yml/badge.svg)
 
 Description
 -----------
