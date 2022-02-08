@@ -1,0 +1,185 @@
+#Description: 0D microbial degradation problem with biomass
+
+
+SIMULATION
+  SIMULATION_TYPE SUBSURFACE
+  PROCESS_MODELS
+    SUBSURFACE_TRANSPORT transport
+      GLOBAL_IMPLICIT
+    /
+  /
+END
+
+
+SUBSURFACE
+
+
+skip
+#=========================== regression =======================================
+REGRESSION
+  CELLS
+    1
+  /
+END
+noskip
+
+
+#=========================== flow mode ========================================
+# Uniform velocity (see below). No flow mode specified.
+
+#=========================== useful tranport parameters ==================
+SPECIFIED_VELOCITY
+  UNIFORM? YES
+  DATASET 0.d0 0.d0 0.d0 
+END
+
+
+#=========================== chemistry ========================================
+# Uncomment to debug reactions
+#NUMERICAL_JACOBIAN_RXN
+CHEMISTRY
+  PRIMARY_SPECIES
+    A(aq)
+    B(aq)
+    C(aq)
+  /
+  IMMOBILE_SPECIES
+    D(im)
+  /
+  MICROBIAL_REACTION
+    REACTION A(aq) + 2 B(aq) <-> 1.5 C(aq)
+    RATE_CONSTANT 1.d-6
+    MONOD 
+      SPECIES_NAME A(aq) 
+      HALF_SATURATION_CONSTANT 1.d-5        ! A is the donor
+      THRESHOLD_CONCENTRATION 1.d-20
+    /
+    MONOD
+      SPECIES_NAME B(aq) 
+      HALF_SATURATION_CONSTANT 1.d-4        ! B is the acceptor
+      THRESHOLD_CONCENTRATION 1.d-11
+    /
+    INHIBITION
+      SPECIES_NAME C(aq)
+      TYPE INVERSE_MONOD
+      INHIBITION_CONSTANT 6.d-4   ! C is the product and inhibits when too high
+    /
+    BIOMASS
+      SPECIES_NAME D(im)
+      YIELD 0.01d0
+    /
+  /
+  IMMOBILE_DECAY_REACTION
+    SPECIES_NAME D(im)
+    RATE_CONSTANT 1.d-9
+  /
+  DATABASE ./microbial.dat
+  #LOG_FORMULATION
+  ACTIVITY_COEFFICIENTS OFF
+  OUTPUT
+    ALL
+    TOTAL
+  /
+  MAX_RESIDUAL_TOLERANCE 1.d-15
+END
+
+skip
+#=========================== solver options ===================================
+LINEAR_SOLVER TRANSPORT
+  SOLVER DIRECT
+END
+noskip
+
+#=========================== discretization ===================================
+GRID
+  TYPE STRUCTURED
+  NXYZ 1 1 1
+  BOUNDS
+    0.d0 0.d0 0.d0
+    1.d0 1.d0 1.d0
+  /
+END
+
+#=========================== fluid properties =================================
+FLUID_PROPERTY
+  DIFFUSION_COEFFICIENT 1.d-9
+END
+
+#=========================== material properties ==============================
+MATERIAL_PROPERTY soil1
+  ID 1
+  POROSITY 0.25d0
+  TORTUOSITY 1.d0
+END
+
+#=========================== output options ===================================
+OUTPUT
+#  TIMES y 5. 10. 15. 20.
+#skip
+  FORMAT TECPLOT POINT
+  PERIODIC_OBSERVATION TIMESTEP 1
+  VARIABLES
+    VOLUME
+  /
+#noskip
+END
+
+#=========================== times ============================================
+TIME
+  FINAL_TIME 20.d0 h            ! A(aq) at 50m midpoint
+  INITIAL_TIMESTEP_SIZE 1.d0 h
+  MAXIMUM_TIMESTEP_SIZE 1.d0 h
+#  MAXIMUM_TIMESTEP_SIZE 1.d-3 y
+END
+
+#=========================== regions ==========================================
+REGION all
+  COORDINATES
+    -1.d20 -1.d20 -1.d20
+    1.d20 1.d20 1.d20
+  /
+END
+
+REGION pt
+  COORDINATE 0.5d0 0.5d0 0.5d0
+END
+
+#=========================== observation points ===============================
+OBSERVATION
+  REGION pt
+END
+
+#=========================== transport conditions =============================
+TRANSPORT_CONDITION initial
+  TYPE ZERO_GRADIENT
+  CONSTRAINT_LIST
+    0.d0 initial
+  /
+END
+
+#=========================== constraints ======================================
+CONSTRAINT initial
+  CONCENTRATIONS
+    A(aq) 1.d-4  T
+    B(aq) 1.d-3  T
+    C(aq) 1.d-7  T
+  /
+  IMMOBILE
+    D(im) 1.d-7
+  /
+END
+
+#=========================== condition couplers ===============================
+# initial condition
+INITIAL_CONDITION
+  TRANSPORT_CONDITION initial
+  REGION all
+END
+
+#=========================== stratigraphy couplers ============================
+STRATA
+  REGION all
+  MATERIAL soil1
+END
+
+#END_SUBSURFACE
