@@ -37,7 +37,7 @@ jobs:
         
     - name: pflotran-install
       run: |
-        git clone https://bitbucket.org/pflotran/pflotran --branch v3.0.2 $PFLOTRAN_DIR
+        git clone https://bitbucket.org/pflotran/pflotran --branch v4.0.1 $PFLOTRAN_DIR
         cd $PFLOTRAN_DIR/src/pflotran
         echo "Building libpflotranchem.a"	
         make libpflotranchem.a
