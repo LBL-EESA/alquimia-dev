@@ -217,12 +217,12 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   call MaterialAuxVarInit(material_auxvar, option)
 
   ! assign default state values, not really needed?
-  global_auxvar%pres = option%reference_pressure
-  global_auxvar%temp = option%reference_temperature
-  global_auxvar%den_kg = option%reference_density(option%liquid_phase)
-  global_auxvar%sat = option%reference_saturation  
+  global_auxvar%pres = option%flow%reference_pressure
+  global_auxvar%temp = option%flow%reference_temperature
+  global_auxvar%den_kg = option%flow%reference_density(option%liquid_phase)
+  global_auxvar%sat = option%flow%reference_saturation  
 
-  material_auxvar%porosity = option%reference_porosity
+  material_auxvar%porosity = option%flow%reference_porosity
 
   ! rt_auxvar --> cell by cell chemistry data
   allocate(rt_auxvar)
@@ -290,6 +290,7 @@ subroutine Shutdown(pft_engine_state, status)
 
   ! pflotran
   use Option_module, only : OptionDestroy
+  use Driver_module, only : DriverDestroy
   use Reaction_aux_module, only : ReactionDestroy
   use Transport_Constraint_Base_module, only : tran_constraint_coupler_base_type
   use Transport_Constraint_module, only : TranConstraintCouplerDestroy, &
@@ -324,6 +325,7 @@ subroutine Shutdown(pft_engine_state, status)
   !call RTAuxVarDestroy(engine_state%rt_auxvar)
   !call GlobalAuxVarDestroy(engine_state%global_auxvar)
   call ReactionDestroy(engine_state%reaction, engine_state%option)
+  call DriverDestroy(engine_state%option%driver)
   call OptionDestroy(engine_state%option)
 
   deallocate(engine_state)
@@ -350,7 +352,7 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
   use Transport_Constraint_module, only : TranConstraintAddToList
   use Transport_Constraint_RT_module, only : tran_constraint_rt_type
   use Transport_Constraint_Base_module, only : tran_constraint_base_type
-  use Option_module, only : printMsg
+  use Option_module, only : PrintMsg
 
   implicit none
 
@@ -396,7 +398,7 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
   !
   call  c_f_string_ptr(condition%name, name)
   engine_state%option%io_buffer = "processing : " // trim(name)
-  call printMsg(engine_state%option)
+  call PrintMsg(engine_state%option)
 
   if (condition%aqueous_constraints%size > 0) then
      ! the driver is supplying the constraint data, so we need to
@@ -416,7 +418,7 @@ subroutine ProcessCondition(pft_engine_state, condition, properties, &
     ! with that name in the pflotran input file and use that.
     engine_state%option%io_buffer = "Looking for pflotran constraint : " // &
                                      trim(name)
-     call printMsg(engine_state%option)
+     call PrintMsg(engine_state%option)
      tran_constraint_base => engine_state%transport_constraints%first
      do
         if (associated(tran_constraint_base)) then
@@ -473,6 +475,8 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
      delta_t, properties, state, aux_data, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
+#include "petsc/finclude/petscsys.h"
+  use petscsys
   use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
 
   use c_f_interface_module, only : f_c_string_ptr
@@ -541,7 +545,8 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   call RReact(guess, engine_state%rt_auxvar, engine_state%global_auxvar, &
        engine_state%material_auxvar, num_newton_iterations, &
-       reaction, natural_id, engine_state%option, ierror)
+       reaction, natural_id, engine_state%option, &
+       PETSC_FALSE, PETSC_FALSE, ierror)
   deallocate(guess)
 
 
@@ -882,7 +887,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
        (/list_size/))
   do i = 1, list_size
      call c_f_pointer(name_list(i), name)
-     id = engine_state%reaction%eqkdspecid(i)
+     id = engine_state%reaction%isotherm%eqkdspecid(i)
      call f_c_string_chars( &
           trim(engine_state%reaction%primary_species_names(id)), &
           name, kAlquimiaMaxStringLength)
@@ -936,6 +941,9 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   use c_f_interface_module, only : c_f_string_chars
 
   use Option_module, only : option_type
+  use Driver_module, only : DriverCreate
+  use Communicator_Aux_module, only : CommCreate
+  use PFLOTRAN_Constants_module
   use petscsys
   implicit none
 
@@ -952,30 +960,37 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   ! set the pflotran input file name
   call c_f_string_chars(input_filename, option%input_filename)
 
+  ! setup the driver and comm
+  option%driver => DriverCreate()
+  option%driver%comm => CommCreate()
+  option%comm => option%driver%comm
+
   option%global_prefix = option%input_filename
 
   !
   ! mpi
   !
-  option%global_comm = MPI_COMM_WORLD
-  call MPI_Comm_rank(MPI_COMM_WORLD, option%global_rank, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, option%global_commsize, ierr)
-  call MPI_Comm_group(MPI_COMM_WORLD, option%global_group, ierr)
-  option%mycomm = option%global_comm
-  option%myrank = option%global_rank
-  option%mycommsize = option%global_commsize
-  option%mygroup = option%global_group
+  option%comm%global_comm = MPI_COMM_WORLD
+  call MPI_Comm_rank(MPI_COMM_WORLD, option%comm%global_rank, ierr)
+  call MPI_Comm_size(MPI_COMM_WORLD, option%comm%global_commsize, ierr)
+  call MPI_Comm_group(MPI_COMM_WORLD, option%comm%global_group, ierr)
+  option%comm%mycomm = option%comm%global_comm
+  option%comm%myrank = option%comm%global_rank
+  option%comm%mycommsize = option%comm%global_commsize
+  option%comm%mygroup = option%comm%global_group
 
   !
   ! output file
   !
-  option%fid_out = OUT_UNIT
+  option%fid_out = DRIVER_OUT_UNIT
 
   filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
                  '.out.alquimia'
 
-  if (option%myrank == option%io_rank .and. option%print_to_file) then
-    open(option%fid_out, file=filename_out, action="write", status="unknown")
+  if (option%myrank == option%driver%io_rank .and. &
+      option%driver%print_to_file) then
+    open(option%driver%fid_out, file=filename_out, action="write", &
+         status="unknown")
   endif
 
   !
@@ -983,7 +998,7 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   !
   option%nphase = 1
   option%liquid_phase = 1
-  option%reference_density(option%liquid_phase) = 997.16
+  option%flow%reference_density(option%liquid_phase) = 997.16
   option%use_isothermal = PETSC_TRUE
 
 end subroutine SetupPFLOTRANOptions
@@ -1038,7 +1053,7 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   sizes%num_aqueous_kinetics = reaction%ngeneral_rxn + reaction%microbial%nrxn
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
-  sizes%num_isotherm_species = reaction%neqkdrxn
+  sizes%num_isotherm_species = reaction%isotherm%neqkdrxn
   
   call GetAuxiliaryDataSizes(reaction, &
        sizes%num_aux_integers, sizes%num_aux_doubles)
@@ -1051,7 +1066,7 @@ end subroutine SetAlquimiaSizes
 subroutine InitializeScreenOutput(option, input)
 
   ! pflotran
-  use Option_module, only : option_type, printMsg, printErrMsg
+  use Option_module, only : option_type, PrintMsg, PrintErrMsg
   use Input_Aux_module, only : input_type, InputReadPflotranString, InputReadWord, &
        InputCheckExit, InputError, InputErrorMsg, InputReadStringErrorMsg
   use String_module, only : StringToUpper
@@ -1097,11 +1112,11 @@ subroutine InitializeScreenOutput(option, input)
               call StringToUpper(word)
               select case(trim(word))
                 case('OFF')
-                  option%print_to_screen = PETSC_FALSE
+                  option%driver%print_to_screen = PETSC_FALSE
                 case default
                   option%io_buffer = 'Keyword: ' // trim(word) // &
                                      ' not recognized in OUTPUT,SCREEN for alquimia-pflotran interface.'
-                  call printErrMsg(option)
+                  call PrintErrMsg(option)
                end select
             end select
          end do
@@ -1201,7 +1216,7 @@ subroutine ReadPFLOTRANConstraints(option, input, reaction, transport_constraint
 !    is done here because we don't know yet if we are using these.
 
   use Reaction_Aux_module, only : reaction_rt_type
-  use Option_module, only : option_type, printMsg, printErrMsg
+  use Option_module, only : option_type, PrintMsg, PrintErrMsg
   use Input_Aux_module, only : input_type, InputReadPflotranString, InputReadWord, &
        InputErrorMsg, InputError
   use String_module, only : StringToUpper
@@ -1242,14 +1257,14 @@ subroutine ReadPFLOTRANConstraints(option, input, reaction, transport_constraint
 
     if (debug) then
        option%io_buffer = 'pflotran card:: ' // trim(card)
-       call printMsg(option)
+       call PrintMsg(option)
     end if
 
     select case(trim(card))
       case('CONSTRAINT')
         if (.not.associated(reaction)) then
           option%io_buffer = 'CONSTRAINTs not supported without CHEMISTRY.'
-          call printErrMsg(option)
+          call PrintErrMsg(option)
         endif
         tran_constraint => TranConstraintRTCreate(option)
         !TODO(geh): remove when TranConstraintAddToList() has been refactored
@@ -1258,7 +1273,7 @@ subroutine ReadPFLOTRANConstraints(option, input, reaction, transport_constraint
         call InputReadWord(input, option, tran_constraint%name, PETSC_TRUE)
         call InputErrorMsg(input, option, 'constraint', 'name') 
         if (debug) then
-           call printMsg(option, tran_constraint%name)
+           call PrintMsg(option, tran_constraint%name)
         end if
         call TranConstraintRTRead(tran_constraint, reaction, input, option)
         call TranConstraintAddToList(tran_constraint_base, &
@@ -1285,7 +1300,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   use Material_Aux_class, only : material_auxvar_type
   use Transport_Constraint_RT_module, only : tran_constraint_rt_type, &
                                              tran_constraint_coupler_rt_type
-  use Option_module, only : option_type, printMsg, printErrMsg
+  use Option_module, only : option_type, PrintMsg, PrintErrMsg
   use petscsys
   implicit none
 
@@ -1319,18 +1334,18 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   if (.not. associated(tran_constraint)) then
      ! TODO(bja) : report error
      option%io_buffer = "tran_constraint not associated"
-     call printErrMsg(option)
+     call PrintErrMsg(option)
   end if
   ! initialize constraints
   option%io_buffer = "initializing constraint : " // tran_constraint%name
-  call printMsg(option)
+  call PrintMsg(option)
 
   call ReactionProcessConstraint(reaction,tran_constraint,option)
 
   ! equilibrate
   option%io_buffer = "equilibrate constraint : " // &
     constraint_coupler%constraint%name
-  call printMsg(option)
+  call PrintMsg(option)
   call ReactionEquilibrateConstraint(rt_auxvar, global_auxvar, &
          material_auxvar, reaction, &
          tran_constraint, &
@@ -1365,7 +1380,7 @@ function ConvertAlquimiaConditionToPflotran(&
   use AlquimiaContainers_module
 
   ! pflotran
-  use Option_module, only : option_type, printErrMsg, printMsg
+  use Option_module, only : option_type, PrintErrMsg, PrintMsg
   use Reaction_aux_module, only : reaction_rt_type, &
         aq_species_constraint_type, AqueousSpeciesConstraintCreate
   use Reaction_Mineral_Aux_module, only : mineral_constraint_type, &
@@ -1403,7 +1418,7 @@ function ConvertAlquimiaConditionToPflotran(&
 
   call c_f_string_ptr(alquimia_condition%name, name)
   option%io_buffer = "building : " // trim(name)
-  call printMsg(option)
+  call PrintMsg(option)
   tran_constraint => TranConstraintRTCreate(option)
   tran_constraint%name = trim(name)
   ! NOTE(bja): requires_equilibration not used in pflotran?
@@ -1417,7 +1432,7 @@ function ConvertAlquimiaConditionToPflotran(&
           'does not equal the number of primary chemical ' // &
           'components in constraint: ' // &
           trim(tran_constraint%name)
-     call printErrMsg(option)
+     call PrintErrMsg(option)
   end if
 
   ! NOTE(bja) : this is the container for ALL aqueous constraints
@@ -1490,7 +1505,7 @@ function ConvertAlquimiaConditionToPflotran(&
      else
         option%io_buffer = 'Constraint type: ' // trim(constraint_type) // &
              ' not recognized in constraint,concentration'
-        call printErrMsg(option)
+        call PrintErrMsg(option)
      end if
    end if
   end do
@@ -1508,7 +1523,7 @@ function ConvertAlquimiaConditionToPflotran(&
           'Number of mineral constraints is not equal to ' // &
           'number of kinetic minerals in condition: ' // &
           trim(tran_constraint%name)
-     call printErrMsg(option)
+     call PrintErrMsg(option)
   end if
 
   pft_mineral_constraint => MineralConstraintCreate(reaction%mineral, option)
@@ -1646,19 +1661,19 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   call c_f_pointer(prop%isotherm_kd%data, data, &
        (/prop%isotherm_kd%size/))
   do i = 1, prop%isotherm_kd%size
-     reaction%eqkddistcoef(i) = data(i)
+     reaction%isotherm%isotherm_rxn%eqisothermcoeff(i) = data(i)
   end do
 
   call c_f_pointer(prop%langmuir_b%data, data, &
        (/prop%langmuir_b%size/))
   do i = 1, prop%langmuir_b%size
-     reaction%eqkdlangmuirb(i) = data(i)
+     reaction%isotherm%isotherm_rxn%eqisothermlangmuirb(i) = data(i)
   end do
 
   call c_f_pointer(prop%freundlich_n%data, data, &
        (/prop%freundlich_n%size/))
   do i = 1, prop%freundlich_n%size
-     reaction%eqkdfreundlichn(i) = data(i)
+     reaction%isotherm%isotherm_rxn%eqisothermfreundlichn(i) = data(i)
   end do
 
   !
