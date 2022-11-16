@@ -64,7 +64,7 @@ module PFLOTRANAlquimiaInterface_module
   use Reaction_Base_module, only : reaction_base_type
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
   use Global_Aux_module, only : global_auxvar_type
-  use Material_Aux_class, only : material_auxvar_type
+  use Material_Aux_module, only : material_auxvar_type
   use Transport_Constraint_module, only : tran_constraint_list_type
   use Transport_Constraint_RT_module, only : tran_constraint_coupler_rt_type
 
@@ -119,7 +119,7 @@ module PFLOTRANAlquimiaInterface_module
      class(reaction_rt_type), pointer :: reaction
      type(reactive_transport_auxvar_type), pointer :: rt_auxvar
      type(global_auxvar_type), pointer :: global_auxvar
-     class(material_auxvar_type), pointer :: material_auxvar
+     type(material_auxvar_type), pointer :: material_auxvar
      type(tran_constraint_list_type), pointer :: transport_constraints
      class(tran_constraint_coupler_rt_type), pointer :: constraint_coupler 
   end type PFLOTRANEngineState
@@ -152,7 +152,7 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type, &
        RTAuxVarInit
   use Global_Aux_module, only : global_auxvar_type, GlobalAuxVarInit
-  use Material_Aux_class, only : material_auxvar_type, MaterialAuxVarInit
+  use Material_Aux_module, only : material_auxvar_type, MaterialAuxVarInit
   use Option_module, only : option_type, OptionCreate
   use Input_Aux_module, only : input_type, InputCreate, InputDestroy
   use Transport_Constraint_module, only : tran_constraint_list_type
@@ -178,7 +178,7 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   type(option_type), pointer :: option
   type(input_type), pointer :: input
   type(global_auxvar_type), pointer :: global_auxvar
-  class(material_auxvar_type), pointer :: material_auxvar
+  type(material_auxvar_type), pointer :: material_auxvar
   type(reactive_transport_auxvar_type), pointer :: rt_auxvar
   type(tran_constraint_list_type), pointer :: transport_constraints
   class(tran_constraint_coupler_rt_type), pointer :: constraint_coupler 
@@ -546,7 +546,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   call RReact(guess, engine_state%rt_auxvar, engine_state%global_auxvar, &
        engine_state%material_auxvar, num_newton_iterations, &
        reaction, natural_id, engine_state%option, &
-       PETSC_FALSE, PETSC_FALSE, ierror)
+       PETSC_TRUE, PETSC_FALSE, ierror)
   deallocate(guess)
 
 
@@ -1318,7 +1318,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   use Reaction_Aux_module, only : reaction_rt_type
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
   use Global_Aux_module, only : global_auxvar_type
-  use Material_Aux_class, only : material_auxvar_type
+  use Material_Aux_module, only : material_auxvar_type
   use Transport_Constraint_RT_module, only : tran_constraint_rt_type, &
                                              tran_constraint_coupler_rt_type
   use Option_module, only : option_type, PrintMsg, PrintErrMsg
@@ -1329,7 +1329,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   type(option_type), pointer, intent(in) :: option
   class(reaction_rt_type), pointer, intent(inout) :: reaction
   type(global_auxvar_type), pointer, intent(inout) :: global_auxvar
-  class(material_auxvar_type), pointer, intent(inout) :: material_auxvar
+  type(material_auxvar_type), pointer, intent(inout) :: material_auxvar
   type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvar
   class(tran_constraint_coupler_rt_type), pointer, intent(inout) :: constraint_coupler 
 
@@ -1579,7 +1579,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   use Reaction_aux_module, only : reaction_rt_type
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
   use Global_Aux_module, only : global_auxvar_type
-  use Material_Aux_class, only : material_auxvar_type
+  use Material_Aux_module, only : material_auxvar_type
 
   implicit none
 
@@ -1591,7 +1591,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   type (AlquimiaProperties), intent(in) :: prop
   class(reaction_rt_type), pointer, intent(inout) :: reaction
   type(global_auxvar_type), pointer, intent(inout) :: global_auxvar
-  class(material_auxvar_type), pointer, intent(inout) :: material_auxvar
+  type(material_auxvar_type), pointer, intent(inout) :: material_auxvar
   type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvar
 
   ! local variables
