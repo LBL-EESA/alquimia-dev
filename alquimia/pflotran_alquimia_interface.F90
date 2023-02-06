@@ -290,7 +290,7 @@ subroutine Shutdown(pft_engine_state, status)
 
   ! pflotran
   use Option_module, only : OptionDestroy
-  use Driver_module, only : DriverDestroy
+  use Driver_class, only : DriverDestroy
   use Reaction_aux_module, only : ReactionDestroy
   use Transport_Constraint_Base_module, only : tran_constraint_coupler_base_type
   use Transport_Constraint_module, only : TranConstraintCouplerDestroy, &
@@ -961,7 +961,7 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   use c_f_interface_module, only : c_f_string_chars
 
   use Option_module, only : option_type
-  use Driver_module, only : DriverCreate
+  use Driver_class, only : DriverCreate
   use Communicator_Aux_module, only : CommCreate
   use PFLOTRAN_Constants_module
   use petscsys
