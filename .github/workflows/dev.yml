@@ -1,0 +1,71 @@
+name: Alquimia CI
+
+on: [workflow_dispatch, push, pull_request]
+
+env:
+  # Customizing build type
+  BUILD_TYPE: DEBUG
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: package-install
+      run: |
+        sudo apt-get -qq update
+        sudo apt -qq install gfortran libopenmpi-dev libhdf5-openmpi-dev hdf5-helpers
+
+    - name: directories-variables
+      run: |
+        echo "PETSC_DIR=$HOME/petsc" >> $GITHUB_ENV
+        echo "PETSC_ARCH=debug" >> $GITHUB_ENV	
+        echo "PFLOTRAN_DIR=$HOME/pflotran" >> $GITHUB_ENV
+        echo "CRUNCH_DIR=$HOME/crunchtope-dev" >> $GITHUB_ENV
+        echo "ALQUIMIA_DIR=$HOME/work/install" >> $GITHUB_ENV
+        echo "ALQUIMIA_REPO_DIR=$HOME/work/alquimia-dev/alquimia-dev" >> $GITHUB_ENV
+
+    - name: petsc-install
+      run: |
+        git clone https://gitlab.com/petsc/petsc.git --branch v3.18.0 $PETSC_DIR
+        cd $PETSC_DIR
+        echo "Alquimia >> Configuring petsc"
+        PETSC_ARCH=$PETSC_ARCH ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1 --with-hdf5-dir=/usr/lib/x86_64-linux-gnu/hdf5/openmpi
+        echo "Alquimia >> Building petsc"
+        make
+        
+    - name: pflotran-install
+      run: |
+        git clone https://bitbucket.org/pflotran/pflotran --branch v4.0.1 $PFLOTRAN_DIR
+        cd $PFLOTRAN_DIR/src/pflotran
+        echo "Building libpflotranchem.a"	
+        make libpflotranchem.a
+
+    - name: crunchflow-install
+      run: |
+        git clone https://bitbucket.org/crunchflow/crunchtope-dev $CRUNCH_DIR
+        cd $CRUNCH_DIR/source
+        git apply MakefileForAlquimia.patch
+        echo "Building libcrunchchem.a"
+        make libcrunchchem.a
+
+    - uses: actions/checkout@v2
+
+    - name: configure
+      run: |
+        ls $HOME/work
+        ls $HOME/runners
+        mkdir $ALQUIMIA_REPO_DIR/build
+        cd $ALQUIMIA_REPO_DIR/build
+        cmake ..  -DCMAKE_INSTALL_PREFIX=$ALQUIMIA_DIR   -DCMAKE_C_COMPILER=`which mpicc`   -DCMAKE_CXX_COMPILER=`which mpicxx`   -DCMAKE_Fortran_COMPILER=`which mpif90`   -DCMAKE_BUILD_TYPE=Release   -DXSDK_WITH_PFLOTRAN=ON  -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a   -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran  -DXSDK_WITH_CRUNCHFLOW=ON   -DTPL_CRUNCHFLOW_LIBRARIES=$CRUNCH_DIR/source/libcrunchchem.a   -DTPL_CRUNCHFLOW_INCLUDE_DIRS=$CRUNCH_DIR/source   -DCMAKE_BUILD_TYPE=DEBUG   -DCMAKE_C_FLAGS="-W -Wall -Wextra"   -DCMAKE_CXX_FLAGS="-W -Wall -Wextra"   -DCMAKE_Fortran_FLAGS="-W -Wall -Wextra"
+
+    - name: build
+      run: |
+        cd $ALQUIMIA_REPO_DIR/build
+        make -j2
+
+    - name: test
+      run: |
+        cd $ALQUIMIA_REPO_DIR/build
+        make test

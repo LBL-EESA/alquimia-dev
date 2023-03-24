@@ -446,6 +446,7 @@ subroutine ProcessCondition(cf_engine_state, condition, properties, &
 
   integer(i4b) :: found
   integer(i4b) :: nco
+  integer(i4b) :: nlen
   !
   ! geochemical sytem sizes, domain sizes
   !
@@ -500,7 +501,11 @@ subroutine ProcessCondition(cf_engine_state, condition, properties, &
   call  c_f_string_ptr(condition%name, name)
   !! note: need to replace with crunchflow print message call for rank 0!!
   !!engine_state%option%io_buffer = "processing : " // trim(name)
-  !!call printMsg(engine_state%option) 
+  !!call printMsg(engine_state%option)
+
+
+  nlen = LEN(name)
+  call majuscules(name,nlen)
 
   if (condition%aqueous_constraints%size > 0) then
      ! the driver is supplying the constraint data, so we need to
@@ -616,7 +621,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
                            s, sn, &
                            spex, spexold, &
                            spsurf10, spsurf, spsurfold, &
-                           xgram, xgramOld
+                           xgram, xgramOld, stmp
   implicit none
 
   ! function parameters
@@ -732,6 +737,9 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
 ! set delt variable in CrunchFlow units
 ! IN= seconds, CF=years
   delt = delta_t / secyr
+
+! this is allocated inside the calculations, not as part of setup
+  if (allocated(stmp)) DEALLOCATE(stmp)
 
 ! 2ND: CALL OS3D_NEWTON
 

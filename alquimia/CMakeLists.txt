@@ -7,7 +7,7 @@ configure_file(
 # Core library sources.
 set(ALQUIMIA_SOURCES alquimia.c;alquimia_constants.c;alquimia_interface.c;
     alquimia_memory.c;alquimia_util.c;alquimia_containers.F90;
-    c_f_interface_module.F90)
+    c_f_interface_module.F90;alquimia_fortran_interface_mod.F90)
 
 # PFlotran engine.
 if (ALQUIMIA_HAVE_PFLOTRAN)
