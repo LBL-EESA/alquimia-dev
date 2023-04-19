@@ -960,9 +960,9 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
 
   use c_f_interface_module, only : c_f_string_chars
 
-  use Option_module, only : option_type
-  use Driver_class, only : DriverCreate
-  use Communicator_Aux_module, only : CommCreate
+  use Option_module
+  use Driver_class
+  use Communicator_Aux_module
   use PFLOTRAN_Constants_module
   use petscsys
   implicit none
@@ -982,22 +982,19 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
 
   ! setup the driver and comm
   option%driver => DriverCreate()
-  option%driver%comm => CommCreate()
-  option%comm => option%driver%comm
+  call CommInitPetsc(driver%comm)
+  call OptionSetDriver(option,driver)
 
   option%global_prefix = option%input_filename
 
   !
   ! mpi
   !
-  option%comm%global_comm = MPI_COMM_WORLD
-  call MPI_Comm_rank(MPI_COMM_WORLD, option%comm%global_rank, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, option%comm%global_commsize, ierr)
-  call MPI_Comm_group(MPI_COMM_WORLD, option%comm%global_group, ierr)
-  option%comm%mycomm = option%comm%global_comm
-  option%comm%myrank = option%comm%global_rank
-  option%comm%mycommsize = option%comm%global_commsize
-  option%comm%mygroup = option%comm%global_group
+  driver%comm%communicator = MPI_COMM_WORLD
+  call MPI_Comm_rank(MPI_COMM_WORLD, driver%comm%rank, ierr)
+  call MPI_Comm_size(MPI_COMM_WORLD, driver%comm%size, ierr)
+  call MPI_Comm_group(MPI_COMM_WORLD, driver%comm%group, ierr)
+  call OptionSetComm(option,driver%comm)
 
   !
   ! output file
@@ -1007,8 +1004,7 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
                  '.out.alquimia'
 
-  if (option%myrank == option%driver%io_rank .and. &
-      option%driver%print_to_file) then
+  if (CommIsIORank(option%comm) .and. option%driver%print_to_file) then
     open(option%driver%fid_out, file=filename_out, action="write", &
          status="unknown")
   endif
@@ -1133,7 +1129,7 @@ subroutine InitializeScreenOutput(option, input)
               call StringToUpper(word)
               select case(trim(word))
                 case('OFF')
-                  option%driver%print_to_screen = PETSC_FALSE
+                  option%print_flags%print_to_screen = PETSC_FALSE
                 case default
                   option%io_buffer = 'Keyword: ' // trim(word) // &
                                      ' not recognized in OUTPUT,SCREEN for alquimia-pflotran interface.'
