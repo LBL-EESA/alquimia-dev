@@ -31,7 +31,7 @@
 #include "BatchChemDriver.h"
 #include "DriverOutput.h"
 
-void Usage()
+void Usage(void)
 {
   printf("batch_chem: usage:\n");
   printf("batch_chem <input_file>\n\n");

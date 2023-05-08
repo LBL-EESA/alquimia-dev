@@ -35,11 +35,11 @@
 typedef struct DriverOutput DriverOutput;
 
 // Creates a DriverOutput object that writes columnated data sensible to Gnuplot.
-DriverOutput* GnuplotDriverOutput_New();
+DriverOutput* GnuplotDriverOutput_New(void);
 
 // Creates a DriverOutput object that writes a Python module that can be imported
 // by an analysis script.
-DriverOutput* PythonDriverOutput_New();
+DriverOutput* PythonDriverOutput_New(void);
 
 // Writes the given vector(s) to the file with the given name.
 void DriverOutput_WriteVectors(DriverOutput* output, 

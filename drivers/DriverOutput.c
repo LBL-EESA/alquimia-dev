@@ -63,7 +63,7 @@ static void GnuplotWrite(AlquimiaVectorString var_names,
   fprintf(file, "\n");
 }
 
-DriverOutput* GnuplotDriverOutput_New()
+DriverOutput* GnuplotDriverOutput_New(void)
 {
   return DriverOutput_New(GnuplotWrite);
 }
@@ -87,7 +87,7 @@ static void PythonWrite(AlquimiaVectorString var_names,
   }
 }
 
-DriverOutput* PythonDriverOutput_New()
+DriverOutput* PythonDriverOutput_New(void)
 {
   return DriverOutput_New(PythonWrite);
 }
