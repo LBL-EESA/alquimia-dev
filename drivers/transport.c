@@ -31,7 +31,7 @@
 #include "TransportDriver.h"
 #include "DriverOutput.h"
 
-void Usage()
+void Usage(void)
 {
   printf("transport: usage:\n");
   printf("transport <input_file>\n\n");
