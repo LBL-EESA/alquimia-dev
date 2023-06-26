@@ -484,7 +484,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   use AlquimiaContainers_module
 
   ! pflotran
-  use Reaction_module, only : RReact, RUpdateKineticState, RTAuxVarCompute
+  use Reaction_module, only : RStep, RUpdateKineticState, RTAuxVarCompute
 
   implicit none
 
@@ -542,11 +542,10 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 !!$  call RTAuxVarCompute(engine_state%rt_auxvar, &
 !!$                       engine_state%global_auxvar, &
 !!$                       engine_state%reaction, engine_state%option)
-  ierror = 0
-  call RReact(guess, engine_state%rt_auxvar, engine_state%global_auxvar, &
+
+  call RStep(guess, engine_state%rt_auxvar, engine_state%global_auxvar, &
        engine_state%material_auxvar, num_newton_iterations, &
-       reaction, natural_id, engine_state%option, &
-       PETSC_TRUE, PETSC_FALSE, ierror)
+       reaction, natural_id, engine_state%option, ierror)
   deallocate(guess)
 
 
@@ -982,19 +981,19 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
 
   ! setup the driver and comm
   option%driver => DriverCreate()
-  call CommInitPetsc(driver%comm)
-  call OptionSetDriver(option,driver)
+  call CommInitPetsc(option%driver%comm)
+  call OptionSetDriver(option,option%driver)
 
   option%global_prefix = option%input_filename
 
   !
   ! mpi
   !
-  driver%comm%communicator = MPI_COMM_WORLD
-  call MPI_Comm_rank(MPI_COMM_WORLD, driver%comm%rank, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, driver%comm%size, ierr)
-  call MPI_Comm_group(MPI_COMM_WORLD, driver%comm%group, ierr)
-  call OptionSetComm(option,driver%comm)
+  option%driver%comm%communicator = MPI_COMM_WORLD
+  call MPI_Comm_rank(MPI_COMM_WORLD, option%driver%comm%rank, ierr)
+  call MPI_Comm_size(MPI_COMM_WORLD, option%driver%comm%size, ierr)
+  call MPI_Comm_group(MPI_COMM_WORLD, option%driver%comm%group, ierr)
+  call OptionSetComm(option,option%driver%comm)
 
   !
   ! output file
@@ -1004,7 +1003,8 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
                  '.out.alquimia'
 
-  if (CommIsIORank(option%comm) .and. option%driver%print_to_file) then
+  if (CommIsIORank(option%comm) .and. &
+      option%driver%print_flags%print_to_file) then
     open(option%driver%fid_out, file=filename_out, action="write", &
          status="unknown")
   endif
@@ -1382,7 +1382,8 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   constraint_coupler%rt_auxvar => rt_auxvar
   constraint_coupler%num_iterations = num_iterations
 
-  call ReactionPrintConstraint(constraint_coupler, reaction, option)
+  call ReactionPrintConstraint(global_auxvar, rt_auxvar, constraint_coupler, &
+                               reaction, option)
 
 end subroutine ProcessPFLOTRANConstraint
 
