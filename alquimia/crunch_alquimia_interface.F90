@@ -736,52 +736,38 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
 
 ! 2ND: CALL OS3D_NEWTON
 
-! straight from CrunchFlow's CrunchFlow.f90 subroutine, except where noted ------------------------
+! follows calls in CrunchFlow.f90 subroutine  --------------------------------
     newtmax = 0
-    loop4001: DO jz = 1,nz
-      DO jy = 1,ny
-        DO jx = 1,nx          
-          CALL keqcalc2(ncomp,nrct,nspec,ngas,nsurf_sec,jx,jy,jz)
-          IF (igamma == 3) THEN
-
-            IF (Duan) THEN
-              CALL gamma_co2(ncomp,nspec,ngas,jx,jy,jz)
-            ELSE
-              CALL gamma(ncomp,nspec,jx,jy,jz)
-            END IF
-
-          END IF
-          
-          CALL AqueousToBulkConvert(jx,jy,jz,AqueousToBulk)
-
-          IF (ncomp == 1 .AND. ulab(1) == 'Tracer') THEN
-             sp(1,jx,jy,jz) = DLOG(sn(1,jx,jy,jz))
-             sp10(1,jx,jy,jz) = sn(1,jx,jy,jz)
-          END IF
-
-          CALL os3d_newton(ncomp,nspec,nkin,nrct,ngas,ikin,           &
-            nexchange,nexch_sec,nsurf,nsurf_sec,npot,ndecay,neqn,igamma,   & 
-            delt,corrmax,jx,jy,jz,iterat,icvg,nx,ny,nz,time,AqueousToBulk)
-          
-          CALL SpeciesLocal(ncomp,nspec,jx,jy,jz)
-          CALL totconc(ncomp,nspec,jx,jy,jz)
+    jz=1; jy=1; jx=1
     
-          IF (iterat > newtmax) THEN
-            newtmax = iterat
-          END IF
+    CALL keqcalc2(ncomp,nrct,nspec,ngas,nsurf_sec,jx,jy,jz)
+    IF (igamma == 3) THEN
 
-!!        (smr) seems useless
-!!          if (iterat > 10) then
-!!            continue
-!!          end if
+      IF (Duan) THEN
+        CALL gamma_co2(ncomp,nspec,ngas,jx,jy,jz)
+      ELSE
+        CALL gamma(ncomp,nspec,jx,jy,jz)
+      END IF
 
-          IF (icvg == 1) THEN
-            EXIT loop4001
-          END IF
+    END IF
+          
+    CALL AqueousToBulkConvert(jx,jy,jz,AqueousToBulk)
 
-        END DO
-      END DO
-    END DO loop4001
+    IF (ncomp == 1 .AND. ulab(1) == 'Tracer') THEN
+      sp(1,jx,jy,jz) = DLOG(sn(1,jx,jy,jz))
+      sp10(1,jx,jy,jz) = sn(1,jx,jy,jz)
+    END IF
+
+    CALL os3d_newton(ncomp,nspec,nkin,nrct,ngas,ikin,           &
+      nexchange,nexch_sec,nsurf,nsurf_sec,npot,ndecay,neqn,igamma,   & 
+      delt,corrmax,jx,jy,jz,iterat,icvg,nx,ny,nz,time,AqueousToBulk)
+          
+    CALL SpeciesLocal(ncomp,nspec,jx,jy,jz)
+    CALL totconc(ncomp,nspec,jx,jy,jz)
+    
+    IF (iterat > newtmax) THEN
+      newtmax = iterat
+    END IF
 
 !  3RD: CHECK FOR SUCCESS
     
