@@ -93,6 +93,7 @@ extern "C" {
         AlquimiaProperties* props,
         AlquimiaState* state,
         AlquimiaAuxiliaryData* aux_data,
+        int natural_id, 
         AlquimiaEngineStatus* status);
     
     /* Access to user selected geochemical data for output, i.e. pH, 

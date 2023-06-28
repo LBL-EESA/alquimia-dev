@@ -133,6 +133,7 @@ subroutine PFloTran_Alquimia_ReactionStepOperatorSplit( &
      properties, &
      state, &
      aux_data, &
+     natural_id, &
      status) bind(C)
 
   use, intrinsic :: iso_c_binding
@@ -148,10 +149,11 @@ subroutine PFloTran_Alquimia_ReactionStepOperatorSplit( &
   type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
+  integer(c_int), value, intent(in) :: natural_id
   type (AlquimiaEngineStatus), intent(out) :: status
 
   call ReactionStepOperatorSplit(pft_engine_state, delta_t, &
-       properties, state, aux_data, status)
+       properties, state, aux_data, natural_id, status)
 
 end subroutine PFloTran_Alquimia_ReactionStepOperatorSplit
 

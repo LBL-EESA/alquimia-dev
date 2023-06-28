@@ -208,8 +208,8 @@ module alquimia_fortran_interface_mod
   
     ! take one (or more?) reaction steps in operator split mode
     interface
-      subroutine ReactionStepOperatorSplit(pft_engine_state, delta_t, props, state, aux_data, status) bind(C)
-        use, intrinsic :: iso_c_binding, only : c_ptr, c_double
+      subroutine ReactionStepOperatorSplit(pft_engine_state, delta_t, props, state, aux_data, natural_id, status) bind(C)
+        use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_int
         use AlquimiaContainers_module, only : AlquimiaSizes,AlquimiaProblemMetaData,AlquimiaProperties,&
                  AlquimiaState,AlquimiaAuxiliaryData,AlquimiaAuxiliaryOutputData, AlquimiaEngineStatus,&
                  AlquimiaGeochemicalCondition,AlquimiaEngineFunctionality
@@ -219,6 +219,7 @@ module alquimia_fortran_interface_mod
         type(AlquimiaProperties) :: props
         type(AlquimiaState) :: state
         type(AlquimiaAuxiliaryData) :: aux_data
+        integer(c_int),value :: natural_id
         type(AlquimiaEngineStatus) :: status
       end subroutine
     end interface
@@ -310,8 +311,8 @@ module alquimia_fortran_interface_mod
       call engine_ProcessCondition(pft_engine_state,condition,props,state,aux_data,status)
     end subroutine
     
-  subroutine Alquimia_Fortran_ReactionStepOperatorSplit(this,pft_engine_state, delta_t, props, state, aux_data, status)
-    use, intrinsic :: iso_c_binding, only : c_ptr, c_double,c_f_procpointer
+  subroutine Alquimia_Fortran_ReactionStepOperatorSplit(this,pft_engine_state, delta_t, props, state, aux_data, natural_id, status)
+    use, intrinsic :: iso_c_binding, only : c_ptr, c_double,c_f_procpointer,c_int
     use AlquimiaContainers_module, only : AlquimiaSizes,AlquimiaProblemMetaData,AlquimiaProperties,&
              AlquimiaState,AlquimiaAuxiliaryData,AlquimiaAuxiliaryOutputData, AlquimiaEngineStatus,&
              AlquimiaGeochemicalCondition,AlquimiaEngineFunctionality
@@ -322,12 +323,13 @@ module alquimia_fortran_interface_mod
     type(AlquimiaProperties) :: props
     type(AlquimiaState) :: state
     type(AlquimiaAuxiliaryData) :: aux_data
+    integer(c_int),value :: natural_id
     type(AlquimiaEngineStatus) :: status
     
     procedure(ReactionStepOperatorSplit), pointer :: engine_ReactionStepOperatorSplit
     
     call c_f_procpointer(this%c_interface%ReactionStepOperatorSplit,engine_ReactionStepOperatorSplit)
-    call engine_ReactionStepOperatorSplit(pft_engine_state, delta_t, props, state, aux_data, status)
+    call engine_ReactionStepOperatorSplit(pft_engine_state, delta_t, props, state, aux_data, natural_id, status)
   end subroutine
   
   subroutine Alquimia_Fortran_GetAuxiliaryOutput(this,pft_engine_state,props,state,aux_data,aux_out,status)

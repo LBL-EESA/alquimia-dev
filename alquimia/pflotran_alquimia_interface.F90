@@ -472,12 +472,12 @@ end subroutine ProcessCondition
 
 ! **************************************************************************** !
 subroutine ReactionStepOperatorSplit(pft_engine_state, &
-     delta_t, properties, state, aux_data, status)
+     delta_t, properties, state, aux_data, natural_id, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
 #include "petsc/finclude/petscsys.h"
   use petscsys
-  use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer, c_int
 
   use c_f_interface_module, only : f_c_string_ptr
 
@@ -494,6 +494,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
+  integer (c_int) :: natural_id
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
@@ -501,7 +502,6 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   PetscReal :: porosity, volume, vol_frac_prim
   PetscReal, allocatable :: guess(:)
   PetscInt :: i, num_newton_iterations, ierror
-  PetscInt, parameter :: natural_id = -999
   PetscInt, parameter :: phase_index = 1
   logical, parameter :: copy_auxdata = .true.
   class(reaction_rt_type), pointer :: reaction
