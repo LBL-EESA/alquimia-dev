@@ -542,7 +542,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 !!$  call RTAuxVarCompute(engine_state%rt_auxvar, &
 !!$                       engine_state%global_auxvar, &
 !!$                       engine_state%reaction, engine_state%option)
-
+  ierror = 0
   call RReact(guess, engine_state%rt_auxvar, engine_state%global_auxvar, &
        engine_state%material_auxvar, num_newton_iterations, &
        reaction, natural_id, engine_state%option, &
