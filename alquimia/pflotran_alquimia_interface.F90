@@ -501,9 +501,11 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   type(PFLOTRANEngineState), pointer :: engine_state
   PetscReal :: porosity, volume, vol_frac_prim
   PetscReal, allocatable :: guess(:)
-  PetscInt :: i, num_newton_iterations, ierror
+  PetscInt :: i, ierror
+  PetscInt :: num_sub_steps, num_newton_iterations, num_kinetic_state_updates
   PetscInt, parameter :: phase_index = 1
   logical, parameter :: copy_auxdata = .true.
+  PetscBool :: kinetic_state_updated
   class(reaction_rt_type), pointer :: reaction
 
   call c_f_pointer(pft_engine_state, engine_state)
@@ -544,15 +546,16 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 !!$                       engine_state%reaction, engine_state%option)
 
   call RStep(guess, engine_state%rt_auxvar, engine_state%global_auxvar, &
-       engine_state%material_auxvar, num_newton_iterations, &
-       reaction, natural_id, engine_state%option, ierror)
+       engine_state%material_auxvar, num_sub_steps, num_newton_iterations, &
+       num_kinetic_state_updates, reaction, natural_id, engine_state%option, &
+       ierror)
   deallocate(guess)
-
 
   if (ierror /= 1) then
 
-     call RUpdateKineticState(engine_state%rt_auxvar, engine_state%global_auxvar, &
-          engine_state%material_auxvar, engine_state%reaction, engine_state%option)
+     call RUpdateKineticState(engine_state%rt_auxvar, &
+          engine_state%global_auxvar, engine_state%material_auxvar, &
+          engine_state%reaction, kinetic_state_updated, engine_state%option)
 
      call CopyAuxVarsToAlquimia( &
           engine_state%reaction, &
