@@ -712,6 +712,11 @@ subroutine GetAuxiliaryOutput( &
      local_array(i) = engine_state%rt_auxvar%sec_act_coef(i)
   end do
 
+  !
+  ! gas pressure in bars
+  !
+  ! coming soon
+    
   status%error = kAlquimiaNoError
 end subroutine GetAuxiliaryOutput
 
@@ -926,6 +931,17 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
     cur_mic_rxn => cur_mic_rxn%next
     i = i+1
    enddo
+
+  !
+  ! copy gas indices and names
+  !
+  ! coming soon
+   
+  ! namg : name of gas species
+  !
+  ! coming soon
+  
+ 
 
   status%error = 0
 end subroutine GetProblemMetaData
@@ -1636,6 +1652,11 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   end do
 
   !
+  ! gas concentrations
+  !
+  ! coming soon
+
+  !
   ! in hands-off mode CEC and site density, as well as any property
   ! are not provided by the driver so copying them over would
   ! lose pflotran's input file values 
@@ -1808,6 +1829,12 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
      data(i) = reaction%surface_complexation%srfcplxrxn_site_density(i)
   end do
+
+  !
+  ! gas concentrations
+  !
+  ! coming soon
+
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
   ! by chemistry. We don't need to copy theme here!
