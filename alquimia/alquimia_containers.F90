@@ -100,6 +100,8 @@ module AlquimiaContainers_module
      integer (c_int) :: num_surface_sites
      integer (c_int) :: num_ion_exchange_sites
      integer (c_int) :: num_isotherm_species
+     integer (c_int) :: num_gases
+!!     integer (c_int) :: num_gas_species
      integer (c_int) :: num_aux_integers
      integer (c_int) :: num_aux_doubles
   end type AlquimiaSizes
@@ -115,6 +117,8 @@ module AlquimiaContainers_module
      type (AlquimiaVectorDouble) :: mineral_specific_surface_area
      type (AlquimiaVectorDouble) :: surface_site_density
      type (AlquimiaVectorDouble) :: cation_exchange_capacity
+!!     type (AlquimiaVectorDouble) :: total_gas
+     type (AlquimiaVectorDouble) :: gas_concentration
   end type AlquimiaState
 
   type, public, bind(c) :: AlquimiaProperties
@@ -160,6 +164,7 @@ module AlquimiaContainers_module
      type (AlquimiaVectorString) :: ion_exchange_names
      type (AlquimiaVectorString) :: isotherm_species_names
      type (AlquimiaVectorString) :: aqueous_kinetic_names
+     type (AlquimiaVectorString) :: gas_names
   end type AlquimiaProblemMetaData
 
   type, public, bind(c) :: AlquimiaAuxiliaryOutputData
@@ -171,6 +176,7 @@ module AlquimiaContainers_module
      type (AlquimiaVectorDouble) :: primary_activity_coeff
      type (AlquimiaVectorDouble) :: secondary_free_ion_concentration
      type (AlquimiaVectorDouble) :: secondary_activity_coeff
+     type (AlquimiaVectorDouble) :: gas_partial_pressure
   end type AlquimiaAuxiliaryOutputData
 
   type, public, bind(c) :: AlquimiaAqueousConstraint

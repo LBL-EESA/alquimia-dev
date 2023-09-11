@@ -712,6 +712,11 @@ subroutine GetAuxiliaryOutput( &
      local_array(i) = engine_state%rt_auxvar%sec_act_coef(i)
   end do
 
+  !
+  ! gas pressure in bars
+  !
+  ! coming soon
+    
   status%error = kAlquimiaNoError
 end subroutine GetAuxiliaryOutput
 
@@ -806,12 +811,16 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   call c_f_pointer(meta_data%positivity%data, idata, (/list_size/))
   do i = 1, list_size
-      if (i == engine_state%reaction%species_idx%h_ion_id) then
+     if (i == engine_state%reaction%species_idx%h_ion_id) then        
 !       H+ component can be negative
         idata(i) = 0
-      else
+     else if (engine_state%reaction%primary_species_names(i) == 'O2(aq)') then
+!       this probably violates interface rules -- an index could be added to pflotran for O2(aq) instead
+!       O2(aq) can be negative
+        idata(i) = 0
+     else   
         idata(i) = 1 
-      end if
+     end if
   end do
 
   !
@@ -922,6 +931,17 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
     cur_mic_rxn => cur_mic_rxn%next
     i = i+1
    enddo
+
+  !
+  ! copy gas indices and names
+  !
+  ! coming soon
+   
+  ! namg : name of gas species
+  !
+  ! coming soon
+  
+ 
 
   status%error = 0
 end subroutine GetProblemMetaData
@@ -1054,7 +1074,8 @@ subroutine SetAlquimiaSizes(reaction, sizes)
   sizes%num_surface_sites = reaction%surface_complexation%nsrfcplxrxn
   sizes%num_ion_exchange_sites = reaction%neqionxrxn
   sizes%num_isotherm_species = reaction%isotherm%neqkdrxn
-  
+!!  sizes%num_total_gases = 0 ! placeholder - gas capabilities not available for pflotran yet
+  sizes%num_gases = 0 ! placeholder - gas capabilities not available for pflotran yet
   call GetAuxiliaryDataSizes(reaction, &
        sizes%num_aux_integers, sizes%num_aux_doubles)
 
@@ -1631,6 +1652,11 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   end do
 
   !
+  ! gas concentrations
+  !
+  ! coming soon
+
+  !
   ! in hands-off mode CEC and site density, as well as any property
   ! are not provided by the driver so copying them over would
   ! lose pflotran's input file values 
@@ -1803,6 +1829,12 @@ subroutine CopyAuxVarsToAlquimia(reaction, global_auxvar, rt_auxvar, &
   do i = 1, reaction%surface_complexation%nsrfcplxrxn
      data(i) = reaction%surface_complexation%srfcplxrxn_site_density(i)
   end do
+
+  !
+  ! gas concentrations
+  !
+  ! coming soon
+
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
   ! by chemistry. We don't need to copy theme here!
@@ -2005,6 +2037,7 @@ subroutine PrintSizes(sizes)
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
+  write (*, '(a, i4)') "  num gases : ", sizes%num_gases
 end subroutine PrintSizes
 
 

@@ -153,6 +153,7 @@ module CrunchAlquimiaInterface_module
      integer(i4b)             :: nz
      integer(i4b)             :: igamma
      integer(i4b)             :: ikph
+     integer(i4b)             :: iko2
      integer(i4b)             :: jpor
      real(dp)                 :: corrmax
      real(dp)                 :: deltmin
@@ -227,6 +228,7 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
   !
   integer(i4b)          :: igamma ! gamma coeff update type
   integer(i4b)          :: ikph   ! points to pH
+  integer(i4b)          :: iko2   ! points to O2
   integer(i4b)          :: jpor   ! porosity update type (0 is constant)
   real(dp)              :: corrmax ! max change in unknown in log units
   real(dp)              :: deltmin ! minimum delta time
@@ -236,7 +238,6 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
   !
   integer(i4b) :: ipath  ! reaction_path calculations
   integer(i4b) :: ikmast ! points to master species
-  integer(i4b) :: ikO2   ! points to O2
   integer(i4b) :: nstop  ! # output times for CF
   integer(i4b) :: nseries ! time series print for CF   
   integer(i4b) :: str_mon ! time keeping for CF
@@ -299,7 +300,11 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
 
   ! number of unknowns
   neqn = ncomp + nexchange + nsurf + npot
-    
+
+  if (ngas > 0) then
+    isaturate = 1
+  end if
+   
   ! allocate vars for OS3D, gases too if needed
   call AllocateOS3D(ncomp,nspec,ngas,nrct,nexchange,nsurf,nsurf_sec,npot,neqn,nx,ny,nz)
   if (isaturate == 1) call AllocateGasesOS3D(nx,ny,nz,ncomp)
@@ -344,6 +349,7 @@ subroutine Setup(input_filename, hands_off, cf_engine_state, sizes, functionalit
   ! flags, pointer indexes, parameters
   engine_state%igamma = igamma
   engine_state%ikph = ikph
+  engine_state%iko2 = iko2
   engine_state%jpor = jpor
   engine_state%corrmax = corrmax
   engine_state%deltmin = deltmin
@@ -655,6 +661,7 @@ subroutine ReactionStepOperatorSplit(cf_engine_state, &
   !
   integer(i4b)          :: igamma ! gamma coeff update type
   integer(i4b)          :: ikph   ! points to pH
+  integer(i4b)          :: iko2   ! points to O2
   integer(i4b)          :: jpor   ! porosity update type (0 is constant)
   real(dp)              :: corrmax ! max unknown update log scale
   real(dp)              :: deltmin ! minimum delta time
@@ -958,7 +965,7 @@ subroutine GetAuxiliaryOutput( &
   ! crunchflow
   use params, only: secyr, clg
   use concentration, only: sp10, sp, &
-                           gam
+                           gam, spgas10
   use mineral, only: dppt, &
                      silog
 
@@ -974,7 +981,7 @@ subroutine GetAuxiliaryOutput( &
 
   ! local variables
   type(CrunchEngineState), pointer :: engine_state
-  integer :: i, ikph
+  integer :: i, ikph, iko2
   real (c_double), pointer :: local_array(:)
   !!PetscReal :: porosity, volume
   logical, parameter :: copy_auxdata = .true.
@@ -1002,6 +1009,8 @@ subroutine GetAuxiliaryOutput( &
      aux_output%pH = -100.d0
   end if
 
+  iko2 = engine_state%iko2
+  
   !
   ! mineral data
   !
@@ -1050,6 +1059,16 @@ subroutine GetAuxiliaryOutput( &
      local_array(i) = gam(engine_state%ncomp+i,jx,jy,jz)
   end do
 
+  !
+  ! gas pressure in bars
+  !
+  call c_f_pointer(aux_output%gas_partial_pressure%data, local_array, &
+       (/aux_output%gas_partial_pressure%size/))
+  do i = 1, aux_output%gas_partial_pressure%size
+     ! violates no calculations!
+     local_array(i) = spgas10(i,jx,jy,jz) * 8.314d0 * (state%temperature + 273.15d0) * 1.0d-5
+  end do  
+
   status%error = kAlquimiaNoError
 end subroutine GetAuxiliaryOutput
 
@@ -1067,7 +1086,8 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
   use concentration, only: ulab, &
                            namsurf, &
                            namexc, &
-                           distrib
+                           distrib, &
+                           namg
   use mineral, only: umin
 
   implicit none
@@ -1134,7 +1154,10 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
       if (i == engine_state%ikph) then
 !       H+ component can be negative
         idata(i) = 0
-      else
+      else if (i == engine_state%iko2) then
+!       O2 component can be negative
+        idata(i) = 0
+      else       
         idata(i) = 1 
       end if
   end do
@@ -1226,6 +1249,25 @@ subroutine GetProblemMetaData(cf_engine_state, meta_data, status)
             name, kAlquimiaMaxStringLength)
      end if
 
+  end do
+
+  !
+  ! copy gas indices and names
+  !
+  if (meta_data%gas_names%size /= engine_state%ngas) then
+     write (*, '(a, i3, a, i3, a)') "meta_data%gas_names%size (", &
+          meta_data%gas_names%size, ") != crunchflow%ngas(", &
+          engine_state%ngas, ")"
+  end if
+  list_size = meta_data%gas_names%size
+  
+  ! namg : name of gas species
+
+  call c_f_pointer(meta_data%gas_names%data, name_list, (/list_size/))
+  do i = 1, list_size
+     call c_f_pointer(name_list(i), name)
+     call f_c_string_chars(trim(namg(i)), &
+            name, kAlquimiaMaxStringLength)
   end do
 
   status%error = 0
@@ -1376,6 +1418,8 @@ subroutine SetAlquimiaSizes(ncomp, nspec, nkin, nrct, ngas, &
      sizes%num_sorbed = 0
   end if
   sizes%num_aqueous_kinetics = ikin
+  sizes%num_gases = ngas
+!!  sizes%num_total_gases = ngas
   call GetAuxiliaryDataSizes(ncomp, nspec, nkin, nrct, ngas, &
                              nexchange, nsurf, ndecay, npot, &
                              sizes%num_aux_integers, sizes%num_aux_doubles)
@@ -1450,6 +1494,7 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
   !
   integer(i4b)           :: igamma ! gamma coeff update type
   integer(i4b)           :: ikph   ! points to pH
+  integer(i4b)           :: iko2   ! points to O2
   integer(i4b)           :: jpor   ! porosity update type (0 is constant)
     
   ! actual local variables
@@ -1497,6 +1542,7 @@ subroutine ProcessCrunchConstraint(engine_state, nco)
   ! flags, pointer indexes, parameters
   igamma = engine_state%igamma
   ikph = engine_state%ikph
+  iko2 = engine_state%iko2
   jpor = engine_state%jpor
 
 ! allocate work variable
@@ -2217,7 +2263,10 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
                             SolidDensity, &
                             jinit, &
                             xgram, &
-                            ratek
+                            ratek, &
+                            sgas, &
+                            sgasn, &
+                            spgas10
 
   use mineral, only : volfx, area, &
                                   rate0
@@ -2314,12 +2363,33 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   end do
 
   !
+  ! total gas concentrations
+  !
+!!  if (ngas > 0) then
+!!    call c_f_pointer(state%total_gas%data, data, (/ncomp/))
+!!    do i = 1, ncomp
+!!       sgasn(i,jx,jy,jz) = data(i)
+!!    end do
+!!  end if
+
+  !
+  ! gas concentrations
+  !
+  call c_f_pointer(state%gas_concentration%data, data, (/ngas/))
+  do i = 1, ngas
+     spgas10(i,jx,jy,jz) = data(i)
+  end do
+  ! calculate total gas conentrations
+  if (ngas>0) then
+     call totgas(ncomp,nspec,ngas,jx,jy,jz)
+     sgasn = sgas
+  end if
+
   ! in hands-off mode geochemical properties
   ! are not provided by the driver so copying them over would
   ! lose crunchflow's input file values 
   !
   if_hands_off: if (.not. hands_off) then
-  
   !
   ! isotherms (smr) only linear kd model - need to convert units to L/Kg solid
   !
@@ -2399,7 +2469,9 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
                              jinit, &
                              SolidDensity, &
                              distrib, &
-                             xgram
+                             xgram, &
+                             sgasn, &
+                             spgas10
 
   use mineral, only : volfx, area
 
@@ -2496,6 +2568,24 @@ subroutine CopyAuxVarsToAlquimia(ncomp, nspec, nkin, nrct, ngas, &
   do i = 1, nsurf
      data(i) = ssurfn(i,jx,jy,jz) 
      !! write(*,*)'ssurfn(i,jx,jy,jz): ',ssurfn(i,jx,jy,jz)
+  end do
+
+  !
+  ! total gas concentrations
+  !
+!  if (ngas > 0) then
+!    call c_f_pointer(state%gas_concentration%data, data, (/ncomp/))
+!    do i = 1, ngas
+!       data(i) = sgasn(i,jx,jy,jz) 
+!    end do
+!  end if
+
+  !
+  ! gas species concentrations
+  !
+  call c_f_pointer(state%gas_concentration%data, data, (/ngas/))
+  do i = 1, ngas
+     data(i) = spgas10(i,jx,jy,jz) 
   end do
 
   ! NOTE(bja): isotherms are material properties, and can't be changed
@@ -2859,6 +2949,7 @@ subroutine PrintSizes(sizes)
   write (*, '(a, i4)') "  num aqueous complexes : ", sizes%num_aqueous_complexes
   write (*, '(a, i4)') "  num surface sites : ", sizes%num_surface_sites
   write (*, '(a, i4)') "  num ion exchange sites : ", sizes%num_ion_exchange_sites
+  write (*, '(a, i4)') "  num gas species : ", sizes%num_gases
   write (*, '(a, i4)') "  num aux integers : ", sizes%num_aux_integers
   write (*, '(a, i4)') "  num aux doubles : ", sizes%num_aux_doubles
   return

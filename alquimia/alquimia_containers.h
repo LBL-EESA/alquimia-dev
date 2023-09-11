@@ -70,6 +70,8 @@ extern "C" {
     int num_surface_sites;
     int num_ion_exchange_sites;
     int num_isotherm_species;
+    //    int num_total_gases;
+    int num_gases;
     int num_aux_integers;
     int num_aux_doubles;
   } AlquimiaSizes;
@@ -84,7 +86,9 @@ extern "C" {
     AlquimiaVectorDouble mineral_volume_fraction;  /* [-] */
     AlquimiaVectorDouble mineral_specific_surface_area; /* [m^2 mineral/m^3 bulk] */
     AlquimiaVectorDouble surface_site_density;  /* [moles/m^3 bulk] */
-    AlquimiaVectorDouble cation_exchange_capacity;  /* [moles/m^3 bulk] */
+    AlquimiaVectorDouble cation_exchange_capacity; /* [moles/m^3 bulk] */
+    //    AlquimiaVectorDouble total_gas;  /* [moles/L gas] */
+    AlquimiaVectorDouble gas_concentration;  /* [moles/L gas] */
   } AlquimiaState;
   
   typedef struct {
@@ -129,6 +133,7 @@ extern "C" {
     AlquimiaVectorString ion_exchange_names;
     AlquimiaVectorString isotherm_species_names;
     AlquimiaVectorString aqueous_kinetic_names;
+    AlquimiaVectorString gas_names;
   } AlquimiaProblemMetaData;
   
   typedef struct {
@@ -140,6 +145,7 @@ extern "C" {
     AlquimiaVectorDouble primary_activity_coeff; /* [-] */
     AlquimiaVectorDouble secondary_free_ion_concentration; /* [molality] */
     AlquimiaVectorDouble secondary_activity_coeff; /* [-] */
+    AlquimiaVectorDouble gas_partial_pressure; /* [-] */
   } AlquimiaAuxiliaryOutputData;
 
   /* 

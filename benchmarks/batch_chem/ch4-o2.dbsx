@@ -1,0 +1,14 @@
+&Aqueous
+  name          = 'CH4-O2'
+  type          = 'redox'
+  stoichiometry = -1.0 'CH4(aq)' -1.0 'O2(aq)'
+  keq           = 50.0
+/
+
+&AqueousKinetics
+  name        = 'CH4-O2'
+  label         = 'default'
+  type          = 'Monod'
+  rate25C     =  201.83
+  monod_terms    = 'tot_CH4(aq)' 3.125e-6 'tot_O2(aq)' 1.e-5
+/

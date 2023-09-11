@@ -627,6 +627,7 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
   int num_minerals = driver->chem_sizes.num_minerals;
   int num_surface_sites = driver->chem_sizes.num_surface_sites;
   int num_ion_exchange_sites = driver->chem_sizes.num_ion_exchange_sites;
+  int num_gases = driver->chem_sizes.num_gases;
   int num_aqueous_complexes = driver->chem_sizes.num_aqueous_complexes;
   int num_aqueous_kinetics = driver->chem_sizes.num_aqueous_kinetics;
   int num_vars = 1 +                        // time
@@ -635,11 +636,13 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
                  2 * num_minerals +         // mineral volume fractions, specific surface area
                  num_surface_sites +        // surface site density
                  num_ion_exchange_sites +   // cation exchange capacity
+                 num_gases +        // gases
                  1 +                        // pH
                  num_aqueous_kinetics +     // aqueous kinetic rate
                  2 * num_minerals +         // mineral saturation index, reaction rate
                  2 * num_primary +          // primary free ion concentration, activity coeff
-                 2 * num_aqueous_complexes; // secondary free ion concentration, activity coeff
+                 2 * num_aqueous_complexes + // secondary free ion concentration, activity coeff
+                 num_gases;                        // partial pressure
   int counter = 0;
   AllocateAlquimiaVectorString(num_vars, var_names);
   AllocateAlquimiaVectorDouble(num_vars * num_times, var_data);
@@ -703,6 +706,14 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
       var_data->data[num_vars*j + counter] = driver->chem_aux_output.pH;
     ++counter;
   }
+  for (int i = 0; i < num_gases; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "gas_concentration[%s]", driver->chem_metadata.gas_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_state_history[j].gas_concentration.data[i];
+  }
   for (int i = 0; i < num_aqueous_kinetics; ++i, ++counter)
   {
     char var_name[1024];
@@ -758,6 +769,14 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
     var_names->data[counter] = AlquimiaStringDup(var_name);
     for (int j = 0; j < driver->history_size; ++j)
       var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].secondary_activity_coeff.data[i];
+  }
+  for (int i = 0; i < num_gases; ++i, ++counter)
+  {
+    char var_name[1024];
+    snprintf(var_name, 1023, "gas_partial_pressure[%s]", driver->chem_metadata.gas_names.data[i]);
+    var_names->data[counter] = AlquimiaStringDup(var_name);
+    for (int j = 0; j < driver->history_size; ++j)
+      var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].gas_partial_pressure.data[i];
   }
 }
 

@@ -103,6 +103,8 @@ passed through the interface.
 +-------------------------+-------------+---------------------------------------------------------+
 | num_aqueous_complexes   | int         |       N_s, number of secondary aqueous complexes        |
 +-------------------------+-------------+---------------------------------------------------------+
+| num_gases               | int         | N_g, number of gases                                    |
++-------------------------+-------------+---------------------------------------------------------+
 | num_aqueous_kinetics    | int         | N_k, number of kinetic aqueous reactions                |
 +-------------------------+-------------+---------------------------------------------------------+
 | num_surface_sites       | int         | N_ss, number of surface sites                           |
@@ -139,6 +141,8 @@ Storage for spatially and temporally varying "state" data. Read/write (chemistry
 | total_mobile                      | vector<double, N_p>    | [molarity: moles/L]         |
 +-----------------------------------+------------------------+-----------------------------+
 | total_immobile                    | vector<double, N_sorb> | [moles/m^3 bulk]            |
++-----------------------------------+------------------------+-----------------------------+
+| gas_concentrations                | vector<double, N_g>    | [moles/L]                   |
 +-----------------------------------+------------------------+-----------------------------+
 | mineral_volume_fractions          | vector<double, N_m>    | [-]                         |
 +-----------------------------------+------------------------+-----------------------------+
@@ -338,6 +342,8 @@ data in a particular array, it should set the size to zero.
 | secondary_free_ion_concentration |  vector<double, N_s>   | [molality: mol/kg H2O] |
 +----------------------------------+------------------------+------------------------+
 | secondary_activity_coeff         |  vector<double, N_s>   | [-]                    |
++----------------------------------+------------------------+------------------------+
+| gas_partial_pressure             |  vector<double, N_g>   | [bar]                  |
 +----------------------------------+------------------------+------------------------+
 
 
