@@ -64,7 +64,7 @@ module PFLOTRANAlquimiaInterface_module
   use Reaction_Base_module, only : reaction_base_type
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
   use Global_Aux_module, only : global_auxvar_type
-  use Material_Aux_class, only : material_auxvar_type
+  use Material_Aux_module, only : material_auxvar_type
   use Transport_Constraint_module, only : tran_constraint_list_type
   use Transport_Constraint_RT_module, only : tran_constraint_coupler_rt_type
 
@@ -119,7 +119,7 @@ module PFLOTRANAlquimiaInterface_module
      class(reaction_rt_type), pointer :: reaction
      type(reactive_transport_auxvar_type), pointer :: rt_auxvar
      type(global_auxvar_type), pointer :: global_auxvar
-     class(material_auxvar_type), pointer :: material_auxvar
+     type(material_auxvar_type), pointer :: material_auxvar
      type(tran_constraint_list_type), pointer :: transport_constraints
      class(tran_constraint_coupler_rt_type), pointer :: constraint_coupler 
   end type PFLOTRANEngineState
@@ -148,11 +148,12 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   use AlquimiaContainers_module
 
   ! pflotran
+  use Logging_module
   use Reaction_Aux_module, only : reaction_rt_type
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type, &
        RTAuxVarInit
   use Global_Aux_module, only : global_auxvar_type, GlobalAuxVarInit
-  use Material_Aux_class, only : material_auxvar_type, MaterialAuxVarInit
+  use Material_Aux_module, only : material_auxvar_type, MaterialAuxVarInit
   use Option_module, only : option_type, OptionCreate
   use Input_Aux_module, only : input_type, InputCreate, InputDestroy
   use Transport_Constraint_module, only : tran_constraint_list_type
@@ -178,7 +179,7 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   type(option_type), pointer :: option
   type(input_type), pointer :: input
   type(global_auxvar_type), pointer :: global_auxvar
-  class(material_auxvar_type), pointer :: material_auxvar
+  type(material_auxvar_type), pointer :: material_auxvar
   type(reactive_transport_auxvar_type), pointer :: rt_auxvar
   type(tran_constraint_list_type), pointer :: transport_constraints
   class(tran_constraint_coupler_rt_type), pointer :: constraint_coupler 
@@ -191,6 +192,7 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   ! setup pflotran's option object, including mpi
   option => OptionCreate()
   call SetupPFLOTRANOptions(input_filename, option)
+  call LoggingCreate()
 
   write (*, '(a, a)') "  Reading : ", trim(option%input_filename)
   input => InputCreate(IN_UNIT, option%input_filename, option)
@@ -290,7 +292,7 @@ subroutine Shutdown(pft_engine_state, status)
 
   ! pflotran
   use Option_module, only : OptionDestroy
-  use Driver_module, only : DriverDestroy
+  use Driver_class, only : DriverDestroy
   use Reaction_aux_module, only : ReactionDestroy
   use Transport_Constraint_Base_module, only : tran_constraint_coupler_base_type
   use Transport_Constraint_module, only : TranConstraintCouplerDestroy, &
@@ -472,19 +474,19 @@ end subroutine ProcessCondition
 
 ! **************************************************************************** !
 subroutine ReactionStepOperatorSplit(pft_engine_state, &
-     delta_t, properties, state, aux_data, status)
+     delta_t, properties, state, aux_data, natural_id, status)
 !  NOTE: Function signature is dictated by the alquimia API.
 
 #include "petsc/finclude/petscsys.h"
   use petscsys
-  use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_double, c_f_pointer, c_int
 
   use c_f_interface_module, only : f_c_string_ptr
 
   use AlquimiaContainers_module
 
   ! pflotran
-  use Reaction_module, only : RReact, RUpdateKineticState, RTAuxVarCompute
+  use Reaction_module, only : RStep, RUpdateKineticState, RTAuxVarCompute
 
   implicit none
 
@@ -494,16 +496,18 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   type (AlquimiaProperties), intent(in) :: properties
   type (AlquimiaState), intent(inout) :: state
   type (AlquimiaAuxiliaryData), intent(inout) :: aux_data
+  integer (c_int) :: natural_id
   type (AlquimiaEngineStatus), intent(out) :: status
 
   ! local variables
   type(PFLOTRANEngineState), pointer :: engine_state
   PetscReal :: porosity, volume, vol_frac_prim
   PetscReal, allocatable :: guess(:)
-  PetscInt :: i, num_newton_iterations, ierror
-  PetscInt, parameter :: natural_id = -999
+  PetscInt :: i, ierror
+  PetscInt :: num_sub_steps, num_newton_iterations, num_kinetic_state_updates
   PetscInt, parameter :: phase_index = 1
   logical, parameter :: copy_auxdata = .true.
+  PetscBool :: kinetic_state_updated
   class(reaction_rt_type), pointer :: reaction
 
   call c_f_pointer(pft_engine_state, engine_state)
@@ -542,18 +546,18 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 !!$  call RTAuxVarCompute(engine_state%rt_auxvar, &
 !!$                       engine_state%global_auxvar, &
 !!$                       engine_state%reaction, engine_state%option)
-  ierror = 0
-  call RReact(guess, engine_state%rt_auxvar, engine_state%global_auxvar, &
-       engine_state%material_auxvar, num_newton_iterations, &
-       reaction, natural_id, engine_state%option, &
-       PETSC_FALSE, PETSC_FALSE, ierror)
-  deallocate(guess)
 
+  call RStep(guess, engine_state%rt_auxvar, engine_state%global_auxvar, &
+       engine_state%material_auxvar, num_sub_steps, num_newton_iterations, &
+       num_kinetic_state_updates, reaction, natural_id, engine_state%option, &
+       ierror)
+  deallocate(guess)
 
   if (ierror /= 1) then
 
-     call RUpdateKineticState(engine_state%rt_auxvar, engine_state%global_auxvar, &
-          engine_state%material_auxvar, engine_state%reaction, engine_state%option)
+     call RUpdateKineticState(engine_state%rt_auxvar, &
+          engine_state%global_auxvar, engine_state%material_auxvar, &
+          engine_state%reaction, kinetic_state_updated, engine_state%option)
 
      call CopyAuxVarsToAlquimia( &
           engine_state%reaction, &
@@ -960,9 +964,9 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
 
   use c_f_interface_module, only : c_f_string_chars
 
-  use Option_module, only : option_type
-  use Driver_module, only : DriverCreate
-  use Communicator_Aux_module, only : CommCreate
+  use Option_module
+  use Driver_class
+  use Communicator_Aux_module
   use PFLOTRAN_Constants_module
   use petscsys
   implicit none
@@ -982,22 +986,19 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
 
   ! setup the driver and comm
   option%driver => DriverCreate()
-  option%driver%comm => CommCreate()
-  option%comm => option%driver%comm
+  call CommInitPetsc(option%driver%comm)
+  call OptionSetDriver(option,option%driver)
 
   option%global_prefix = option%input_filename
 
   !
   ! mpi
   !
-  option%comm%global_comm = MPI_COMM_WORLD
-  call MPI_Comm_rank(MPI_COMM_WORLD, option%comm%global_rank, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, option%comm%global_commsize, ierr)
-  call MPI_Comm_group(MPI_COMM_WORLD, option%comm%global_group, ierr)
-  option%comm%mycomm = option%comm%global_comm
-  option%comm%myrank = option%comm%global_rank
-  option%comm%mycommsize = option%comm%global_commsize
-  option%comm%mygroup = option%comm%global_group
+  option%driver%comm%communicator = MPI_COMM_WORLD
+  call MPI_Comm_rank(MPI_COMM_WORLD, option%driver%comm%rank, ierr)
+  call MPI_Comm_size(MPI_COMM_WORLD, option%driver%comm%size, ierr)
+  call MPI_Comm_group(MPI_COMM_WORLD, option%driver%comm%group, ierr)
+  call OptionSetComm(option,option%driver%comm)
 
   !
   ! output file
@@ -1007,8 +1008,8 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
                  '.out.alquimia'
 
-  if (option%myrank == option%driver%io_rank .and. &
-      option%driver%print_to_file) then
+  if (CommIsIORank(option%comm) .and. &
+      option%driver%print_flags%print_to_file) then
     open(option%driver%fid_out, file=filename_out, action="write", &
          status="unknown")
   endif
@@ -1133,7 +1134,7 @@ subroutine InitializeScreenOutput(option, input)
               call StringToUpper(word)
               select case(trim(word))
                 case('OFF')
-                  option%driver%print_to_screen = PETSC_FALSE
+                  option%print_flags%print_to_screen = PETSC_FALSE
                 case default
                   option%io_buffer = 'Keyword: ' // trim(word) // &
                                      ' not recognized in OUTPUT,SCREEN for alquimia-pflotran interface.'
@@ -1318,7 +1319,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   use Reaction_Aux_module, only : reaction_rt_type
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
   use Global_Aux_module, only : global_auxvar_type
-  use Material_Aux_class, only : material_auxvar_type
+  use Material_Aux_module, only : material_auxvar_type
   use Transport_Constraint_RT_module, only : tran_constraint_rt_type, &
                                              tran_constraint_coupler_rt_type
   use Option_module, only : option_type, PrintMsg, PrintErrMsg
@@ -1329,7 +1330,7 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   type(option_type), pointer, intent(in) :: option
   class(reaction_rt_type), pointer, intent(inout) :: reaction
   type(global_auxvar_type), pointer, intent(inout) :: global_auxvar
-  class(material_auxvar_type), pointer, intent(inout) :: material_auxvar
+  type(material_auxvar_type), pointer, intent(inout) :: material_auxvar
   type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvar
   class(tran_constraint_coupler_rt_type), pointer, intent(inout) :: constraint_coupler 
 
@@ -1386,7 +1387,8 @@ subroutine ProcessPFLOTRANConstraint(option, reaction, global_auxvar, &
   constraint_coupler%rt_auxvar => rt_auxvar
   constraint_coupler%num_iterations = num_iterations
 
-  call ReactionPrintConstraint(constraint_coupler, reaction, option)
+  call ReactionPrintConstraint(global_auxvar, rt_auxvar, constraint_coupler, &
+                               reaction, option)
 
 end subroutine ProcessPFLOTRANConstraint
 
@@ -1579,7 +1581,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   use Reaction_aux_module, only : reaction_rt_type
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type
   use Global_Aux_module, only : global_auxvar_type
-  use Material_Aux_class, only : material_auxvar_type
+  use Material_Aux_module, only : material_auxvar_type
 
   implicit none
 
@@ -1591,7 +1593,7 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
   type (AlquimiaProperties), intent(in) :: prop
   class(reaction_rt_type), pointer, intent(inout) :: reaction
   type(global_auxvar_type), pointer, intent(inout) :: global_auxvar
-  class(material_auxvar_type), pointer, intent(inout) :: material_auxvar
+  type(material_auxvar_type), pointer, intent(inout) :: material_auxvar
   type(reactive_transport_auxvar_type), pointer, intent(inout) :: rt_auxvar
 
   ! local variables

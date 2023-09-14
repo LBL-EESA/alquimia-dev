@@ -67,6 +67,7 @@ extern "C" {
       AlquimiaProperties* properties,
       AlquimiaState* state,
       AlquimiaAuxiliaryData* aux_data,
+      int natural_id,
       AlquimiaEngineStatus* status);
   void crunch_alquimia_getauxiliaryoutput(
       void* cf_engine_state,

@@ -555,6 +555,7 @@ int BatchChemDriver_Run(BatchChemDriver* driver)
     printf("BatchChemDriver: running %s\n", driver->description);
 
   double dt = driver->dt;
+  int natural_id;
 
   // Initialize the chemistry state and set up the solution vector.
   int status = BatchChemDriver_Initialize(driver);
@@ -569,10 +570,12 @@ int BatchChemDriver_Run(BatchChemDriver* driver)
       printf("BatchChemDriver: step %d (t = %g, dt = %g)\n", driver->step, driver->time, dt);
 
     // Do the chemistry step.
+    natural_id = -999;
     driver->chem.ReactionStepOperatorSplit(&driver->chem_engine,
                                            dt, &driver->chem_properties,
                                            &driver->chem_state,
                                            &driver->chem_aux_data,
+                                           natural_id,
                                            &driver->chem_status);
     if (driver->chem_status.error != 0)
     {

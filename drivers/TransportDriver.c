@@ -669,6 +669,7 @@ static int Run_OperatorSplit(TransportDriver* driver)
   double dx = (driver->x_max - driver->x_min) / driver->num_cells;
   double dt = Min(driver->dt, driver->cfl * dx / driver->vx);
   int num_primary = driver->chem_sizes.num_primary;
+  int natural_id;
 
   // Initialize the chemistry state in each cell, and set up the solution vector.
   int status = TransportDriver_Initialize(driver);
@@ -710,10 +711,12 @@ static int Run_OperatorSplit(TransportDriver* driver)
       }
 
       // Do the chemistry step, using the advected state as input.
+      natural_id = -999;
       driver->chem.ReactionStepOperatorSplit(&driver->chem_engine,
                                              dt, &driver->chem_properties[i],
                                              &driver->advected_chem_state,
                                              &driver->advected_chem_aux_data,
+                                             natural_id,
                                              &driver->chem_status);
       if (driver->chem_status.error != 0)
       {
