@@ -148,6 +148,7 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   use AlquimiaContainers_module
 
   ! pflotran
+  use Logging_module
   use Reaction_Aux_module, only : reaction_rt_type
   use Reactive_Transport_Aux_module, only : reactive_transport_auxvar_type, &
        RTAuxVarInit
@@ -191,6 +192,7 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   ! setup pflotran's option object, including mpi
   option => OptionCreate()
   call SetupPFLOTRANOptions(input_filename, option)
+  call LoggingCreate()
 
   write (*, '(a, a)') "  Reading : ", trim(option%input_filename)
   input => InputCreate(IN_UNIT, option%input_filename, option)
