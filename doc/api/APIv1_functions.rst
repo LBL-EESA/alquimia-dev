@@ -165,9 +165,11 @@ Take one reaction step in operator split mode with the specified delta t.
         input: delta_t <double>,
         input: properties <struct: Alquimia Properties>,
         in/out: state <struct: Alquimia State>,
-        in/out: aux_data <struct: Alquimia Auxiliary Data>
+        in/out: aux_data <struct: Alquimia Auxiliary Data>,
+	in: natural_id <int>,
         out: status <struct: Alquimia Status>)
 
+The variable natural_id comunicates to the engine an index that uniquely identifies the grid cell it is solving the problem for. (This is intended mostly for debugging purposes on the Alquimia/Engine side.)
 
 Alquimia: Get Auxiliary Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
