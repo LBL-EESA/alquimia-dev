@@ -28,7 +28,7 @@ jobs:
 
     - name: petsc-install
       run: |
-        git clone https://gitlab.com/petsc/petsc.git --branch main $PETSC_DIR
+        git clone https://gitlab.com/petsc/petsc.git --branch v3.20.0 $PETSC_DIR
         cd $PETSC_DIR
         echo "Alquimia >> Configuring petsc"
         PETSC_ARCH=$PETSC_ARCH ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1 --with-hdf5-dir=/usr/lib/x86_64-linux-gnu/hdf5/openmpi
@@ -37,7 +37,7 @@ jobs:
         
     - name: pflotran-install
       run: |
-        git clone https://bitbucket.org/pflotran/pflotran --branch master $PFLOTRAN_DIR
+        git clone https://bitbucket.org/pflotran/pflotran --branch v5.0.0 $PFLOTRAN_DIR
         cd $PFLOTRAN_DIR/src/pflotran
         echo "Building libpflotranchem.a"	
         make libpflotranchem.a
