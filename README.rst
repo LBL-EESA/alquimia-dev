@@ -8,7 +8,7 @@ Status
 Description
 -----------
 
-Alquimia provides a generic interface between flow and transport simulators (drivers) and biogeochemical reaction capabilities (engines). Alquimia consists of two parts: an application programming interface, API, and a wrapper library. The API describes in detail how information is exchanged between the driver and the engine. This includes the function call signatures and data structures required for implementing alquimia in a mixed language (C/C++/Fortran) programming environment. The library is an implementation of the documented API, providing an interface into the biogeochemistry routines supplied by other codes: Alquimia does not do any geochemical calculations. Version 1.0 provides interfaces to the open source codes (BSD) CrunchFlow/CrunchTope and (LGPL) PFLOTRAN. Version 1.0 meets the policies set forth by (and is part of) the Extreme-scale Scientific Software Development Kit, xSDK version 0.6.0.
+Alquimia provides a generic interface between flow and transport simulators (drivers) and biogeochemical reaction capabilities (engines). Alquimia consists of two parts: an application programming interface, API, and a wrapper library. The API describes in detail how information is exchanged between the driver and the engine. This includes the function call signatures and data structures required for implementing alquimia in a mixed language (C/C++/Fortran) programming environment. The library is an implementation of the documented API, providing an interface into the biogeochemistry routines supplied by other codes: Alquimia does not do any geochemical calculations. Version 1.x provides interfaces to the open source codes (BSD) CrunchFlow/CrunchTope and (LGPL) PFLOTRAN. Version 1.x meets the policies set forth by (and is part of) the Extreme-scale Scientific Software Development Kit, xSDK version 0.6.0.
 
 Originally developed as part of the DOE ASCEM project, it is now mantained and developed under the 
 U.S. Department of Energy's `IDEAS Watersheds <https://ideas-productivity.org/>`_ project
@@ -75,13 +75,13 @@ to ensure compatibility. Currently:
 +------------+------------+
 |            | Version    |
 +------------+------------+
-|xSDK        | 0.8.0      |
+|xSDK        | 1.0.0      |
 +------------+------------+
-|Alquimia    | 1.0.10     |
+|Alquimia    | 1.1.0      |
 +------------+------------+
-|PETSc       | 3.18       |
+|PETSc       | 3.20.0     |
 +------------+------------+
-|PFLOTRAN    | 4.0.1      |
+|PFLOTRAN    | 5.0.0      |
 +------------+------------+
 |CrunchFlow  | dev        |
 +------------+------------+
