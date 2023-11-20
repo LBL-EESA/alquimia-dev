@@ -4,7 +4,7 @@ module alquimia_fortran_interface_mod
   use AlquimiaContainers_module, only : AlquimiaSizes,AlquimiaProblemMetaData,AlquimiaProperties,&
            AlquimiaState,AlquimiaAuxiliaryData,AlquimiaAuxiliaryOutputData, AlquimiaEngineStatus,&
            AlquimiaGeochemicalCondition,AlquimiaEngineFunctionality
-  use iso_c_binding, only : c_funptr
+  use, intrinsic :: iso_c_binding, only : c_funptr
            
   implicit none
   
@@ -35,7 +35,7 @@ module alquimia_fortran_interface_mod
   interface
     subroutine CreateAlquimiaInterface(engine_name, alq_interface, status) bind(C, name='CreateAlquimiaInterface')
       use AlquimiaContainers_module, only : AlquimiaEngineStatus
-      use iso_C_binding, only: c_char
+      use, intrinsic :: iso_c_binding, only: c_char
       IMPORT
       implicit none
       character(kind=c_char) :: engine_name(*)
@@ -144,7 +144,7 @@ module alquimia_fortran_interface_mod
     subroutine AllocateAlquimiaGeochemicalCondition(size_name, num_aqueous_constraints, num_mineral_constraints,&
                               condition) bind(C, name='AllocateAlquimiaGeochemicalCondition')
       use AlquimiaContainers_module, only : AlquimiaGeochemicalCondition
-      use iso_c_binding, only : C_INT
+      use, intrinsic :: iso_c_binding, only : C_INT
       implicit none
       integer(C_INT),VALUE :: size_name, num_aqueous_constraints, num_mineral_constraints
       type(AlquimiaGeochemicalCondition) :: condition
@@ -255,7 +255,7 @@ module alquimia_fortran_interface_mod
   contains
     
     subroutine Alquimia_Fortran_setup(this,input_filename,hands_off,pft_engine_state,sizes,functionality,status)
-      use iso_c_binding, only : c_f_procpointer,c_char,c_bool,c_ptr,C_NULL_CHAR
+      use, intrinsic :: iso_c_binding, only : c_f_procpointer,c_char,c_bool,c_ptr,C_NULL_CHAR
       use AlquimiaContainers_module, only : AlquimiaEngineStatus,AlquimiaSizes,AlquimiaEngineFunctionality,kAlquimiaMaxStringLength
       implicit none
       
@@ -368,7 +368,7 @@ module alquimia_fortran_interface_mod
   
   subroutine Create_Fortran_Alquimia_Interface(this,engine_name, status)
     use AlquimiaContainers_module, only : AlquimiaEngineStatus,kAlquimiaMaxStringLength
-    use iso_C_binding, only: c_char,c_null_char
+    use, intrinsic :: iso_c_binding, only: c_char,c_null_char
     implicit none
     class(AlquimiaFortranInterface) :: this
     character(kind=c_char,len=kAlquimiaMaxStringLength) :: engine_name

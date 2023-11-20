@@ -52,7 +52,7 @@ subroutine c_f_string_ptr(c_string_ptr, f_string)
   ! copy a null terminated c string into a fortran string.
   ! null pointer --> empty string
   ! empty fortran strings and padding at the end are expected to be spaces.
-  use iso_c_binding, only : c_ptr, c_char, c_associated, c_f_pointer, c_null_char
+  use, intrinsic :: iso_c_binding, only : c_ptr, c_char, c_associated, c_f_pointer, c_null_char
 
   implicit none
 
@@ -76,7 +76,7 @@ end subroutine c_f_string_ptr
 subroutine c_f_string_chars(c_string_chars, f_string)
   ! copy a c char array reference to fortran
   ! assumes c char array is properly null terminated to end the loop!
-  use iso_c_binding, only : c_char, c_null_char
+  use, intrinsic :: iso_c_binding, only : c_char, c_null_char
 
   implicit none
   character(kind=c_char, len=1), intent(in) :: c_string_chars(*)
@@ -94,7 +94,7 @@ end subroutine c_f_string_chars
 
 subroutine f_c_string_ptr(f_string, c_string_ptr, c_string_len)
   ! copy a fortran string to a c string pointer
-  use iso_c_binding, only : c_char, c_ptr, c_associated, c_f_pointer, c_null_char
+  use, intrinsic :: iso_c_binding, only : c_char, c_ptr, c_associated, c_f_pointer, c_null_char
 
   implicit none
 
@@ -121,7 +121,7 @@ end subroutine f_c_string_ptr
 subroutine f_c_string_chars(f_string, c_string_chars, c_string_len)
   ! copy a fortran string to a c string passed by char-array refrence
   ! c_string_len is the max string length, including null terminator
-  use iso_c_binding, only : c_char, c_null_char
+  use, intrinsic :: iso_c_binding, only : c_char, c_null_char
 
   implicit none
 
