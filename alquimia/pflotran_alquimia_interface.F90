@@ -559,10 +559,12 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
      call RUpdateKineticState(engine_state%rt_auxvar, &
           engine_state%global_auxvar, engine_state%material_auxvar, &
           engine_state%reaction, kinetic_state_updated, engine_state%option)
-          
-     porosity0 = 1.0
-     call MineralUpdateSpecSurfaceArea(engine_state%reaction,engine_state%rt_auxvar,engine_state%material_auxvar, &
-           porosity0,engine_state%option)
+
+     if (reaction%update_mineral_surface_area) then
+        porosity0 = 1.0
+        call MineralUpdateSpecSurfaceArea(engine_state%reaction,engine_state%rt_auxvar,engine_state%material_auxvar, &
+             porosity0,engine_state%option)
+     endif
 
 
      call CopyAuxVarsToAlquimia( &
