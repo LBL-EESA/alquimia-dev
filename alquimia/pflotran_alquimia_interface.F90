@@ -1009,7 +1009,7 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   !
   ! output file
   !
-  option%fid_out = DRIVER_OUT_UNIT
+  option%driver%fid_out = DRIVER_OUT_UNIT
 
   filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
                  '.out.alquimia'
