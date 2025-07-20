@@ -1,4 +1,3 @@
-
 !
 ! Alquimia Copyright (c) 2013-2016, The Regents of the University of California, 
 ! through Lawrence Berkeley National Laboratory (subject to receipt of any 
@@ -487,6 +486,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
 
   ! pflotran
   use Reaction_module, only : RStep, RUpdateKineticState, RTAuxVarCompute
+  use Reaction_Mineral_module, only : MineralUpdateSpecSurfaceArea
 
   implicit none
 
@@ -503,6 +503,7 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
   type(PFLOTRANEngineState), pointer :: engine_state
   PetscReal :: porosity, volume, vol_frac_prim
   PetscReal, allocatable :: guess(:)
+  PetscReal :: porosity0
   PetscInt :: i, ierror
   PetscInt :: num_sub_steps, num_newton_iterations, num_kinetic_state_updates
   PetscInt, parameter :: phase_index = 1
@@ -558,6 +559,11 @@ subroutine ReactionStepOperatorSplit(pft_engine_state, &
      call RUpdateKineticState(engine_state%rt_auxvar, &
           engine_state%global_auxvar, engine_state%material_auxvar, &
           engine_state%reaction, kinetic_state_updated, engine_state%option)
+          
+     porosity0 = 1.0
+     call MineralUpdateSpecSurfaceArea(engine_state%reaction,engine_state%rt_auxvar,engine_state%material_auxvar, &
+           porosity0,engine_state%option)
+
 
      call CopyAuxVarsToAlquimia( &
           engine_state%reaction, &
@@ -1004,7 +1010,6 @@ subroutine SetupPFLOTRANOptions(input_filename, option)
   ! output file
   !
   option%fid_out = DRIVER_OUT_UNIT
-  option%driver%fid_out = DRIVER_OUT_UNIT
 
   filename_out = trim(option%global_prefix) // trim(option%group_prefix) // &
                  '.out.alquimia'
