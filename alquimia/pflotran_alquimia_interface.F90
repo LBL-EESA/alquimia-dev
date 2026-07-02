@@ -1654,12 +1654,14 @@ subroutine CopyAlquimiaToAuxVars(copy_auxdata, hands_off, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
      rt_auxvar%mnrl_volfrac(i) = data(i)
+     rt_auxvar%mnrl_volfrac0(i) = data(i)
   end do
 
   call c_f_pointer(state%mineral_specific_surface_area%data, data, &
        (/reaction%mineral%nkinmnrl/))
   do i = 1, reaction%mineral%nkinmnrl
      rt_auxvar%mnrl_area(i) = data(i)
+     rt_auxvar%mnrl_area0(i) = data(i)
   end do
 
   !

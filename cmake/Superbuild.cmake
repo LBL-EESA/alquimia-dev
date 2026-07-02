@@ -24,7 +24,7 @@ endif()
 
 find_package(BLAS QUIET)
 find_package(LAPACK QUIET)
-if(BLAS_FOUND AND LAPACK_FOUND)
+if(BLAS_FOUND AND LAPACK_FOUND AND FALSE)
   message(STATUS "Found system BLAS/LAPACK")
   set(PETSC_BLASLAPACK_ARGS "")
 else()
@@ -53,6 +53,7 @@ ExternalProject_Add(petsc
 # Chemistry engines options
 option(XSDK_WITH_PFLOTRAN "Enables support for the PFlotran chemistry engine [ON]." ON)
 option(XSDK_WITH_CRUNCHFLOW "Enables support for the CrunchFlow chemistry engine [ON]." ON)
+option(ALQUIMIA_BUILD_STANDALONE_ENGINES "Build standalone versions of requested chemistry engines [OFF]." OFF)
 
 if (NOT XSDK_WITH_PFLOTRAN AND NOT XSDK_WITH_CRUNCHFLOW)
   message(FATAL_ERROR "At least one chemistry engine must be enabled (XSDK_WITH_PFLOTRAN or XSDK_WITH_CRUNCHFLOW).")
@@ -81,6 +82,57 @@ if (XSDK_WITH_PFLOTRAN)
        -DXSDK_WITH_PFLOTRAN=ON
        -DTPL_PFLOTRAN_LIBRARIES=${INSTALL_DIR}/lib/libpflotranchem.a
        -DTPL_PFLOTRAN_INCLUDE_DIRS=${INSTALL_DIR}/include/pflotran)
+
+  if (ALQUIMIA_BUILD_STANDALONE_ENGINES)
+    set(PFLOTRAN_STANDALONE_EXTRA_MAKE_ARGS "")
+    if(HDF5_FOUND)
+      # Extract library directories from HDF5_LIBRARIES to form HDF5_LIB
+      set(HDF5_LDFLAGS_DIR "")
+      foreach(lib ${HDF5_LIBRARIES})
+        get_filename_component(lib_dir ${lib} DIRECTORY)
+        if (HDF5_LDFLAGS_DIR STREQUAL "")
+          set(HDF5_LDFLAGS_DIR "${lib_dir}")
+        endif()
+      endforeach()
+      
+      # Format includes into HDF5_INCLUDE flags
+      # PFLOTRAN makefile does: MYFLAGS += -I$(HDF5_INCLUDE) -I$(HDF5_LIB) ${FC_DEFINE_FLAG}PETSC_HAVE_HDF5
+      # We need HDF5_INCLUDE to be space separated with -I prefixes if there are multiple, or just the first one if the makefile only expects one.
+      # But wait, looking at the makefile: MYFLAGS += -I$(HDF5_INCLUDE) -I$(HDF5_LIB) 
+      # This means it prepends -I. If we have multiple includes, we should pass them through INC or something? No, let's just grab the first include dir or format it.
+      # Wait, if we set HDF5_INCLUDE="/dir1 -I/dir2" then it expands to -I/dir1 -I/dir2
+      set(HDF5_INCFLAGS "")
+      foreach(inc ${HDF5_INCLUDE_DIRS})
+        if (HDF5_INCFLAGS STREQUAL "")
+          set(HDF5_INCFLAGS "${inc}")
+        else()
+          set(HDF5_INCFLAGS "${HDF5_INCFLAGS} -I${inc}")
+        endif()
+      endforeach()
+
+      # Pass these flags to the make call
+      # We override LIBS to include hdf5hl_fortran because system HDF5 might separate HL Fortran bindings
+      # which the PFLOTRAN makefile doesn't link by default.
+      set(PFLOTRAN_STANDALONE_EXTRA_MAKE_ARGS 
+          "have_hdf5=1"
+          "HDF5_LIB=${HDF5_LDFLAGS_DIR}"
+          "HDF5_INCLUDE=${HDF5_INCFLAGS}"
+          "LIBS=-L${HDF5_LDFLAGS_DIR} -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz")
+    endif()
+
+    ExternalProject_Add(pflotran_standalone
+        DEPENDS petsc
+        GIT_REPOSITORY https://bitbucket.org/pflotran/pflotran
+        GIT_TAG v5.0.0
+        PREFIX ${CMAKE_BINARY_DIR}/external/pflotran_standalone
+        CONFIGURE_COMMAND ""
+        UPDATE_DISCONNECTED 1
+        BUILD_COMMAND make -j4 -C src/pflotran pflotran PETSC_DIR=${INSTALL_DIR} PETSC_ARCH="" ${PFLOTRAN_STANDALONE_EXTRA_MAKE_ARGS}
+        BUILD_IN_SOURCE 1
+        INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${INSTALL_DIR}/bin
+                COMMAND ${CMAKE_COMMAND} -E copy <SOURCE_DIR>/src/pflotran/pflotran ${INSTALL_DIR}/bin/pflotran
+    )
+  endif()
 else()
   list(APPEND ALQUIMIA_EXTRA_ARGS -DXSDK_WITH_PFLOTRAN=OFF)
 endif()
@@ -106,6 +158,22 @@ if (XSDK_WITH_CRUNCHFLOW)
        -DXSDK_WITH_CRUNCHFLOW=ON
        -DTPL_CRUNCHFLOW_LIBRARIES=${INSTALL_DIR}/lib/libcrunchchem.a
        -DTPL_CRUNCHFLOW_INCLUDE_DIRS=${INSTALL_DIR}/include/crunchflow)
+
+  if (ALQUIMIA_BUILD_STANDALONE_ENGINES)
+    ExternalProject_Add(crunchflow_standalone
+        DEPENDS petsc
+        GIT_REPOSITORY https://bitbucket.org/crunchflow/crunchtope-dev
+        GIT_TAG master
+        PREFIX ${CMAKE_BINARY_DIR}/external/crunchflow_standalone
+        CONFIGURE_COMMAND ""
+        UPDATE_DISCONNECTED 1
+        PATCH_COMMAND sed -i "s/chkopts//g" source/Makefile
+        BUILD_COMMAND make -C source CrunchMain PETSC_DIR=${INSTALL_DIR} PETSC_ARCH=""
+        BUILD_IN_SOURCE 1
+        INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${INSTALL_DIR}/bin
+                COMMAND ${CMAKE_COMMAND} -E copy <SOURCE_DIR>/source/CrunchTope ${INSTALL_DIR}/bin/crunchflow
+    )
+  endif()
 else()
   list(APPEND ALQUIMIA_EXTRA_ARGS -DXSDK_WITH_CRUNCHFLOW=OFF)
 endif()
@@ -120,7 +188,7 @@ ExternalProject_Add(alquimia_core
         ${COMMON_CMAKE_ARGS}
         ${ALQUIMIA_EXTRA_ARGS}
         -DPETSC_DIR=${INSTALL_DIR}
-        -DPETSC_ARCH=
+        -DPETSC_ARCH=.
         -DALQUIMIA_SUPERBUILD=OFF
 )
 
