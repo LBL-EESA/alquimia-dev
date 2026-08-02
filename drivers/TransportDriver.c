@@ -201,6 +201,8 @@ TransportDriverInput* TransportDriverInput_New(const char* input_file)
       sprintf(suffix, ".gnuplot");
     else if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "python"))
       sprintf(suffix, ".py");
+    else if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "csv"))
+      sprintf(suffix, ".csv");
 
     // Append the suffix.
     if (dot == 0)
@@ -925,4 +927,3 @@ void TransportDriver_GetSoluteAndAuxData(TransportDriver* driver,
       var_data->data[num_vars*j + counter] = driver->chem_aux_output[j].secondary_activity_coeff.data[i];
   }
 }
-

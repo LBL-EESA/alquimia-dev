@@ -337,6 +337,8 @@ void Input_GetOutputParameters(const char* input_file,
       sprintf(suffix, ".gnuplot");
     else if (AlquimiaCaseInsensitiveStringCompare(output.type, "python"))
       sprintf(suffix, ".py");
+    else if (AlquimiaCaseInsensitiveStringCompare(output.type, "csv"))
+      sprintf(suffix, ".csv");
 
     // Append the suffix.
     if (dot == 0)

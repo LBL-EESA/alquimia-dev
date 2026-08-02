@@ -246,12 +246,15 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
     int dot = strlen(input_file)-1;
     while ((dot > 0) && (input_file[dot] != '.')) --dot;
     char suffix[16];
+    suffix[0] = '\0';
 
     // Determine the suffix from the output type.
     if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "gnuplot"))
       sprintf(suffix, ".gnuplot");
     else if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "python"))
       sprintf(suffix, ".py");
+    else if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "csv"))
+      sprintf(suffix, ".csv");
 
     // Append the suffix.
     if (dot == 0)

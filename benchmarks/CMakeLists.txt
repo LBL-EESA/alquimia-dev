@@ -1,4 +1,5 @@
-# NOTE: Currently all the benchmarks are just smoke tests.
+# Python is used for numerical reference comparisons. Other benchmarks remain
+# smoke tests that only check successful execution.
 
 # Batch chemistry benchmarks.
 add_subdirectory(batch_chem)

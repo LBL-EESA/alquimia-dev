@@ -261,6 +261,7 @@ add_subdirectory(alquimia)
 
 # Unit testing.
 enable_testing()
+find_package(PythonInterp 3 REQUIRED)
 add_subdirectory(unit_tests)
 
 # Drivers for benchmarks.
@@ -279,4 +280,3 @@ configure_file(
 
 # Install miscellaneous build/test files.
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/alquimia.cmake DESTINATION share/alquimia)
-
