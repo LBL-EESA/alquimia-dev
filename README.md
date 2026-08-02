@@ -93,8 +93,8 @@ You may use one of the -DXSDK_WITH_PFLOTRAN=OFF or -DXSDK_WITH_CRUNCHFLOW=OFF op
 mkdir build && cd build
 cmake .. \
   -DALQUIMIA_SUPERBUILD=ON \
-  -DXSDK_WITH_PFLOTRAN=ON \
-  -DXSDK_WITH_CRUNCHFLOW=ON \
+  -DXSDK_WITH_PFLOTRAN=OFF \
+  -DXSDK_WITH_CRUNCHFLOW=ON
 make -j$(nproc)
 ```
 
@@ -115,7 +115,26 @@ To download and install PETSc, please follow the instructions in
 [petsc.org](https://petsc.org) or in
 [pflotran.org](http://doc-dev.pflotran.org/user_guide/how_to/installation/installation.html). 
 At the end of the installation, the PETSC_DIR and PETSC_ARCH environment variables
-must set properly.
+must be set properly. `PETSC_ARCH` is not needed for a prefix installation. 
+
+The same is applicable for the Superbuild, e.g.
+
+```bash
+export PETSC_DIR=/path/to/petsc-install
+unset PETSC_ARCH
+cmake -DALQUIMIA_SUPERBUILD=ON ..
+```
+
+For an in-place PETSc build, also set `PETSC_ARCH` to its architecture
+directory. The equivalent `-DPETSC_DIR=...` and `-DPETSC_ARCH=...` CMake
+arguments take precedence over environment variables.  
+
+If you are using a geochemical engine that requires PETSc, as PFLOTRAN and CrunchFlow, 
+and you want to specify the exact locations of its headers, and the method for linking against 
+PETSc's libraries, you can specify these with the -DTPL_PETSC_INCLUDE_DIRS=<list of dirs> and 
+-DTPL_PETSC_LDFLAGS=<link flags> arguments. Normally, these options are 
+omitted and Alquimia automatically detects PETSc's location using the PETSC_DIR
+and PETSC_ARCH environment variables.
 
 ### PFLOTRAN engine
 
@@ -199,13 +218,6 @@ cmake .. \
 make 
 ```
 
-If you are using a geochemical engine that requires PETSc, and you want to 
-specify the exact locations of its headers, and the method for linking against 
-PETSc's libraries, you can specify these with the -DTPL_PETSC_INCLUDE_DIRS=<list of dirs> and 
--DTPL_PETSC_LDFLAGS=<link flags> arguments. Normally, these options are 
-omitted and Alquimia automatically detects PETSc's location using the PETSC_DIR
-and PETSC_ARCH environment variables.
-
 ## Testing
 
 To run Alquimia's suite of tests from your build directory, just type
@@ -248,6 +260,9 @@ The Alquimia build system also supports building the standalone executables for 
 
 When configuring Alquimia with CMake via the Superbuild, you can enable the standalone builds by passing the `-DALQUIMIA_BUILD_STANDALONE_ENGINES=ON` flag. 
 
+If `PETSC_DIR` selects an existing PETSc installation, that PETSc must be built
+with parallel HDF5, including its Fortran and high-level interfaces.
+
 ### Example Configuration:
 ```bash
 mkdir build && cd build
@@ -277,5 +292,3 @@ build/
 ```
 
 You can execute them directly from `build/install/bin/` or add this directory to your system's `PATH`.
-
-

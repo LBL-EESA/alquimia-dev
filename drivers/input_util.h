@@ -68,8 +68,13 @@ void Input_GetRegionData(const char* input_file,
 void Input_GetGeochemicalConditions(const char* input_file,
                                     AlquimiaGeochemicalConditionVector* conditions);
 
+// Returns the condition with the given name, or NULL if it is not present.
+const AlquimiaGeochemicalCondition* Input_FindGeochemicalCondition(
+    const AlquimiaGeochemicalConditionVector* conditions,
+    const char* condition_name);
+
 // Reads any output options/parameters in the file, storing them in the arguments.
-// output_type is currently set to "python" or "gnuplot".
+// output_type is currently set to "python", "gnuplot", or "csv".
 void Input_GetOutputParameters(const char* input_file,
                                char* output_type,
                                char* output_file,

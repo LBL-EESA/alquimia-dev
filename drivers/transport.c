@@ -63,6 +63,8 @@ int main(int argc, char* argv[])
     output = PythonDriverOutput_New();
   else if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "gnuplot"))
     output = GnuplotDriverOutput_New();
+  else if (AlquimiaCaseInsensitiveStringCompare(input->output_type, "csv"))
+    output = CsvDriverOutput_New();
 
   // Create a TransportDriver from the parsed input.
   TransportDriver* transport = TransportDriver_New(input);
@@ -94,4 +96,3 @@ int main(int argc, char* argv[])
 
   return status;
 }  
-

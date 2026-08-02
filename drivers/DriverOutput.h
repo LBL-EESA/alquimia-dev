@@ -41,6 +41,9 @@ DriverOutput* GnuplotDriverOutput_New(void);
 // by an analysis script.
 DriverOutput* PythonDriverOutput_New(void);
 
+// Creates a DriverOutput object that writes high-precision CSV data.
+DriverOutput* CsvDriverOutput_New(void);
+
 // Writes the given vector(s) to the file with the given name.
 void DriverOutput_WriteVectors(DriverOutput* output, 
                                const char* filename,

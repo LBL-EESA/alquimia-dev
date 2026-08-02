@@ -1895,6 +1895,11 @@ subroutine ConvertAlquimiaConditionToCrunch(state,properties, &
   ELSE
     ALLOCATE(unitsflag(mchem))
   END IF
+  ! StartTope releases this array before returning in Alquimia builds, but
+  ! externally supplied conditions need it for the molarity conversion.
+  IF (.NOT. ALLOCATED(OneOverMassFraction)) THEN
+    ALLOCATE(OneOverMassFraction(mchem))
+  END IF
   unitsflag = 1
 !
 ! update number of solutions and point to it

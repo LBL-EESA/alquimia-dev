@@ -5,12 +5,15 @@
 *~
 .*.swp
 .*.swo
+.ipynb_checkpoints/
+__pycache__/
 
 # Binary files.
 *.pdf
 
 # Generated files
 build/
+Testing/
 
 # Benchmark output.
 *.gnuplot 

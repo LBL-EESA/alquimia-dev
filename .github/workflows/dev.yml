@@ -3,69 +3,192 @@ name: Alquimia CI
 on: [workflow_dispatch, push, pull_request]
 
 env:
-  # Customizing build type
-  BUILD_TYPE: DEBUG
+  PETSC_VERSION: "3.20.0"
+  PETSC_PREFIX: /home/runner/petsc-3.20.0
+  PETSC_CACHE_KEY: petsc-ubuntu-24.04-x64-3.20.0-gcc-openmpi-hdf5-v2
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  prepare-petsc:
+    runs-on: ubuntu-24.04
 
     steps:
-
-    - name: package-install
+    - name: Install system dependencies
       run: |
         sudo apt-get -qq update
-        sudo apt -qq install gfortran libopenmpi-dev libhdf5-openmpi-dev hdf5-helpers
+        sudo apt-get -qq install \
+          build-essential \
+          gfortran \
+          git \
+          libhdf5-openmpi-dev \
+          libopenmpi-dev \
+          openmpi-bin \
+          python3
 
-    - name: directories-variables
-      run: |
-        echo "PETSC_DIR=$HOME/petsc" >> $GITHUB_ENV
-        echo "PETSC_ARCH=debug" >> $GITHUB_ENV	
-        echo "PFLOTRAN_DIR=$HOME/pflotran" >> $GITHUB_ENV
-        echo "CRUNCH_DIR=$HOME/crunchtope-dev" >> $GITHUB_ENV
-        echo "ALQUIMIA_DIR=$HOME/work/install" >> $GITHUB_ENV
-        echo "ALQUIMIA_REPO_DIR=$HOME/work/alquimia-dev/alquimia-dev" >> $GITHUB_ENV
+    - name: Restore PETSc
+      id: petsc-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ env.PETSC_PREFIX }}
+        key: ${{ env.PETSC_CACHE_KEY }}
 
-    - name: petsc-install
+    - name: Build PETSc
+      if: steps.petsc-cache.outputs.cache-hit != 'true'
       run: |
-        git clone https://gitlab.com/petsc/petsc.git --branch v3.20.0 $PETSC_DIR
-        cd $PETSC_DIR
-        echo "Alquimia >> Configuring petsc"
-        PETSC_ARCH=$PETSC_ARCH ./configure --with-mpi=1 --with-debugging=1 --with-shared-libraries=1 --download-fblaslapack=1 --with-hdf5-dir=/usr/lib/x86_64-linux-gnu/hdf5/openmpi
-        echo "Alquimia >> Building petsc"
-        make
-        
-    - name: pflotran-install
-      run: |
-        git clone https://bitbucket.org/pflotran/pflotran --branch v5.0.0 $PFLOTRAN_DIR
-        cd $PFLOTRAN_DIR/src/pflotran
-        echo "Building libpflotranchem.a"	
-        make libpflotranchem.a
-
-    - name: crunchflow-install
-      run: |
-        git clone https://bitbucket.org/crunchflow/crunchtope-dev $CRUNCH_DIR
-        cd $CRUNCH_DIR/source
-        git apply MakefileForAlquimia.patch
-        echo "Building libcrunchchem.a"
-        make libcrunchchem.a
-
-    - uses: actions/checkout@v2
-
-    - name: configure
-      run: |
-        ls $HOME/work
-        #ls $HOME/runners
-        mkdir $ALQUIMIA_REPO_DIR/build
-        cd $ALQUIMIA_REPO_DIR/build
-        cmake ..  -DCMAKE_INSTALL_PREFIX=$ALQUIMIA_DIR   -DCMAKE_C_COMPILER=`which mpicc`   -DCMAKE_CXX_COMPILER=`which mpicxx`   -DCMAKE_Fortran_COMPILER=`which mpif90`   -DCMAKE_BUILD_TYPE=Release   -DXSDK_WITH_PFLOTRAN=ON  -DTPL_PFLOTRAN_LIBRARIES=$PFLOTRAN_DIR/src/pflotran/libpflotranchem.a   -DTPL_PFLOTRAN_INCLUDE_DIRS=$PFLOTRAN_DIR/src/pflotran  -DXSDK_WITH_CRUNCHFLOW=ON   -DTPL_CRUNCHFLOW_LIBRARIES=$CRUNCH_DIR/source/libcrunchchem.a   -DTPL_CRUNCHFLOW_INCLUDE_DIRS=$CRUNCH_DIR/source   -DCMAKE_BUILD_TYPE=DEBUG   -DCMAKE_C_FLAGS="-W -Wall -Wextra"   -DCMAKE_CXX_FLAGS="-W -Wall -Wextra"   -DCMAKE_Fortran_FLAGS="-W -Wall -Wextra"
-
-    - name: build
-      run: |
-        cd $ALQUIMIA_REPO_DIR/build
+        git clone \
+          --branch "v${PETSC_VERSION}" \
+          --depth 1 \
+          https://gitlab.com/petsc/petsc.git \
+          "${RUNNER_TEMP}/petsc-source"
+        cd "${RUNNER_TEMP}/petsc-source"
+        python3 ./configure \
+          --prefix="${PETSC_PREFIX}" \
+          --with-mpi=1 \
+          --with-debugging=0 \
+          --with-shared-libraries=1 \
+          --with-hdf5-dir=/usr/lib/x86_64-linux-gnu/hdf5/openmpi \
+          --with-hdf5-fortran-bindings=1 \
+          --download-fblaslapack=1
         make -j2
+        make install
 
-    - name: test
+    - name: Save PETSc
+      if: steps.petsc-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ env.PETSC_PREFIX }}
+        key: ${{ env.PETSC_CACHE_KEY }}
+
+  build:
+    needs: prepare-petsc
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install system dependencies
       run: |
-        cd $ALQUIMIA_REPO_DIR/build
-        make test
+        sudo apt-get -qq update
+        sudo apt-get -qq install \
+          build-essential \
+          cmake \
+          gfortran \
+          git \
+          libhdf5-openmpi-dev \
+          libopenmpi-dev \
+          openmpi-bin
+
+    - name: Restore PETSc
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ env.PETSC_PREFIX }}
+        key: ${{ env.PETSC_CACHE_KEY }}
+        fail-on-cache-miss: true
+
+    - name: Set build environment
+      run: |
+        echo "PETSC_DIR=${PETSC_PREFIX}" >> "${GITHUB_ENV}"
+        echo "PETSC_ARCH=" >> "${GITHUB_ENV}"
+        echo "PFLOTRAN_DIR=${HOME}/pflotran" >> "${GITHUB_ENV}"
+        echo "CRUNCH_DIR=${HOME}/crunchtope-dev" >> "${GITHUB_ENV}"
+        echo "ALQUIMIA_DIR=${HOME}/work/install" >> "${GITHUB_ENV}"
+
+    - name: Build PFLOTRAN chemistry library
+      run: |
+        git clone \
+          --branch v5.0.0 \
+          --depth 1 \
+          https://bitbucket.org/pflotran/pflotran \
+          "${PFLOTRAN_DIR}"
+        make -C "${PFLOTRAN_DIR}/src/pflotran" libpflotranchem.a
+
+    - name: Build CrunchFlow chemistry library
+      run: |
+        git clone \
+          --depth 1 \
+          https://bitbucket.org/crunchflow/crunchtope-dev \
+          "${CRUNCH_DIR}"
+        git -C "${CRUNCH_DIR}" apply source/MakefileForAlquimia.patch
+        make -C "${CRUNCH_DIR}/source" libcrunchchem.a
+
+    - name: Configure Alquimia
+      run: |
+        cmake -S . -B build \
+          -DCMAKE_INSTALL_PREFIX="${ALQUIMIA_DIR}" \
+          -DCMAKE_C_COMPILER="$(command -v mpicc)" \
+          -DCMAKE_CXX_COMPILER="$(command -v mpicxx)" \
+          -DCMAKE_Fortran_COMPILER="$(command -v mpif90)" \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DXSDK_WITH_PFLOTRAN=ON \
+          -DTPL_PFLOTRAN_LIBRARIES="${PFLOTRAN_DIR}/src/pflotran/libpflotranchem.a" \
+          -DTPL_PFLOTRAN_INCLUDE_DIRS="${PFLOTRAN_DIR}/src/pflotran" \
+          -DXSDK_WITH_CRUNCHFLOW=ON \
+          -DTPL_CRUNCHFLOW_LIBRARIES="${CRUNCH_DIR}/source/libcrunchchem.a" \
+          -DTPL_CRUNCHFLOW_INCLUDE_DIRS="${CRUNCH_DIR}/source" \
+          -DCMAKE_C_FLAGS="-W -Wall -Wextra" \
+          -DCMAKE_CXX_FLAGS="-W -Wall -Wextra" \
+          -DCMAKE_Fortran_FLAGS="-W -Wall -Wextra"
+
+    - name: Build Alquimia
+      run: cmake --build build --parallel 2
+
+    - name: Test Alquimia
+      run: cmake --build build --target test
+
+  standalone-build:
+    needs: prepare-petsc
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install \
+          build-essential \
+          cmake \
+          gfortran \
+          git \
+          libhdf5-openmpi-dev \
+          libopenmpi-dev \
+          openmpi-bin
+
+    - name: Restore PETSc
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ env.PETSC_PREFIX }}
+        key: ${{ env.PETSC_CACHE_KEY }}
+        fail-on-cache-miss: true
+
+    - name: Set PETSc environment
+      run: |
+        echo "PETSC_DIR=${PETSC_PREFIX}" >> "${GITHUB_ENV}"
+        echo "PETSC_ARCH=" >> "${GITHUB_ENV}"
+
+    - name: Configure standalone engines
+      run: |
+        cmake -S . -B build-standalone \
+          -DALQUIMIA_SUPERBUILD=ON \
+          -DXSDK_WITH_PFLOTRAN=ON \
+          -DXSDK_WITH_CRUNCHFLOW=ON \
+          -DALQUIMIA_BUILD_STANDALONE_ENGINES=ON \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER="$(command -v mpicc)" \
+          -DCMAKE_CXX_COMPILER="$(command -v mpicxx)" \
+          -DCMAKE_Fortran_COMPILER="$(command -v mpif90)"
+
+    - name: Build standalone engines
+      run: cmake --build build-standalone --parallel 2
+
+    - name: Verify standalone engines
+      run: |
+        test -x build-standalone/install/bin/pflotran
+        test -x build-standalone/install/bin/crunchflow
+        if ldd build-standalone/install/bin/pflotran | grep -q "not found"; then
+          ldd build-standalone/install/bin/pflotran
+          exit 1
+        fi
+        if ldd build-standalone/install/bin/crunchflow | grep -q "not found"; then
+          ldd build-standalone/install/bin/crunchflow
+          exit 1
+        fi

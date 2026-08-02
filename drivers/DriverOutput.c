@@ -92,6 +92,44 @@ DriverOutput* PythonDriverOutput_New(void)
   return DriverOutput_New(PythonWrite);
 }
 
+static void CsvWrite(AlquimiaVectorString var_names,
+                     AlquimiaVectorDouble* var_vectors,
+                     FILE* file)
+{
+  for (int i = 0; i < var_names.size; ++i)
+  {
+    if (i > 0)
+      fprintf(file, ",");
+    fprintf(file, "\"");
+    for (const char* character = var_names.data[i]; *character != '\0';
+         ++character)
+    {
+      if (*character == '\"')
+        fprintf(file, "\"\"");
+      else
+        fputc(*character, file);
+    }
+    fprintf(file, "\"");
+  }
+  fprintf(file, "\n");
+
+  for (int i = 0; i < var_vectors[0].size; ++i)
+  {
+    for (int j = 0; j < var_names.size; ++j)
+    {
+      if (j > 0)
+        fprintf(file, ",");
+      fprintf(file, "%.17g", var_vectors[j].data[i]);
+    }
+    fprintf(file, "\n");
+  }
+}
+
+DriverOutput* CsvDriverOutput_New(void)
+{
+  return DriverOutput_New(CsvWrite);
+}
+
 void DriverOutput_WriteVectors(DriverOutput* output, 
                                const char* filename,
                                AlquimiaVectorString var_names,
@@ -135,4 +173,3 @@ void DriverOutput_WriteMulticompVector(DriverOutput* output,
   for (int i = 0; i < num_comps; ++i)
     FreeAlquimiaVectorDouble(&var_vectors[i]);
 }
-

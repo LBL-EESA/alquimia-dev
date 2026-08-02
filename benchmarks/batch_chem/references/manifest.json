@@ -1,0 +1,475 @@
+{
+  "cases": {
+    "calcite_vf_cc_crunch": {
+      "alquimia_input": "calcite-vf-cc-crunch.cfg",
+      "native": {
+        "columns": [
+          {
+            "source": "Time (days)",
+            "target": "time"
+          },
+          {
+            "source": "pH",
+            "target": "pH"
+          },
+          {
+            "source": "H+",
+            "target": "primary_free_ion_concentration[H+]"
+          },
+          {
+            "source": "HCO3-",
+            "target": "primary_free_ion_concentration[HCO3-]"
+          },
+          {
+            "source": "Ca++",
+            "target": "primary_free_ion_concentration[Ca++]"
+          }
+        ],
+        "engine": "crunchflow",
+        "input": "calcite-vf-crunch.in",
+        "output": "calcite-vf-cc.out",
+        "time_scale": 86400.0
+      },
+      "provenance": {
+        "command": [
+          "crunchflow",
+          "calcite-vf-crunch.in"
+        ],
+        "executable": "crunchflow",
+        "input_sha256": "6303e44ddec4a7edb8dd70c74ae9e49b41e4c9daf8171e69e8781a7324c87078"
+      },
+      "reference": "crunchflow/calcite-vf.csv"
+    },
+    "calcite_vf_pc_pflotran": {
+      "alquimia_input": "calcite-vf-pc-pflotran.cfg",
+      "native": {
+        "columns": [
+          {
+            "source_prefix": "Time [d]",
+            "target": "time"
+          },
+          {
+            "source_prefix": "Total H+ [M]",
+            "target": "total_mobile[H+]"
+          },
+          {
+            "source_prefix": "Total HCO3- [M]",
+            "target": "total_mobile[HCO3-]"
+          },
+          {
+            "source_prefix": "Total Ca++ [M]",
+            "target": "total_mobile[Ca++]"
+          },
+          {
+            "source_prefix": "Calcite VF",
+            "target": "mineral_volume_fractions[Calcite]"
+          }
+        ],
+        "engine": "pflotran",
+        "input": "calcite-vf-pflotran.in",
+        "legacy_wrapper": true,
+        "output": "calcite-vf-pflotran-obs-0.pft",
+        "time_scale": 86400.0
+      },
+      "provenance": {
+        "command": [
+          "pflotran",
+          "-input_prefix",
+          "calcite-vf-pflotran"
+        ],
+        "executable": "pflotran",
+        "input_sha256": "65f6fc3143197beb330e8309cdf76f019bdb0145b75784ad0baf85fd8dce9e42"
+      },
+      "reference": "pflotran/calcite-vf.csv"
+    },
+    "general_reaction_ac_crunch": {
+      "alquimia_input": "general-reaction-ac-crunch.cfg",
+      "native": {
+        "columns": [
+          {
+            "source": "Time (days)",
+            "target": "time"
+          },
+          {
+            "source": "A(aq)",
+            "target": "primary_free_ion_concentration[A(aq)]"
+          },
+          {
+            "source": "B(aq)",
+            "target": "primary_free_ion_concentration[B(aq)]"
+          }
+        ],
+        "engine": "crunchflow",
+        "input": "general-reaction-crunch.in",
+        "output": "general-reaction-cc.out",
+        "time_scale": 86400.0
+      },
+      "provenance": {
+        "command": [
+          "crunchflow",
+          "general-reaction-crunch.in"
+        ],
+        "executable": "crunchflow",
+        "input_sha256": "9c02338ade76569d7be8530c44a9e69608e781b760af18522fced767903e6427"
+      },
+      "reference": "crunchflow/general-reaction.csv"
+    },
+    "general_reaction_ac_pflotran": {
+      "alquimia_input": "general-reaction-ac-pflotran.cfg",
+      "native": {
+        "columns": [
+          {
+            "source_prefix": "Time [d]",
+            "target": "time"
+          },
+          {
+            "source_prefix": "Total A(aq) [M]",
+            "target": "total_mobile[A(aq)]"
+          },
+          {
+            "source_prefix": "Total B(aq) [M]",
+            "target": "total_mobile[B(aq)]"
+          }
+        ],
+        "engine": "pflotran",
+        "input": "general-reaction-pflotran.in",
+        "legacy_wrapper": true,
+        "output": "general-reaction-pflotran-obs-0.pft",
+        "time_scale": 86400.0
+      },
+      "provenance": {
+        "command": [
+          "pflotran",
+          "-input_prefix",
+          "general-reaction-pflotran"
+        ],
+        "executable": "pflotran",
+        "input_sha256": "d69b93605eb7c667eef439afd012bf157cb39b8cd4e7473bb8daa6281ebc2b1b"
+      },
+      "reference": "pflotran/general-reaction.csv"
+    },
+    "ion_exchange_valocchi_cc_crunch": {
+      "alquimia_input": "ion-exchange-valocchi-cc-crunch.cfg",
+      "native": {
+        "columns": [
+          {
+            "source": "Time (yrs)",
+            "target": "time"
+          },
+          {
+            "source": "Na+",
+            "target": "primary_free_ion_concentration[Na+]"
+          },
+          {
+            "source": "Ca++",
+            "target": "primary_free_ion_concentration[Ca++]"
+          },
+          {
+            "source": "Mg++",
+            "target": "primary_free_ion_concentration[Mg++]"
+          },
+          {
+            "source": "Cl-",
+            "target": "primary_free_ion_concentration[Cl-]"
+          }
+        ],
+        "engine": "crunchflow",
+        "input": "ion-exchange-valocchi-crunch.in",
+        "output": "ion-exchange-valocchi-cc.out",
+        "time_scale": 31557600.0
+      },
+      "provenance": {
+        "command": [
+          "crunchflow",
+          "ion-exchange-valocchi-crunch.in"
+        ],
+        "executable": "crunchflow",
+        "input_sha256": "f944a5b94b353902faa322dbad19b1d1f50f9cd3adab9e996dbd225fd2dd1953"
+      },
+      "reference": "crunchflow/ion-exchange-valocchi.csv",
+      "tolerances": {
+        "primary_free_ion_concentration[Ca++]": {
+          "rel_tol": 0.0005
+        },
+        "primary_free_ion_concentration[Mg++]": {
+          "rel_tol": 0.0005
+        },
+        "primary_free_ion_concentration[Na+]": {
+          "rel_tol": 0.0005
+        }
+      }
+    },
+    "ion_exchange_valocchi_pc_pflotran": {
+      "alquimia_input": "ion-exchange-valocchi-pc-pflotran.cfg",
+      "native": {
+        "columns": [
+          {
+            "source_prefix": "Time [y]",
+            "target": "time"
+          },
+          {
+            "source_prefix": "Total Na+ [M]",
+            "target": "total_mobile[Na+]"
+          },
+          {
+            "source_prefix": "Total Ca++ [M]",
+            "target": "total_mobile[Ca++]"
+          },
+          {
+            "source_prefix": "Total Mg++ [M]",
+            "target": "total_mobile[Mg++]"
+          },
+          {
+            "source_prefix": "Total Cl- [M]",
+            "target": "total_mobile[Cl-]"
+          },
+          {
+            "source_prefix": "Halite VF",
+            "target": "mineral_volume_fractions[Halite]"
+          },
+          {
+            "source_prefix": "Total Sorbed Na+",
+            "target": "total_immobile[0]"
+          },
+          {
+            "source_prefix": "Total Sorbed Ca++",
+            "target": "total_immobile[1]"
+          },
+          {
+            "source_prefix": "Total Sorbed Mg++",
+            "target": "total_immobile[2]"
+          },
+          {
+            "source_prefix": "Total Sorbed Cl-",
+            "target": "total_immobile[3]"
+          }
+        ],
+        "engine": "pflotran",
+        "input": "ion-exchange-valocchi-pflotran.in",
+        "legacy_wrapper": true,
+        "output": "ion-exchange-valocchi-pflotran-obs-0.pft",
+        "time_scale": 31557600.0
+      },
+      "provenance": {
+        "command": [
+          "pflotran",
+          "-input_prefix",
+          "ion-exchange-valocchi-pflotran"
+        ],
+        "executable": "pflotran",
+        "input_sha256": "ff5f54b3a9724c411b75e6761504647fc04f40302972bdb58f15ea870c22b4e9"
+      },
+      "reference": "pflotran/ion-exchange-valocchi.csv"
+    },
+    "isotherms_ac_crunch": {
+      "alquimia_input": "isotherms-ac-crunch.cfg",
+      "native": {
+        "columns": [
+          {
+            "source": "Time (days)",
+            "target": "time"
+          },
+          {
+            "source": "A",
+            "target": "primary_free_ion_concentration[A]"
+          },
+          {
+            "source": "C",
+            "target": "primary_free_ion_concentration[C]"
+          }
+        ],
+        "engine": "crunchflow",
+        "input": "isotherms-crunch.in",
+        "output": "isotherms-cc.out",
+        "time_scale": 86400.0
+      },
+      "provenance": {
+        "command": [
+          "crunchflow",
+          "isotherms-crunch.in"
+        ],
+        "executable": "crunchflow",
+        "input_sha256": "c745e071824e7baf528d78116f7b50f1f2ae40eca5ef2a11820b8a42e38bd737"
+      },
+      "reference": "crunchflow/isotherms.csv"
+    },
+    "isotherms_ac_pflotran": {
+      "alquimia_input": "isotherms-ac-pflotran.cfg",
+      "native": {
+        "columns": [
+          {
+            "source_prefix": "Time [d]",
+            "target": "time"
+          },
+          {
+            "source_prefix": "Total A [M]",
+            "target": "total_mobile[A]"
+          },
+          {
+            "source_prefix": "Total B [M]",
+            "target": "total_mobile[B]"
+          },
+          {
+            "source_prefix": "Total C [M]",
+            "target": "total_mobile[C]"
+          },
+          {
+            "source_prefix": "Total D [M]",
+            "target": "total_mobile[D]"
+          },
+          {
+            "source_prefix": "Total Sorbed A",
+            "target": "total_immobile[0]"
+          },
+          {
+            "source_prefix": "Total Sorbed B",
+            "target": "total_immobile[1]"
+          },
+          {
+            "source_prefix": "Total Sorbed C",
+            "target": "total_immobile[2]"
+          },
+          {
+            "source_prefix": "Total Sorbed D",
+            "target": "total_immobile[3]"
+          }
+        ],
+        "engine": "pflotran",
+        "input": "isotherms-pflotran.in",
+        "legacy_wrapper": true,
+        "output": "isotherms-pflotran-obs-0.pft",
+        "time_scale": 86400.0
+      },
+      "provenance": {
+        "command": [
+          "pflotran",
+          "-input_prefix",
+          "isotherms-pflotran"
+        ],
+        "executable": "pflotran",
+        "input_sha256": "638dbb68135d3eceb69b69c2e9c82fa82f4c6a33caf3c959b7e3a2236a180e7c"
+      },
+      "reference": "pflotran/isotherms.csv"
+    },
+    "surface_complexation_2_ac_crunch": {
+      "alquimia_input": "surface-complexation-2-ac-crunch.cfg",
+      "native": {
+        "columns": [
+          {
+            "source": "Time (yrs)",
+            "target": "time"
+          },
+          {
+            "source": "pH",
+            "target": "pH"
+          },
+          {
+            "source": "Cl-",
+            "target": "primary_free_ion_concentration[Cl-]"
+          },
+          {
+            "source": "Na+",
+            "target": "primary_free_ion_concentration[Na+]"
+          },
+          {
+            "source": "NO3-",
+            "target": "primary_free_ion_concentration[NO3-]"
+          },
+          {
+            "source": "Zn++",
+            "target": "primary_free_ion_concentration[Zn++]"
+          }
+        ],
+        "engine": "crunchflow",
+        "input": "surface-complexation-2-crunch.in",
+        "output": "surface-complexation-cc.out",
+        "time_scale": 31557600.0
+      },
+      "provenance": {
+        "command": [
+          "crunchflow",
+          "surface-complexation-2-crunch.in"
+        ],
+        "executable": "crunchflow",
+        "input_sha256": "2ceefc0261730a970b481087d529338dc7c4478eb18fce308eed64cfe99e3155"
+      },
+      "reference": "crunchflow/surface-complexation-2.csv"
+    },
+    "surface_complexation_2_ac_pflotran": {
+      "alquimia_input": "surface-complexation-2-ac-pflotran.cfg",
+      "native": {
+        "columns": [
+          {
+            "source_prefix": "Time [y]",
+            "target": "time"
+          },
+          {
+            "source_prefix": "Total H+ [M]",
+            "target": "total_mobile[H+]"
+          },
+          {
+            "source_prefix": "Total Cl- [M]",
+            "target": "total_mobile[Cl-]"
+          },
+          {
+            "source_prefix": "Total Na+ [M]",
+            "target": "total_mobile[Na+]"
+          },
+          {
+            "source_prefix": "Total NO3- [M]",
+            "target": "total_mobile[NO3-]"
+          },
+          {
+            "source_prefix": "Total Zn++ [M]",
+            "target": "total_mobile[Zn++]"
+          },
+          {
+            "source_prefix": "Total Sorbed H+",
+            "target": "total_immobile[0]"
+          },
+          {
+            "source_prefix": "Total Sorbed Cl-",
+            "target": "total_immobile[1]"
+          },
+          {
+            "source_prefix": "Total Sorbed Na+",
+            "target": "total_immobile[2]"
+          },
+          {
+            "source_prefix": "Total Sorbed NO3-",
+            "target": "total_immobile[3]"
+          },
+          {
+            "source_prefix": "Total Sorbed Zn++",
+            "target": "total_immobile[4]"
+          }
+        ],
+        "engine": "pflotran",
+        "input": "surface-complexation-2-pflotran.in",
+        "legacy_wrapper": true,
+        "output": "surface-complexation-2-pflotran-obs-0.pft",
+        "time_scale": 31557600.0
+      },
+      "provenance": {
+        "command": [
+          "pflotran",
+          "-input_prefix",
+          "surface-complexation-2-pflotran"
+        ],
+        "executable": "pflotran",
+        "input_sha256": "74570140bc2f73aff2a29521f28249aa712eb298929ccb4ceca1c1d1dc769805"
+      },
+      "reference": "pflotran/surface-complexation-2.csv"
+    }
+  },
+  "engine_revisions": {
+    "crunchflow": "cf938c815e2c6002ac6b2540089042e9f570c293",
+    "pflotran": "a2104cedea1528a00aa2718572d43a4461019c60"
+  },
+  "format_version": 1,
+  "tolerances": {
+    "abs_tol": 1e-12,
+    "rel_tol": 1e-06,
+    "time_abs_tol": 1e-09
+  }
+}
