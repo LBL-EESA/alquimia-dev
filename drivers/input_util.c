@@ -25,6 +25,7 @@
 ** and to permit others to do so.
 */
 
+#include <ctype.h>
 #include <string.h>
 #include "ini.h"
 #include "input_util.h"
@@ -249,6 +250,10 @@ static int ParseGeochemicalConditions(void* user,
     if (icond == conditions->size)
     {
       ResizeAlquimiaGeochemicalConditionVector(conditions, conditions->size+1);
+      memset(&conditions->data[icond], 0,
+             sizeof(AlquimiaGeochemicalCondition));
+      AllocateAlquimiaGeochemicalCondition(kAlquimiaMaxStringLength, 0, 0,
+                                           &conditions->data[icond]);
       strncpy(conditions->data[icond].name, cond_name, kAlquimiaMaxStringLength);
     }
     AlquimiaGeochemicalCondition* condition = &conditions->data[icond];
@@ -264,6 +269,18 @@ void Input_GetGeochemicalConditions(const char* input_file,
   int error = ini_parse(input_file, ParseGeochemicalConditions, conditions);
   if (error != 0)
     alquimia_error("Input_GetGeochemicalConditions: Error parsing input: %s", input_file);
+}
+
+const AlquimiaGeochemicalCondition* Input_FindGeochemicalCondition(
+    const AlquimiaGeochemicalConditionVector* conditions,
+    const char* condition_name)
+{
+  for (int i = 0; i < conditions->size; ++i)
+  {
+    if (strcmp(conditions->data[i].name, condition_name) == 0)
+      return &conditions->data[i];
+  }
+  return NULL;
 }
 
 typedef struct
@@ -466,7 +483,8 @@ void Input_ParseProperty(const char* section,
 
 bool Input_IsGeochemicalConditionSection(const char* section, char* condition_name)
 {
-  bool result = (strstr(section, "condition:") != NULL);
+  bool result = (strncmp(section, "condition:", 10) == 0) &&
+                (section[10] != '\0');
   if (result)
     strcpy(condition_name, &section[10]);
   return result;
@@ -478,14 +496,40 @@ void Input_ParseGeochemicalCondition(const char* name,
 {
   if (strstr(value, "aqueous_constraint(") != NULL)
   {
-    ResizeAlquimiaAqueousConstraintVector(&condition->aqueous_constraints, condition->aqueous_constraints.size+1);
-    Input_ParseAqueousConstraint(name, value, &condition->aqueous_constraints.data[condition->aqueous_constraints.size-1]);
+    int index = condition->aqueous_constraints.size;
+    ResizeAlquimiaAqueousConstraintVector(&condition->aqueous_constraints,
+                                          index+1);
+    AllocateAlquimiaAqueousConstraint(
+        &condition->aqueous_constraints.data[index]);
+    Input_ParseAqueousConstraint(
+        name, value, &condition->aqueous_constraints.data[index]);
   }
   else if (strstr(value, "mineral_constraint(") != NULL)
   {
-    ResizeAlquimiaMineralConstraintVector(&condition->mineral_constraints, condition->mineral_constraints.size+1);
-    Input_ParseMineralConstraint(name, value, &condition->mineral_constraints.data[condition->mineral_constraints.size-1]);
+    int index = condition->mineral_constraints.size;
+    ResizeAlquimiaMineralConstraintVector(&condition->mineral_constraints,
+                                          index+1);
+    AllocateAlquimiaMineralConstraint(
+        &condition->mineral_constraints.data[index]);
+    Input_ParseMineralConstraint(
+        name, value, &condition->mineral_constraints.data[index]);
   }
+}
+
+static void CopyTrimmedToken(char* destination,
+                             size_t destination_size,
+                             const char* begin,
+                             const char* end)
+{
+  while ((begin < end) && isspace((unsigned char)*begin))
+    ++begin;
+  while ((end > begin) && isspace((unsigned char)*(end-1)))
+    --end;
+  size_t length = end-begin;
+  if (length >= destination_size)
+    length = destination_size-1;
+  memcpy(destination, begin, length);
+  destination[length] = '\0';
 }
 
 void Input_ParseAqueousConstraint(const char* primary_species,
@@ -508,20 +552,24 @@ void Input_ParseAqueousConstraint(const char* primary_species,
     alquimia_error("Invalid aqueous_constraint entry for %s: %s", primary_species, text);
 
   // Primary species.
-  strcpy(constraint->primary_species_name, primary_species);
+  strncpy(constraint->primary_species_name, primary_species,
+          kAlquimiaMaxStringLength-1);
+  constraint->primary_species_name[kAlquimiaMaxStringLength-1] = '\0';
 
   // Jot down the value.
   char value_str[comma - &start[19]+1];
-  strncpy(value_str, &start[19], comma-&start[19]);
+  CopyTrimmedToken(value_str, sizeof(value_str), &start[19], comma);
   constraint->value = atof(value_str);
 
   // Figure out the type of constraint.
   char* end_type_delim = (last_comma == comma2) ? comma2 : end;
-  strncpy(constraint->constraint_type, comma+1, end_type_delim-(comma+1));
+  CopyTrimmedToken(constraint->constraint_type, kAlquimiaMaxStringLength,
+                   comma+1, end_type_delim);
 
   // Is there an associated species?
   if (last_comma == comma2)
-    strncpy(constraint->associated_species, comma2+1, end-(comma2+1));
+    CopyTrimmedToken(constraint->associated_species, kAlquimiaMaxStringLength,
+                     comma2+1, end);
 }
 
 void Input_ParseMineralConstraint(const char* mineral_name,
@@ -540,16 +588,17 @@ void Input_ParseMineralConstraint(const char* mineral_name,
     alquimia_error("Invalid mineral_constraint entry for %s: %s", mineral_name, text);
 
   // Mineral name.
-  strcpy(constraint->mineral_name, mineral_name);
+  strncpy(constraint->mineral_name, mineral_name,
+          kAlquimiaMaxStringLength-1);
+  constraint->mineral_name[kAlquimiaMaxStringLength-1] = '\0';
 
   // Volume fraction.
   char vf_str[comma - &start[19]+1];
-  strncpy(vf_str, &start[19], comma-&start[19]);
+  CopyTrimmedToken(vf_str, sizeof(vf_str), &start[19], comma);
   constraint->volume_fraction = atof(vf_str);
 
   // Specific surface area.
   char ssa_str[end - comma + 1];
-  strncpy(ssa_str, comma+1, end-comma-1);
+  CopyTrimmedToken(ssa_str, sizeof(ssa_str), comma+1, end);
   constraint->specific_surface_area = atof(ssa_str);
 }
-

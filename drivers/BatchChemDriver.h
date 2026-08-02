@@ -84,6 +84,7 @@ typedef struct
   // Geochemical condition.
   // ----------------------
   char* cond_name;
+  AlquimiaGeochemicalConditionVector conditions;
 
   // ---------------------
   // Chemistry engine info

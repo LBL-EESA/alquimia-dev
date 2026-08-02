@@ -31,6 +31,7 @@
 #include "alquimia/alquimia_memory.h"
 #include "alquimia/alquimia_util.h"
 #include "ini.h"
+#include "input_util.h"
 #include "BatchChemDriver.h"
 
 static inline double Min(double a, double b)
@@ -199,6 +200,9 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
     alquimia_error("BatchChemDriver: Error parsing input: %s", input_file);
   }
 
+  // Conditions are variable-sized, so parse them in a separate pass.
+  Input_GetGeochemicalConditions(input_file, &input->conditions);
+
   // Verify that our required fields are filled properly.
   if (!input->hands_off)
     alquimia_error("BatchChemDriver: simulation->hands_off must be set to true at the moment.");
@@ -220,6 +224,13 @@ BatchChemDriverInput* BatchChemDriverInput_New(const char* input_file)
     alquimia_error("BatchChemDriver: chemistry->input_file not specified.");
   if (input->cond_name == NULL)
     alquimia_error("BatchChemDriver: chemistry->initial_condition not specified.");
+  if ((input->conditions.size > 0) &&
+      (Input_FindGeochemicalCondition(&input->conditions,
+                                      input->cond_name) == NULL))
+  {
+    alquimia_error("BatchChemDriver: initial condition '%s' not found in %s.",
+                   input->cond_name, input_file);
+  }
 
   // Default description -> input file name.
   if (input->description == NULL)
@@ -281,6 +292,7 @@ void BatchChemDriverInput_Free(BatchChemDriverInput* input)
     free(input->surface_sites[i]);
   if (input->cond_name != NULL)
     free(input->cond_name);
+  FreeAlquimiaGeochemicalConditionVector(&input->conditions);
   if (input->chemistry_engine != NULL)
     free(input->chemistry_engine);
   if (input->chemistry_input_file != NULL)
@@ -409,8 +421,13 @@ BatchChemDriver* BatchChemDriver_New(BatchChemDriverInput* input)
   }
 
   // Initial condition.
-  AllocateAlquimiaGeochemicalCondition(strlen(input->cond_name), 0, 0, &driver->chem_cond);
+  AllocateAlquimiaGeochemicalCondition(strlen(input->cond_name), 0, 0,
+                                       &driver->chem_cond);
   strcpy(driver->chem_cond.name, input->cond_name);
+  const AlquimiaGeochemicalCondition* input_condition =
+      Input_FindGeochemicalCondition(&input->conditions, input->cond_name);
+  if (input_condition != NULL)
+    CopyAlquimiaGeochemicalCondition(input_condition, &driver->chem_cond);
 
   // Copy the chemistry state information in.
   // NOTE: For now, we only allow one of each of these reactions.
@@ -782,4 +799,3 @@ void BatchChemDriver_GetSoluteAndAuxData(BatchChemDriver* driver,
       var_data->data[num_vars*j + counter] = driver->chem_aux_output_history[j].gas_partial_pressure.data[i];
   }
 }
-
