@@ -246,12 +246,12 @@ subroutine Setup(input_filename, hands_off, pft_engine_state, sizes, &
   call SetAlquimiaSizes(reaction, sizes)
   !FIXME(bja): need some way to identify pflotran ion exchange sites
   !when there are more than one. Use the mineral name?
-  if (sizes%num_ion_exchange_sites > 1) then
-     status%error = kAlquimiaErrorUnsupportedFunctionality
-     call f_c_string_ptr("ERROR: pflotran interface only supports a single ion exchange site!", &
-          status%message, kAlquimiaMaxStringLength)
-     return
-  end if
+  !if (sizes%num_ion_exchange_sites > 1) then
+  !   status%error = kAlquimiaErrorUnsupportedFunctionality
+  !   call f_c_string_ptr("ERROR: pflotran interface only supports a single ion exchange site!", &
+  !        status%message, kAlquimiaMaxStringLength)
+  !   return
+  !end if
 
   call SetEngineFunctionality(reaction, option, functionality)
 
@@ -743,7 +743,7 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
 
   use AlquimiaContainers_module
 
-  use Reaction_Aux_module, only : general_rxn_type
+  use Reaction_Aux_module, only : general_rxn_type, ion_exchange_rxn_type
   use Reaction_Microbial_Aux_module, only : microbial_rxn_type
 
   implicit none
@@ -756,13 +756,14 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   ! local variables
   type (c_ptr), pointer :: name_list(:)
   character (len=kAlquimiaMaxWordLength), pointer :: pflotran_names(:)
-  character (len=kAlquimiaMaxWordLength) :: dummy_names(1)
+  character (len=kAlquimiaMaxWordLength) :: site_name
   character (c_char), pointer :: name
   integer :: i, list_size, id
   integer(c_int), pointer :: idata(:)
   type(PFLOTRANEngineState), pointer :: engine_state
   type(general_rxn_type), pointer :: cur_gen_rxn
   type(microbial_rxn_type), pointer :: cur_mic_rxn
+  type(ion_exchange_rxn_type), pointer :: cur_ionx_rxn
 
   !write (*, '(a)') "PFLOTRAN_Alquimia_GetEngineMetaData() :"
 
@@ -883,22 +884,36 @@ subroutine GetProblemMetaData(pft_engine_state, meta_data, status)
   ! FIXME(bja): only support a single ion exchange site
   if (meta_data%ion_exchange_names%size /= &
        engine_state%reaction%neqionxrxn) then
-     write (*, '(a, i3, a, i3, a)') "meta_data%ion_exchange_names%size (", &
-          meta_data%ion_exchange_names%size, ") != pflotran%reaction%neqionxrxn(", &
-          engine_state%reaction%neqionxrxn, ")"
+     status%error = kAlquimiaErrorEngineIntegrity
+     call f_c_string_ptr("ERROR: meta_data%ion_exchange_names%size != " // &
+          "pflotran%reaction%neqionxrxn!", &
+          status%message, kAlquimiaMaxStringLength)
+     return
   end if
 
   list_size = meta_data%ion_exchange_names%size
-
-  dummy_names(1) = "X-"
-
   call c_f_pointer(meta_data%ion_exchange_names%data, name_list, (/list_size/))
-  do i = 1, list_size
-     call c_f_pointer(name_list(i), name)
-     call f_c_string_chars(trim(dummy_names(i)), &
-          name, kAlquimiaMaxStringLength)     
-  end do
 
+  ! Walk pflotran's ion exchange list. This is the same order as
+  ! eqionx_rxn_CEC(:) and eqionx_ref_cation_sorbed_conc(:).
+  cur_ionx_rxn => engine_state%reaction%ion_exchange_rxn_list
+  do i = 1, list_size
+     if (.not. associated(cur_ionx_rxn)) then
+        status%error = kAlquimiaErrorEngineIntegrity
+        call f_c_string_ptr("ERROR: pflotran ion exchange list is shorter " // &
+             "than reaction%neqionxrxn!", &
+             status%message, kAlquimiaMaxStringLength)
+        return
+     end if
+     if (list_size > 1 .and. len_trim(cur_ionx_rxn%mineral_name) > 0) then
+        site_name = trim(cur_ionx_rxn%mineral_name)
+     else
+        site_name = "X-"   ! legacy name: single site, or no MINERAL card
+     end if
+     call c_f_pointer(name_list(i), name)
+     call f_c_string_chars(trim(site_name), name, kAlquimiaMaxStringLength)
+     cur_ionx_rxn => cur_ionx_rxn%next
+  end do
 
   !
   ! isotherm indices
